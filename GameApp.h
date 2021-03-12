@@ -38,7 +38,7 @@ public:
 	uint32_t WIDTH = 800u;
 	uint32_t HEIGHT = 600u;
 	static constexpr int MAX_FRAMES_IN_FLIGHT = 2;
-
+	//
 
 private:
 
@@ -59,7 +59,7 @@ private:
 
 
 		static std::array<VkVertexInputAttributeDescription, 2> getAttributeDescriptions() {
-			
+
 			std::array<VkVertexInputAttributeDescription, 2> attributeDescriptions{};
 
 			attributeDescriptions[0].binding = 0; //what is this index? line 53?
@@ -79,13 +79,17 @@ private:
 	};
 
 	const std::vector<Vertex> vertices = {
-	{{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-	{{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
-	{{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
+		{{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+		{{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
+		{{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
+		{{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}}
 	};
 
 
 
+	const std::vector<uint16_t> indices = {
+		0, 1, 2, 2, 3, 0
+	};
 
 
 private:
@@ -150,7 +154,7 @@ private:
 	void createSwapChain();
 	void createImageViews();
 	void createGraphicsPipeline();
-	void createRenderPass();
+	void createRenderPass();   //render pass specifies the types of attachments that will be accessed.
 	VkShaderModule createShaderModule(const std::vector<char>& code);
 	void createFramebuffers();
 	void createCommandPool();
@@ -163,6 +167,7 @@ private:
 	void recreateSwapChain();
 	void cleanupSwapChain();
 	void createVertexBuffer();
+	void createIndexBuffer();
 
 	uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
@@ -171,6 +176,12 @@ private:
 
 	void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
 	void createTransferCommandBuffer();
+
+
+
+
+
+
 private:
 	//这些是我们想要拿来调试用到的validationLayers,
 	const std::vector<const char*> instanceLayerRequiredToUse = {
@@ -206,7 +217,7 @@ private:
 
 	VkQueue graphicsQueue;//used to issue commands 
 	VkQueue presentQueue;//used to present images
-	VkQueue tranforQueue;
+	VkQueue tranferQueue;//used for tranfer buffer
 
 
 	std::vector<VkImage> swapChainImages;  //3
@@ -239,8 +250,8 @@ private:
 
 
 	VkBuffer vertexBuffer;
-
 	VkDeviceMemory vertexBufferMemory;
-
+	VkBuffer indexBuffer;
+	VkDeviceMemory indexBufferMemory;
 
 };

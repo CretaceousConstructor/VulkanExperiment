@@ -105,6 +105,7 @@ void GameApp::initVulkan() {
 	createCommandPool();
 	createTransferCommandBuffer();
 	createVertexBuffer();
+	createIndexBuffer();
 	createCommandBuffers();// hard to understand
 	createSyncObjects();
 
@@ -297,10 +298,17 @@ void GameApp::mainLoop() {
 void GameApp::cleanup() {
 
 	vkDeviceWaitIdle(device);
-	vkFreeCommandBuffers(device, transforCommandPool, 1, &transferCommandBuffer);
+	
+
+
 	cleanupSwapChain();
+
+	vkDestroyBuffer(device, indexBuffer, nullptr);
+	vkFreeMemory(device, indexBufferMemory, nullptr);
+
 	vkDestroyBuffer(device, vertexBuffer, nullptr);
 	vkFreeMemory(device, vertexBufferMemory, nullptr);
+
 	vkDestroyCommandPool(device, graphicsCommandPool, nullptr);
 	vkDestroyCommandPool(device, transforCommandPool, nullptr);
 
@@ -591,7 +599,7 @@ void GameApp::createLogicalDevice()
 
 	vkGetDeviceQueue(device, indices.graphicsFamily.value(), 0, &graphicsQueue);
 	vkGetDeviceQueue(device, indices.presentFamily.value(), 0, &presentQueue);
-	vkGetDeviceQueue(device, indices.transferFamily.value(), 0, &tranforQueue);
+	vkGetDeviceQueue(device, indices.transferFamily.value(), 0, &tranferQueue);
 
 
 
@@ -1084,7 +1092,7 @@ void GameApp::createCommandPool()
 	VkCommandPoolCreateInfo transforPoolInfo{};
 	transforPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 	transforPoolInfo.queueFamilyIndex = queueFamilyIndices.transferFamily.value();
-	transforPoolInfo.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT; // 仅仅用于短暂的使用
+	transforPoolInfo.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT| VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT; // 仅仅用于短暂的使用 并且可以复用
 
 
 	if (vkCreateCommandPool(device, &transforPoolInfo, nullptr, &transforCommandPool) != VK_SUCCESS) {
@@ -1145,7 +1153,11 @@ void GameApp::createCommandBuffers()
 		VkDeviceSize offsets[] = { 0 };
 		vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBuffers, offsets);
 
-		vkCmdDraw(commandBuffers[i], static_cast<uint32_t>(vertices.size()), 1, 0, 0);
+		vkCmdBindIndexBuffer(commandBuffers[i], indexBuffer, 0, VK_INDEX_TYPE_UINT16);
+
+
+
+		vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
 
 		vkCmdEndRenderPass(commandBuffers[i]);
 		if (vkEndCommandBuffer(commandBuffers[i]) != VK_SUCCESS) {
@@ -1302,6 +1314,7 @@ void GameApp::recreateSwapChain()
 	createRenderPass();
 	createGraphicsPipeline();
 	createFramebuffers();
+	createTransferCommandBuffer();
 	createCommandBuffers();
 	createSyncObjects();
 
@@ -1312,7 +1325,7 @@ void GameApp::cleanupSwapChain()
 	for (size_t i = 0; i < swapChainFramebuffers.size(); i++) {
 		vkDestroyFramebuffer(device, swapChainFramebuffers[i], nullptr);
 	}
-
+	vkFreeCommandBuffers(device, transforCommandPool, 1, &transferCommandBuffer);
 	vkFreeCommandBuffers(device, graphicsCommandPool, static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
 
 
@@ -1357,6 +1370,29 @@ void GameApp::createVertexBuffer()
 	copyBuffer(stagingBuffer, vertexBuffer, bufferSize);
 	vkDestroyBuffer(device, stagingBuffer, nullptr);
 	vkFreeMemory(device, stagingBufferMemory, nullptr);
+
+}
+
+void GameApp::createIndexBuffer()
+{
+	VkDeviceSize bufferSize = sizeof(indices[0]) * indices.size();
+
+	VkBuffer stagingBuffer;
+	VkDeviceMemory stagingBufferMemory;
+	createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+
+	void* data;
+	vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, &data);
+	memcpy(data, indices.data(), (size_t)bufferSize);
+	vkUnmapMemory(device, stagingBufferMemory);
+
+	createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indexBuffer, indexBufferMemory);
+	//
+	copyBuffer(stagingBuffer, indexBuffer, bufferSize);
+
+	vkDestroyBuffer(device, stagingBuffer, nullptr);
+	vkFreeMemory(device, stagingBufferMemory, nullptr);
+
 
 }
 
@@ -1430,8 +1466,6 @@ void GameApp::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemory
 void GameApp::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
 {
 	
-
-
 	VkCommandBufferBeginInfo beginInfo{};
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 	beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
@@ -1444,7 +1478,7 @@ void GameApp::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize si
 	copyRegion.size = size;
 	vkCmdCopyBuffer(transferCommandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
 
-
+	
 	vkEndCommandBuffer(transferCommandBuffer);
 
 
@@ -1452,23 +1486,30 @@ void GameApp::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize si
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 	submitInfo.commandBufferCount = 1;
 	submitInfo.pCommandBuffers = &transferCommandBuffer;
-	vkQueueSubmit(tranforQueue, 1, &submitInfo, VK_NULL_HANDLE);
-	vkQueueWaitIdle(tranforQueue);
-
-
+	vkQueueSubmit(tranferQueue, 1, &submitInfo, VK_NULL_HANDLE);
+	vkQueueWaitIdle(tranferQueue);
 
 }
 
+
+
+
+
+
+
+
+
+
 void GameApp::createTransferCommandBuffer()
 {
+
+
 
 	VkCommandBufferAllocateInfo transferAllocInfo{};
 	transferAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 	transferAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 	transferAllocInfo.commandPool = transforCommandPool;
 	transferAllocInfo.commandBufferCount = 1;
-
-
 	vkAllocateCommandBuffers(device, &transferAllocInfo, &transferCommandBuffer);
 
 }
