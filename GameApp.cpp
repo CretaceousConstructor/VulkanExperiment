@@ -92,9 +92,6 @@ void GameApp::initWindow() {
 }
 void GameApp::initVulkan() {
 	//构建实例用来在 应用层 和 vulkan api layer做连接
-
-
-
 	createInstance();
 	setupDebugMessenger();
 	createSurface();
@@ -106,6 +103,7 @@ void GameApp::initVulkan() {
 	createGraphicsPipeline();
 	createFramebuffers();
 	createCommandPool();
+	createTransferCommandBuffer();
 	createVertexBuffer();
 	createCommandBuffers();// hard to understand
 	createSyncObjects();
@@ -297,11 +295,14 @@ void GameApp::mainLoop() {
 
 }
 void GameApp::cleanup() {
+
 	vkDeviceWaitIdle(device);
+	vkFreeCommandBuffers(device, transforCommandPool, 1, &transferCommandBuffer);
 	cleanupSwapChain();
 	vkDestroyBuffer(device, vertexBuffer, nullptr);
 	vkFreeMemory(device, vertexBufferMemory, nullptr);
 	vkDestroyCommandPool(device, graphicsCommandPool, nullptr);
+	vkDestroyCommandPool(device, transforCommandPool, nullptr);
 
 	vkDestroyDevice(device, nullptr);
 
@@ -545,7 +546,7 @@ void GameApp::createLogicalDevice()
 
 	QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
 	std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
-	std::set<uint32_t> uniqueQueueFamilies = { indices.graphicsFamily.value(), indices.presentFamily.value(),indices.transferFamily.value()};
+	std::set<uint32_t> uniqueQueueFamilies = { indices.graphicsFamily.value(), indices.presentFamily.value(),indices.transferFamily.value() };
 
 
 	const float queuePriority = 1.0f;
@@ -676,21 +677,30 @@ void GameApp::createSwapChain()
 
 
 	QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
-	uint32_t queueFamilyIndices[] = { indices.graphicsFamily.value(), indices.presentFamily.value() };
+	std::set<uint32_t> queueFamilyIndices = { indices.graphicsFamily.value(), indices.presentFamily.value(),indices.transferFamily.value() };
 
 
 	//If the queue families differ, then we'll be using the concurrent mode in this tutorial to avoid having to do the ownership chapters, because these involve some concepts that are better explained at a later time. Concurrent mode requires you to specify in advance between which queue families ownership will be shared using the queueFamilyIndexCount and pQueueFamilyIndices parameters.
 
-	if (indices.graphicsFamily != indices.presentFamily) {
-		createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
-		createInfo.queueFamilyIndexCount = 2;
-		createInfo.pQueueFamilyIndices = queueFamilyIndices;
+	std::vector<uint32_t> uniqueQueueFamilyIndices;
+	for (auto index : queueFamilyIndices) {
+		uniqueQueueFamilyIndices.push_back(index);
 	}
-	else {
+
+	//createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
+	//createInfo.queueFamilyIndexCount = static_cast<uint32_t>(uniqueQueueFamilyIndices.size());
+	//createInfo.pQueueFamilyIndices = uniqueQueueFamilyIndices.data();
+	if (indices.graphicsFamily.value() == indices.presentFamily.value()) {
+
 		createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
 		createInfo.queueFamilyIndexCount = 0; // Optional
 		createInfo.pQueueFamilyIndices = nullptr; // Optional
+
 	}
+	else {
+		throw std::runtime_error("graphicsFamily and presentFamily are not identical!!");
+	}
+
 
 
 	createInfo.preTransform = swapChainSupport.capabilities.currentTransform;//旋转90°操作，反转操作等。。。目前这个显卡除了不变以外都不支持
@@ -1074,7 +1084,7 @@ void GameApp::createCommandPool()
 	VkCommandPoolCreateInfo transforPoolInfo{};
 	transforPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 	transforPoolInfo.queueFamilyIndex = queueFamilyIndices.transferFamily.value();
-	transforPoolInfo.flags = 0; // Optional
+	transforPoolInfo.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT; // 仅仅用于短暂的使用
 
 
 	if (vkCreateCommandPool(device, &transforPoolInfo, nullptr, &transforCommandPool) != VK_SUCCESS) {
@@ -1098,6 +1108,9 @@ void GameApp::createCommandBuffers()
 	if (vkAllocateCommandBuffers(device, &allocInfo, commandBuffers.data()) != VK_SUCCESS) {
 		throw std::runtime_error("failed to allocate command buffers!");
 	}
+
+
+
 
 	for (size_t i = 0; i < commandBuffers.size(); i++) {
 		VkCommandBufferBeginInfo beginInfo{};
@@ -1142,6 +1155,8 @@ void GameApp::createCommandBuffers()
 
 
 	}
+
+
 
 
 
@@ -1281,9 +1296,7 @@ void GameApp::recreateSwapChain()
 {
 
 	vkDeviceWaitIdle(device);
-
 	cleanupSwapChain();
-
 	createSwapChain();
 	createImageViews();
 	createRenderPass();
@@ -1291,7 +1304,6 @@ void GameApp::recreateSwapChain()
 	createFramebuffers();
 	createCommandBuffers();
 	createSyncObjects();
-
 
 }
 
@@ -1302,6 +1314,7 @@ void GameApp::cleanupSwapChain()
 	}
 
 	vkFreeCommandBuffers(device, graphicsCommandPool, static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
+
 
 	vkDestroyPipeline(device, graphicsPipeline, nullptr);
 	vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
@@ -1328,50 +1341,28 @@ void GameApp::cleanupSwapChain()
 void GameApp::createVertexBuffer()
 {
 
-	VkBufferCreateInfo bufferInfo{};
-	bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-	bufferInfo.size = sizeof(vertices[0]) * vertices.size();
+	VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
 
-	bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-	bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;//The buffer will only be used from the graphics queue, so we can stick to exclusive access.
-
-
-	if (vkCreateBuffer(device, &bufferInfo, nullptr, &vertexBuffer) != VK_SUCCESS) {
-		throw std::runtime_error("failed to create vertex buffer!");
-	}
-
-
-
-	VkMemoryRequirements memRequirements;
-	vkGetBufferMemoryRequirements(device, vertexBuffer, &memRequirements);
-
-
-	VkMemoryAllocateInfo allocInfo{};
-	allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-	allocInfo.allocationSize = memRequirements.size;
-	allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-
-	if (vkAllocateMemory(device, &allocInfo, nullptr, &vertexBufferMemory) != VK_SUCCESS) {
-		throw std::runtime_error("failed to allocate vertex buffer memory!");
-	}
-
-	vkBindBufferMemory(device, vertexBuffer, vertexBufferMemory, 0);
-
+	VkBuffer stagingBuffer;
+	VkDeviceMemory stagingBufferMemory;
+	createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
 
 	void* data;
-	vkMapMemory(device, vertexBufferMemory, 0, bufferInfo.size, 0, &data);
-	memcpy(data, vertices.data(), (size_t)bufferInfo.size);
-	vkUnmapMemory(device, vertexBufferMemory);
+	vkMapMemory(device, stagingBufferMemory, 0, bufferSize, 0, &data);
+	memcpy(data, vertices.data(), (size_t)bufferSize);
+	vkUnmapMemory(device, stagingBufferMemory);
 
+	createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffer, vertexBufferMemory);
 
-
-
-
-
-
-
+	copyBuffer(stagingBuffer, vertexBuffer, bufferSize);
+	vkDestroyBuffer(device, stagingBuffer, nullptr);
+	vkFreeMemory(device, stagingBufferMemory, nullptr);
 
 }
+
+
+
+
 
 uint32_t GameApp::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties)
 {
@@ -1389,6 +1380,97 @@ uint32_t GameApp::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags prop
 
 
 	throw std::runtime_error("failed to find suitable memory type!");
+}
+
+void GameApp::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory, VkSharingMode sharingmode)
+{
+
+	VkBufferCreateInfo  bufferInfo{};
+	bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+	bufferInfo.size = size;
+	bufferInfo.usage = usage;
+	bufferInfo.sharingMode = sharingmode;
+
+	QueueFamilyIndices indices = findQueueFamilies(physicalDevice);
+	std::set<uint32_t> queueFamilyIndices = { indices.graphicsFamily.value(),indices.presentFamily.value(),indices.transferFamily.value() };
+
+	std::vector<uint32_t> uniqueQueueFamilyIndices;
+	for (auto index : queueFamilyIndices) {
+		uniqueQueueFamilyIndices.push_back(index);
+	}
+
+	if (sharingmode == VK_SHARING_MODE_CONCURRENT) {
+		bufferInfo.pQueueFamilyIndices = uniqueQueueFamilyIndices.data();
+		bufferInfo.queueFamilyIndexCount = static_cast<uint32_t>(uniqueQueueFamilyIndices.size());
+	}
+
+
+
+	if (vkCreateBuffer(device, &bufferInfo, nullptr, &buffer) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create buffer!");
+	}
+
+	VkMemoryRequirements memRequirements;
+	vkGetBufferMemoryRequirements(device, buffer, &memRequirements);
+
+	VkMemoryAllocateInfo allocInfo{};
+	allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+	allocInfo.allocationSize = memRequirements.size;
+	allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties);
+
+	if (vkAllocateMemory(device, &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS) {
+		throw std::runtime_error("failed to allocate buffer memory!");
+	}
+
+	vkBindBufferMemory(device, buffer, bufferMemory, 0);
+
+
+}
+
+void GameApp::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
+{
+	
+
+
+	VkCommandBufferBeginInfo beginInfo{};
+	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+	beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+	vkBeginCommandBuffer(transferCommandBuffer, &beginInfo);
+
+	VkBufferCopy copyRegion{};
+	copyRegion.srcOffset = 0; // Optional
+	copyRegion.dstOffset = 0; // Optional
+	copyRegion.size = size;
+	vkCmdCopyBuffer(transferCommandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
+
+
+	vkEndCommandBuffer(transferCommandBuffer);
+
+
+	VkSubmitInfo submitInfo{};
+	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	submitInfo.commandBufferCount = 1;
+	submitInfo.pCommandBuffers = &transferCommandBuffer;
+	vkQueueSubmit(tranforQueue, 1, &submitInfo, VK_NULL_HANDLE);
+	vkQueueWaitIdle(tranforQueue);
+
+
+
+}
+
+void GameApp::createTransferCommandBuffer()
+{
+
+	VkCommandBufferAllocateInfo transferAllocInfo{};
+	transferAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	transferAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+	transferAllocInfo.commandPool = transforCommandPool;
+	transferAllocInfo.commandBufferCount = 1;
+
+
+	vkAllocateCommandBuffers(device, &transferAllocInfo, &transferCommandBuffer);
+
 }
 
 

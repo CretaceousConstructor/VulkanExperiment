@@ -166,11 +166,11 @@ private:
 
 	uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
 
+	void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory, VkSharingMode sharingmode = VK_SHARING_MODE_EXCLUSIVE);
 
 
-
-
-
+	void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+	void createTransferCommandBuffer();
 private:
 	//这些是我们想要拿来调试用到的validationLayers,
 	const std::vector<const char*> instanceLayerRequiredToUse = {
@@ -198,16 +198,16 @@ private:
 	VkPhysicalDevice physicalDevice = VK_NULL_HANDLE; //指向显卡的句柄
 
 	VkDevice device;  //logical device
-	VkQueue graphicsQueue;//used to issue commands 
 
 	VkSurfaceKHR surface;
+	VkSwapchainKHR swapChain;
 
+
+
+	VkQueue graphicsQueue;//used to issue commands 
 	VkQueue presentQueue;//used to present images
-
-
 	VkQueue tranforQueue;
 
-	VkSwapchainKHR swapChain;
 
 	std::vector<VkImage> swapChainImages;  //3
 	std::vector<VkImageView> swapChainImageViews;  //3
@@ -223,8 +223,11 @@ private:
 	VkCommandPool graphicsCommandPool;
 	VkCommandPool transforCommandPool;
 	std::vector<VkCommandBuffer> commandBuffers;  //3
-	//VkSemaphore imageAvailableSemaphore;
-	//VkSemaphore renderFinishedSemaphore;
+	VkCommandBuffer transferCommandBuffer;
+
+
+
+
 
 	std::vector<VkSemaphore> imageAvailableSemaphores;
 	std::vector<VkSemaphore> renderFinishedSemaphores;
@@ -232,8 +235,6 @@ private:
 	std::vector<VkFence> imagesInFlight;
 	size_t currentFrame = 0;
 	bool framebufferResized = false;
-
-
 
 
 
