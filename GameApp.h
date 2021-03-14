@@ -1,15 +1,10 @@
 #pragma once
 #pragma comment( lib, "glfw3.lib" )
 #pragma comment( lib, "vulkan-1.lib" )
-#define GLFW_INCLUDE_VULKAN
-#define VK_USE_PLATFORM_WIN32_KHR
-#define GLFW_INCLUDE_VULKAN
+#include "EngineMarco.h"
 #include <GLFW/glfw3.h>
-#define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
 #include <GLFW/glfw3.h>
-
-
 #include <iostream>
 #include <stdexcept>
 #include <cstdlib>
@@ -21,13 +16,13 @@
 #include <fstream>
 #include <stdint.h>
 #include <math.h>
-
-#define GLM_FORCE_RADIANS
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-
 #include <array>
 #include <chrono>
+
+
+
 class GameApp {
 public:
 
@@ -92,11 +87,26 @@ private:
 
 	const std::vector<Vertex> vertices =
 	{
-		{ {-4.0f,  3.0f,-3.0f}	,{ 1.f, 1.f,1.f	}},
-		{ {4.0f,   3.0f,-3.0f}	,{ 1.f, 1.f,1.f	}},
-		{ {4.0f,  -3.0f, -3.0f}	,{ 1.f, 1.f,1.f	}},
-		{ {-4.0f, -3.0f, -3.0f}	,{ 1.f, 1.f,1.f	}}
+		{ {-4.f,   3.f, -3.f}	,{ 1.f, 0.f,1.f	}},
+		{ { 4.f,   3.f, -3.f}	,{ 1.f, 0.f,1.f	}},
+		{ { 4.f,  -3.f, -3.f}	,{ 1.f, 0.f,1.f	}},
+		{ {-4.f,  -3.f, -3.f}	,{ 1.f, 0.f,1.f	}}
 	};
+
+
+	const std::vector<Vertex> verticesShit =
+	{
+		{ {-2.f,   3.f, -3.f}	,{ 1.f, 0.f,1.f	}},
+		{ { 2.f,   3.f, -3.f}	,{ 1.f, 0.f,1.f	}},
+		{ { 2.f,  -3.f, -3.f}	,{ 1.f, 0.f,1.f	}},
+		{ {-2.f,  -3.f, -3.f}	,{ 1.f, 0.f,1.f	}}
+	};
+
+
+
+
+
+
 	const std::vector<uint16_t> indices = {
 		0, 1, 2, 0,2, 3
 	};
@@ -193,12 +203,19 @@ private:
 	void updateUniformBuffer(uint32_t currentImage);
 	void createDescriptorPool();
 	void createDescriptorSets();
+	void createTextureImage();
+	void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
+
+
+	VkCommandBuffer beginSingleTimeCommands();
+	void endSingleTimeCommands(VkCommandBuffer commandBuffer);
+	void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
 
 public:
 
-	static void printMatirx(const glm::mat4& m);
+	static void printMatirx4(const glm::mat4& m);
 
-	static void printVector(const glm::vec4& m);
+	static void printVector4(const glm::vec4& m);
 
 
 
@@ -210,7 +227,8 @@ private:
 
 	//设备扩展功能
 	const std::vector<const char*> deviceRequiredExtensions = {
-		VK_KHR_SWAPCHAIN_EXTENSION_NAME
+		VK_KHR_SWAPCHAIN_EXTENSION_NAME,
+		VK_KHR_MAINTENANCE1_EXTENSION_NAME
 	};
 
 
@@ -259,7 +277,7 @@ private:
 	VkCommandPool graphicsCommandPool;
 	VkCommandPool transforCommandPool;
 	std::vector<VkCommandBuffer> commandBuffers;  //3
-	VkCommandBuffer transferCommandBuffer;
+	VkCommandBuffer transferCommandBuffer;        
 
 
 
@@ -276,6 +294,9 @@ private:
 
 	VkBuffer vertexBuffer;
 	VkDeviceMemory vertexBufferMemory;
+	VkBuffer vertexBufferShit;
+	VkDeviceMemory vertexBufferShitMemory;
+
 	VkBuffer indexBuffer;
 	VkDeviceMemory indexBufferMemory;
 
@@ -287,6 +308,9 @@ private:
 	VkDescriptorPool descriptorPool;
 	std::vector<VkDescriptorSet> descriptorSets;
 
+
+	VkImage textureImage;
+	VkDeviceMemory textureImageMemory;
 
 
 };

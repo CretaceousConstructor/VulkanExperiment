@@ -1,6 +1,6 @@
 #include "GameApp.h"
 
-
+#include "TextureLoader.h"
 
 VKAPI_ATTR VkBool32 VKAPI_CALL GameApp::debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
 {
@@ -104,6 +104,7 @@ void GameApp::initVulkan() {
 	createGraphicsPipeline();
 	createFramebuffers();
 	createCommandPool();
+	//createTextureImage();
 	createTransferCommandBuffer();
 	createVertexBuffer();
 	createIndexBuffer();
@@ -284,6 +285,7 @@ std::vector<const char*> GameApp::getRequiredExtensions() {
 	if (enableValidationLayers) {//如果启动了debug层面，那么就需要加入VK_EXT_DEBUG_UTILS_EXTENSION_NAME
 		//由我们自己处理validation层面输出的信息
 		extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+
 	}
 
 	return extensions;
@@ -302,7 +304,7 @@ void GameApp::mainLoop() {
 void GameApp::cleanup() {
 
 	vkDeviceWaitIdle(device);
-	
+
 
 
 	cleanupSwapChain();
@@ -311,7 +313,12 @@ void GameApp::cleanup() {
 	vkFreeMemory(device, indexBufferMemory, nullptr);
 
 	vkDestroyBuffer(device, vertexBuffer, nullptr);
+	vkDestroyBuffer(device, vertexBufferShit, nullptr);
+
+
+
 	vkFreeMemory(device, vertexBufferMemory, nullptr);
+	vkFreeMemory(device, vertexBufferShitMemory, nullptr);
 
 	vkDestroyCommandPool(device, graphicsCommandPool, nullptr);
 	vkDestroyCommandPool(device, transforCommandPool, nullptr);
@@ -815,16 +822,72 @@ void GameApp::createGraphicsPipeline()
 	VkPipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageInfo, fragShaderStageInfo };
 
 
-	auto bindingDescription = Vertex::getBindingDescription();
-	auto attributeDescriptions = Vertex::getAttributeDescriptions();
+	//auto bindingDescription = Vertex::getBindingDescription();
+	//auto attributeDescriptions = Vertex::getAttributeDescriptions();
+
+
+
+	VkVertexInputBindingDescription bindingDescription0{};
+
+	bindingDescription0.binding = 0;
+	bindingDescription0.stride = sizeof(Vertex);
+	bindingDescription0.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+
+
+	VkVertexInputBindingDescription bindingDescription1{};
+
+	bindingDescription1.binding = 1;
+	bindingDescription1.stride = sizeof(Vertex);
+	bindingDescription1.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+	VkVertexInputBindingDescription VIBDS[2] = { bindingDescription0 ,bindingDescription1 };
+
+
+
+	std::array<VkVertexInputAttributeDescription, 4> attributeDescriptions{};
+
+	attributeDescriptions[0].binding = 0; //what is this index? line 53?
+	attributeDescriptions[0].location = 0;
+	attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
+	attributeDescriptions[0].offset = offsetof(Vertex, pos);
+
+	attributeDescriptions[1].binding = 0;
+	attributeDescriptions[1].location = 1;
+	attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
+	attributeDescriptions[1].offset = offsetof(Vertex, color);
+
+
+
+	attributeDescriptions[2].binding = 1; //what is this index? line 53?
+	attributeDescriptions[2].location = 2;
+	attributeDescriptions[2].format = VK_FORMAT_R32G32B32_SFLOAT;
+	attributeDescriptions[2].offset = offsetof(Vertex, pos);
+
+	attributeDescriptions[3].binding = 1;
+	attributeDescriptions[3].location = 3;
+	attributeDescriptions[3].format = VK_FORMAT_R32G32B32_SFLOAT;
+	attributeDescriptions[3].offset = offsetof(Vertex, color);
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 	VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
 	vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-	vertexInputInfo.vertexBindingDescriptionCount = 1;
+	vertexInputInfo.vertexBindingDescriptionCount = 2;
 	vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
 
-	vertexInputInfo.pVertexBindingDescriptions = &bindingDescription; // Optional
+	vertexInputInfo.pVertexBindingDescriptions = VIBDS; // Optional
 	vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data(); // Optional
 
 
@@ -843,10 +906,10 @@ void GameApp::createGraphicsPipeline()
 
 	VkViewport viewport{};
 	viewport.x = 0.0f;
-	viewport.y = 0.0f;
+	viewport.y = (float)swapChainExtent.height;
 	viewport.width = (float)swapChainExtent.width;
-	viewport.height = (float)swapChainExtent.height;
-	viewport.minDepth = 0.0f;
+	viewport.height = -(float)swapChainExtent.height;
+	viewport.minDepth = 0.5f;
 	viewport.maxDepth = 1.0f;
 
 	VkRect2D scissor{};
@@ -1104,7 +1167,7 @@ void GameApp::createCommandPool()
 	VkCommandPoolCreateInfo transforPoolInfo{};
 	transforPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 	transforPoolInfo.queueFamilyIndex = queueFamilyIndices.transferFamily.value();
-	transforPoolInfo.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT| VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT; // 仅仅用于短暂的使用 并且可以复用
+	transforPoolInfo.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT; // 仅仅用于短暂的使用 并且可以复用
 
 
 	if (vkCreateCommandPool(device, &transforPoolInfo, nullptr, &transforCommandPool) != VK_SUCCESS) {
@@ -1161,9 +1224,12 @@ void GameApp::createCommandBuffers()
 
 		vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
 
-		VkBuffer vertexBuffers[] = { vertexBuffer };
-		VkDeviceSize offsets[] = { 0 };
-		vkCmdBindVertexBuffers(commandBuffers[i], 0, 1, vertexBuffers, offsets);
+		VkBuffer vertexBuffers[] = { vertexBufferShit,vertexBuffer };
+		VkDeviceSize offsets[] = { 0,0 };
+
+
+
+		vkCmdBindVertexBuffers(commandBuffers[i], 0 , 2, vertexBuffers, offsets);
 
 		vkCmdBindIndexBuffer(commandBuffers[i], indexBuffer, 0, VK_INDEX_TYPE_UINT16);
 
@@ -1403,6 +1469,36 @@ void GameApp::createVertexBuffer()
 	vkDestroyBuffer(device, stagingBuffer, nullptr);
 	vkFreeMemory(device, stagingBufferMemory, nullptr);
 
+
+
+
+
+
+	VkDeviceSize bufferSizeShit = sizeof(verticesShit[0]) * verticesShit.size();
+
+	VkBuffer stagingBufferShit;
+	VkDeviceMemory stagingBufferMemoryShit;
+	createBuffer(bufferSizeShit, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBufferShit, stagingBufferMemoryShit);
+
+	void* dataShit;
+	vkMapMemory(device, stagingBufferMemoryShit, 0, bufferSizeShit, 0, &dataShit);
+	memcpy(data, verticesShit.data(), (size_t)bufferSizeShit);
+	vkUnmapMemory(device, stagingBufferMemoryShit);
+
+	createBuffer(bufferSizeShit, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBufferShit, vertexBufferShitMemory);
+
+	copyBuffer(stagingBufferShit, vertexBufferShit, bufferSizeShit);
+	vkDestroyBuffer(device, stagingBufferShit, nullptr);
+	vkFreeMemory  (device, stagingBufferMemoryShit, nullptr);
+
+
+
+
+
+
+
+
+
 }
 
 void GameApp::createIndexBuffer()
@@ -1497,7 +1593,7 @@ void GameApp::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemory
 
 void GameApp::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size)
 {
-	
+
 	VkCommandBufferBeginInfo beginInfo{};
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 	beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
@@ -1510,7 +1606,7 @@ void GameApp::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize si
 	copyRegion.size = size;
 	vkCmdCopyBuffer(transferCommandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
 
-	
+
 	vkEndCommandBuffer(transferCommandBuffer);
 
 
@@ -1594,22 +1690,12 @@ void GameApp::updateUniformBuffer(uint32_t currentImage)
 	UniformBufferObject ubo{};
 	//ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 	ubo.model = glm::mat4(1.0f);
-	ubo.view = glm::lookAt(glm::vec3(0.f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	ubo.view = glm::lookAtRH(glm::vec3(0.f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 	ubo.proj = glm::perspectiveRH_ZO(glm::radians(90.f), swapChainExtent.width / (float)swapChainExtent.height, 3.f, 9.0f);
-	  
-	//perspectiveRH_ZO
-	//     
-	 std::cout << "fuck you visual studio!\n";
-	auto testV0 = glm::vec4(4.f,  3.f, -3.f,1.f);
-	auto testV1 = glm::vec4(8.f,  6.f, -6.f,1.f);
-	auto testV2 = glm::vec4(12.f, 9.f, -9.f,1.f);
 
-	printVector(ubo.proj * testV0);
-	printVector(ubo.proj * testV1);
-	printVector(ubo.proj * testV2);
 
-	  
-	
+
+
 
 	void* data;
 	vkMapMemory(device, uniformBuffersMemory[currentImage], 0, sizeof(ubo), 0, &data);
@@ -1680,7 +1766,188 @@ void GameApp::createDescriptorSets()
 	}
 }
 
-void GameApp::printMatirx(const glm::mat4& m)
+void GameApp::createTextureImage()
+{
+
+	int texWidth, texHeight, texChannels;
+	stbi_uc* pixels = stbi_load("textures//texture.jpg", &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
+	VkDeviceSize imageSize = texWidth * texHeight * 4;
+
+	if (!pixels) {
+		throw std::runtime_error("failed to load texture image!");
+	}
+
+	VkBuffer stagingBuffer;
+	VkDeviceMemory stagingBufferMemory;
+	createBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+
+	void* data;
+	vkMapMemory(device, stagingBufferMemory, 0, imageSize, 0, &data);
+	memcpy(data, pixels, static_cast<size_t>(imageSize));
+	vkUnmapMemory(device, stagingBufferMemory);
+
+	stbi_image_free(pixels);
+
+	createImage(texWidth, texHeight, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
+
+
+
+
+
+
+}
+
+void GameApp::createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory)
+{
+
+	VkImageCreateInfo imageInfo{};
+	imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+	imageInfo.imageType = VK_IMAGE_TYPE_2D;
+	imageInfo.extent.width = width;
+	imageInfo.extent.height = height;
+	imageInfo.extent.depth = 1;
+	imageInfo.mipLevels = 1;
+	imageInfo.arrayLayers = 1;
+	imageInfo.format = format;
+	imageInfo.tiling = tiling;
+	imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	imageInfo.usage = usage;
+	imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+	imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+	if (vkCreateImage(device, &imageInfo, nullptr, &image) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create image!");
+	}
+
+	VkMemoryRequirements memRequirements;
+	vkGetImageMemoryRequirements(device, image, &memRequirements);
+
+	VkMemoryAllocateInfo allocInfo{};
+	allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+	allocInfo.allocationSize = memRequirements.size;
+	allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, properties);
+
+	if (vkAllocateMemory(device, &allocInfo, nullptr, &imageMemory) != VK_SUCCESS) {
+		throw std::runtime_error("failed to allocate image memory!");
+	}
+
+	vkBindImageMemory(device, image, imageMemory, 0);
+
+
+}
+
+VkCommandBuffer GameApp::beginSingleTimeCommands()
+{
+	VkCommandBufferAllocateInfo allocInfo{};
+	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+	allocInfo.commandPool = graphicsCommandPool;
+	allocInfo.commandBufferCount = 1;
+
+	VkCommandBuffer commandBuffer;
+	vkAllocateCommandBuffers(device, &allocInfo, &commandBuffer);
+
+	VkCommandBufferBeginInfo beginInfo{};
+	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+	beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+	vkBeginCommandBuffer(commandBuffer, &beginInfo);
+
+	return commandBuffer;
+
+}
+
+void GameApp::endSingleTimeCommands(VkCommandBuffer commandBuffer)
+{
+
+	vkEndCommandBuffer(commandBuffer);
+
+	VkSubmitInfo submitInfo{};
+	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	submitInfo.commandBufferCount = 1;
+	submitInfo.pCommandBuffers = &commandBuffer;
+
+	vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE);
+	vkQueueWaitIdle(graphicsQueue);
+
+	vkFreeCommandBuffers(device, graphicsCommandPool, 1, &commandBuffer);
+
+
+}
+
+//void GameApp::transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout)
+//{
+//
+//
+//
+//	VkCommandBufferBeginInfo beginInfo{};
+//	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+//	beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+//
+//	vkBeginCommandBuffer(transferCommandBuffer, &beginInfo);
+//
+//
+//	VkImageMemoryBarrier barrier{};
+//	barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+//	barrier.oldLayout = oldLayout;
+//	barrier.newLayout = newLayout;
+//
+//
+//	barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+//	barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+//
+//
+//
+//	barrier.image = image;
+//	barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+//	barrier.subresourceRange.baseMipLevel = 0;
+//	barrier.subresourceRange.levelCount = 1;
+//	barrier.subresourceRange.baseArrayLayer = 0;
+//	barrier.subresourceRange.layerCount = 1;
+//
+//
+//	barrier.srcAccessMask = 0; // TODO
+//	barrier.dstAccessMask = 0; // TODO
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//	VkBufferCopy copyRegion{};
+//	copyRegion.srcOffset = 0; // Optional
+//	copyRegion.dstOffset = 0; // Optional
+//	copyRegion.size = size;
+//	vkCmdCopyBuffer(transferCommandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
+//
+//
+//	vkEndCommandBuffer(transferCommandBuffer);
+//
+//
+//	VkSubmitInfo submitInfo{};
+//	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+//	submitInfo.commandBufferCount = 1;
+//	submitInfo.pCommandBuffers = &transferCommandBuffer;
+//	vkQueueSubmit(tranferQueue, 1, &submitInfo, VK_NULL_HANDLE);
+//	vkQueueWaitIdle(tranferQueue);
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//}
+
+void GameApp::printMatirx4(const glm::mat4& m)
 {
 	std::cout << std::endl;
 
@@ -1697,15 +1964,15 @@ void GameApp::printMatirx(const glm::mat4& m)
 
 }
 
-void GameApp::printVector(const glm::vec4& m)
+void GameApp::printVector4(const glm::vec4& m)
 {
 
-		std::cout << std::endl
-				  << "x: " << m.x  << std::endl
-				  << "y: " << m.y  << std::endl
-				  << "z: " << m.z  << std::endl
-				  << "w: " << m.w  << std::endl
-				  << std::endl;
+	std::cout << std::endl
+		<< "x: " << m.x << std::endl
+		<< "y: " << m.y << std::endl
+		<< "z: " << m.z << std::endl
+		<< "w: " << m.w << std::endl
+		<< std::endl;
 
 }
 
