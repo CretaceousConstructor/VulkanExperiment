@@ -20,13 +20,13 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <array>
 #include <chrono>
-
+#include <random>
 
 
 class GameApp {
 public:
 
-	GameApp() = default;
+	GameApp();
 	~GameApp() = default;
 
 	void run() {
@@ -43,9 +43,9 @@ public:
 private:
 
 	struct Vertex {
-		glm::vec3 pos;   //8
-		glm::vec3 color; // 12
 
+		glm::vec3 pos;
+		glm::vec3 color;
 
 		static VkVertexInputBindingDescription getBindingDescription() {
 			VkVertexInputBindingDescription bindingDescription{};
@@ -79,27 +79,24 @@ private:
 	};
 
 
+
+	struct InsatnceTranformation {
+		glm::mat4 worldTrans;
+	};
+
+
 	struct UniformBufferObject {
 		glm::mat4 model;
 		glm::mat4 view;
 		glm::mat4 proj;
 	};
 
-	const std::vector<Vertex> vertices =
-	{
-		{ {-4.f,   3.f, -3.f}	,{ 1.f, 0.f,1.f	}},
-		{ { 4.f,   3.f, -3.f}	,{ 1.f, 0.f,1.f	}},
-		{ { 4.f,  -3.f, -3.f}	,{ 1.f, 0.f,1.f	}},
-		{ {-4.f,  -3.f, -3.f}	,{ 1.f, 0.f,1.f	}}
-	};
 
 
-	const std::vector<Vertex> verticesShit =
-	{
-		{ {-2.f,   3.f, -3.f}	,{ 1.f, 0.f,1.f	}},
-		{ { 2.f,   3.f, -3.f}	,{ 1.f, 0.f,1.f	}},
-		{ { 2.f,  -3.f, -3.f}	,{ 1.f, 0.f,1.f	}},
-		{ {-2.f,  -3.f, -3.f}	,{ 1.f, 0.f,1.f	}}
+	struct UniformBufferObjectTest {
+		glm::mat4 model;
+		glm::mat4 view;
+
 	};
 
 
@@ -107,9 +104,13 @@ private:
 
 
 
-	const std::vector<uint16_t> indices = {
-		0, 1, 2, 0,2, 3
-	};
+
+
+	std::vector<Vertex> vertices;
+	std::vector<InsatnceTranformation> instanceData;
+	std::vector<uint16_t> indices;
+
+
 
 
 private:
@@ -158,7 +159,7 @@ private:
 	void createSurface();
 	bool checkValidationLayerSupport();
 	//获得扩展
-	std::vector<const char*> getRequiredExtensions();
+	std::vector<const char*> getRequiredInstanceExtensions();
 	void mainLoop();
 	void cleanup();
 	void pickPhysicalDevice();
@@ -221,16 +222,24 @@ public:
 
 private:
 	//这些是我们想要拿来调试用到的validationLayers,
-	const std::vector<const char*> instanceLayerRequiredToUse = {
+	const std::vector<const char*> instanceValidationLayerRequiredToUse = {
 		"VK_LAYER_KHRONOS_validation"
+		//"VK_LAYER_RENDERDOC_Capture" 
 	};
 
 	//设备扩展功能
 	const std::vector<const char*> deviceRequiredExtensions = {
 		VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-		VK_KHR_MAINTENANCE1_EXTENSION_NAME
+		VK_KHR_MAINTENANCE1_EXTENSION_NAME,
+		VK_KHR_SHADER_NON_SEMANTIC_INFO_EXTENSION_NAME
 	};
 
+	
+
+	const std::vector<VkValidationFeatureEnableEXT> enabled = { VK_VALIDATION_FEATURE_ENABLE_DEBUG_PRINTF_EXT };
+
+	const std::vector<VkValidationFeatureDisableEXT> disabled = { VK_VALIDATION_FEATURE_DISABLE_THREAD_SAFETY_EXT, VK_VALIDATION_FEATURE_DISABLE_API_PARAMETERS_EXT,
+		VK_VALIDATION_FEATURE_DISABLE_OBJECT_LIFETIMES_EXT, VK_VALIDATION_FEATURE_DISABLE_CORE_CHECKS_EXT };
 
 
 
@@ -277,7 +286,7 @@ private:
 	VkCommandPool graphicsCommandPool;
 	VkCommandPool transforCommandPool;
 	std::vector<VkCommandBuffer> commandBuffers;  //3
-	VkCommandBuffer transferCommandBuffer;        
+	VkCommandBuffer transferCommandBuffer;
 
 
 
@@ -305,12 +314,25 @@ private:
 	std::vector<VkBuffer> uniformBuffers;
 	std::vector<VkDeviceMemory> uniformBuffersMemory;
 
+	std::vector<VkBuffer> uniformBuffersTest;
+	std::vector<VkDeviceMemory> uniformBuffersMemoryTest;
+
+
+
+
+
+
 	VkDescriptorPool descriptorPool;
-	std::vector<VkDescriptorSet> descriptorSets;
+	std::vector< VkDescriptorSet> descriptorSets;
 
 
 	VkImage textureImage;
 	VkDeviceMemory textureImageMemory;
 
+	std::default_random_engine randomEngine;
 
+	std::uniform_real_distribution<float> myUnifFlaotDist;
+
+
+	static constexpr int numOfInstance = 7;
 };
