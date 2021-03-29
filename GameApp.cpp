@@ -12,10 +12,10 @@ GameApp::GameApp()
 	//std::vector<InsatnceTranformation> instanceData;
 	//std::vector<uint16_t> indices;
 	vertices.resize(4);
-	vertices[0] = GameApp::Vertex{ glm::vec3(-1.f,0.f,-1.f), glm::vec3(1.f,0.f,1.f) };
-	vertices[1] = GameApp::Vertex{ glm::vec3(1.f,0.f,-1.f), glm::vec3(1.f,0.f,1.f) };
-	vertices[2] = GameApp::Vertex{ glm::vec3(1.f,0.f, 1.f), glm::vec3(1.f,0.f,1.f) };
-	vertices[3] = GameApp::Vertex{ glm::vec3(-1.f,0.f, 1.f), glm::vec3(1.f,0.f,1.f) };
+	vertices[0] = GameApp::Vertex{ glm::vec3(-1.f,0.f,-1.f), glm::vec3(1.f,0.f,1.f)   ,glm::vec2(1.f,0.f) };
+	vertices[1] = GameApp::Vertex{ glm::vec3(1.f,0.f,-1.f), glm::vec3(1.f,0.f,1.f)    ,glm::vec2(1.f,1.f) };
+	vertices[2] = GameApp::Vertex{ glm::vec3(1.f,0.f, 1.f), glm::vec3(1.f,0.f,1.f)    ,glm::vec2(0.f,1.f) };
+	vertices[3] = GameApp::Vertex{ glm::vec3(-1.f,0.f, 1.f), glm::vec3(1.f,0.f,1.f)   ,glm::vec2(0.f,0.f) };
 	indices = { 0,1,2,0,2,3 };
 	instanceData.resize(numOfInstance);
 	for (int i = 0; i < numOfInstance; i++) {
@@ -46,7 +46,7 @@ VKAPI_ATTR VkBool32 VKAPI_CALL GameApp::debugCallback(VkDebugUtilsMessageSeverit
 	std::string message(pCallbackData->pMessage);
 	std::string debugMessage("DEBUG-PRINTF ]");
 
-	if (messageSeverity == VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT) {
+	if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT) {
 		if (message.find(debugMessage) != std::string::npos) {
 			std::cerr << "validation layer: " << std::endl << "--------------------------------------------------------------------------------" << std::endl;
 			const auto sizeline = 140;
@@ -156,7 +156,9 @@ void GameApp::initVulkan() {
 	createGraphicsPipeline();
 	createFramebuffers();
 	createCommandPool();
-	//createTextureImage();
+	createTextureImage();
+	createTextureImageView();
+	createTextureSampler();
 	createTransferCommandBuffer();
 	createVertexBuffer();
 	createIndexBuffer();
@@ -377,6 +379,12 @@ void GameApp::cleanup() {
 
 
 	cleanupSwapChain();
+
+	vkDestroySampler(device, textureSampler, nullptr);
+	vkDestroyImageView(device, textureImageView, nullptr);
+	vkDestroyImage(device, textureImage, nullptr);
+	vkFreeMemory(device, textureImageMemory, nullptr);
+
 	vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
 	vkDestroyBuffer(device, indexBuffer, nullptr);
 	vkFreeMemory(device, indexBufferMemory, nullptr);
@@ -449,6 +457,10 @@ bool GameApp::isDeviceSuitable(VkPhysicalDevice device)
 	QueueFamilyIndices indices = findQueueFamilies(device);//实际上1.只找寻支持图形操作的 2.并且检查是否支持surface
 	bool extensionsSupported = checkDeviceExtensionSupport(device);//主要看看能不能用swapchain
 	bool swapChainAdequate = false;
+
+	VkPhysicalDeviceFeatures supportedFeatures;
+	vkGetPhysicalDeviceFeatures(device, &supportedFeatures);
+
 	if (extensionsSupported) {
 		SwapChainSupportDetails swapChainSupport = querySwapChainSupport(device);
 		swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
@@ -474,7 +486,7 @@ bool GameApp::isDeviceSuitable(VkPhysicalDevice device)
 			VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT = 0x00000010,  //可以用来制作VkImageView，然后作为颜色，可以绑定到frame buffer上
 			VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT = 0x00000080,  //可以用来制作VkImageView，然后可以被shader读取，或者作为frambuffer的附着
 	} VkSurfaceCapabilitiesKHR;*/
-	return indices.isComplete() && extensionsSupported && swapChainAdequate;
+	return indices.isComplete() && extensionsSupported && swapChainAdequate && supportedFeatures.samplerAnisotropy;
 }
 
 
@@ -647,16 +659,16 @@ void GameApp::createLogicalDevice()
 		queueCreateInfos.push_back(queueCreateInfo);
 	}
 
-	VkPhysicalDeviceFeatures deviceFeatures;//是否支持纹理压缩，64位float，多视口等
+	VkPhysicalDeviceFeatures deviceFeatures{};//是否支持纹理压缩，64位float，多视口等
 	vkGetPhysicalDeviceFeatures(physicalDevice, &deviceFeatures);
-
+	deviceFeatures.samplerAnisotropy = VK_TRUE;
 
 	VkDeviceCreateInfo createInfo{};
 	createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 	createInfo.pQueueCreateInfos = queueCreateInfos.data();
 	createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
 	createInfo.pEnabledFeatures = &deviceFeatures;
-
+	
 
 
 	//设备的扩展 至少可以创建交换链
@@ -917,7 +929,7 @@ void GameApp::createGraphicsPipeline()
 
 
 
-	std::array<VkVertexInputAttributeDescription, 6> attributeDescriptions{};
+	std::array<VkVertexInputAttributeDescription, 7> attributeDescriptions{};
 
 	attributeDescriptions[0].binding = 0;
 	attributeDescriptions[0].location = 0;
@@ -930,27 +942,35 @@ void GameApp::createGraphicsPipeline()
 	attributeDescriptions[1].offset = offsetof(Vertex, color);
 
 
-
-	attributeDescriptions[2].binding = 1;
+	attributeDescriptions[2].binding = 0;
 	attributeDescriptions[2].location = 2;
-	attributeDescriptions[2].format = VK_FORMAT_R32G32B32A32_SFLOAT;
-	attributeDescriptions[2].offset = sizeof(float) * 4 * 0;
+	attributeDescriptions[2].format = VK_FORMAT_R32G32_SFLOAT;
+	attributeDescriptions[2].offset = offsetof(Vertex, texCoord);
+
+
+
+
 
 	attributeDescriptions[3].binding = 1;
 	attributeDescriptions[3].location = 3;
 	attributeDescriptions[3].format = VK_FORMAT_R32G32B32A32_SFLOAT;
-	attributeDescriptions[3].offset = sizeof(float) * 4 * 1;
-
+	attributeDescriptions[3].offset = sizeof(float) * 4 * 0;
 
 	attributeDescriptions[4].binding = 1;
 	attributeDescriptions[4].location = 4;
 	attributeDescriptions[4].format = VK_FORMAT_R32G32B32A32_SFLOAT;
-	attributeDescriptions[4].offset = sizeof(float) * 4 * 2;
+	attributeDescriptions[4].offset = sizeof(float) * 4 * 1;
+
 
 	attributeDescriptions[5].binding = 1;
 	attributeDescriptions[5].location = 5;
 	attributeDescriptions[5].format = VK_FORMAT_R32G32B32A32_SFLOAT;
-	attributeDescriptions[5].offset = sizeof(float) * 4 * 3;
+	attributeDescriptions[5].offset = sizeof(float) * 4 * 2;
+						  
+	attributeDescriptions[6].binding = 1;
+	attributeDescriptions[6].location = 6;
+	attributeDescriptions[6].format = VK_FORMAT_R32G32B32A32_SFLOAT;
+	attributeDescriptions[6].offset = sizeof(float) * 4 * 3;
 
 
 
@@ -1155,10 +1175,10 @@ void GameApp::createRenderPass()
 	VkSubpassDependency dependency{};
 	dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
 	dependency.dstSubpass = 0;
-	dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	dependency.srcStageMask =  VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 	dependency.srcAccessMask = 0;
-	dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-	dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;  //line 937
+	dependency.dstStageMask =  VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT; 
 
 	renderPassInfo.dependencyCount = 1;
 	renderPassInfo.pDependencies = &dependency;
@@ -1298,22 +1318,33 @@ void GameApp::createCommandBuffers()
 
 		vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
 
-		VkBuffer vertexBuffers[] = { vertexBuffer,vertexBufferShit, };
+		VkBuffer vertexBuffers[] = { vertexBuffer,vertexBufferShit };
 		VkDeviceSize offsets[] = { 0,0 };
 
 
 		vkCmdBindVertexBuffers(commandBuffers[i], 0, 2, vertexBuffers, offsets);
 		vkCmdBindIndexBuffer(commandBuffers[i], indexBuffer, 0, VK_INDEX_TYPE_UINT16);
 
+
+
+
+
+		//vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout,0, 1, &descriptorSets[i], 0, nullptr);
 		vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets[i], 0, nullptr);
-		
+
+		//firstSet is the set number of the first descriptor set to be bound.
 
 		//vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
 
 		vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(indices.size()), numOfInstance, 0, 0, 0);
 
+		//vkCmdPipelineBarrier();
 
 		vkCmdEndRenderPass(commandBuffers[i]);
+
+
+
+
 		if (vkEndCommandBuffer(commandBuffers[i]) != VK_SUCCESS) {
 			throw std::runtime_error("failed to record command buffer!");
 		}
@@ -1543,6 +1574,7 @@ void GameApp::createVertexBuffer()
 	createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffer, vertexBufferMemory);
 
 	copyBuffer(stagingBuffer, vertexBuffer, bufferSize);
+
 	vkDestroyBuffer(device, stagingBuffer, nullptr);
 	vkFreeMemory(device, stagingBufferMemory, nullptr);
 
@@ -1691,6 +1723,7 @@ void GameApp::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize si
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 	submitInfo.commandBufferCount = 1;
 	submitInfo.pCommandBuffers = &transferCommandBuffer;
+	
 	vkQueueSubmit(tranferQueue, 1, &submitInfo, VK_NULL_HANDLE);
 	vkQueueWaitIdle(tranferQueue);
 
@@ -1723,7 +1756,7 @@ void GameApp::createDescriptorSetLayout()
 {
 
 
-	std::array<VkDescriptorSetLayoutBinding, 2> uboLayoutBinding{};
+	std::array<VkDescriptorSetLayoutBinding, 3> uboLayoutBinding{};
 
 
 	uboLayoutBinding[0].binding = 0; //index 
@@ -1739,6 +1772,22 @@ void GameApp::createDescriptorSetLayout()
 	uboLayoutBinding[1].descriptorCount = 1;
 	uboLayoutBinding[1].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 	uboLayoutBinding[1].pImmutableSamplers = nullptr; // Optional
+
+
+
+	uboLayoutBinding[2].binding = 2; //index 
+	uboLayoutBinding[2].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	uboLayoutBinding[2].descriptorCount = 1;
+	uboLayoutBinding[2].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+	uboLayoutBinding[2].pImmutableSamplers = nullptr; // Optional
+
+
+
+
+
+
+
+
 
 	VkDescriptorSetLayoutCreateInfo layoutInfo{};
 	layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
@@ -1820,15 +1869,24 @@ void GameApp::createDescriptorPool()
 
 
 	// Create the global descriptor pool
+	std::array<VkDescriptorPoolSize, 2> poolSizes{};
 
-	VkDescriptorPoolSize temp;
-	temp.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	temp.descriptorCount = 9;  //这个值只是一个hint用来优化，实际上好像没什么用
+
+	
+	poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	poolSizes[0].descriptorCount = 9;  
+
+
+	poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	poolSizes[1].descriptorCount = 3;
+
+
+
 
 	VkDescriptorPoolCreateInfo descriptorPoolCI = {};
 	descriptorPoolCI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-	descriptorPoolCI.poolSizeCount = 1;
-	descriptorPoolCI.pPoolSizes = &temp;
+	descriptorPoolCI.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
+	descriptorPoolCI.pPoolSizes = poolSizes.data();
 	// Max. number of descriptor sets that can be allocated from this pool (one per object)
 	descriptorPoolCI.maxSets = static_cast<uint32_t>(swapChainImages.size()) ;
 
@@ -1880,12 +1938,23 @@ void GameApp::createDescriptorSets()
 		bufferInfo1.range = sizeof(glm::mat4);
 
 
+
+
 		VkDescriptorBufferInfo bufferInfo2{};
 		bufferInfo2.buffer = uniformBuffersTest[i];
 		bufferInfo2.offset = 0;
 		bufferInfo2.range = sizeof(UniformBufferObjectTest);
 
-		std::array<VkWriteDescriptorSet, 3> writeDescriptorSets{};
+
+
+		VkDescriptorImageInfo imageInfo{};
+		imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		imageInfo.imageView = textureImageView;
+		imageInfo.sampler = textureSampler;
+
+
+
+		std::array<VkWriteDescriptorSet, 4> writeDescriptorSets{};
 
 		/*
 			Binding 0: Object matrices Uniform buffer
@@ -1899,9 +1968,6 @@ void GameApp::createDescriptorSets()
 		writeDescriptorSets[0].dstArrayElement = 0;
 
 
-
-
-
 		writeDescriptorSets[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 		writeDescriptorSets[1].dstSet = descriptorSets[i];
 		writeDescriptorSets[1].dstBinding = 0;
@@ -1909,17 +1975,6 @@ void GameApp::createDescriptorSets()
 		writeDescriptorSets[1].pBufferInfo = &bufferInfo1;
 		writeDescriptorSets[1].descriptorCount = 1;
 		writeDescriptorSets[1].dstArrayElement = 1;
-
-
-
-
-
-
-
-
-
-
-
 		/*
 		* 
 			Binding 1: Object matrices Test
@@ -1932,6 +1987,24 @@ void GameApp::createDescriptorSets()
 		writeDescriptorSets[2].pBufferInfo = &bufferInfo2;
 		writeDescriptorSets[2].descriptorCount = 1;
 		writeDescriptorSets[2].dstArrayElement = 0;
+
+
+
+		writeDescriptorSets[3].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		writeDescriptorSets[3].dstSet = descriptorSets[i];
+		writeDescriptorSets[3].dstBinding = 2;
+		writeDescriptorSets[3].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		// Images use a different descriptor structure, so we use pImageInfo instead of pBufferInfo
+		writeDescriptorSets[3].pImageInfo = &imageInfo;
+		writeDescriptorSets[3].descriptorCount = 1;
+		writeDescriptorSets[3].dstArrayElement = 0;
+
+
+
+
+
+
+
 
 		vkUpdateDescriptorSets(device, static_cast<uint32_t>(writeDescriptorSets.size()), writeDescriptorSets.data(), 0, nullptr);
 
@@ -1952,12 +2025,12 @@ void GameApp::createTextureImage()
 		throw std::runtime_error("failed to load texture image!");
 	}
 
-	VkBuffer stagingBuffer;
+	VkBuffer stagingBuffer; //host visible memory
 	VkDeviceMemory stagingBufferMemory;
 	createBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
 
 	void* data;
-	vkMapMemory(device, stagingBufferMemory, 0, imageSize, 0, &data);
+	vkMapMemory(device, stagingBufferMemory, 0, imageSize, (VkMemoryMapFlags)0, &data);
 	memcpy(data, pixels, static_cast<size_t>(imageSize));
 	vkUnmapMemory(device, stagingBufferMemory);
 
@@ -1965,8 +2038,12 @@ void GameApp::createTextureImage()
 
 	createImage(texWidth, texHeight, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
 
+	transitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
 
+	copyBufferToImage(stagingBuffer, textureImage, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
 
+	vkDestroyBuffer(device, stagingBuffer, nullptr);
+	vkFreeMemory(device, stagingBufferMemory, nullptr);
 
 
 
@@ -1981,14 +2058,15 @@ void GameApp::createImage(uint32_t width, uint32_t height, VkFormat format, VkIm
 	imageInfo.extent.width = width;
 	imageInfo.extent.height = height;
 	imageInfo.extent.depth = 1;
-	imageInfo.mipLevels = 1;
-	imageInfo.arrayLayers = 1;
+	imageInfo.mipLevels = 1; //mipmapping
+	imageInfo.arrayLayers = 1; //cubamap
 	imageInfo.format = format;
-	imageInfo.tiling = tiling;
+	imageInfo.tiling = tiling;//仅仅分为是不是LINEAR
 	imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 	imageInfo.usage = usage;
 	imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
 	imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
 
 	if (vkCreateImage(device, &imageInfo, nullptr, &image) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create image!");
@@ -2050,77 +2128,167 @@ void GameApp::endSingleTimeCommands(VkCommandBuffer commandBuffer)
 
 }
 
-//void GameApp::transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout)
-//{
-//
-//
-//
-//	VkCommandBufferBeginInfo beginInfo{};
-//	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-//	beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-//
-//	vkBeginCommandBuffer(transferCommandBuffer, &beginInfo);
-//
-//
-//	VkImageMemoryBarrier barrier{};
-//	barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-//	barrier.oldLayout = oldLayout;
-//	barrier.newLayout = newLayout;
-//
-//
-//	barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-//	barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-//
-//
-//
-//	barrier.image = image;
-//	barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-//	barrier.subresourceRange.baseMipLevel = 0;
-//	barrier.subresourceRange.levelCount = 1;
-//	barrier.subresourceRange.baseArrayLayer = 0;
-//	barrier.subresourceRange.layerCount = 1;
-//
-//
-//	barrier.srcAccessMask = 0; // TODO
-//	barrier.dstAccessMask = 0; // TODO
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//	VkBufferCopy copyRegion{};
-//	copyRegion.srcOffset = 0; // Optional
-//	copyRegion.dstOffset = 0; // Optional
-//	copyRegion.size = size;
-//	vkCmdCopyBuffer(transferCommandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
-//
-//
-//	vkEndCommandBuffer(transferCommandBuffer);
-//
-//
-//	VkSubmitInfo submitInfo{};
-//	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-//	submitInfo.commandBufferCount = 1;
-//	submitInfo.pCommandBuffers = &transferCommandBuffer;
-//	vkQueueSubmit(tranferQueue, 1, &submitInfo, VK_NULL_HANDLE);
-//	vkQueueWaitIdle(tranferQueue);
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//}
+void GameApp::transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout)
+{
+	VkCommandBuffer commandBuffer = beginSingleTimeCommands();
+
+
+	VkImageMemoryBarrier barrier{};
+	barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+	barrier.oldLayout = oldLayout;
+	barrier.newLayout = newLayout;
+
+	barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+
+
+
+	barrier.image = image;
+	barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	barrier.subresourceRange.baseMipLevel = 0;
+	barrier.subresourceRange.levelCount = 1;
+	barrier.subresourceRange.baseArrayLayer = 0;
+	barrier.subresourceRange.layerCount = 1;
+
+	VkPipelineStageFlags sourceStage;
+	VkPipelineStageFlags destinationStage;
+
+	if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
+		barrier.srcAccessMask = 0;
+		barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+
+		sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+		destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+	}
+	else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) {
+		barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+		barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+
+		sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+		destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+	}
+	else {
+		throw std::invalid_argument("unsupported layout transition!");
+	}
+
+
+	vkCmdPipelineBarrier(
+		commandBuffer,
+		sourceStage, destinationStage,
+		0,
+		0, nullptr,
+		0, nullptr,
+		1, &barrier
+	);
+
+	endSingleTimeCommands(commandBuffer);
+
+
+
+
+}
+
+void GameApp::copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height)
+{
+
+	VkCommandBuffer commandBuffer = beginSingleTimeCommands();
+	VkBufferImageCopy region{};
+	region.bufferOffset = 0;
+	region.bufferRowLength = 0;
+	region.bufferImageHeight = 0;
+
+	region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	region.imageSubresource.mipLevel = 0;
+	region.imageSubresource.baseArrayLayer = 0;
+	region.imageSubresource.layerCount = 1;
+
+	region.imageOffset = { 0, 0, 0 };
+	region.imageExtent = {
+		width,
+		height,
+		1
+	};
+	vkCmdCopyBufferToImage(
+		commandBuffer,
+		buffer,
+		image,
+		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+		1,
+		&region
+	);
+
+
+	endSingleTimeCommands(commandBuffer);
+}
+
+VkImageView GameApp::createImageView(VkImage image, VkFormat format)
+{
+	VkImageViewCreateInfo viewInfo{};
+	viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+	viewInfo.image = image;
+	viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+	viewInfo.format = format;
+	viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	viewInfo.subresourceRange.baseMipLevel = 0;
+	viewInfo.subresourceRange.levelCount = 1;
+	viewInfo.subresourceRange.baseArrayLayer = 0;
+	viewInfo.subresourceRange.layerCount = 1;
+
+	VkImageView imageView;
+	if (vkCreateImageView(device, &viewInfo, nullptr, &imageView) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create texture image view!");
+	}
+
+	return imageView;
+}
+
+void GameApp::createTextureImageView()
+{
+	textureImageView = createImageView(textureImage, VK_FORMAT_R8G8B8A8_SRGB);
+
+
+
+
+}
+
+void GameApp::createTextureSampler()
+{
+	VkSamplerCreateInfo samplerInfo{};
+	samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+	samplerInfo.magFilter = VK_FILTER_LINEAR;
+	samplerInfo.minFilter = VK_FILTER_LINEAR;
+
+	samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+	samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+	samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+
+	VkPhysicalDeviceProperties properties{};
+	vkGetPhysicalDeviceProperties(physicalDevice, &properties);
+	samplerInfo.anisotropyEnable = VK_TRUE;
+	samplerInfo.maxAnisotropy = properties.limits.maxSamplerAnisotropy;
+
+	//The maxAnisotropy field limits the amount of texel samples that can be used to calculate the final color.
+	samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+
+	samplerInfo.unnormalizedCoordinates = VK_FALSE;
+
+
+	samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+	samplerInfo.mipLodBias = 0.0f;
+	samplerInfo.minLod = 0.0f;
+	samplerInfo.maxLod = 0.0f;
+
+
+
+
+	if (vkCreateSampler(device, &samplerInfo, nullptr, &textureSampler) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create texture sampler!");
+	}
+}
+
+
+
 
 void GameApp::printMatirx4(const glm::mat4& m)
 {

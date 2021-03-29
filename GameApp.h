@@ -23,6 +23,7 @@
 #include <random>
 
 
+
 class GameApp {
 public:
 
@@ -47,6 +48,11 @@ private:
 		glm::vec3 pos;
 		glm::vec3 color;
 
+
+
+
+
+		glm::vec2 texCoord;
 		static VkVertexInputBindingDescription getBindingDescription() {
 			VkVertexInputBindingDescription bindingDescription{};
 
@@ -211,6 +217,15 @@ private:
 	VkCommandBuffer beginSingleTimeCommands();
 	void endSingleTimeCommands(VkCommandBuffer commandBuffer);
 	void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
+	void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
+
+
+	VkImageView createImageView(VkImage image, VkFormat format);
+
+
+
+	void createTextureImageView();
+	void createTextureSampler();
 
 public:
 
@@ -323,7 +338,7 @@ private:
 
 
 	VkDescriptorPool descriptorPool;
-	std::vector< VkDescriptorSet> descriptorSets;
+	std::vector<VkDescriptorSet> descriptorSets;
 
 
 	VkImage textureImage;
@@ -334,5 +349,15 @@ private:
 	std::uniform_real_distribution<float> myUnifFlaotDist;
 
 
+
+
+
+	VkImageView textureImageView;
+
+
 	static constexpr int numOfInstance = 7;
+
+	VkSampler textureSampler;
+
+
 };
