@@ -220,13 +220,21 @@ private:
 	void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
 
 
-	VkImageView createImageView(VkImage image, VkFormat format);
+	VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags  aspectFlags);
 
 
 
 	void createTextureImageView();
 	void createTextureSampler();
 
+
+	void createDepthResources();
+
+	VkFormat findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
+
+	VkFormat findDepthFormat();
+
+	bool hasStencilComponent(VkFormat format);
 public:
 
 	static void printMatirx4(const glm::mat4& m);
@@ -309,7 +317,7 @@ private:
 
 	std::vector<VkSemaphore> imageAvailableSemaphores;
 	std::vector<VkSemaphore> renderFinishedSemaphores;
-	std::vector<VkFence> inFlightFences;
+	//std::vector<VkFence> inFlightFences;
 	std::vector<VkFence> imagesInFlight;
 	size_t currentFrame = 0;
 	bool framebufferResized = false;
@@ -358,6 +366,11 @@ private:
 	static constexpr int numOfInstance = 7;
 
 	VkSampler textureSampler;
+
+
+	VkImage depthImage;
+	VkDeviceMemory depthImageMemory;
+	VkImageView depthImageView;
 
 
 };
