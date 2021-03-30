@@ -57,7 +57,7 @@ VKAPI_ATTR VkBool32 VKAPI_CALL GameApp::debugCallback(VkDebugUtilsMessageSeverit
 
 			std::cout << "--------------------------------------------------------------------------------" << std::endl << std::endl;
 		}
-	
+
 	}
 	else {
 		std::cerr << "validation layer: " << std::endl << "--------------------------------------------------------------------------------" << std::endl;
@@ -672,7 +672,7 @@ void GameApp::createLogicalDevice()
 	createInfo.pQueueCreateInfos = queueCreateInfos.data();
 	createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
 	createInfo.pEnabledFeatures = &deviceFeatures;
-	
+
 
 
 	//设备的扩展 至少可以创建交换链
@@ -970,7 +970,7 @@ void GameApp::createGraphicsPipeline()
 	attributeDescriptions[5].location = 5;
 	attributeDescriptions[5].format = VK_FORMAT_R32G32B32A32_SFLOAT;
 	attributeDescriptions[5].offset = sizeof(float) * 4 * 2;
-						  
+
 	attributeDescriptions[6].binding = 1;
 	attributeDescriptions[6].location = 6;
 	attributeDescriptions[6].format = VK_FORMAT_R32G32B32A32_SFLOAT;
@@ -1560,7 +1560,7 @@ void GameApp::createSyncObjects()
 
 	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
 		if (vkCreateSemaphore(device, &semaphoreInfo, nullptr, &imageAvailableSemaphores[i]) != VK_SUCCESS ||
-			vkCreateSemaphore(device, &semaphoreInfo, nullptr, &renderFinishedSemaphores[i]) != VK_SUCCESS ) {
+			vkCreateSemaphore(device, &semaphoreInfo, nullptr, &renderFinishedSemaphores[i]) != VK_SUCCESS) {
 			throw std::runtime_error("failed to create synchronization objects for a frame!");
 		}
 	}
@@ -1798,7 +1798,7 @@ void GameApp::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize si
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 	submitInfo.commandBufferCount = 1;
 	submitInfo.pCommandBuffers = &transferCommandBuffer;
-	
+
 	vkQueueSubmit(tranferQueue, 1, &submitInfo, VK_NULL_HANDLE);
 	vkQueueWaitIdle(tranferQueue);
 
@@ -1885,7 +1885,7 @@ void GameApp::createUniformBuffers()
 	uniformBuffersMemory.resize(swapChainImages.size());
 
 	for (size_t i = 0; i < swapChainImages.size(); i++) {
-		createBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, uniformBuffers[i], uniformBuffersMemory[i]); 
+		createBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, uniformBuffers[i], uniformBuffersMemory[i]);
 		//exclusive mode因为uniform buffer只会被graphics queue使用
 	}
 
@@ -1920,7 +1920,7 @@ void GameApp::updateUniformBuffer(uint32_t currentImage)
 	UniformBufferObjectTest ubo0{};
 	ubo0.model = glm::mat4(1.0f);
 	ubo0.view = glm::lookAtRH(glm::vec3(0.f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-	
+
 
 
 	void* data;
@@ -1947,9 +1947,9 @@ void GameApp::createDescriptorPool()
 	std::array<VkDescriptorPoolSize, 2> poolSizes{};
 
 
-	
+
 	poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	poolSizes[0].descriptorCount = 9;  
+	poolSizes[0].descriptorCount = 9;
 
 
 	poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -1963,7 +1963,7 @@ void GameApp::createDescriptorPool()
 	descriptorPoolCI.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
 	descriptorPoolCI.pPoolSizes = poolSizes.data();
 	// Max. number of descriptor sets that can be allocated from this pool (one per object)
-	descriptorPoolCI.maxSets = static_cast<uint32_t>(swapChainImages.size()) ;
+	descriptorPoolCI.maxSets = static_cast<uint32_t>(swapChainImages.size());
 
 
 
@@ -1986,17 +1986,17 @@ void GameApp::createDescriptorSets()
 	VkDescriptorSetAllocateInfo allocInfo{};
 	allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 	allocInfo.descriptorPool = descriptorPool;
-	allocInfo.descriptorSetCount = static_cast<uint32_t>(swapChainImages.size()) ;
+	allocInfo.descriptorSetCount = static_cast<uint32_t>(swapChainImages.size());
 	allocInfo.pSetLayouts = layouts.data();
 
-	descriptorSets.resize(swapChainImages.size() );
+	descriptorSets.resize(swapChainImages.size());
 
 	if (vkAllocateDescriptorSets(device, &allocInfo, descriptorSets.data()) != VK_SUCCESS) {
 		throw std::runtime_error("failed to allocate descriptor sets!");
 	}
-	
 
-	
+
+
 
 
 
@@ -2005,7 +2005,7 @@ void GameApp::createDescriptorSets()
 		bufferInfo0.buffer = uniformBuffers[i];
 		bufferInfo0.offset = 0;
 		bufferInfo0.range = offsetof(struct UniformBufferObject, proj);
-		
+
 
 		VkDescriptorBufferInfo bufferInfo1{};
 		bufferInfo1.buffer = uniformBuffers[i];
@@ -2013,9 +2013,11 @@ void GameApp::createDescriptorSets()
 		bufferInfo1.range = sizeof(glm::mat4);
 
 
+		std::vector< VkDescriptorBufferInfo> shit = { bufferInfo0 ,bufferInfo1 };
 
 
-		VkDescriptorBufferInfo bufferInfo2{};
+
+			VkDescriptorBufferInfo bufferInfo2{};
 		bufferInfo2.buffer = uniformBuffersTest[i];
 		bufferInfo2.offset = 0;
 		bufferInfo2.range = sizeof(UniformBufferObjectTest);
@@ -2029,7 +2031,7 @@ void GameApp::createDescriptorSets()
 
 
 
-		std::array<VkWriteDescriptorSet, 4> writeDescriptorSets{};
+		std::array<VkWriteDescriptorSet, 3> writeDescriptorSets{};
 
 		/*
 			Binding 0: Object matrices Uniform buffer
@@ -2038,41 +2040,42 @@ void GameApp::createDescriptorSets()
 		writeDescriptorSets[0].dstSet = descriptorSets[i];
 		writeDescriptorSets[0].dstBinding = 0;
 		writeDescriptorSets[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		writeDescriptorSets[0].pBufferInfo = &bufferInfo0;
-		writeDescriptorSets[0].descriptorCount = 1;
+		//writeDescriptorSets[0].pBufferInfo = &bufferInfo0;
+		writeDescriptorSets[0].pBufferInfo = shit.data();
+
+		writeDescriptorSets[0].descriptorCount = 2;
 		writeDescriptorSets[0].dstArrayElement = 0;
 
 
-		writeDescriptorSets[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		writeDescriptorSets[1].dstSet = descriptorSets[i];
-		writeDescriptorSets[1].dstBinding = 0;
-		writeDescriptorSets[1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		writeDescriptorSets[1].pBufferInfo = &bufferInfo1;
-		writeDescriptorSets[1].descriptorCount = 1;
-		writeDescriptorSets[1].dstArrayElement = 1;
+		//writeDescriptorSets[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		//writeDescriptorSets[1].dstSet = descriptorSets[i];
+		//writeDescriptorSets[1].dstBinding = 0;
+		//writeDescriptorSets[1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		//writeDescriptorSets[1].pBufferInfo = &bufferInfo1;
+		//writeDescriptorSets[1].descriptorCount = 1;
+		//writeDescriptorSets[1].dstArrayElement = 1;
 		/*
-		* 
+		*
 			Binding 1: Object matrices Test
 		*/
+		writeDescriptorSets[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		writeDescriptorSets[1].dstSet = descriptorSets[i];
+		writeDescriptorSets[1].dstBinding = 1;
+		writeDescriptorSets[1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		// Images use a different descriptor structure, so we use pImageInfo instead of pBufferInfo
+		writeDescriptorSets[1].pBufferInfo = &bufferInfo2;
+		writeDescriptorSets[1].descriptorCount = 1;
+		writeDescriptorSets[1].dstArrayElement = 0;
+
+
+
 		writeDescriptorSets[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 		writeDescriptorSets[2].dstSet = descriptorSets[i];
-		writeDescriptorSets[2].dstBinding = 1;
-		writeDescriptorSets[2].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		// Images use a different descriptor structure, so we use pImageInfo instead of pBufferInfo
-		writeDescriptorSets[2].pBufferInfo = &bufferInfo2;
+		writeDescriptorSets[2].dstBinding = 2;
+		writeDescriptorSets[2].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		writeDescriptorSets[2].pImageInfo = &imageInfo;
 		writeDescriptorSets[2].descriptorCount = 1;
 		writeDescriptorSets[2].dstArrayElement = 0;
-
-
-
-		writeDescriptorSets[3].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		writeDescriptorSets[3].dstSet = descriptorSets[i];
-		writeDescriptorSets[3].dstBinding = 2;
-		writeDescriptorSets[3].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		// Images use a different descriptor structure, so we use pImageInfo instead of pBufferInfo
-		writeDescriptorSets[3].pImageInfo = &imageInfo;
-		writeDescriptorSets[3].descriptorCount = 1;
-		writeDescriptorSets[3].dstArrayElement = 0;
 
 
 
@@ -2229,7 +2232,7 @@ void GameApp::transitionImageLayout(VkImage image, VkFormat format, VkImageLayou
 		if (hasStencilComponent(format)) {
 			barrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
 		}
-		
+
 	}
 	else {
 		barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
@@ -2427,7 +2430,7 @@ VkFormat GameApp::findSupportedFormat(const std::vector<VkFormat>& candidates, V
 
 	throw std::runtime_error("failed to find supported format!");
 
-	
+
 }
 
 
