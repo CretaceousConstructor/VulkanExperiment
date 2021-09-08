@@ -47,11 +47,6 @@ private:
 
 		glm::vec3 pos;
 		glm::vec3 color;
-
-
-
-
-
 		glm::vec2 texCoord;
 		static VkVertexInputBindingDescription getBindingDescription() {
 			VkVertexInputBindingDescription bindingDescription{};
@@ -179,7 +174,7 @@ private:
 	VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
 	VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
 	void createSwapChain();
-	void createImageViews();
+	void createSwapChainImageViews();
 	void createGraphicsPipeline();
 	void createRenderPass();   //render pass specifies the types of attachments that will be accessed.
 	VkShaderModule createShaderModule(const std::vector<char>& code);
@@ -235,6 +230,10 @@ private:
 	VkFormat findDepthFormat();
 
 	bool hasStencilComponent(VkFormat format);
+
+	void createMRTImages();
+	void createMRTImagesViews();
+
 public:
 
 	static void printMatirx4(const glm::mat4& m);
@@ -257,12 +256,16 @@ private:
 		VK_KHR_SHADER_NON_SEMANTIC_INFO_EXTENSION_NAME
 	};
 
-	
+
 
 	const std::vector<VkValidationFeatureEnableEXT> enabled = { VK_VALIDATION_FEATURE_ENABLE_DEBUG_PRINTF_EXT };
 
-	const std::vector<VkValidationFeatureDisableEXT> disabled = { VK_VALIDATION_FEATURE_DISABLE_THREAD_SAFETY_EXT, VK_VALIDATION_FEATURE_DISABLE_API_PARAMETERS_EXT,
-		VK_VALIDATION_FEATURE_DISABLE_OBJECT_LIFETIMES_EXT, VK_VALIDATION_FEATURE_DISABLE_CORE_CHECKS_EXT };
+	const std::vector<VkValidationFeatureDisableEXT> disabled = { 
+		VK_VALIDATION_FEATURE_DISABLE_THREAD_SAFETY_EXT, 
+		VK_VALIDATION_FEATURE_DISABLE_API_PARAMETERS_EXT,
+		VK_VALIDATION_FEATURE_DISABLE_OBJECT_LIFETIMES_EXT, 
+		VK_VALIDATION_FEATURE_DISABLE_CORE_CHECKS_EXT
+	};
 
 
 
@@ -299,10 +302,14 @@ private:
 
 
 	VkDescriptorSetLayout descriptorSetLayout;
-
-
 	VkPipelineLayout pipelineLayout;
-	VkPipeline graphicsPipeline;
+
+
+
+	VkPipeline graphicsPipelineSubpass0;
+
+	VkPipeline graphicsPipelineSubpass1;
+
 
 	std::vector<VkFramebuffer> swapChainFramebuffers; //3
 
@@ -317,8 +324,10 @@ private:
 
 	std::vector<VkSemaphore> imageAvailableSemaphores;
 	std::vector<VkSemaphore> renderFinishedSemaphores;
-	//std::vector<VkFence> inFlightFences;
+	std::vector<VkFence> inFlightFences;
 	std::vector<VkFence> imagesInFlight;
+
+
 	size_t currentFrame = 0;
 	bool framebufferResized = false;
 
@@ -370,7 +379,34 @@ private:
 
 	VkImage depthImage;
 	VkDeviceMemory depthImageMemory;
-	VkImageView depthImageView;
+
+	VkImageView depthImageView; 
+
+
+	uint32_t imageCount;
+
+
+
+	//std::array<VKImage,
+
+	std::vector<VkImage> RcolorImage;
+	std::vector<VkDeviceMemory> RmemColor;
+	std::vector<VkImageView> RcolorImageView;
+
+	std::vector<VkImage> GcolorImage;
+	std::vector<VkDeviceMemory> GmemColor;
+	std::vector<VkImageView> GcolorImageView;
+
+
+
+
+
+
+
+
+
+
+
 
 
 };

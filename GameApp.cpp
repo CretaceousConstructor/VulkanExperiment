@@ -12,6 +12,8 @@ GameApp::GameApp()
 	//std::vector<InsatnceTranformation> instanceData;
 	//std::vector<uint16_t> indices;
 	vertices.resize(4);
+	
+
 	vertices[0] = GameApp::Vertex{ glm::vec3(-1.f,0.f,-1.f), glm::vec3(1.f,0.f,1.f)   ,glm::vec2(1.f,0.f) };
 	vertices[1] = GameApp::Vertex{ glm::vec3(1.f,0.f,-1.f), glm::vec3(1.f,0.f,1.f)    ,glm::vec2(1.f,1.f) };
 	vertices[2] = GameApp::Vertex{ glm::vec3(1.f,0.f, 1.f), glm::vec3(1.f,0.f,1.f)    ,glm::vec2(0.f,1.f) };
@@ -31,11 +33,6 @@ GameApp::GameApp()
 		transforDisplacement = glm::translate(transforDisplacement, glm::vec3(xDis, yDis, -5.f));
 		instanceData[i].worldTrans = transforDisplacement * transforRoate;
 	}
-
-
-
-
-
 }
 
 VKAPI_ATTR VkBool32 VKAPI_CALL GameApp::debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
@@ -139,7 +136,9 @@ void GameApp::initWindow() {
 
 	glfwSetWindowUserPointer(window.get(), this);
 
-	glfwSetFramebufferSizeCallback(window.get(), framebufferResizeCallback);
+	glfwSetFramebufferSizeCallback(window.get(), framebufferResizeCallback);//framebufferResizeCallback是当用户调整窗口大小时调用的函数。
+
+
 
 }
 void GameApp::initVulkan() {
@@ -150,16 +149,16 @@ void GameApp::initVulkan() {
 	pickPhysicalDevice();
 	createLogicalDevice();
 	createSwapChain();
-	createImageViews();
-	createRenderPass(); // hard to understand
-	createDescriptorSetLayout();
-
-	createGraphicsPipeline();
-
 	createCommandPool();
+	createMRTImages();
+	createMRTImagesViews();
+	createSwapChainImageViews();
+	createRenderPass();
+
+	createDescriptorSetLayout();
+	createGraphicsPipeline();
 	createDepthResources();
 	createFramebuffers();
-
 	createTextureImage();
 	createTextureImageView();
 	createTextureSampler();
@@ -189,7 +188,7 @@ void GameApp::setupDebugMessenger() {
 
 }
 void GameApp::createInstance() {
-	//看看vulkan用来检查的功能是不是都能用
+	//检查 实例 会用到的 层(layer)
 	if (enableValidationLayers && !checkValidationLayerSupport()) {
 		throw std::runtime_error("validation layers requested, but not available!");
 	}
@@ -201,7 +200,10 @@ void GameApp::createInstance() {
 	appInfo.pEngineName = "No Engine";
 	appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
 	appInfo.apiVersion = VK_API_VERSION_1_0;
+	//VkApplicationInfo pNext must be NULL
 
+
+	//实例的扩展功能，这些扩展功能分别属于某个 层(layer)
 	////获得extension的数目
 	//uint32_t extensionCount = 0;
 	//vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
@@ -213,27 +215,21 @@ void GameApp::createInstance() {
 	//for (const auto& extension : extensions1) {
 	//	std::cout << '\t' << extension.extensionName << '\n';
 	//}
-	//VK_KHR_device_group_creation
-	//VK_KHR_external_fence_capabilities
-	//VK_KHR_external_memory_capabilities
-	//VK_KHR_external_semaphore_capabilities
-	//VK_KHR_get_physical_device_properties2
-	//VK_KHR_get_surface_capabilities2
-	//VK_KHR_surface
-	//VK_KHR_surface_protected_capabilities
-	//VK_KHR_win32_surface
-	//VK_EXT_debug_report
-	//VK_EXT_debug_utils
-	//VK_EXT_swapchain_colorspace
-	//VK_NV_external_memory_capabilities
+
+
+
+
+
+
 
 	//填写实例创建信息
 	VkInstanceCreateInfo createInfo{};
 	createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 	createInfo.pApplicationInfo = &appInfo;
 	//生成vulkan实例
-		//由我们自己处理validation层面输出的信息
-		//获得 实例会用到的扩展并且打开！之后的vkcreateinstance会看这里的值
+		//1.由我们自己处理validation层面输出的信息
+		//2.获得 glfw会用到的实例扩展 并且打开！
+		//之后的vkcreateinstance会用这里的值
 	auto extensions = getRequiredInstanceExtensions();
 
 	createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
@@ -256,11 +252,12 @@ void GameApp::createInstance() {
 
 	VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo;
 	if (enableValidationLayers) {
-		//获得 实例会 用到的检查层，并且打开
+		//获得 实例 会用到的 层(layer)，并且打开
 		createInfo.enabledLayerCount = static_cast<uint32_t>(instanceValidationLayerRequiredToUse.size());
 		createInfo.ppEnabledLayerNames = instanceValidationLayerRequiredToUse.data();
+
 		populateDebugMessengerCreateInfo(debugCreateInfo);
-		validationFeatureExt.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&debugCreateInfo;//这样就可以输出vkCreateInstance和vkDestroyInstance这两个函数可能会生成的debuginfo了
+		validationFeatureExt.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&debugCreateInfo;//这样赋值pNext就可以输出vkCreateInstance和vkDestroyInstance这两个函数可能会生成的debuginfo了
 	}
 	else {
 		createInfo.enabledLayerCount = 0;
@@ -275,11 +272,9 @@ void GameApp::createInstance() {
 	}
 
 
-
-
-
-
 }
+
+
 void GameApp::createSurface()
 {
 	//创建windows的表面，这个函数应当在检查物理设备之前调用，会对物理设备的选择产生影响
@@ -292,24 +287,32 @@ void GameApp::createSurface()
 
 bool GameApp::checkValidationLayerSupport() {
 
-	uint32_t layerCount;
 	//获取所有可以用的layer
-	//VK_LAYER_NV_optimus
-	//VK_LAYER_NV_nsight
-	//VK_LAYER_RENDERDOC_Capture
-	//VK_LAYER_NV_nsight - sys
-	//VK_LAYER_LUNARG_api_dump
-	//VK_LAYER_LUNARG_device_simulation
-	//VK_LAYER_LUNARG_gfxreconstruct
-	//VK_LAYER_KHRONOS_synchronization2
-	//VK_LAYER_KHRONOS_validation
-	//VK_LAYER_LUNARG_monitor
-	//VK_LAYER_LUNARG_screenshot
-	//VK_LAYER_LUNARG_standard_validation
+		//VK_LAYER_NV_optimus
+		//VK_LAYER_NV_nsight
+		//VK_LAYER_RENDERDOC_Capture
+		//VK_LAYER_NV_nomad_release_public_2021_1_1
+		//VK_LAYER_NV_GPU_Trace_release_public_2021_1_1
+		//VK_LAYER_VALVE_steam_overlay
+		//VK_LAYER_VALVE_steam_fossilize
+		//VK_LAYER_LUNARG_api_dump
+		//VK_LAYER_LUNARG_device_simulation
+		//VK_LAYER_LUNARG_gfxreconstruct
+		//VK_LAYER_KHRONOS_synchronization2
+		//VK_LAYER_KHRONOS_validation
+		//VK_LAYER_LUNARG_monitor
+		//VK_LAYER_LUNARG_screenshot
 
+
+	uint32_t layerCount;
 	vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
 	std::vector<VkLayerProperties> availableLayers(layerCount);
 	vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
+
+
+	for (auto layer : availableLayers) {
+		std::cout << layer.layerName << std::endl;
+	}
 
 
 	for (const char* layerName : instanceValidationLayerRequiredToUse) {
@@ -356,7 +359,8 @@ std::vector<const char*> GameApp::getRequiredInstanceExtensions() {
 
 	std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
 
-	if (enableValidationLayers) {//如果启动了debug层面，那么就需要加入VK_EXT_DEBUG_UTILS_EXTENSION_NAME
+	if (enableValidationLayers) {
+		//如果启动了debug层面，那么就需要加入VK_EXT_DEBUG_UTILS_EXTENSION_NAME
 		//由我们自己处理validation层面输出的信息
 		extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 
@@ -381,10 +385,34 @@ void GameApp::cleanup() {
 	vkDeviceWaitIdle(device);
 
 
-
 	cleanupSwapChain();
 
 	vkDestroySampler(device, textureSampler, nullptr);
+
+
+	for (auto imgView : RcolorImageView) {
+		vkDestroyImageView(device, imgView, nullptr);
+	}
+	for (auto imgView : GcolorImageView) {
+		vkDestroyImageView(device, imgView, nullptr);
+	}
+
+	for (auto img : RcolorImage) {
+		vkDestroyImage(device, img, nullptr);
+	}
+
+	for (auto img : GcolorImage) {
+		vkDestroyImage(device, img, nullptr);
+	}
+
+	for (auto mem : RmemColor) {
+		vkFreeMemory(device, mem, nullptr);
+	}
+	for (auto mem : GmemColor) {
+		vkFreeMemory(device, mem, nullptr);
+	}
+
+
 	vkDestroyImageView(device, textureImageView, nullptr);
 	vkDestroyImage(device, textureImage, nullptr);
 	vkFreeMemory(device, textureImageMemory, nullptr);
@@ -452,13 +480,14 @@ void GameApp::pickPhysicalDevice()
 		candidates.insert(std::make_pair(score, device));
 	}
 
+
 }
 
 bool GameApp::isDeviceSuitable(VkPhysicalDevice device)
 {
 
 
-	QueueFamilyIndices indices = findQueueFamilies(device);//实际上1.只找寻支持图形操作的 2.并且检查是否支持surface
+	QueueFamilyIndices indices = findQueueFamilies(device);//
 	bool extensionsSupported = checkDeviceExtensionSupport(device);//主要看看能不能用swapchain
 	bool swapChainAdequate = false;
 
@@ -466,7 +495,7 @@ bool GameApp::isDeviceSuitable(VkPhysicalDevice device)
 	vkGetPhysicalDeviceFeatures(device, &supportedFeatures);
 
 	if (extensionsSupported) {
-		SwapChainSupportDetails swapChainSupport = querySwapChainSupport(device);
+		SwapChainSupportDetails swapChainSupport = querySwapChainSupport(device);//询问的是物理device
 		swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
 	}
 	/*typedef struct VkSurfaceCapabilitiesKHR {
@@ -525,7 +554,7 @@ int GameApp::rateDeviceSuitability(VkPhysicalDevice device)
 	return score;
 }
 
-//实际上只是找图形队列
+
 GameApp::QueueFamilyIndices GameApp::findQueueFamilies(VkPhysicalDevice device)
 {
 	QueueFamilyIndices indices;
@@ -536,9 +565,6 @@ GameApp::QueueFamilyIndices GameApp::findQueueFamilies(VkPhysicalDevice device)
 
 	std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
 	vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
-
-
-
 	//typedef struct VkQueueFamilyProperties {
 	//	VkQueueFlags    queueFlags;
 	//	uint32_t        queueCount;
@@ -561,27 +587,27 @@ GameApp::QueueFamilyIndices GameApp::findQueueFamilies(VkPhysicalDevice device)
 	int i = 0;
 	for (const auto& queueFamily : queueFamilies) {
 		VkBool32 presentSupport = false;
-		vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &presentSupport);//必须要支持windows surface
+		vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &presentSupport);//必须要支持windows surface的presentation
 
-		if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) {   //这个队列至少要支持图形操作
+		if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT) {   //这个队列家族至少要支持图形操作
 			if (!indices.graphicsFamily.has_value()) {
 
 				indices.graphicsFamily = i;
 			}
 		}
-		if (presentSupport) {          //必须要可以present才可以
+		if (presentSupport) {
 			if (!indices.presentFamily.has_value()) {
 				indices.presentFamily = i;
 			}
 		}
 
-		if ((queueFamily.queueFlags & VK_QUEUE_TRANSFER_BIT) && !(queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)) {   //这个队列至少要支持图形操作
+		if ((queueFamily.queueFlags & VK_QUEUE_TRANSFER_BIT) && !(queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)) {   //这个队列家族至少要支持图形操作
 			if (!indices.transferFamily.has_value()) {
 				indices.transferFamily = i;
 			}
 		}
 
-		if (indices.isComplete()) { //3种要同时满足
+		if (indices.isComplete()) { //3种要都有以后就可以
 			break;
 		}
 
@@ -654,7 +680,7 @@ void GameApp::createLogicalDevice()
 
 
 	const float queuePriority = 1.0f;
-	for (uint32_t queueFamily : uniqueQueueFamilies) {
+	for (uint32_t queueFamily : uniqueQueueFamilies) {//每种队列家族创建一个queue
 		VkDeviceQueueCreateInfo queueCreateInfo{};
 		queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
 		queueCreateInfo.queueFamilyIndex = queueFamily;
@@ -665,7 +691,7 @@ void GameApp::createLogicalDevice()
 
 	VkPhysicalDeviceFeatures deviceFeatures{};//是否支持纹理压缩，64位float，多视口等
 	vkGetPhysicalDeviceFeatures(physicalDevice, &deviceFeatures);
-	deviceFeatures.samplerAnisotropy = VK_TRUE;
+	deviceFeatures.samplerAnisotropy = VK_TRUE;//前面已经测试过，直接设置成true
 
 	VkDeviceCreateInfo createInfo{};
 	createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
@@ -679,15 +705,16 @@ void GameApp::createLogicalDevice()
 	createInfo.enabledExtensionCount = static_cast<uint32_t>(deviceRequiredExtensions.size());
 	createInfo.ppEnabledExtensionNames = deviceRequiredExtensions.data();
 
-
-	if (enableValidationLayers) {
-		//至少需要可以用来调试的validation layer
-		createInfo.enabledLayerCount = static_cast<uint32_t>(instanceValidationLayerRequiredToUse.size());
-		createInfo.ppEnabledLayerNames = instanceValidationLayerRequiredToUse.data();
-	}
-	else {
-		createInfo.enabledLayerCount = 0;
-	}
+		//enabledLayerCount?is deprecated and ignored.
+		//ppEnabledLayerNames?is deprecatedand ignored.
+		//if (enableValidationLayers) {
+		//	//至少需要 可以用来调试的validation layer
+		//	createInfo.enabledLayerCount = static_cast<uint32_t>(instanceValidationLayerRequiredToUse.size());
+		//	createInfo.ppEnabledLayerNames = instanceValidationLayerRequiredToUse.data();
+		//}
+		//else {
+		//	createInfo.enabledLayerCount = 0;
+		//}
 
 
 	if (vkCreateDevice(physicalDevice, &createInfo, nullptr, &device) != VK_SUCCESS) {
@@ -736,7 +763,7 @@ VkExtent2D GameApp::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilitie
 	}
 	else {
 		int width, height;
-		glfwGetFramebufferSize(window.get(), &width, &height);//获取窗口以pixels size为单位而不是
+		glfwGetFramebufferSize(window.get(), &width, &height);//获取的窗口大小以pixel 为单位而不是
 		//创建窗口时我们用的是screen coordinates为单位
 		VkExtent2D actualExtent = {
 			static_cast<uint32_t>(width),
@@ -754,6 +781,19 @@ VkExtent2D GameApp::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilitie
 void GameApp::createSwapChain()
 {
 	SwapChainSupportDetails swapChainSupport = querySwapChainSupport(physicalDevice);
+	////支持的backbuffer格式
+		//colorSpace
+		//VK_COLOR_SPACE_SRGB_NONLINEAR_KHR = 0, 
+		//format;
+		//VK_FORMAT_B8G8R8A8_UNORM = 44,
+		//VK_FORMAT_B8G8R8A8_SRGB = 50,
+		//VK_FORMAT_A2B10G10R10_UNORM_PACK32 = 64,
+	//可的展示的模式
+		//VK_PRESENT_MODE_FIFO_KHR = 2,
+		//VK_PRESENT_MODE_FIFO_RELAXED_KHR = 3,
+		//VK_PRESENT_MODE_MAILBOX_KHR = 1,
+		//VK_PRESENT_MODE_IMMEDIATE_KHR = 0,
+
 
 	VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);
 
@@ -762,7 +802,7 @@ void GameApp::createSwapChain()
 	VkExtent2D extent = chooseSwapExtent(swapChainSupport.capabilities);
 
 	//3
-	uint32_t imageCount = swapChainSupport.capabilities.minImageCount + 1;
+	imageCount = swapChainSupport.capabilities.minImageCount + 1;
 
 	//swapChainSupport.capabilities.maxImageCount如果等于0表示没有限制
 	if (swapChainSupport.capabilities.maxImageCount > 0 && imageCount > swapChainSupport.capabilities.maxImageCount) {
@@ -779,7 +819,7 @@ void GameApp::createSwapChain()
 	createInfo.imageExtent = extent;
 	createInfo.imageArrayLayers = 1;//给3D应用用的，直接当成1不用管了
 	createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;//直接往image渲染颜色
-
+		
 
 
 
@@ -797,6 +837,8 @@ void GameApp::createSwapChain()
 	//createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
 	//createInfo.queueFamilyIndexCount = static_cast<uint32_t>(uniqueQueueFamilyIndices.size());
 	//createInfo.pQueueFamilyIndices = uniqueQueueFamilyIndices.data();
+
+
 	if (indices.graphicsFamily.value() == indices.presentFamily.value()) {
 
 		createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
@@ -819,7 +861,7 @@ void GameApp::createSwapChain()
 	createInfo.presentMode = presentMode;
 	createInfo.clipped = VK_TRUE;//如果其他窗口遮住了vulkan窗口，那么vulkan窗口被遮住的地方pixel shader不会被调用
 
-	createInfo.oldSwapchain = VK_NULL_HANDLE;//窗口重新绘制，那么swapchain可能就失效了，失效的swapchain需要存在这里面因为你要创建新的swapchain
+	createInfo.oldSwapchain = VK_NULL_HANDLE;//窗口重新绘制，那么swapchain可能就失效了，失效的swapchain需要存在这里面。你要创建新的swapchain
 
 
 
@@ -832,13 +874,19 @@ void GameApp::createSwapChain()
 	}
 
 
+
+
 	vkGetSwapchainImagesKHR(device, swapChain, &imageCount, nullptr);
 	swapChainImages.resize(imageCount);
 	vkGetSwapchainImagesKHR(device, swapChain, &imageCount, swapChainImages.data());
 
+
+
+
+
 }
 
-void GameApp::createImageViews()
+void GameApp::createSwapChainImageViews()
 {
 
 	swapChainImageViews.resize(swapChainImages.size());
@@ -884,6 +932,8 @@ void GameApp::createGraphicsPipeline()
 
 	system("CompileShader.bat");
 
+	//				subpass0
+	/******************************************************************************************************/
 
 	auto vertShaderCode = readFile("vert.spv");
 	auto fragShaderCode = readFile("frag.spv");
@@ -978,21 +1028,13 @@ void GameApp::createGraphicsPipeline()
 
 
 
-
-
 	VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
 	vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-	vertexInputInfo.vertexBindingDescriptionCount = 2;
-	vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
-
+	vertexInputInfo.vertexBindingDescriptionCount = static_cast<uint32_t>(ARRAYSIZE(VIBDS));
 	vertexInputInfo.pVertexBindingDescriptions = VIBDS; // Optional
+
+	vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
 	vertexInputInfo.pVertexAttributeDescriptions = attributeDescriptions.data(); // Optional
-
-
-
-
-
-
 
 
 
@@ -1007,7 +1049,7 @@ void GameApp::createGraphicsPipeline()
 	viewport.y = (float)swapChainExtent.height;
 	viewport.width = (float)swapChainExtent.width;
 	viewport.height = -(float)swapChainExtent.height;
-	viewport.minDepth = 0.5f;
+	viewport.minDepth = 0.0f;
 	viewport.maxDepth = 1.0f;
 
 	VkRect2D scissor{};
@@ -1092,8 +1134,6 @@ void GameApp::createGraphicsPipeline()
 
 	VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 	pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-
-
 	pipelineLayoutInfo.setLayoutCount = 1;
 	pipelineLayoutInfo.pSetLayouts = &descriptorSetLayout;
 
@@ -1145,14 +1185,206 @@ void GameApp::createGraphicsPipeline()
 	pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional
 	pipelineInfo.basePipelineIndex = -1; // Optional
 
-	if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipeline) != VK_SUCCESS) {
+	if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &graphicsPipelineSubpass0) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create graphics pipeline!");
 	}
 
 
-
 	vkDestroyShaderModule(device, fragShaderModule, nullptr);
 	vkDestroyShaderModule(device, vertShaderModule, nullptr);
+
+
+
+	// subpass 1
+/******************************************************************************************************/
+/******************************************************************************************************/
+/******************************************************************************************************/
+/******************************************************************************************************/
+/******************************************************************************************************/
+/******************************************************************************************************/
+/******************************************************************************************************/
+
+
+	auto fragShaderCode0 = readFile("frag.spv");
+
+	VkShaderModule fragShaderModule0 = createShaderModule(fragShaderCode0);
+
+	VkPipelineShaderStageCreateInfo fragShaderStageInfo0{};
+	fragShaderStageInfo0.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+	fragShaderStageInfo0.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
+	fragShaderStageInfo0.module = fragShaderModule0;
+	fragShaderStageInfo0.pName = "main";
+
+
+
+	VkPipelineShaderStageCreateInfo shaderStages0[] = { fragShaderStageInfo0 };
+
+
+
+
+	VkViewport viewport0{};
+	viewport0.x = 0.0f;
+	viewport0.y = (float)swapChainExtent.height;
+	viewport0.width = (float)swapChainExtent.width;
+	viewport0.height = -(float)swapChainExtent.height;
+	viewport0.minDepth = 0.0f;
+	viewport0.maxDepth = 1.0f;
+
+	VkRect2D scissor0{};
+	scissor0.offset = { 0, 0 };
+	scissor0.extent = swapChainExtent;
+
+
+
+	VkPipelineViewportStateCreateInfo viewportState0{};
+	viewportState0.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
+	viewportState0.viewportCount = 1;
+	viewportState0.pViewports = &viewport;
+	viewportState0.scissorCount = 1;
+	viewportState0.pScissors = &scissor;
+
+	VkPipelineRasterizationStateCreateInfo rasterizer0{};
+	rasterizer0.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
+	rasterizer0.depthClampEnable = VK_FALSE;
+	rasterizer0.rasterizerDiscardEnable = VK_FALSE;
+	rasterizer0.polygonMode = VK_POLYGON_MODE_FILL;
+
+	rasterizer0.lineWidth = 1.f;
+
+	rasterizer0.cullMode = VK_CULL_MODE_NONE; // 
+	//rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+
+
+	rasterizer0.depthBiasEnable = VK_FALSE;
+	rasterizer0.depthBiasConstantFactor = 0.0f; // Optional
+	rasterizer0.depthBiasClamp = 0.0f; // Optional
+	rasterizer0.depthBiasSlopeFactor = 0.0f; // Optional
+
+
+	VkPipelineMultisampleStateCreateInfo multisampling0{};
+	multisampling0.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+	multisampling0.sampleShadingEnable = VK_FALSE;
+	multisampling0.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+	multisampling0.minSampleShading = 1.0f; // Optional
+	multisampling0.pSampleMask = nullptr; // Optional
+	multisampling0.alphaToCoverageEnable = VK_FALSE; // Optional
+	multisampling0.alphaToOneEnable = VK_FALSE; // Optional
+
+
+	VkPipelineColorBlendAttachmentState colorBlendAttachment0{};
+	colorBlendAttachment0.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+	colorBlendAttachment0.blendEnable = VK_FALSE;
+	colorBlendAttachment0.srcColorBlendFactor = VK_BLEND_FACTOR_ONE; // Optional
+	colorBlendAttachment0.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO; // Optional
+	colorBlendAttachment0.colorBlendOp = VK_BLEND_OP_ADD; // Optional
+	colorBlendAttachment0.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE; // Optional
+	colorBlendAttachment0.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO; // Optional
+	colorBlendAttachment0.alphaBlendOp = VK_BLEND_OP_ADD; // Optional
+
+
+
+	VkPipelineColorBlendStateCreateInfo colorBlending0{};
+	colorBlending0.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
+	colorBlending0.logicOpEnable = VK_FALSE;
+	colorBlending0.logicOp = VK_LOGIC_OP_COPY; // Optional
+	colorBlending0.attachmentCount = 1;
+	colorBlending0.pAttachments = &colorBlendAttachment;
+	colorBlending0.blendConstants[0] = 0.0f; // Optional
+	colorBlending0.blendConstants[1] = 0.0f; // Optional
+	colorBlending0.blendConstants[2] = 0.0f; // Optional
+	colorBlending0.blendConstants[3] = 0.0f; // Optional
+
+
+	VkDynamicState dynamicStates0[] = {
+		VK_DYNAMIC_STATE_VIEWPORT,
+		VK_DYNAMIC_STATE_LINE_WIDTH
+	};
+
+	VkPipelineDynamicStateCreateInfo dynamicState0{};
+	dynamicState0.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+	dynamicState0.dynamicStateCount = 2;
+	dynamicState0.pDynamicStates = dynamicStates;
+
+
+
+
+
+
+	VkPipelineLayoutCreateInfo pipelineLayoutInfo0{};
+	pipelineLayoutInfo0.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+	pipelineLayoutInfo0.setLayoutCount = 1;
+	pipelineLayoutInfo0.pSetLayouts = &descriptorSetLayout;
+
+
+	pipelineLayoutInfo0.pushConstantRangeCount = 0; // Optional
+	pipelineLayoutInfo0.pPushConstantRanges = nullptr; // Optional
+
+	if (vkCreatePipelineLayout(device, &pipelineLayoutInfo0, nullptr, &pipelineLayout) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create pipeline layout!");
+	}
+
+
+	VkPipelineDepthStencilStateCreateInfo depthStencil0{};
+	depthStencil0.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+	depthStencil0.depthTestEnable = VK_TRUE;
+	depthStencil0.depthWriteEnable = VK_TRUE;
+	depthStencil0.depthCompareOp = VK_COMPARE_OP_LESS;
+	depthStencil0.depthBoundsTestEnable = VK_FALSE;
+	depthStencil0.minDepthBounds = 0.0f; // Optional
+	depthStencil0.maxDepthBounds = 1.0f; // Optional
+	depthStencil0.stencilTestEnable = VK_FALSE;
+	depthStencil0.front = {}; // Optional
+	depthStencil0.back = {}; // Optional
+
+
+
+	VkGraphicsPipelineCreateInfo pipelineInfo0{};
+
+	pipelineInfo0.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
+	pipelineInfo0.stageCount = 2;
+	pipelineInfo0.pStages = shaderStages0;
+
+
+	pipelineInfo0.pVertexInputState = VK_NULL_HANDLE;
+	pipelineInfo0.pInputAssemblyState = VK_NULL_HANDLE;
+	pipelineInfo0.pViewportState = &viewportState;
+	pipelineInfo0.pRasterizationState = &rasterizer;
+	pipelineInfo0.pMultisampleState = &multisampling;
+	pipelineInfo0.pDepthStencilState = VK_NULL_HANDLE;
+
+	pipelineInfo0.pColorBlendState = &colorBlending;
+	pipelineInfo0.pDynamicState = nullptr; // Optional
+
+	pipelineInfo0.layout = pipelineLayout;
+
+	pipelineInfo0.renderPass = renderPass;
+	pipelineInfo0.subpass = 1;// index
+
+	pipelineInfo0.basePipelineHandle = VK_NULL_HANDLE; // Optional
+	pipelineInfo0.basePipelineIndex = -1; // Optional
+
+
+	auto proj = glm::perspectiveRH_ZO(glm::radians(90.f), swapChainExtent.width / (float)swapChainExtent.height, 3.f, 9.0f);
+
+
+	auto vec = glm::vec4(4.f, 3.f, -3.f, 1.f);
+	printVector4(proj * vec);
+
+
+
+
+
+
+
+
+	if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo0, nullptr, &graphicsPipelineSubpass1) != VK_SUCCESS) {
+		throw std::runtime_error("failed to create graphics pipeline!");
+	}
+
+
+	vkDestroyShaderModule(device, fragShaderModule0, nullptr);
+
+
 
 }
 
@@ -1170,74 +1402,146 @@ void GameApp::createRenderPass()
 
 
 
+	VkAttachmentDescription RchannelcolorAttachment{};
+	RchannelcolorAttachment.format = swapChainImageFormat;
+	RchannelcolorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+	RchannelcolorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+	RchannelcolorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+	RchannelcolorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+	RchannelcolorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	RchannelcolorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	RchannelcolorAttachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
+
+	VkAttachmentDescription GchannelcolorAttachment{};
+	GchannelcolorAttachment.format = swapChainImageFormat;
+	GchannelcolorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+	GchannelcolorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+	GchannelcolorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+	GchannelcolorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+	GchannelcolorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	GchannelcolorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	GchannelcolorAttachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 	VkAttachmentDescription depthAttachment{};
 	depthAttachment.format = findDepthFormat();
 	depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
 	depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-	depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 	depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 	depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 	depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-	depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+	depthAttachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 
 	//The index of the attachment in this array is directly referenced from the fragment shader with the 
 	//layout(location = 0) out vec4 outColor directive!
+
+	//subpass1用的
 	VkAttachmentReference colorAttachmentRef{};
 	colorAttachmentRef.attachment = 0;
 	colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-	VkAttachmentReference depthAttachmentRef{};
-	depthAttachmentRef.attachment = 1;
-	depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-
-
-
-	VkSubpassDescription subpass{};
-	subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-	subpass.colorAttachmentCount = 1;
-	subpass.pColorAttachments = &colorAttachmentRef;
-	subpass.pDepthStencilAttachment = &depthAttachmentRef;
+	VkAttachmentReference depthAttachmentRefForRead{};
+	depthAttachmentRefForRead.attachment = 3;
+	depthAttachmentRefForRead.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	VkAttachmentReference RAttachmentRefForRead{};
+	RAttachmentRefForRead.attachment = 1;
+	RAttachmentRefForRead.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	VkAttachmentReference GAttachmentRefForRead{};
+	GAttachmentRefForRead.attachment = 2;
+	GAttachmentRefForRead.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 
-
-
-
-
-
-
-
-
-
+	//subpass0用的
+	VkAttachmentReference RAttachmentRef{};
+	RAttachmentRef.attachment = 1;
+	RAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+	VkAttachmentReference GAttachmentRef{};
+	GAttachmentRef.attachment = 2;
+	GAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+	VkAttachmentReference depthAttachmentRefForWrite{};
+	depthAttachmentRefForWrite.attachment = 3;
+	depthAttachmentRefForWrite.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
 
 
+	std::vector<VkAttachmentReference> outPutColorAttachmentRefsForSubpass1 = { colorAttachmentRef };
+	std::vector<VkAttachmentReference> inPutAttachmentRefsForSubpass1 = { RAttachmentRefForRead, GAttachmentRefForRead ,depthAttachmentRefForRead };
+
+	std::vector<VkAttachmentReference> inputColorAttachmentRefsForSubpass0 = { RAttachmentRef,GAttachmentRef };
 
 
 
-	std::array<VkAttachmentDescription, 2> attachments = { colorAttachment, depthAttachment };
-
-	VkSubpassDependency dependency{};
-	dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
-	dependency.dstSubpass = 0;
 
 
-	dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-	dependency.srcAccessMask = 0;
-	dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-	dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+	VkSubpassDescription subpass0{};
+	subpass0.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+	subpass0.colorAttachmentCount = static_cast<uint32_t>(inputColorAttachmentRefsForSubpass0.size());
+	subpass0.pColorAttachments = inputColorAttachmentRefsForSubpass0.data();
+	subpass0.pDepthStencilAttachment = &depthAttachmentRefForWrite;
+
+
+	VkSubpassDescription subpass1{};
+	subpass1.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+	subpass1.colorAttachmentCount = static_cast<uint32_t>(outPutColorAttachmentRefsForSubpass1.size());
+	subpass1.pColorAttachments = outPutColorAttachmentRefsForSubpass1.data();
+	subpass1.inputAttachmentCount = static_cast<uint32_t>(inPutAttachmentRefsForSubpass1.size());
+	subpass1.pInputAttachments = inPutAttachmentRefsForSubpass1.data();
+
+
+	std::array<VkSubpassDescription, 2> subpasses = { subpass0 ,subpass1 };
+
+	std::vector<VkAttachmentDescription> attachments = { colorAttachment,RchannelcolorAttachment,GchannelcolorAttachment,depthAttachment };
+
+
+
+	std::array<VkSubpassDependency, 3> dependencies;
+
+	dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
+	dependencies[0].dstSubpass = 0;
+	dependencies[0].srcStageMask = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+	//dependencies[0].srcAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+	dependencies[0].srcAccessMask = 0;
+
+
+	dependencies[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+	dependencies[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
+	dependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+
+	// This dependency transitions the input attachment from color attachment to shader read
+	dependencies[1].srcSubpass = 0;
+	dependencies[1].dstSubpass = 1;
+
+	dependencies[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	dependencies[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+	dependencies[1].dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+	dependencies[1].dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+	dependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+
+
+	dependencies[2].srcSubpass = 1;        // Last subpass attachment is used in
+	dependencies[2].dstSubpass = VK_SUBPASS_EXTERNAL;
+	dependencies[2].srcStageMask = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
+	dependencies[2].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+
+	dependencies[2].dstStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+	dependencies[2].dstAccessMask = 0;
+	dependencies[2].dependencyFlags = 0;
+
+
+
+
+
 
 
 	VkRenderPassCreateInfo renderPassInfo{};
 	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-	renderPassInfo.dependencyCount = 1;
-	renderPassInfo.pDependencies = &dependency;
+	renderPassInfo.dependencyCount = static_cast<uint32_t>(dependencies.size());
+	renderPassInfo.pDependencies = dependencies.data();
 	renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
 	renderPassInfo.pAttachments = attachments.data();
-	renderPassInfo.subpassCount = 1;
-	renderPassInfo.pSubpasses = &subpass;
+	renderPassInfo.subpassCount = static_cast<uint32_t>(subpasses.size());
+	renderPassInfo.pSubpasses = subpasses.data();
 
 
 	if (vkCreateRenderPass(device, &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS) {
@@ -1271,11 +1575,16 @@ void GameApp::createFramebuffers()
 {
 
 	swapChainFramebuffers.resize(swapChainImageViews.size());
+
 	for (size_t i = 0; i < swapChainImageViews.size(); i++) {
-		std::array<VkImageView, 2> attachments = {
+
+		std::vector<VkImageView> attachments = {
 			swapChainImageViews[i],
+			RcolorImageView[i],
+			GcolorImageView[i],
 			depthImageView
 		};
+
 
 		VkFramebufferCreateInfo framebufferInfo{};
 		framebufferInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
@@ -1346,24 +1655,21 @@ void GameApp::createCommandBuffers()
 		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 		beginInfo.flags = 0; // Optional
 		beginInfo.pInheritanceInfo = nullptr; // Optional
-
 		if (vkBeginCommandBuffer(commandBuffers[i], &beginInfo) != VK_SUCCESS) {
 			throw std::runtime_error("failed to begin recording command buffer!");
 		}
-
-
-
 		VkRenderPassBeginInfo renderPassInfo{}; //开始信息这是，注意
 		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 		renderPassInfo.renderPass = renderPass;
 		renderPassInfo.framebuffer = swapChainFramebuffers[i];
-		renderPassInfo.renderArea.offset = { 0, 0 };
-
+		renderPassInfo.renderArea.offset = { 0,0 };
 		renderPassInfo.renderArea.extent = swapChainExtent;
 
-		std::array<VkClearValue, 2> clearValues{};
+		std::array<VkClearValue, 4> clearValues{};
 		clearValues[0].color = { 0.0f, 0.0f, 0.0f, 1.0f };
-		clearValues[1].depthStencil = { 1.0f, 0 };
+		clearValues[1].color = { 0.0f, 0.0f, 0.0f, 1.0f };
+		clearValues[2].color = { 0.0f, 0.0f, 0.0f, 1.0f };
+		clearValues[3].depthStencil = { 1.0f, 0 };
 
 		renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
 		renderPassInfo.pClearValues = clearValues.data();
@@ -1371,7 +1677,7 @@ void GameApp::createCommandBuffers()
 
 		vkCmdBeginRenderPass(commandBuffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);//subpass的内容会被记录至主要指令缓存中
 
-		vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
+		vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipelineSubpass0);
 
 		VkBuffer vertexBuffers[] = { vertexBuffer,vertexBufferShit };
 		VkDeviceSize offsets[] = { 0,0 };
@@ -1379,13 +1685,8 @@ void GameApp::createCommandBuffers()
 
 		vkCmdBindVertexBuffers(commandBuffers[i], 0, 2, vertexBuffers, offsets);
 		vkCmdBindIndexBuffer(commandBuffers[i], indexBuffer, 0, VK_INDEX_TYPE_UINT16);
-
-
-
-
-
 		//vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout,0, 1, &descriptorSets[i], 0, nullptr);
-		vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets[i], 0, nullptr);
+		vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets[i], 0, VK_NULL_HANDLE);
 
 		//firstSet is the set number of the first descriptor set to be bound.
 
@@ -1393,11 +1694,16 @@ void GameApp::createCommandBuffers()
 
 		vkCmdDrawIndexed(commandBuffers[i], static_cast<uint32_t>(indices.size()), numOfInstance, 0, 0, 0);
 
-		//vkCmdPipelineBarrier();
+		// Second sub pass
+		vkCmdNextSubpass(commandBuffers[i], VK_SUBPASS_CONTENTS_INLINE);
+
+		vkCmdBindPipeline(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipelineSubpass1);
+		vkCmdBindDescriptorSets(commandBuffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets[i], 0, VK_NULL_HANDLE);
+		vkCmdDraw(commandBuffers[i], 3, 1, 0, 0);
+
+
 
 		vkCmdEndRenderPass(commandBuffers[i]);
-
-
 
 
 		if (vkEndCommandBuffer(commandBuffers[i]) != VK_SUCCESS) {
@@ -1417,8 +1723,10 @@ void GameApp::createCommandBuffers()
 
 void GameApp::drawFrame()
 {
-	//vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
-	//vkResetFences(device, 1, &inFlightFences[currentFrame]);
+
+
+	vkWaitForFences(device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX); // vkWaitForFences阻塞查询
+	vkResetFences(device, 1, &inFlightFences[currentFrame]);
 
 	uint32_t imageIndex;
 
@@ -1429,22 +1737,17 @@ void GameApp::drawFrame()
 		recreateSwapChain();
 		return;
 	}
+
+	else if (result == VK_NOT_READY) {
+		std::cout << "FUck you mother fucker,image of index %d is not ready!!,rely on semophore" << std::endl;
+	}
 	else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
 		throw std::runtime_error("failed to acquire swap chain image!");
 	}
-
-
-	//if (imagesInFlight[imageIndex] != VK_NULL_HANDLE) {
-	//	vkWaitForFences(device, 1, &imagesInFlight[imageIndex], VK_TRUE, UINT64_MAX);
-	//}
-	//imagesInFlight[imageIndex] = inFlightFences[currentFrame];
-
-
-
-
-
-
-
+	if (imagesInFlight[imageIndex] != VK_NULL_HANDLE) {
+		vkWaitForFences(device, 1, &imagesInFlight[imageIndex], VK_TRUE, UINT64_MAX);
+	}
+	imagesInFlight[imageIndex] = inFlightFences[currentFrame];
 	updateUniformBuffer(imageIndex);
 
 
@@ -1452,7 +1755,6 @@ void GameApp::drawFrame()
 
 	VkSubmitInfo submitInfo{};
 	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-
 	VkSemaphore waitSemaphores[] = { imageAvailableSemaphores[currentFrame] };
 	VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 	submitInfo.waitSemaphoreCount = 1;
@@ -1464,18 +1766,16 @@ void GameApp::drawFrame()
 	submitInfo.signalSemaphoreCount = 1;
 	submitInfo.pSignalSemaphores = signalSemaphores;
 
-	//vkResetFences(device, 1, &inFlightFences[currentFrame]);
 
 
 
-	//if (vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS)
-	//{
-	//	throw std::runtime_error("failed to submit draw command buffer!");
-	//}
+
+
+	vkResetFences(device, 1, &inFlightFences[currentFrame]);
 
 
 
-	if (vkQueueSubmit(graphicsQueue, 1, &submitInfo, VK_NULL_HANDLE) != VK_SUCCESS)
+	if (vkQueueSubmit(graphicsQueue, 1, &submitInfo, inFlightFences[currentFrame]) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to submit draw command buffer!");
 	}
@@ -1483,18 +1783,20 @@ void GameApp::drawFrame()
 
 
 
+
+
 	VkPresentInfoKHR presentInfo{};
 	presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-
 	presentInfo.waitSemaphoreCount = 1;
 	presentInfo.pWaitSemaphores = signalSemaphores;
 
 	VkSwapchainKHR swapChains[] = { swapChain };
-	presentInfo.swapchainCount = 1;
 	presentInfo.pSwapchains = swapChains;
+	presentInfo.swapchainCount = 1;
 	presentInfo.pImageIndices = &imageIndex;
-
 	presentInfo.pResults = nullptr; // Optional
+
+
 
 	result = vkQueuePresentKHR(presentQueue, &presentInfo);
 
@@ -1517,29 +1819,11 @@ void GameApp::createSyncObjects()
 {
 	imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
 	renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
-	//inFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
+	inFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
 	imagesInFlight.resize(swapChainImages.size(), VK_NULL_HANDLE);
 
 	//可以通过fence查询vkQueueSubmit的动作是否完成   vkGetFenceStatus非阻塞的查询   
 	//											   vkWaitForFences阻塞查询，直到其中至少一个，或者所有的fence都处于signaled状态，或者超时（时间限制由参数给出），才会返回。
-	//											   fence使用在Host/Device之间的，且是一种比较粗粒度的同步机制。
-
-	//Semaphore同步不同的queue之间 或者同一个queue不同的submission之间的执行顺序    在queue之间或者内部做同步都是device自己控制
-
-	//通过VkSubmitInfo(3)中的这三组数组，可以达到如下效果：
-	//		所提交的command buffer将在执行到每个semaphore等待阶段时候，检查并等待每个对应的wait semaphore数组中的semaphore是否被signal, 
-	//		且等到command buffer执行完毕以后，将所有signal semaphore数组中的semaphore都signal起来。
-
-
-	//Barrier 同一个queue中的command，或者同一个subpass中的command所明确指定的依赖关系
-
-	//我们可以想象一下有一大串的command乱序执行（实际上可能是顺序开始，乱序结束），barrier就是在中间树立一道栅栏，要求栅栏前后保持一定的顺序。
-
-	//fence是同步gpu执行队列和渲染线程，barrier是防止指令乱序（资源读写乱序），
-	//event是cmd - barrier的升级版, barrier的wait和signal在同一个地方，
-	//event的wait和signal可以在两个地方。sephmore可以同步队列。
-	//这些基本概念懂了之后，就要开始讨论下一个话题，
-	//如何做barrier - less，多线程拼cmdbuf, 多queue提交，event换barrier提改延迟隐藏效率。尽可能松散地安排pass依赖，也就是rendergraph。
 
 
 	VkSemaphoreCreateInfo semaphoreInfo{};
@@ -1549,21 +1833,21 @@ void GameApp::createSyncObjects()
 	fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 	fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-	//for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
-	//	if (vkCreateSemaphore(device, &semaphoreInfo, nullptr, &imageAvailableSemaphores[i]) != VK_SUCCESS ||
-	//		vkCreateSemaphore(device, &semaphoreInfo, nullptr, &renderFinishedSemaphores[i]) != VK_SUCCESS ||
-	//		vkCreateFence(device, &fenceInfo, nullptr, &inFlightFences[i]) != VK_SUCCESS) {
-	//		throw std::runtime_error("failed to create synchronization objects for a frame!");
-	//	}
-	//}
-
-
 	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
 		if (vkCreateSemaphore(device, &semaphoreInfo, nullptr, &imageAvailableSemaphores[i]) != VK_SUCCESS ||
-			vkCreateSemaphore(device, &semaphoreInfo, nullptr, &renderFinishedSemaphores[i]) != VK_SUCCESS) {
+			vkCreateSemaphore(device, &semaphoreInfo, nullptr, &renderFinishedSemaphores[i]) != VK_SUCCESS ||
+			vkCreateFence(device, &fenceInfo, nullptr, &inFlightFences[i]) != VK_SUCCESS) {
 			throw std::runtime_error("failed to create synchronization objects for a frame!");
 		}
 	}
+
+
+	//for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+	//	if (vkCreateSemaphore(device, &semaphoreInfo, nullptr, &imageAvailableSemaphores[i]) != VK_SUCCESS ||
+	//		vkCreateSemaphore(device, &semaphoreInfo, nullptr, &renderFinishedSemaphores[i]) != VK_SUCCESS) {
+	//		throw std::runtime_error("failed to create synchronization objects for a frame!");
+	//	}
+	//}
 
 
 
@@ -1575,7 +1859,7 @@ void GameApp::recreateSwapChain()
 	vkDeviceWaitIdle(device);
 	cleanupSwapChain();
 	createSwapChain();
-	createImageViews();
+	createSwapChainImageViews();
 	createRenderPass();
 	createGraphicsPipeline();
 	createFramebuffers();
@@ -1597,7 +1881,7 @@ void GameApp::cleanupSwapChain()
 	vkFreeCommandBuffers(device, graphicsCommandPool, static_cast<uint32_t>(commandBuffers.size()), commandBuffers.data());
 
 
-	vkDestroyPipeline(device, graphicsPipeline, nullptr);
+	vkDestroyPipeline(device, graphicsPipelineSubpass0, nullptr);
 	vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
 	vkDestroyRenderPass(device, renderPass, nullptr);
 
@@ -1610,7 +1894,7 @@ void GameApp::cleanupSwapChain()
 	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
 		vkDestroySemaphore(device, renderFinishedSemaphores[i], nullptr);
 		vkDestroySemaphore(device, imageAvailableSemaphores[i], nullptr);
-		//vkDestroyFence(device, inFlightFences[i], nullptr);
+		vkDestroyFence(device, inFlightFences[i], nullptr);
 	}
 
 	for (size_t i = 0; i < swapChainImages.size(); i++) {
@@ -1628,7 +1912,7 @@ void GameApp::cleanupSwapChain()
 
 	renderFinishedSemaphores.clear();
 	imageAvailableSemaphores.clear();
-	//inFlightFences.clear();
+	inFlightFences.clear();
 	imagesInFlight.clear();
 }
 
@@ -1831,31 +2115,50 @@ void GameApp::createDescriptorSetLayout()
 {
 
 
-	std::array<VkDescriptorSetLayoutBinding, 3> uboLayoutBinding{};
+	std::vector<VkDescriptorSetLayoutBinding> LayoutBinding;
 
-
-	uboLayoutBinding[0].binding = 0; //index 
-	uboLayoutBinding[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	uboLayoutBinding[0].descriptorCount = 2;
-	uboLayoutBinding[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-	uboLayoutBinding[0].pImmutableSamplers = nullptr; // Optional
-
-
-
-	uboLayoutBinding[1].binding = 1; //index 
-	uboLayoutBinding[1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	uboLayoutBinding[1].descriptorCount = 1;
-	uboLayoutBinding[1].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-	uboLayoutBinding[1].pImmutableSamplers = nullptr; // Optional
+	LayoutBinding.resize(6);
+	LayoutBinding[0].binding = 0; //index  uniform buffer
+	LayoutBinding[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	LayoutBinding[0].descriptorCount = 2;
+	LayoutBinding[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+	LayoutBinding[0].pImmutableSamplers = nullptr; // Optional
 
 
 
-	uboLayoutBinding[2].binding = 2; //index 
-	uboLayoutBinding[2].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	uboLayoutBinding[2].descriptorCount = 1;
-	uboLayoutBinding[2].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-	uboLayoutBinding[2].pImmutableSamplers = nullptr; // Optional
+	LayoutBinding[1].binding = 1; //index  test uniform buffer
+	LayoutBinding[1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	LayoutBinding[1].descriptorCount = 1;
+	LayoutBinding[1].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+	LayoutBinding[1].pImmutableSamplers = nullptr; // Optional
 
+
+
+	LayoutBinding[2].binding = 2; //index  texture mapping 
+	LayoutBinding[2].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	LayoutBinding[2].descriptorCount = 1;
+	LayoutBinding[2].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+	LayoutBinding[2].pImmutableSamplers = nullptr; // Optional
+
+
+	LayoutBinding[3].binding = 3; //index  Rcolor
+	LayoutBinding[3].descriptorCount = 1;
+	LayoutBinding[3].descriptorType = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+	LayoutBinding[3].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+	LayoutBinding[3].pImmutableSamplers = nullptr; // Optional
+
+
+	LayoutBinding[4].binding = 4;//index Gcolor
+	LayoutBinding[4].descriptorCount = 1;
+	LayoutBinding[4].descriptorType = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+	LayoutBinding[4].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+	LayoutBinding[4].pImmutableSamplers = nullptr; // Optional
+
+	LayoutBinding[5].binding = 5;// depth value
+	LayoutBinding[5].descriptorCount = 1;
+	LayoutBinding[5].descriptorType = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+	LayoutBinding[5].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+	LayoutBinding[5].pImmutableSamplers = nullptr; // Optional
 
 
 
@@ -1866,8 +2169,8 @@ void GameApp::createDescriptorSetLayout()
 
 	VkDescriptorSetLayoutCreateInfo layoutInfo{};
 	layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-	layoutInfo.bindingCount = (uint32_t)uboLayoutBinding.size();  //the amount of VkDescriptorSetLayoutBinding
-	layoutInfo.pBindings = uboLayoutBinding.data();
+	layoutInfo.bindingCount = (uint32_t)LayoutBinding.size();  //the amount of VkDescriptorSetLayoutBinding
+	layoutInfo.pBindings = LayoutBinding.data();
 
 
 	if (vkCreateDescriptorSetLayout(device, &layoutInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS) {
@@ -1944,7 +2247,7 @@ void GameApp::createDescriptorPool()
 
 
 	// Create the global descriptor pool
-	std::array<VkDescriptorPoolSize, 2> poolSizes{};
+	std::array<VkDescriptorPoolSize, 3> poolSizes{};
 
 
 
@@ -1954,6 +2257,11 @@ void GameApp::createDescriptorPool()
 
 	poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 	poolSizes[1].descriptorCount = 3;
+
+	poolSizes[2].type = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+	poolSizes[2].descriptorCount = 9;
+
+
 
 
 
@@ -1979,14 +2287,13 @@ void GameApp::createDescriptorSets()
 {
 
 
-
-
 	std::vector<VkDescriptorSetLayout> layouts(swapChainImages.size(), descriptorSetLayout);
 
 	VkDescriptorSetAllocateInfo allocInfo{};
 	allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 	allocInfo.descriptorPool = descriptorPool;
 	allocInfo.descriptorSetCount = static_cast<uint32_t>(swapChainImages.size());
+
 	allocInfo.pSetLayouts = layouts.data();
 
 	descriptorSets.resize(swapChainImages.size());
@@ -2017,21 +2324,35 @@ void GameApp::createDescriptorSets()
 
 
 
-			VkDescriptorBufferInfo bufferInfo2{};
+		VkDescriptorBufferInfo bufferInfo2{};
 		bufferInfo2.buffer = uniformBuffersTest[i];
 		bufferInfo2.offset = 0;
 		bufferInfo2.range = sizeof(UniformBufferObjectTest);
 
 
 
-		VkDescriptorImageInfo imageInfo{};
-		imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-		imageInfo.imageView = textureImageView;
-		imageInfo.sampler = textureSampler;
+		VkDescriptorImageInfo imageInfoForTexureLoaded{};
+		imageInfoForTexureLoaded.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		imageInfoForTexureLoaded.imageView = textureImageView;
+		imageInfoForTexureLoaded.sampler = textureSampler;
+
+		std::array<VkDescriptorImageInfo, 3> imageInfoForSubPass1{};
+		imageInfoForSubPass1[0].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		imageInfoForSubPass1[0].imageView = RcolorImageView[i];
+		imageInfoForSubPass1[0].sampler = VK_NULL_HANDLE;
+
+		imageInfoForSubPass1[1].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		imageInfoForSubPass1[1].imageView = GcolorImageView[i];
+		imageInfoForSubPass1[1].sampler = VK_NULL_HANDLE;
+
+		imageInfoForSubPass1[2].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		imageInfoForSubPass1[2].imageView = depthImageView;
+		imageInfoForSubPass1[2].sampler = VK_NULL_HANDLE;
 
 
 
-		std::array<VkWriteDescriptorSet, 3> writeDescriptorSets{};
+
+		std::array<VkWriteDescriptorSet, 6> writeDescriptorSets{};
 
 		/*
 			Binding 0: Object matrices Uniform buffer
@@ -2042,22 +2363,14 @@ void GameApp::createDescriptorSets()
 		writeDescriptorSets[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 		//writeDescriptorSets[0].pBufferInfo = &bufferInfo0;
 		writeDescriptorSets[0].pBufferInfo = shit.data();
-
 		writeDescriptorSets[0].descriptorCount = 2;
 		writeDescriptorSets[0].dstArrayElement = 0;
 
 
-		//writeDescriptorSets[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		//writeDescriptorSets[1].dstSet = descriptorSets[i];
-		//writeDescriptorSets[1].dstBinding = 0;
-		//writeDescriptorSets[1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		//writeDescriptorSets[1].pBufferInfo = &bufferInfo1;
-		//writeDescriptorSets[1].descriptorCount = 1;
-		//writeDescriptorSets[1].dstArrayElement = 1;
 		/*
-		*
-			Binding 1: Object matrices Test
+			Binding 1: test purposes
 		*/
+
 		writeDescriptorSets[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 		writeDescriptorSets[1].dstSet = descriptorSets[i];
 		writeDescriptorSets[1].dstBinding = 1;
@@ -2069,23 +2382,55 @@ void GameApp::createDescriptorSets()
 
 
 
+		/*
+			Binding 3: texture mapping
+		*/
 		writeDescriptorSets[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 		writeDescriptorSets[2].dstSet = descriptorSets[i];
 		writeDescriptorSets[2].dstBinding = 2;
 		writeDescriptorSets[2].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		writeDescriptorSets[2].pImageInfo = &imageInfo;
+		writeDescriptorSets[2].pImageInfo = &imageInfoForTexureLoaded;
 		writeDescriptorSets[2].descriptorCount = 1;
 		writeDescriptorSets[2].dstArrayElement = 0;
 
 
+		/*
+			Binding 4: Rcolor
+		*/
+		writeDescriptorSets[3].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		writeDescriptorSets[3].dstSet = descriptorSets[i];
+		writeDescriptorSets[3].dstBinding = 3;
+		writeDescriptorSets[3].descriptorType = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+		writeDescriptorSets[3].pImageInfo = &imageInfoForSubPass1[0];
+		writeDescriptorSets[3].descriptorCount = 1;
+		writeDescriptorSets[3].dstArrayElement = 0;
 
 
 
+		/*
+			Binding 5: Gcolor
+		*/
+		writeDescriptorSets[4].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		writeDescriptorSets[4].dstSet = descriptorSets[i];
+		writeDescriptorSets[4].dstBinding = 4;
+		writeDescriptorSets[4].descriptorType = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+		writeDescriptorSets[4].pImageInfo = &imageInfoForSubPass1[1];
+		writeDescriptorSets[4].descriptorCount = 1;
+		writeDescriptorSets[4].dstArrayElement = 0;
 
 
+		/*
+			Binding 6: depthValue
+		*/
+		writeDescriptorSets[5].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		writeDescriptorSets[5].dstSet = descriptorSets[i];
+		writeDescriptorSets[5].dstBinding = 5;
+		writeDescriptorSets[5].descriptorType = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+		writeDescriptorSets[5].pImageInfo = &imageInfoForSubPass1[2];
+		writeDescriptorSets[5].descriptorCount = 1;
+		writeDescriptorSets[5].dstArrayElement = 0;
 
 		vkUpdateDescriptorSets(device, static_cast<uint32_t>(writeDescriptorSets.size()), writeDescriptorSets.data(), 0, nullptr);
-
 	}
 
 
@@ -2467,6 +2812,208 @@ void GameApp::printMatirx4(const glm::mat4& m)
 	}
 
 	std::cout << std::endl;
+
+}
+
+void GameApp::createMRTImages()
+{
+
+
+	RcolorImage.resize(imageCount);
+	GcolorImage.resize(imageCount);
+
+
+	RmemColor.resize(imageCount);
+	GmemColor.resize(imageCount);
+
+
+	for (auto i = 0; i < RcolorImage.size(); i++) {
+		VkImageCreateInfo imageInfo{};
+		imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+		imageInfo.imageType = VK_IMAGE_TYPE_2D;
+		imageInfo.extent.width = swapChainExtent.width;
+		imageInfo.extent.height = swapChainExtent.height;
+		imageInfo.extent.depth = 1;
+		imageInfo.mipLevels = 1; //mipmapping
+		imageInfo.arrayLayers = 1; //cubemap
+		imageInfo.format = swapChainImageFormat;
+		imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;//仅仅分为是不是LINEAR的存储方式
+		imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+		imageInfo.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
+		imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+		imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+
+		if (vkCreateImage(device, &imageInfo, nullptr, &RcolorImage[i]) != VK_SUCCESS) {
+			throw std::runtime_error("failed to create image!");
+		}
+
+		VkMemoryRequirements memRequirements;
+		vkGetImageMemoryRequirements(device, RcolorImage[i], &memRequirements);
+
+		VkMemoryAllocateInfo allocInfo{};
+		allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+		allocInfo.allocationSize = memRequirements.size;
+		allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);//找到可以分配VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT内存类型的index
+
+		if (vkAllocateMemory(device, &allocInfo, nullptr, &RmemColor[i]) != VK_SUCCESS) {
+			throw std::runtime_error("failed to allocate image memory!");
+		}
+
+		vkBindImageMemory(device, RcolorImage[i], RmemColor[i], 0); //把两者联系起来
+
+
+
+		VkCommandBuffer commandBuffer = beginSingleTimeCommands();//指令录入
+
+
+		VkImageMemoryBarrier barrier{};
+		barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+		barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+		barrier.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+
+
+
+		barrier.image = RcolorImage[i];
+		barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		barrier.subresourceRange.baseMipLevel = 0;
+		barrier.subresourceRange.levelCount = 1;
+		barrier.subresourceRange.baseArrayLayer = 0;
+		barrier.subresourceRange.layerCount = 1;
+
+		VkPipelineStageFlags sourceStage;
+		VkPipelineStageFlags destinationStage;
+
+		barrier.srcAccessMask = 0;
+		barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+		sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+		destinationStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+
+
+
+		vkCmdPipelineBarrier(
+			commandBuffer,
+			sourceStage, destinationStage,
+			0,
+			0, nullptr,
+			0, nullptr,
+			1, &barrier
+		);
+
+		endSingleTimeCommands(commandBuffer);
+	}
+
+
+	for (auto i = 0; i < GcolorImage.size(); i++) {
+		VkImageCreateInfo imageInfo{};
+		imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+		imageInfo.imageType = VK_IMAGE_TYPE_2D;
+		imageInfo.extent.width = swapChainExtent.width;
+		imageInfo.extent.height = swapChainExtent.height;
+		imageInfo.extent.depth = 1;
+		imageInfo.mipLevels = 1; //mipmapping
+		imageInfo.arrayLayers = 1; //cubamap
+		imageInfo.format = swapChainImageFormat;
+		imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;//仅仅分为是不是LINEAR
+		imageInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+		imageInfo.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT;
+		imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
+		imageInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+
+		if (vkCreateImage(device, &imageInfo, nullptr, &GcolorImage[i]) != VK_SUCCESS) {
+			throw std::runtime_error("failed to create image!");
+		}
+
+		VkMemoryRequirements memRequirements;
+		vkGetImageMemoryRequirements(device, GcolorImage[i], &memRequirements);
+
+		VkMemoryAllocateInfo allocInfo{};
+		allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+		allocInfo.allocationSize = memRequirements.size;
+		allocInfo.memoryTypeIndex = findMemoryType(memRequirements.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+
+		if (vkAllocateMemory(device, &allocInfo, nullptr, &GmemColor[i]) != VK_SUCCESS) {
+			throw std::runtime_error("failed to allocate image memory!");
+		}
+
+		vkBindImageMemory(device, GcolorImage[i], GmemColor[i], 0);
+
+
+
+		VkCommandBuffer commandBuffer = beginSingleTimeCommands();
+
+
+		VkImageMemoryBarrier barrier{};
+		barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+		barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+		barrier.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+
+
+
+		barrier.image = GcolorImage[i];
+		barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+
+
+
+
+		barrier.subresourceRange.baseMipLevel = 0;
+		barrier.subresourceRange.levelCount = 1;
+		barrier.subresourceRange.baseArrayLayer = 0;
+		barrier.subresourceRange.layerCount = 1;
+
+		VkPipelineStageFlags sourceStage;
+		VkPipelineStageFlags destinationStage;
+
+
+		barrier.srcAccessMask = 0;
+		barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+
+		sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+		destinationStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+
+
+
+		vkCmdPipelineBarrier(
+			commandBuffer,
+			sourceStage, destinationStage,
+			0,
+			0, nullptr,
+			0, nullptr,
+			1, &barrier
+		);
+
+		endSingleTimeCommands(commandBuffer);
+	}
+
+
+
+
+
+}
+
+void GameApp::createMRTImagesViews()
+{
+	RcolorImageView.resize(imageCount);
+	GcolorImageView.resize(imageCount);
+
+	for (auto i = 0; i < RcolorImageView.size(); i++)
+	{
+		RcolorImageView[i] = createImageView(RcolorImage[i], VK_FORMAT_B8G8R8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
+	}
+
+
+	for (auto i = 0; i < GcolorImageView.size(); i++)
+	{
+		GcolorImageView[i] = createImageView(GcolorImage[i], VK_FORMAT_B8G8R8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
+	}
+
 
 }
 
