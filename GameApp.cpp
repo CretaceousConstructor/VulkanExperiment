@@ -154,7 +154,6 @@ void GameApp::initVulkan() {
 	createMRTImagesViews();
 	createSwapChainImageViews();
 	createRenderPass();
-
 	createDescriptorSetLayout();
 	createGraphicsPipeline();
 	createDepthResources();
@@ -1117,15 +1116,15 @@ void GameApp::createGraphicsPipeline()
 	colorBlending.blendConstants[3] = 0.0f; // Optional
 
 
-	VkDynamicState dynamicStates[] = {
-		VK_DYNAMIC_STATE_VIEWPORT,
-		VK_DYNAMIC_STATE_LINE_WIDTH
-	};
+	//VkDynamicState dynamicStates[] = {
+	//	VK_DYNAMIC_STATE_VIEWPORT,
+	//	VK_DYNAMIC_STATE_LINE_WIDTH
+	//};
 
 	VkPipelineDynamicStateCreateInfo dynamicState{};
 	dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-	dynamicState.dynamicStateCount = 2;
-	dynamicState.pDynamicStates = dynamicStates;
+	dynamicState.dynamicStateCount = 0;
+	dynamicState.pDynamicStates = VK_NULL_HANDLE;
 
 
 
@@ -1217,6 +1216,7 @@ void GameApp::createGraphicsPipeline()
 
 
 
+
 	VkPipelineShaderStageCreateInfo shaderStages0[] = { fragShaderStageInfo0 };
 
 
@@ -1303,7 +1303,7 @@ void GameApp::createGraphicsPipeline()
 	VkPipelineDynamicStateCreateInfo dynamicState0{};
 	dynamicState0.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
 	dynamicState0.dynamicStateCount = 2;
-	dynamicState0.pDynamicStates = dynamicStates;
+	dynamicState0.pDynamicStates = dynamicStates0;
 
 
 
@@ -1365,8 +1365,6 @@ void GameApp::createGraphicsPipeline()
 
 
 	auto proj = glm::perspectiveRH_ZO(glm::radians(90.f), swapChainExtent.width / (float)swapChainExtent.height, 3.f, 9.0f);
-
-
 	auto vec = glm::vec4(4.f, 3.f, -3.f, 1.f);
 	printVector4(proj * vec);
 
@@ -1377,6 +1375,48 @@ void GameApp::createGraphicsPipeline()
 
 
 
+
+	//
+
+	UniformBufferObject ubo{};
+	//ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	ubo.model = glm::mat4(1.0f);
+	ubo.view = glm::lookAt(glm::vec3(0.f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	//ubo.view = glm::lookAtLH(glm::vec3(0.f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+	//ubo.view = glm::lookAtRH(glm::vec3(0.f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+
+	std::cout << "fuck you visual studio!\n";
+	std::cout << "modle matrix\n";
+
+	printMatirx(ubo.model);
+	std::cout << "fuck you visual studio!\n";
+	std::cout << "view matrix\n";
+
+	printMatirx(ubo.view);
+
+
+	ubo.proj = glm::perspectiveRH_NO(glm::radians(90.f), swapChainExtent.width / (float)swapChainExtent.height, 3.f, 9.0f);
+
+	//ubo.proj = glm::perspectiveRH_ZO(glm::radians(90.f), swapChainExtent.width / (float)swapChainExtent.height, 3.f, 9.0f);
+
+	//perspectiveRH_ZO
+	//     
+	std::cout << "fuck you visual studio!\n";
+	auto testV0 = glm::vec4(-4.f, 3.f, -3.f, 1.f);
+	auto testV1 = glm::vec4(8.f, 6.f, -6.f, 1.f);
+	auto testV2 = glm::vec4(12.f, 9.f, -9.f, 1.f);
+
+	printVector(ubo.proj * testV0);
+	printVector(ubo.proj * testV1);
+	printVector(ubo.proj * testV2);
+
+
+
+
+
+
+	//
+	
 	if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo0, nullptr, &graphicsPipelineSubpass1) != VK_SUCCESS) {
 		throw std::runtime_error("failed to create graphics pipeline!");
 	}
@@ -1434,13 +1474,19 @@ void GameApp::createRenderPass()
 	depthAttachment.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 
+
+
+
+
+
+
 	//The index of the attachment in this array is directly referenced from the fragment shader with the 
 	//layout(location = 0) out vec4 outColor directive!
-
 	//subpass1用的
 	VkAttachmentReference colorAttachmentRef{};
 	colorAttachmentRef.attachment = 0;
 	colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
 	VkAttachmentReference depthAttachmentRefForRead{};
 	depthAttachmentRefForRead.attachment = 3;
 	depthAttachmentRefForRead.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
@@ -1467,6 +1513,7 @@ void GameApp::createRenderPass()
 
 	std::vector<VkAttachmentReference> outPutColorAttachmentRefsForSubpass1 = { colorAttachmentRef };
 	std::vector<VkAttachmentReference> inPutAttachmentRefsForSubpass1 = { RAttachmentRefForRead, GAttachmentRefForRead ,depthAttachmentRefForRead };
+
 
 	std::vector<VkAttachmentReference> inputColorAttachmentRefsForSubpass0 = { RAttachmentRef,GAttachmentRef };
 
@@ -1579,7 +1626,7 @@ void GameApp::createFramebuffers()
 	for (size_t i = 0; i < swapChainImageViews.size(); i++) {
 
 		std::vector<VkImageView> attachments = {
-			swapChainImageViews[i],
+			swapChainImageViews[i],                 
 			RcolorImageView[i],
 			GcolorImageView[i],
 			depthImageView
@@ -1622,7 +1669,7 @@ void GameApp::createCommandPool()
 	VkCommandPoolCreateInfo transforPoolInfo{};
 	transforPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 	transforPoolInfo.queueFamilyIndex = queueFamilyIndices.transferFamily.value();
-	transforPoolInfo.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT; // 仅仅用于短暂的使用 并且可以复用
+	transforPoolInfo.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT ; // 仅仅用于短暂的使用 并且可以复用 DON'T KNOW
 
 
 	if (vkCreateCommandPool(device, &transforPoolInfo, nullptr, &transforCommandPool) != VK_SUCCESS) {
@@ -2148,7 +2195,7 @@ void GameApp::createDescriptorSetLayout()
 	LayoutBinding[3].pImmutableSamplers = nullptr; // Optional
 
 
-	LayoutBinding[4].binding = 4;//index Gcolor
+	LayoutBinding[4].binding = 4;//index  Gcolor
 	LayoutBinding[4].descriptorCount = 1;
 	LayoutBinding[4].descriptorType = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
 	LayoutBinding[4].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
@@ -2293,14 +2340,19 @@ void GameApp::createDescriptorSets()
 	allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 	allocInfo.descriptorPool = descriptorPool;
 	allocInfo.descriptorSetCount = static_cast<uint32_t>(swapChainImages.size());
-
 	allocInfo.pSetLayouts = layouts.data();
 
 	descriptorSets.resize(swapChainImages.size());
 
+
 	if (vkAllocateDescriptorSets(device, &allocInfo, descriptorSets.data()) != VK_SUCCESS) {
 		throw std::runtime_error("failed to allocate descriptor sets!");
 	}
+
+
+
+
+	
 
 
 
@@ -2368,7 +2420,7 @@ void GameApp::createDescriptorSets()
 
 
 		/*
-			Binding 1: test purposes
+			Binding 1: test purposes uniform buffer
 		*/
 
 		writeDescriptorSets[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -2383,7 +2435,7 @@ void GameApp::createDescriptorSets()
 
 
 		/*
-			Binding 3: texture mapping
+			Binding 2: texture mapping
 		*/
 		writeDescriptorSets[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 		writeDescriptorSets[2].dstSet = descriptorSets[i];
@@ -2395,7 +2447,7 @@ void GameApp::createDescriptorSets()
 
 
 		/*
-			Binding 4: Rcolor
+			Binding 3: Rcolor
 		*/
 		writeDescriptorSets[3].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 		writeDescriptorSets[3].dstSet = descriptorSets[i];
@@ -2408,7 +2460,7 @@ void GameApp::createDescriptorSets()
 
 
 		/*
-			Binding 5: Gcolor
+			Binding 4: Gcolor
 		*/
 		writeDescriptorSets[4].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 		writeDescriptorSets[4].dstSet = descriptorSets[i];
@@ -2420,7 +2472,7 @@ void GameApp::createDescriptorSets()
 
 
 		/*
-			Binding 6: depthValue
+			Binding 5: depthValue
 		*/
 		writeDescriptorSets[5].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 		writeDescriptorSets[5].dstSet = descriptorSets[i];

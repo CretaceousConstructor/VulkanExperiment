@@ -43,10 +43,10 @@
     <None Include="shader.frag">
       <Filter>Shader Files</Filter>
     </None>
-    <None Include="shaderPass1.frag">
+    <None Include="shader0.frag">
       <Filter>Shader Files</Filter>
     </None>
-    <None Include="shaderPass1.vert">
+    <None Include="shader0.vert">
       <Filter>Shader Files</Filter>
     </None>
   </ItemGroup>

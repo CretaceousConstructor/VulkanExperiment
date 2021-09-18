@@ -403,6 +403,38 @@ private:
 
 
 
+	void printVector(const glm::vec4& m)
+	{
+
+		std::cout << std::endl
+			<< "x: " << m.x << std::endl
+			<< "y: " << m.y << std::endl
+			<< "z: " << m.z << std::endl
+			<< "w: " << m.w << std::endl
+			<< std::endl;
+
+	}
+
+
+
+
+	void printMatirx(const glm::mat4& m)
+	{
+		std::cout << std::endl;
+
+		for (int i = 0; i < 4; i++) {
+			for (int j = 0; j < 4; j++) {
+
+				std::cout << m[i][j] << "    ";
+
+			}
+			std::cout << std::endl;
+		}
+
+		std::cout << std::endl;
+
+	}
+
 
 
 

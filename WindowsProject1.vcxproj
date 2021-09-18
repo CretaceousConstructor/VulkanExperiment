@@ -30,8 +30,8 @@
   <ItemGroup>
     <None Include="shader.frag" />
     <None Include="shader.vert" />
-    <None Include="shaderPass1.frag" />
-    <None Include="shaderPass1.vert" />
+    <None Include="shader0.frag" />
+    <None Include="shader0.vert" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

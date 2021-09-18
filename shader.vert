@@ -1,16 +1,34 @@
 #version 460
 #extension GL_ARB_separate_shader_objects : enable
+#extension GL_EXT_debug_printf : enable
+
 
 //#extension GL_KHR_vulkan_glsl : enable
-
-#extension GL_EXT_debug_printf : enable
 
 
 layout(set = 0,binding = 0) uniform UniformBufferObject {
     mat4 model;
     mat4 view;
-    mat4 proj;
+     mat4 proj;
 } ubo;
+
+
+
+//
+//
+//layout(set = 0,binding = 0) uniform UniformBufferObject22[0];
+//
+//
+//layout(set = 0,binding = 0) uniform UniformBufferObjectDescriptor[1];
+//
+//
+//
+//
+//
+//
+
+
+
 
 
 layout(set = 0,binding = 1) uniform UniformBufferObjectTest {
@@ -48,7 +66,8 @@ void main()
 
     fragColor = inColor;
     fragTexCoord = inTexCoord;
+
 }
 
 
-//layout(set=0, binding=1) 
+ 
