@@ -5,17 +5,16 @@
 #include <memory>
 #include <vector>
 #include <cstdio>
-#include "GameApp.h"
 
-
+#include "App.h"
 
 
 int main() {
 
 
-	GameApp app;
+	App app_instance;
 	try {
-		app.run();
+		app_instance.Run();
 	}
 	catch (const std::exception& e) {
 		std::cerr << e.what() << std::endl;

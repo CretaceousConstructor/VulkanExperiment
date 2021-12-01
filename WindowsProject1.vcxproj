@@ -19,13 +19,44 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="App.cpp" />
+    <ClCompile Include="VkCommandManager.cpp" />
     <ClCompile Include="GameApp.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Renderer.cpp" />
+    <ClCompile Include="ShaderManager.cpp" />
+    <ClCompile Include="Texture.cpp" />
+    <ClCompile Include="VkImageWrapper.cpp" />
+    <ClCompile Include="VkMemoryManager.cpp" />
+    <ClCompile Include="VkMemoryWrapper.cpp" />
+    <ClCompile Include="VkSwapChainManager.cpp" />
+    <ClCompile Include="VkDeviceManager.cpp" />
+    <ClCompile Include="VkExtensionManager.cpp" />
+    <ClCompile Include="VkUniformBuffer.cpp" />
+    <ClCompile Include="VkValidationManager.cpp" />
+    <ClCompile Include="VkWindows.cpp" />
+    <ClCompile Include="VkInitializer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="App.h" />
+    <ClInclude Include="VkCommandManager.h" />
+    <ClInclude Include="EngineHeader.h" />
     <ClInclude Include="EngineMarco.h" />
     <ClInclude Include="GameApp.h" />
-    <ClInclude Include="TextureLoader.h" />
+    <ClInclude Include="Renderer.h" />
+    <ClInclude Include="ShaderManager.h" />
+    <ClInclude Include="Texture.h" />
+    <ClInclude Include="VkImageWrapper.h" />
+    <ClInclude Include="VkMemoryManager.h" />
+    <ClInclude Include="VkMemoryWrapper.h" />
+    <ClInclude Include="VkModel.h" />
+    <ClInclude Include="VkSwapChainManager.h" />
+    <ClInclude Include="VkDeviceManager.h" />
+    <ClInclude Include="VkExtensionManager.h" />
+    <ClInclude Include="VkUniformBuffer.h" />
+    <ClInclude Include="VkValidationManager.h" />
+    <ClInclude Include="VkWindows.h" />
+    <ClInclude Include="VkInitializer.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shader.frag" />

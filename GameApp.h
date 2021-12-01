@@ -22,9 +22,25 @@
 #include <chrono>
 #include <random>
 
-
+#include "VkWindows.h"
+#include "VkValidationManager.h"
 
 class GameApp {
+
+public:
+	VkWindows vkwindow;
+
+
+
+
+
+
+
+
+
+
+
+
 public:
 
 	GameApp();
@@ -40,7 +56,8 @@ public:
 	uint32_t HEIGHT = 600u;
 	static constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 	//
-
+	
+	
 private:
 
 	struct Vertex {
@@ -109,7 +126,7 @@ private:
 
 	std::vector<Vertex> vertices;
 	std::vector<InsatnceTranformation> instanceData;
-	std::vector<uint16_t> indices;
+	std::vector<uint16_t> indicesGraphics;
 
 
 
@@ -277,7 +294,7 @@ private:
 	std::unique_ptr<GLFWwindow, DestroyglfwWin> window;
 	VkInstance instance;
 
-	VkDebugUtilsMessengerEXT debugMessenger;	//用来让debuglayer的信息由你来控制，这个成员说明了哪些debuglayer的信息需要由你控制和如何控制这些debuglayer的信息 好像也没啥用
+	VkDebugUtilsMessengerEXT debugMessenger;	//用来让debuglayer的信息由你来控制，这个成员说明了哪些debuglayer的信息需要由你控制和如何控制这些debuglayer的信息
 
 	VkPhysicalDevice physicalDevice = VK_NULL_HANDLE; //指向显卡的句柄
 
@@ -301,13 +318,13 @@ private:
 	VkRenderPass renderPass;
 
 
-	VkDescriptorSetLayout descriptorSetLayout;
-	VkPipelineLayout pipelineLayout;
+
+	VkPipelineLayout pipelineLayoutSubpass0;
+	VkPipelineLayout pipelineLayoutSubpass1;
 
 
 
 	VkPipeline graphicsPipelineSubpass0;
-
 	VkPipeline graphicsPipelineSubpass1;
 
 
@@ -355,7 +372,24 @@ private:
 
 
 	VkDescriptorPool descriptorPool;
-	std::vector<VkDescriptorSet> descriptorSets;
+
+
+
+
+
+
+
+
+	VkDescriptorSetLayout descriptorSetLayoutWrite;
+	VkDescriptorSetLayout descriptorSetLayoutRead;
+
+
+
+
+
+
+	std::vector<VkDescriptorSet> descriptorSetsWrite;
+	std::vector<VkDescriptorSet> descriptorSetsRead;
 
 
 	VkImage textureImage;
@@ -377,10 +411,10 @@ private:
 	VkSampler textureSampler;
 
 
-	VkImage depthImage;
-	VkDeviceMemory depthImageMemory;
+	std::vector<VkImage>        depthImage;
+	std::vector<VkDeviceMemory> depthImageMemory;
 
-	VkImageView depthImageView; 
+	std::vector<VkImageView>    depthImageView; 
 
 
 	uint32_t imageCount;
@@ -436,8 +470,8 @@ private:
 	}
 
 
-
-
+	//////////////////////////////
+	VkValidationManager validationManager;
 
 
 
