@@ -10,10 +10,9 @@ class VkModel
 
 
 public:
+
 	VkModel(std::vector<V>& para_vertex, std::vector<InsType>& para_instance_data, std::vector<uint16_t>& para_indices, VkDeviceManager* para_device_manager, VkSurfaceKHR surface, VkCommandBuffer& transfer_command_buffer);
-
-
-	void Draw(VkCommandBuffer& graphics_command_buffer);
+	void DrawInstance(VkCommandBuffer& graphics_command_buffer);
 
 
 
@@ -45,6 +44,10 @@ private:
 	InstancesData instance_data;
 
 };
+
+
+
+
 
 
 template<class V, class InsType>
@@ -140,7 +143,7 @@ VkModel< V, InsType>::VkModel(std::vector<V>& para_vertex, std::vector<InsType>&
 }
 
 template<class V, class InsType>
-void VkModel<V, InsType>::Draw(VkCommandBuffer& graphics_command_buffer)
+void VkModel<V, InsType>::DrawInstance(VkCommandBuffer& graphics_command_buffer)
 {
 
 	/*if (!buffersBound) {

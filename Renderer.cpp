@@ -57,25 +57,19 @@ void Renderer::PrepareModels()
 	}
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 	scene.emplace_back(vertices, instanceData,indices, device_manager, window->GetSurface(), transfer_command_buffer);
+
+
+//========================================================================================================================
+
+
+
+
+
+
+
+
+
 
 
 }
@@ -771,6 +765,7 @@ void Renderer::CreatePiplineSubpass1()
 
 
 
+
 	VkPipelineColorBlendAttachmentState colorBlendAttachment{};
 	colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
 	colorBlendAttachment.blendEnable = VK_FALSE;
@@ -992,7 +987,6 @@ void Renderer::CreateRenderPass()
 	RAttachmentRefForRead.attachment = 1;
 	RAttachmentRefForRead.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-
 	VkAttachmentReference depthAttachmentRefForRead{};
 	depthAttachmentRefForRead.attachment = 2;
 	depthAttachmentRefForRead.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
@@ -1001,7 +995,6 @@ void Renderer::CreateRenderPass()
 
 
 	std::vector<VkAttachmentReference> WriteColorAttachmentRefsForSubpass0 = { RAttachmentRef };
-
 	VkSubpassDescription subpass0{};
 	subpass0.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
 	subpass0.colorAttachmentCount = static_cast<uint32_t>(WriteColorAttachmentRefsForSubpass0.size());
@@ -1021,6 +1014,7 @@ void Renderer::CreateRenderPass()
 	subpass1.pColorAttachments = outPutColorAttachmentRefsForSubpass1.data();
 	subpass1.inputAttachmentCount = static_cast<uint32_t>(inPutAttachmentRefsForSubpass1.size());
 	subpass1.pInputAttachments = inPutAttachmentRefsForSubpass1.data();
+	subpass1.pDepthStencilAttachment = VK_NULL_HANDLE;
 
 
 	std::array<VkSubpassDescription, 2> subpasses = { subpass0 ,subpass1 };
@@ -1302,10 +1296,10 @@ void Renderer::CommandBufferRecording()
 
 		vkCmdBeginRenderPass(graphics_command_buffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);//
 
-		/*
-				First sub pass
-				Fills the attachments
-		*/
+		///*
+		//		First sub pass
+		//		Fills the attachments
+		//*/
 
 		vkCmdBindPipeline(graphics_command_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphics_pipeline_subpass0);
 		vkCmdBindDescriptorSets(graphics_command_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_layout_subpass0, 0, 1, &descriptor_sets_write_subpass0[i], 0, NULL);
@@ -1313,25 +1307,22 @@ void Renderer::CommandBufferRecording()
 
 		for (auto& model : scene) {
 
-			model.Draw(graphics_command_buffers[i]);
+			model.DrawInstance(graphics_command_buffers[i]);
 		}
 
 
 
-		/*
-			Second sub pass
-			Render a full screen quad, reading from the previously written attachments via input attachments
-		*/
+		///*
+		//	Second sub pass
+		//	Render a full screen quad, reading from the previously written attachments via input attachments
+		//*/
 		vkCmdNextSubpass(graphics_command_buffers[i], VK_SUBPASS_CONTENTS_INLINE);
 		vkCmdBindPipeline(graphics_command_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphics_pipeline_subpass1);
 		vkCmdBindDescriptorSets(graphics_command_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_layout_subpass1, 0, 1, &descriptor_sets_read_subpass1[i], 0, NULL);
 
+
+
 		vkCmdDraw(graphics_command_buffers[i], 3, 1, 0, 0);
-
-
-
-
-
 
 		vkCmdEndRenderPass(graphics_command_buffers[i]);
 
@@ -1401,6 +1392,8 @@ void Renderer::DrawFrame()
 	vkWaitForFences(device_manager->GetLogicalDeviceRef(), 1, &inflight_fences[currentFrame], VK_TRUE, UINT64_MAX); //vkWaitForFences无限时阻塞CPU，等待fence被signal后 从 unsignaled状态 变成 signaled状态 这里应该是防止和自己(currentFrame)冲突。To wait for one or more fences to enter the signaled state on the host,
 
 
+
+
 	uint32_t imageIndex;
 
 
@@ -1421,8 +1414,8 @@ void Renderer::DrawFrame()
 
 
 
-	UpdateUniformBuffer(imageIndex);
 
+	UpdateUniformBuffer(imageIndex);
 
 	//images_inflight大小为3在这个例子里，注意它的大小不是MAX_FRAMES_IN_FLIGHT 
 	if (images_inflight[imageIndex] != VK_NULL_HANDLE) { //images_inflight[imageIndex] 不是 nullptr，说明某一帧的GPU资源正在被以imageIndex为下标的image使用，那么我们就要等待。

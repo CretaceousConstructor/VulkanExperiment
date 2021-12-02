@@ -107,7 +107,7 @@ void App::CleanUp()
 	renderer.CleanUpDescriptorSetLayoutAndDescriptorPool();
 	renderer.CleanUpCommandBuffersAndCommandPool();
 	renderer.CleanupFrameBuffers();
-	//clean up uniformBuffers;
+ //	clean up uniformBuffers;
 	renderer.CleanUpImages();
 	swap_chain_manager.CleanUp(device_manager.GetLogicalDeviceRef());
 	device_manager.CleanUp();

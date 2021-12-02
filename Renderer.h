@@ -17,6 +17,7 @@
 #include <array>
 #include <vector>
 #include <random>
+#include <memory>
 
 class Renderer
 {
@@ -107,6 +108,20 @@ private:
 		glm::vec2 texCoord;
 
 	};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 	struct InsatnceTranformation {
 	public:
