@@ -35,18 +35,12 @@ layout(location = 1) out vec2 fragTexCoord;
 void main() 
 {
 //
-////        debugPrintfEXT("Here are two float values \n");
+    float myfloat = 3.1415f;
+    debugPrintfEXT("My float is %f", myfloat);
 ////
-////       debugPrintfEXT("Here's a smaller float value \n");
-////
-////      debugPrintfEXT("Here's an float %f with text before and after it\n",  uboShit.model[0][0]);
-////
-//  
+    //以下三个值均进行了interpolation
      gl_Position = ubo1.proj * uboShit.view  * uboShit.model* instanceMatrix * vec4(inPosition, 1.0);
-//
      fragColor = inColor;
-//
-
      fragTexCoord = inTexCoord;
 //
 }

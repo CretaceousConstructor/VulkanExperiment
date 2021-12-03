@@ -16,12 +16,12 @@
     <Filter Include="Shader Files">
       <UniqueIdentifier>{95214fe5-4d92-42ad-87ca-fc0874188aaf}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\ImGui">
+      <UniqueIdentifier>{07d189a5-c5db-4f11-b241-6e472dea3342}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GameApp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="VkWindows.cpp">
@@ -71,9 +71,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="GameApp.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="EngineMarco.h">
       <Filter>Header Files</Filter>
     </ClInclude>

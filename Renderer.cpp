@@ -262,8 +262,8 @@ void Renderer::CreateDescriptorSets()
 		*/
 		writeDescriptorSets[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 		writeDescriptorSets[0].dstSet = descriptor_sets_read_subpass1[i];
-		writeDescriptorSets[0].dstBinding = 0;
 		writeDescriptorSets[0].descriptorType = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+		writeDescriptorSets[0].dstBinding = 0;
 		writeDescriptorSets[0].pImageInfo = &imageInfoForSubPass1[0];
 		writeDescriptorSets[0].descriptorCount = 1;
 		writeDescriptorSets[0].dstArrayElement = 0;
@@ -610,8 +610,8 @@ void Renderer::CreatePiplineSubpass0()
 	depthStencil_supass0.minDepthBounds = 0.0f; // Optional
 	depthStencil_supass0.maxDepthBounds = 1.0f; // Optional
 	depthStencil_supass0.stencilTestEnable = VK_FALSE;
-	depthStencil_supass0.front = {}; // Optional
-	depthStencil_supass0.back = {}; // Optional
+	//depthStencil_supass0.front = {}; // Optional
+	//depthStencil_supass0.back = {}; // Optional
 
 
 
@@ -745,8 +745,8 @@ void Renderer::CreatePiplineSubpass1()
 	depthStencil_supass1.minDepthBounds = 0.0f; // Optional
 	depthStencil_supass1.maxDepthBounds = 1.0f; // Optional
 	depthStencil_supass1.stencilTestEnable = VK_FALSE;
-	depthStencil_supass1.front = {}; // Optional
-	depthStencil_supass1.back = {}; // Optional
+	//depthStencil_supass1.front = {}; // Optional
+	//depthStencil_supass1.back = {}; // Optional
 
 
 
@@ -1032,7 +1032,7 @@ void Renderer::CreateRenderPass()
 	dependencies[0].srcStageMask = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
 	//dependencies[0].srcAccessMask = VK_ACCESS_MEMORY_READ_BIT;
 	dependencies[0].srcAccessMask = 0;
-
+	
 
 	dependencies[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
 	dependencies[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
@@ -1045,7 +1045,7 @@ void Renderer::CreateRenderPass()
 	dependencies[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 	dependencies[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 	dependencies[1].dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-	dependencies[1].dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+	dependencies[1].dstAccessMask = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_INPUT_ATTACHMENT_READ_BIT;
 	dependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
 
@@ -1142,22 +1142,19 @@ void Renderer::CreateDescriptorSetLayout()
 	*/
 
 	std::vector<VkDescriptorSetLayoutBinding> LayoutBindingSubpass1;
-	LayoutBindingSubpass1.resize(3, VkDescriptorSetLayoutBinding{});
+	LayoutBindingSubpass1.resize(2, VkDescriptorSetLayoutBinding{});
 
 
 	LayoutBindingSubpass1[0].binding = 0; //index  Rcolor read
 	LayoutBindingSubpass1[0].descriptorCount = 1;
 	LayoutBindingSubpass1[0].descriptorType = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
 	LayoutBindingSubpass1[0].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-	LayoutBindingSubpass1[0].pImmutableSamplers = nullptr; // Optional
 
+	LayoutBindingSubpass1[1].binding = 1;//index   depth value read
+	LayoutBindingSubpass1[1].descriptorCount = 1;
+	LayoutBindingSubpass1[1].descriptorType = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+	LayoutBindingSubpass1[1].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
 
-
-	LayoutBindingSubpass1[2].binding = 1;// depth value read
-	LayoutBindingSubpass1[2].descriptorCount = 1;
-	LayoutBindingSubpass1[2].descriptorType = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
-	LayoutBindingSubpass1[2].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-	LayoutBindingSubpass1[2].pImmutableSamplers = nullptr; // Optional
 
 
 
@@ -1259,17 +1256,13 @@ void Renderer::CommandBufferRecording()
 		beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 		beginInfo.flags = 0; // Optional
 		beginInfo.pInheritanceInfo = nullptr; // Optional
+
+
 		if (vkBeginCommandBuffer(graphics_command_buffers[i], &beginInfo) != VK_SUCCESS) {
 			throw std::runtime_error("failed to begin recording command buffer!");
 		}
 
-
-
-
-
-
-
-
+		
 		VkRenderPassBeginInfo renderPassInfo{}; //开始信息这是，注意
 		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 		//renderPassInfo.renderPass = render_pass;
@@ -1301,6 +1294,7 @@ void Renderer::CommandBufferRecording()
 		//		Fills the attachments
 		//*/
 
+
 		vkCmdBindPipeline(graphics_command_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphics_pipeline_subpass0);
 		vkCmdBindDescriptorSets(graphics_command_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_layout_subpass0, 0, 1, &descriptor_sets_write_subpass0[i], 0, NULL);
 
@@ -1317,6 +1311,8 @@ void Renderer::CommandBufferRecording()
 		//	Render a full screen quad, reading from the previously written attachments via input attachments
 		//*/
 		vkCmdNextSubpass(graphics_command_buffers[i], VK_SUBPASS_CONTENTS_INLINE);
+
+
 		vkCmdBindPipeline(graphics_command_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphics_pipeline_subpass1);
 		vkCmdBindDescriptorSets(graphics_command_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_layout_subpass1, 0, 1, &descriptor_sets_read_subpass1[i], 0, NULL);
 
@@ -1405,7 +1401,7 @@ void Renderer::DrawFrame()
 		return;
 	}
 	else if (result == VK_NOT_READY) {
-		std::cout << "FUck you mother fucker,image of index %d is not ready!!,rely on semophore" << std::endl;
+		std::cout << ",rely on semophore" << std::endl;
 	}
 	else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR) {
 		throw std::runtime_error("failed to acquire swap chain image!");
@@ -1452,14 +1448,16 @@ void Renderer::DrawFrame()
 
 
 
-	//VkResult A = vkQueueSubmit(device_manager->GetGraphicsQueue(), 1, &submitInfo, inflight_fences[currentFrame]);
+	VkResult A = vkQueueSubmit(device_manager->GetGraphicsQueue(), 1, &submitInfo, inflight_fences[currentFrame]);
 
-	if (vkQueueSubmit(device_manager->GetGraphicsQueue(), 1, &submitInfo, inflight_fences[currentFrame]) != VK_SUCCESS)
+	/*if (vkQueueSubmit(device_manager->GetGraphicsQueue(), 1, &submitInfo, inflight_fences[currentFrame]) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to submit draw command buffer!");
-	}
+	}*/
 
-	//vkQueueSubmit(device_manager->GetGraphicsQueue(), 1, &submitInfo, inflight_fences[currentFrame]);
+
+
+
 	//fence is an optional handle to a fence to be signaled once all submitted command buffers have completed execution.If fence is not VK_NULL_HANDLE, it defines a fence signal operation.
 
 

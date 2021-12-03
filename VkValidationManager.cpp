@@ -140,13 +140,13 @@ VKAPI_ATTR VkBool32 VKAPI_CALL VkValidationManager::debugCallback(VkDebugUtilsMe
 
 	}
 	else {
-		std::cerr << "validation layer: " << std::endl << "--------------------------------------------------------------------------------" << std::endl;
+		/*std::cerr << "validation layer: " << std::endl << "--------------------------------------------------------------------------------" << std::endl;
 		const auto sizeline = 140;
 		for (int i = 0; i < message.length(); i += sizeline) {
 
 			std::cout << message.substr(i, sizeline) << std::endl;
 		}
-		std::cout << "--------------------------------------------------------------------------------" << std::endl << std::endl;
+		std::cout << "--------------------------------------------------------------------------------" << std::endl << std::endl;*/
 	}
 	return VK_FALSE;
 }
