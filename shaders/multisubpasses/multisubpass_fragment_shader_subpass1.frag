@@ -14,15 +14,16 @@ layout (input_attachment_index = 1, binding = 1) uniform subpassInput inputDepth
 layout(location = 0) out vec4 outColor;
 
 void main() {
-//
-////    debugPrintfEXT("x");
-////    debugPrintfEXT("%f", 1.0);
+
 
 
 		// Read color from previous color input attachment
-		outColor.rgb = subpassLoad(inputRColor).rgb;
-
-
+		vec4 temp_color = subpassLoad(inputRColor);
+		
+		outColor.r = temp_color.r ;
+		outColor.g = temp_color.g ;
+		outColor.b = temp_color.b ;
+		outColor.a = temp_color.a ;
 
 
 }

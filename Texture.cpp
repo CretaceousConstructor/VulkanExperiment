@@ -27,6 +27,9 @@ void Texture::InitTexture(std::string image_namge, VkDeviceManager* para_device_
 	stbi_uc* pixels = stbi_load(image_namge.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
 	VkDeviceSize imageSize = texWidth * texHeight * 4;
 
+
+
+
 	if (!pixels) {
 		throw std::runtime_error("failed to load texture image!");
 	}
@@ -122,18 +125,18 @@ void Texture::InitSampler()
 
 VkImage& Texture::GetTextureImage()
 {
-	// TODO: insert return statement here
+
 	return texture_image.GetImageRef();
 }
 
 VkImageView& Texture::GetTextureImageView()
 {
-	// TODO: insert return statement here
+
 	return texture_image.GetImageView();
 }
 
 VkSampler& Texture::GetTextureSampler()
 {
-	// TODO: insert return statement here
+
 	return texture_sampler;
 }

@@ -1,104 +1,98 @@
 #pragma once
-#include "EngineMarco.h"
-#include "EngineHeader.h"
-#include "VkImageWrapper.h"
-#include "VkDeviceManager.h"
-#include "VkSwapChainManager.h"
-#include "ShaderManager.h"
-#include "VkWindows.h"
-#include "Texture.h"
-#include "VkCommandManager.h"
-#include "VkModel.h"
-#include "VkUniformBuffer.h"
+#include "BaseRenderer.h"
+#include "KeyBoardInputManager.h"
+#include "MouseInputManager.h"
+#include "FirstPersonCamera.h"
+
 #include <chrono>
 #include <iostream>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/hash.hpp>
 #include <array>
 #include <vector>
 #include <random>
 #include <memory>
 
-class Renderer
+class MultiSubpassesRenderer : public BaseRenderer
 {
 
 public:
 
 
+	void SetUpUserInput() override;
 
 
-	void PrepareModels();
+	void CreateAttachmentImages() override;
+	void CreateTextureImages() override;
+	void CreateDepthImages() override;
 
 
+	void CreateRenderPass() override;
 
-
-	void SetDeviceManager(VkDeviceManager& para_device_manager);
-	void SetSwapChinManager(VkSwapChainManager& para_swapchain_manager);
-	void SetWindow(VkWindows& para_window);
-	void SetGraphicsCommandPool(VkCommandPool commandpool);
-	void SetTransforCommandPool(VkCommandPool commandpool);
-
-
-	void CreateAttachmentImages();
-	void CreateTextureImages();
-	void CreateDepthImages();
-
-
-	void CreateUniformBuffer();
-
-
-	void CreateRenderPass();
-
-
-	void CreateDescriptorSetLayout();
-	void CreateDescriptorPool();
-	void CreateDescriptorSets();
-
-
-	void CreateGraphicsPiplineLayout();
-	void CreateGraphicsPipline();
-
-
-	void CreateFramebuffers();
-
-
-	void InitCommandBuffers();
-
-	void CommandBufferRecording();
-
-	void InitSynObjects();
+	void CreateUniformBuffer() override;
+	void CreateFramebuffers() override;
 
 
 
-	void DrawFrame();
+
+	void CreateDescriptorSetLayout() override;
+	void CreateDescriptorPool() override;
+	void CreateDescriptorSets() override;
 
 
-	void UpdateUniformBuffer(uint32_t currentImage);
+	void CreateGraphicsPiplineLayout()override;
+	void CreateGraphicsPipline()override;
+
+
+	void InitCommandBuffers()override;
+	void PrepareModels()override;
+	void CommandBufferRecording()override;
+
+
+
+
+	void InitSynObjects()override;
+
+
+
+	void DrawFrame() override;
+	void UpdateUniformBuffer(uint32_t currentImage) override;
+
+
+
+
+
+
+
+	void UpdateCamera(float dt) override;
+	void CreateCamera()override;
 
 
 
 
 
 public:
-	void CleanUpModels();
-	void CleanUpDescriptorSetLayoutAndDescriptorPool();
-	void CleanUpCommandBuffersAndCommandPool();
-	void CleanUpSyncObjects();
-	void CleanupFrameBuffers();
-	void CleanUpPiplineAndPiplineLayout();
-	void CleanUpRenderPass();
-	void CleanUpImages();
+	void CleanUpModels() override;
+	void CleanUpDescriptorSetLayoutAndDescriptorPool() override;
+	void CleanUpCommandBuffersAndCommandPool() override;
+	void CleanUpSyncObjects() override;
+	void CleanupFrameBuffers() override;
+	void CleanUpPiplineAndPiplineLayout() override;
+	void CleanUpRenderPass() override;
+	void CleanUpImages() override;
 
 private:
 	void CreatePiplineSubpass0();
 	void CreatePiplineSubpass1();
 
+
 private:
 	static constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 
 
-private:
 
+public:
 
 
 	struct Vertex {
@@ -107,20 +101,15 @@ private:
 		glm::vec3 color;
 		glm::vec2 texCoord;
 
+		bool operator==(const Vertex& other) const {
+			return pos == other.pos && color == other.color && texCoord == other.texCoord;
+		}
+
 	};
 
 
 
-
-
-
-
-
-
-
-
-
-
+private:
 
 
 	struct InsatnceTranformation {
@@ -145,27 +134,7 @@ private:
 	};
 
 
-
-
-
-
 private:
-
-
-
-
-
-
-
-	//MANAGERS
-	VkSwapChainManager* swapchain_manager;
-	VkDeviceManager* device_manager;
-	VkWindows* window;
-
-
-	//COMMAND POOL
-	VkCommandPool        graphics_command_pool;
-	VkCommandPool        transfor_command_pool;
 
 	//RENDER PASS
 	VkRenderPass		 render_pass;
@@ -189,17 +158,24 @@ private:
 
 
 	//UNIFORM BUFFER
-	/*std::vector<VkBuffer> uniform_buffers;
-	std::vector<VkDeviceMemory> uniform_buffers_memory;
-
-	std::vector<VkBuffer> uniform_buffers_test;
-	std::vector<VkDeviceMemory> uniform_buffers_memory_test;*/
 
 	std::vector<VkUniformBuffer> uniform_buffers;
 	std::vector<VkUniformBuffer> uniform_buffers_test;
 
+
+
+	UniformBufferObject ubo{};
+	UniformBufferObjectTest ubo0{};
+
+
+
+
+
+
+
 	//TEXTURE
 	Texture human_face;
+	Texture viking_room;
 
 	//ATTACHMENT
 	std::vector<VkImageWrapper> red_color_attachment;
@@ -230,8 +206,36 @@ private:
 
 	//MODELS
 	std::vector<VkModel<Vertex, InsatnceTranformation>> scene;
+	std::unique_ptr<VkModel<Vertex>> viking_room_model;
+
+	//INPUT MANAGER
+
+	std::unique_ptr<KeyBoardInputManager> keyboard;
+	std::unique_ptr<MouseInputManager> mouse;
+	
+	//CAMERA
+	std::unique_ptr<FirstPersonCamera> m_pCamera;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
 };
+
+
+
 

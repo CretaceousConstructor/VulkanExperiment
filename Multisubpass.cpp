@@ -1,28 +1,7 @@
-#include "Renderer.h"
-
-void Renderer::SetGraphicsCommandPool(VkCommandPool commandpool)
-{
+#include "Multisubpass.h"
 
 
-
-	graphics_command_pool = commandpool;
-	return;
-}
-
-void Renderer::SetTransforCommandPool(VkCommandPool commandpool)
-{
-	transfor_command_pool = commandpool;
-	return;
-}
-
-
-void Renderer::SetSwapChinManager(VkSwapChainManager& para_swapchain_manager)
-{
-
-	swapchain_manager = &para_swapchain_manager;
-}
-
-void Renderer::PrepareModels()
+void MultiSubpassesRenderer::PrepareModels()
 {
 
 
@@ -33,7 +12,7 @@ void Renderer::PrepareModels()
 	vertices[1] = Vertex{ glm::vec3(1.f,0.f,-1.f), glm::vec3(1.f,0.f,1.f)    ,glm::vec2(1.f,1.f) };
 	vertices[2] = Vertex{ glm::vec3(1.f,0.f, 1.f), glm::vec3(1.f,0.f,1.f)    ,glm::vec2(0.f,1.f) };
 	vertices[3] = Vertex{ glm::vec3(-1.f,0.f, 1.f), glm::vec3(1.f,0.f,1.f)   ,glm::vec2(0.f,0.f) };
-	std::vector<uint16_t> indices = { 0,1,2,0,2,3 };
+	std::vector<uint32_t> indices = { 0,1,2,0,2,3 };
 
 
 
@@ -57,12 +36,13 @@ void Renderer::PrepareModels()
 	}
 
 
-	scene.emplace_back(vertices, instanceData,indices, device_manager, window->GetSurface(), transfer_command_buffer);
+	scene.emplace_back(vertices, instanceData, indices, device_manager, window->GetSurface(), transfer_command_buffer);
+	//========================================================================================================================
 
 
-//========================================================================================================================
 
 
+	viking_room_model = std::make_unique<VkModel<Vertex>>(std::string("models//viking_room.obj"), device_manager, window, graphics_command_pool, window->GetSurface(), transfer_command_buffer);
 
 
 
@@ -74,21 +54,10 @@ void Renderer::PrepareModels()
 
 }
 
-void Renderer::SetDeviceManager(VkDeviceManager& para_device_manager)
-{
-	device_manager = &para_device_manager;
-}
-
-void Renderer::SetWindow(VkWindows& para_window)
-{
-	window = &para_window;
-}
 
 
 
-
-
-void Renderer::CreateDescriptorPool()
+void MultiSubpassesRenderer::CreateDescriptorPool()
 {
 
 
@@ -104,7 +73,7 @@ void Renderer::CreateDescriptorPool()
 
 
 	poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	poolSizes[1].descriptorCount = 3;  //3
+	poolSizes[1].descriptorCount = 6;  //6
 
 	poolSizes[2].type = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
 	poolSizes[2].descriptorCount = 6;  //6
@@ -115,6 +84,8 @@ void Renderer::CreateDescriptorPool()
 	descriptorPoolCI.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
 	descriptorPoolCI.pPoolSizes = poolSizes.data();
 	// Max. number of descriptor sets that can be allocated from this pool (one per object)
+
+	//read descriptor sets 3 个,write descriptor sets 3 个
 	descriptorPoolCI.maxSets = static_cast<uint32_t>(swapchain_manager->GetSwapImageCount() * 2);
 
 
@@ -129,7 +100,7 @@ void Renderer::CreateDescriptorPool()
 
 }
 
-void Renderer::CreateDescriptorSets()
+void MultiSubpassesRenderer::CreateDescriptorSets()
 {
 
 
@@ -171,52 +142,92 @@ void Renderer::CreateDescriptorSets()
 
 
 
-		VkDescriptorImageInfo imageInfoForTexureLoaded{};
-		imageInfoForTexureLoaded.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-		imageInfoForTexureLoaded.imageView = human_face.GetTextureImageView();
-		imageInfoForTexureLoaded.sampler = human_face.GetTextureSampler();
+		VkDescriptorImageInfo imageInfoForTexureLoaded_human_face{};
+		imageInfoForTexureLoaded_human_face.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		imageInfoForTexureLoaded_human_face.imageView = human_face.GetTextureImageView();
+		imageInfoForTexureLoaded_human_face.sampler = human_face.GetTextureSampler();
 
 
-		std::array<VkWriteDescriptorSet, 3> writeDescriptorSets{};
+
+
+
+		VkDescriptorImageInfo imageInfoForTexureLoaded_viking_room{};
+		imageInfoForTexureLoaded_viking_room.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		imageInfoForTexureLoaded_viking_room.imageView = viking_room.GetTextureImageView();
+		imageInfoForTexureLoaded_viking_room.sampler = viking_room.GetTextureSampler();
+
+
+
+
+
+
+		std::vector<VkWriteDescriptorSet> writeDescriptorSets;
+
+
+		VkWriteDescriptorSet temp_writeDescriptorSets{};
+
 
 		/*
 			Binding 0: Object matrices Uniform buffer
 		*/
-		writeDescriptorSets[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		writeDescriptorSets[0].dstSet = descriptor_sets_write_subpass0[i];
-		writeDescriptorSets[0].dstBinding = 0;
-		writeDescriptorSets[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		temp_writeDescriptorSets.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		temp_writeDescriptorSets.dstSet = descriptor_sets_write_subpass0[i];
+		temp_writeDescriptorSets.dstBinding = 0;
+		temp_writeDescriptorSets.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		temp_writeDescriptorSets.pBufferInfo = &buffer_info_write_subpass0;
+		temp_writeDescriptorSets.descriptorCount = 1;
+		temp_writeDescriptorSets.dstArrayElement = 0;
 
-		writeDescriptorSets[0].pBufferInfo = &buffer_info_write_subpass0;
-		writeDescriptorSets[0].descriptorCount = 1;
-		writeDescriptorSets[0].dstArrayElement = 0;
-
+		writeDescriptorSets.push_back(temp_writeDescriptorSets);
 
 		/*
 			Binding 1: test purposes uniform buffer
 		*/
 
-		writeDescriptorSets[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		writeDescriptorSets[1].dstSet = descriptor_sets_write_subpass0[i];
-		writeDescriptorSets[1].dstBinding = 1;
-		writeDescriptorSets[1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		temp_writeDescriptorSets.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		temp_writeDescriptorSets.dstSet = descriptor_sets_write_subpass0[i];
+		temp_writeDescriptorSets.dstBinding = 1;
+		temp_writeDescriptorSets.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 		// Images use a different descriptor structure, so we use pImageInfo instead of pBufferInfo
-		writeDescriptorSets[1].pBufferInfo = &buffer_info_write_subpass0_test;
-		writeDescriptorSets[1].descriptorCount = 1;
-		writeDescriptorSets[1].dstArrayElement = 0;
+		temp_writeDescriptorSets.pBufferInfo = &buffer_info_write_subpass0_test;
+		temp_writeDescriptorSets.descriptorCount = 1;
+		temp_writeDescriptorSets.dstArrayElement = 0;
+		writeDescriptorSets.push_back(temp_writeDescriptorSets);
 
 
 
 		/*
-			Binding 2: texture mapping
+			Binding 2: texture mapping human face
 		*/
-		writeDescriptorSets[2].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		writeDescriptorSets[2].dstSet = descriptor_sets_write_subpass0[i];
-		writeDescriptorSets[2].dstBinding = 2;
-		writeDescriptorSets[2].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		writeDescriptorSets[2].pImageInfo = &imageInfoForTexureLoaded;
-		writeDescriptorSets[2].descriptorCount = 1;
-		writeDescriptorSets[2].dstArrayElement = 0;
+		temp_writeDescriptorSets.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		temp_writeDescriptorSets.dstSet = descriptor_sets_write_subpass0[i];
+		temp_writeDescriptorSets.dstBinding = 2;
+		temp_writeDescriptorSets.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		temp_writeDescriptorSets.pImageInfo = &imageInfoForTexureLoaded_human_face;
+		temp_writeDescriptorSets.descriptorCount = 1;
+		temp_writeDescriptorSets.dstArrayElement = 0;
+		writeDescriptorSets.push_back(temp_writeDescriptorSets);
+
+
+
+		/*
+			Binding 3: texture mapping viking_room
+		*/
+		temp_writeDescriptorSets.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		temp_writeDescriptorSets.dstSet = descriptor_sets_write_subpass0[i];
+		temp_writeDescriptorSets.dstBinding = 3;
+		temp_writeDescriptorSets.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		temp_writeDescriptorSets.pImageInfo = &imageInfoForTexureLoaded_viking_room;
+		temp_writeDescriptorSets.descriptorCount = 1;
+		temp_writeDescriptorSets.dstArrayElement = 0;
+		writeDescriptorSets.push_back(temp_writeDescriptorSets);
+
+
+
+
+
+
+
 
 		vkUpdateDescriptorSets(device_manager->GetLogicalDeviceRef(), static_cast<uint32_t>(writeDescriptorSets.size()), writeDescriptorSets.data(), 0, nullptr);
 	}
@@ -304,10 +315,10 @@ void Renderer::CreateDescriptorSets()
 
 }
 
-void Renderer::CreateUniformBuffer()
+void MultiSubpassesRenderer::CreateUniformBuffer()
 {
 
-
+	//GPU SIDE
 	VkDeviceSize bufferSize = sizeof(UniformBufferObject);
 	uniform_buffers.resize(swapchain_manager->GetSwapImageCount());
 	/*uniform_buffers_memory.resize(swapchain_manager->GetSwapImageCount());*/
@@ -329,17 +340,56 @@ void Renderer::CreateUniformBuffer()
 	}
 
 
+
+
+
+
+
+
+
+	//CPU SIDE
+	ubo.model = glm::mat4(1.f);
+	ubo.view = m_pCamera->GetView();
+	ubo.proj = m_pCamera->GetProj();
+
+
+
+	ubo0.model = glm::mat4(1.f);
+	ubo0.view = m_pCamera->GetView();
+
+
+
+
+
+
 }
 
-void Renderer::CreateDepthImages()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+void MultiSubpassesRenderer::CreateDepthImages()
 {
+
+
+
+
 	VkFormat depthFormat = swapchain_manager->FindDepthFormat(*device_manager);
-
-
 	depth_attachment.resize(swapchain_manager->GetSwapImageCount());
 
 	for (uint32_t i = 0; i < swapchain_manager->GetSwapImageCount(); i++) {
-		depth_attachment[i].Init(VK_IMAGE_TYPE_2D, VK_FORMAT_R8G8B8A8_UNORM, swapchain_manager->GetSwapChainImageExtent(), 1, 1, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT, VK_SHARING_MODE_EXCLUSIVE, VK_IMAGE_LAYOUT_UNDEFINED, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, device_manager);
+		depth_attachment[i].Init(VK_IMAGE_TYPE_2D, depthFormat, swapchain_manager->GetSwapChainImageExtent(), 1, 1, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT, VK_SHARING_MODE_EXCLUSIVE, VK_IMAGE_LAYOUT_UNDEFINED, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, device_manager);
 
 		depth_attachment[i].TransitionImageLayout(depthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, graphics_command_pool, device_manager->GetLogicalDeviceRef(), device_manager->GetGraphicsQueue());
 		depth_attachment[i].InitImageView(depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
@@ -351,7 +401,7 @@ void Renderer::CreateDepthImages()
 
 
 
-void Renderer::CreatePiplineSubpass0()
+void MultiSubpassesRenderer::CreatePiplineSubpass0()
 {
 
 
@@ -368,46 +418,16 @@ void Renderer::CreatePiplineSubpass0()
 	/******************************************************************************************************/
 	/******************************************************************************************************/
 	/******************************************************************************************************/
-	ShaderManager vertex_shader_subpass0(std::string("vert.spv"), std::string("main"), VK_SHADER_STAGE_VERTEX_BIT, device_manager->GetLogicalDeviceRef());
-	ShaderManager fragment_shader_subpass0(std::string("frag.spv"), std::string("main"), VK_SHADER_STAGE_FRAGMENT_BIT, device_manager->GetLogicalDeviceRef());
+	ShaderManager vertex_shader_subpass0(std::string("shaders//multisubpasses//multisubpass_vertex_shader_subpass0.spv"), std::string("main"), VK_SHADER_STAGE_VERTEX_BIT, device_manager->GetLogicalDeviceRef());
+	ShaderManager fragment_shader_subpass0(std::string("shaders//multisubpasses//multisubpass_fragment_shader_subpass0.spv"), std::string("main"), VK_SHADER_STAGE_FRAGMENT_BIT, device_manager->GetLogicalDeviceRef());
 
 
 
 
 
 
-	/*auto vertShaderCode = ShaderManager::ReadFile("vert.spv");
-	auto fragShaderCode = ShaderManager::ReadFile("frag.spv");
-
-	VkShaderModule vertShaderModule = ShaderManager::CreateShaderModule(vertShaderCode,device_manager->GetLogicalDeviceRef());
-	VkShaderModule fragShaderModule = ShaderManager::CreateShaderModule(fragShaderCode, device_manager->GetLogicalDeviceRef());
-
-
-	VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
-	vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-	vertShaderStageInfo.stage = VK_SHADER_STAGE_VERTEX_BIT;
-	vertShaderStageInfo.module = vertShaderModule;
-	vertShaderStageInfo.pName = "main";
-
-
-	VkPipelineShaderStageCreateInfo fragShaderStageInfo{};
-	fragShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-	fragShaderStageInfo.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-	fragShaderStageInfo.module = fragShaderModule;
-	fragShaderStageInfo.pName = "main";*/
-
-
-
-	VkPipelineShaderStageCreateInfo shader_stages_create_info[] = { vertex_shader_subpass0.GetVkPipelineShaderStageCreateInfo(), fragment_shader_subpass0.GetVkPipelineShaderStageCreateInfo() };
-
-
-	//auto bindingDescription = Vertex::getBindingDescription();
-	//auto attributeDescriptions = Vertex::getAttributeDescriptions();
-
-
-
-
-
+	std::vector<VkPipelineShaderStageCreateInfo> shader_stages_create_info =
+	{ vertex_shader_subpass0.GetVkPipelineShaderStageCreateInfo(), fragment_shader_subpass0.GetVkPipelineShaderStageCreateInfo() };
 
 
 
@@ -424,16 +444,17 @@ void Renderer::CreatePiplineSubpass0()
 
 
 
-	VkVertexInputBindingDescription bindingDescription1{};
-	bindingDescription1.binding = 1;
-	bindingDescription1.stride = sizeof(InsatnceTranformation);
-	bindingDescription1.inputRate = VK_VERTEX_INPUT_RATE_INSTANCE;
+	//VkVertexInputBindingDescription bindingDescription1{};
+	//bindingDescription1.binding = 1;
+	//bindingDescription1.stride = sizeof(InsatnceTranformation);
+	//bindingDescription1.inputRate = VK_VERTEX_INPUT_RATE_INSTANCE;
 
-	std::vector<VkVertexInputBindingDescription>  VIBDS = { bindingDescription0 ,bindingDescription1 };
+	//std::vector<VkVertexInputBindingDescription>  VIBDS = { bindingDescription0 ,bindingDescription1 };
+	std::vector<VkVertexInputBindingDescription>  VIBDS = { bindingDescription0 };
 
 
 
-	std::array<VkVertexInputAttributeDescription, 7> attributeDescriptions{};
+	std::array<VkVertexInputAttributeDescription, 3> attributeDescriptions{};
 
 	attributeDescriptions[0].binding = 0;
 	attributeDescriptions[0].location = 0;
@@ -455,26 +476,26 @@ void Renderer::CreatePiplineSubpass0()
 
 
 
-	attributeDescriptions[3].binding = 1;
-	attributeDescriptions[3].location = 3;
-	attributeDescriptions[3].format = VK_FORMAT_R32G32B32A32_SFLOAT;
-	attributeDescriptions[3].offset = sizeof(float) * 4 * 0;
+	//attributeDescriptions[3].binding = 1;
+	//attributeDescriptions[3].location = 3;
+	//attributeDescriptions[3].format = VK_FORMAT_R32G32B32A32_SFLOAT;
+	//attributeDescriptions[3].offset = sizeof(float) * 4 * 0;
 
-	attributeDescriptions[4].binding = 1;
-	attributeDescriptions[4].location = 4;
-	attributeDescriptions[4].format = VK_FORMAT_R32G32B32A32_SFLOAT;
-	attributeDescriptions[4].offset = sizeof(float) * 4 * 1;
+	//attributeDescriptions[4].binding = 1;
+	//attributeDescriptions[4].location = 4;
+	//attributeDescriptions[4].format = VK_FORMAT_R32G32B32A32_SFLOAT;
+	//attributeDescriptions[4].offset = sizeof(float) * 4 * 1;
 
 
-	attributeDescriptions[5].binding = 1;
-	attributeDescriptions[5].location = 5;
-	attributeDescriptions[5].format = VK_FORMAT_R32G32B32A32_SFLOAT;
-	attributeDescriptions[5].offset = sizeof(float) * 4 * 2;
+	//attributeDescriptions[5].binding = 1;
+	//attributeDescriptions[5].location = 5;
+	//attributeDescriptions[5].format = VK_FORMAT_R32G32B32A32_SFLOAT;
+	//attributeDescriptions[5].offset = sizeof(float) * 4 * 2;
 
-	attributeDescriptions[6].binding = 1;
-	attributeDescriptions[6].location = 6;
-	attributeDescriptions[6].format = VK_FORMAT_R32G32B32A32_SFLOAT;
-	attributeDescriptions[6].offset = sizeof(float) * 4 * 3;
+	//attributeDescriptions[6].binding = 1;
+	//attributeDescriptions[6].location = 6;
+	//attributeDescriptions[6].format = VK_FORMAT_R32G32B32A32_SFLOAT;
+	//attributeDescriptions[6].offset = sizeof(float) * 4 * 3;
 
 
 
@@ -546,8 +567,8 @@ void Renderer::CreatePiplineSubpass0()
 
 	rasterizer.lineWidth = 1.f;
 
-	rasterizer.cullMode = VK_CULL_MODE_NONE;
-	//rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+	rasterizer.cullMode = VK_CULL_MODE_FRONT_BIT;
+	rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
 
 
 	rasterizer.depthBiasEnable = VK_FALSE;
@@ -643,8 +664,8 @@ void Renderer::CreatePiplineSubpass0()
 
 
 	pipeline_subpass0_CI.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-	pipeline_subpass0_CI.stageCount = 2;
-	pipeline_subpass0_CI.pStages = shader_stages_create_info;
+	pipeline_subpass0_CI.stageCount = shader_stages_create_info.size();
+	pipeline_subpass0_CI.pStages = shader_stages_create_info.data();
 
 
 
@@ -690,7 +711,7 @@ void Renderer::CreatePiplineSubpass0()
 
 }
 
-void Renderer::CreatePiplineSubpass1()
+void MultiSubpassesRenderer::CreatePiplineSubpass1()
 {
 
 
@@ -701,13 +722,13 @@ void Renderer::CreatePiplineSubpass1()
 
 
 	/******************************************************************************************************/
-	ShaderManager vertex_shader_subpass1(std::string("vert0.spv"), std::string("main"), VK_SHADER_STAGE_VERTEX_BIT, device_manager->GetLogicalDeviceRef());
-	ShaderManager fragment_shader_subpass1(std::string("frag0.spv"), std::string("main"), VK_SHADER_STAGE_FRAGMENT_BIT, device_manager->GetLogicalDeviceRef());
+	ShaderManager vertex_shader_subpass1(std::string("shaders//multisubpasses//multisubpass_vertex_shader_subpass1.spv"), std::string("main"), VK_SHADER_STAGE_VERTEX_BIT, device_manager->GetLogicalDeviceRef());
+	ShaderManager fragment_shader_subpass1(std::string("shaders//multisubpasses//multisubpass_fragment_shader_subpass1.spv"), std::string("main"), VK_SHADER_STAGE_FRAGMENT_BIT, device_manager->GetLogicalDeviceRef());
 
 
 
 
-	VkPipelineShaderStageCreateInfo shader_stages_create_info[] = { vertex_shader_subpass1.GetVkPipelineShaderStageCreateInfo(), fragment_shader_subpass1.GetVkPipelineShaderStageCreateInfo() };
+	std::vector<VkPipelineShaderStageCreateInfo> shader_stages_create_info = { vertex_shader_subpass1.GetVkPipelineShaderStageCreateInfo(), fragment_shader_subpass1.GetVkPipelineShaderStageCreateInfo() };
 
 
 
@@ -847,8 +868,8 @@ void Renderer::CreatePiplineSubpass1()
 
 
 	pipeline_subpass1_CI.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-	pipeline_subpass1_CI.stageCount = 2;
-	pipeline_subpass1_CI.pStages = shader_stages_create_info;
+	pipeline_subpass1_CI.stageCount = shader_stages_create_info.size();
+	pipeline_subpass1_CI.pStages = shader_stages_create_info.data();
 
 
 
@@ -888,44 +909,20 @@ void Renderer::CreatePiplineSubpass1()
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 }
 
 
 
-void Renderer::CreateRenderPass()
+
+
+
+void MultiSubpassesRenderer::CreateRenderPass()
 {
 
 
 	//swapchain color index 0
 	VkAttachmentDescription colorAttachment{};
-	colorAttachment.format = swapchain_manager->GetSwapChainImageFormat();                //
+	colorAttachment.format = swapchain_manager->GetSwapChainImageFormat();                
 	colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
 	colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 	colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -976,9 +973,6 @@ void Renderer::CreateRenderPass()
 	VkAttachmentReference depthAttachmentRefForWrite{};
 	depthAttachmentRefForWrite.attachment = 2;
 	depthAttachmentRefForWrite.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-
-
-
 	//subpass1用的
 	VkAttachmentReference colorAttachmentRef{};
 	colorAttachmentRef.attachment = 0;
@@ -993,7 +987,7 @@ void Renderer::CreateRenderPass()
 
 
 
-
+	//======================================================================================================
 	std::vector<VkAttachmentReference> WriteColorAttachmentRefsForSubpass0 = { RAttachmentRef };
 	VkSubpassDescription subpass0{};
 	subpass0.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
@@ -1002,10 +996,9 @@ void Renderer::CreateRenderPass()
 	subpass0.pDepthStencilAttachment = &depthAttachmentRefForWrite;
 
 
-
+	//======================================================================================================
 	std::vector<VkAttachmentReference> outPutColorAttachmentRefsForSubpass1 = { colorAttachmentRef };
 	std::vector<VkAttachmentReference> inPutAttachmentRefsForSubpass1 = { RAttachmentRefForRead ,depthAttachmentRefForRead };
-
 
 
 	VkSubpassDescription subpass1{};
@@ -1016,7 +1009,7 @@ void Renderer::CreateRenderPass()
 	subpass1.pInputAttachments = inPutAttachmentRefsForSubpass1.data();
 	subpass1.pDepthStencilAttachment = VK_NULL_HANDLE;
 
-
+//-------------------------------------------------------------------------------------
 	std::array<VkSubpassDescription, 2> subpasses = { subpass0 ,subpass1 };
 
 	std::vector<VkAttachmentDescription> attachments = { colorAttachment,RchannelcolorAttachment,depthAttachment };
@@ -1032,7 +1025,7 @@ void Renderer::CreateRenderPass()
 	dependencies[0].srcStageMask = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
 	//dependencies[0].srcAccessMask = VK_ACCESS_MEMORY_READ_BIT;
 	dependencies[0].srcAccessMask = 0;
-	
+
 
 	dependencies[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
 	dependencies[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
@@ -1084,55 +1077,70 @@ void Renderer::CreateRenderPass()
 
 }
 
-void Renderer::CreateDescriptorSetLayout()
+void MultiSubpassesRenderer::CreateDescriptorSetLayout()
 {
 
 	/*
 			Attachment write
 	*/
+	{
 
-	std::vector<VkDescriptorSetLayoutBinding> LayoutBindingSubpass0;
+		std::vector<VkDescriptorSetLayoutBinding> LayoutBindingSubpass0;
 
-	LayoutBindingSubpass0.resize(3, VkDescriptorSetLayoutBinding{});
-	LayoutBindingSubpass0[0].binding = 0; //index  uniform buffer
-	LayoutBindingSubpass0[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	LayoutBindingSubpass0[0].descriptorCount = 1;
-	LayoutBindingSubpass0[0].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-	LayoutBindingSubpass0[0].pImmutableSamplers = nullptr; // Optional
+		VkDescriptorSetLayoutBinding LayoutBindingSubpass0_temp{};
 
-
-
-	LayoutBindingSubpass0[1].binding = 1; //index  testing purposes uniform buffer
-	LayoutBindingSubpass0[1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	LayoutBindingSubpass0[1].descriptorCount = 1;
-	LayoutBindingSubpass0[1].stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-	LayoutBindingSubpass0[1].pImmutableSamplers = nullptr; // Optional
+		LayoutBindingSubpass0_temp.binding = 0; //index  uniform buffer
+		LayoutBindingSubpass0_temp.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		LayoutBindingSubpass0_temp.descriptorCount = 1;
+		LayoutBindingSubpass0_temp.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+		LayoutBindingSubpass0_temp.pImmutableSamplers = nullptr; // Optional
+		LayoutBindingSubpass0.push_back(LayoutBindingSubpass0_temp);
 
 
 
-	LayoutBindingSubpass0[2].binding = 2; //index  texture mapping 
-	LayoutBindingSubpass0[2].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	LayoutBindingSubpass0[2].descriptorCount = 1;
-	LayoutBindingSubpass0[2].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-	LayoutBindingSubpass0[2].pImmutableSamplers = nullptr; // Optional
+		LayoutBindingSubpass0_temp.binding = 1; //index  testing purposes uniform buffer
+		LayoutBindingSubpass0_temp.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		LayoutBindingSubpass0_temp.descriptorCount = 1;
+		LayoutBindingSubpass0_temp.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+		LayoutBindingSubpass0_temp.pImmutableSamplers = nullptr; // Optional
+		LayoutBindingSubpass0.push_back(LayoutBindingSubpass0_temp);
+
+
+
+		LayoutBindingSubpass0_temp.binding = 2; //index  texture mapping 
+		LayoutBindingSubpass0_temp.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		LayoutBindingSubpass0_temp.descriptorCount = 1;
+		LayoutBindingSubpass0_temp.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+		LayoutBindingSubpass0_temp.pImmutableSamplers = nullptr; // Optional
+		LayoutBindingSubpass0.push_back(LayoutBindingSubpass0_temp);
+
+
+
+
+		LayoutBindingSubpass0_temp.binding = 3; //index  texture mapping 
+		LayoutBindingSubpass0_temp.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		LayoutBindingSubpass0_temp.descriptorCount = 1;
+		LayoutBindingSubpass0_temp.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+		LayoutBindingSubpass0_temp.pImmutableSamplers = nullptr; // Optional
+		LayoutBindingSubpass0.push_back(LayoutBindingSubpass0_temp);
 
 
 
 
 
+		VkDescriptorSetLayoutCreateInfo LayoutBindingCISubpass0{};
+		LayoutBindingCISubpass0.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+		LayoutBindingCISubpass0.bindingCount = (uint32_t)LayoutBindingSubpass0.size();  //the amount of VkDescriptorSetLayoutBinding
+		LayoutBindingCISubpass0.pBindings = LayoutBindingSubpass0.data();
 
 
-	VkDescriptorSetLayoutCreateInfo LayoutBindingCISubpass0{};
-	LayoutBindingCISubpass0.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-	LayoutBindingCISubpass0.bindingCount = (uint32_t)LayoutBindingSubpass0.size();  //the amount of VkDescriptorSetLayoutBinding
-	LayoutBindingCISubpass0.pBindings = LayoutBindingSubpass0.data();
+		if (vkCreateDescriptorSetLayout(device_manager->GetLogicalDeviceRef(), &LayoutBindingCISubpass0, nullptr, &descriptor_set_layout_write_subpass0) != VK_SUCCESS) {
+			throw std::runtime_error("failed to create descriptor set layout!");
+		}
 
 
-	if (vkCreateDescriptorSetLayout(device_manager->GetLogicalDeviceRef(), &LayoutBindingCISubpass0, nullptr, &descriptor_set_layout_write_subpass0) != VK_SUCCESS) {
-		throw std::runtime_error("failed to create descriptor set layout!");
+
 	}
-
-
 
 
 
@@ -1140,42 +1148,53 @@ void Renderer::CreateDescriptorSetLayout()
 	/*
 		Attachment read
 	*/
-
-	std::vector<VkDescriptorSetLayoutBinding> LayoutBindingSubpass1;
-	LayoutBindingSubpass1.resize(2, VkDescriptorSetLayoutBinding{});
+	{
 
 
-	LayoutBindingSubpass1[0].binding = 0; //index  Rcolor read
-	LayoutBindingSubpass1[0].descriptorCount = 1;
-	LayoutBindingSubpass1[0].descriptorType = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
-	LayoutBindingSubpass1[0].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+		std::vector<VkDescriptorSetLayoutBinding> LayoutBindingSubpass1;
 
-	LayoutBindingSubpass1[1].binding = 1;//index   depth value read
-	LayoutBindingSubpass1[1].descriptorCount = 1;
-	LayoutBindingSubpass1[1].descriptorType = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
-	LayoutBindingSubpass1[1].stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+		VkDescriptorSetLayoutBinding LayoutBindingSubpass1_temp{};
 
+
+		LayoutBindingSubpass1_temp.binding = 0; //index  Rcolor read
+		LayoutBindingSubpass1_temp.descriptorCount = 1;
+		LayoutBindingSubpass1_temp.descriptorType = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+		LayoutBindingSubpass1_temp.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+		LayoutBindingSubpass1.push_back(LayoutBindingSubpass1_temp);
 
 
 
-	VkDescriptorSetLayoutCreateInfo LayoutBindingCISubpass1{};
-	LayoutBindingCISubpass1.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-	LayoutBindingCISubpass1.bindingCount = (uint32_t)LayoutBindingSubpass1.size();  //the amount of VkDescriptorSetLayoutBinding
-	LayoutBindingCISubpass1.pBindings = LayoutBindingSubpass1.data();
+		LayoutBindingSubpass1_temp.binding = 1;//index   depth value read
+		LayoutBindingSubpass1_temp.descriptorCount = 1;
+		LayoutBindingSubpass1_temp.descriptorType = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+		LayoutBindingSubpass1_temp.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+		LayoutBindingSubpass1.push_back(LayoutBindingSubpass1_temp);
 
 
-	if (vkCreateDescriptorSetLayout(device_manager->GetLogicalDeviceRef(), &LayoutBindingCISubpass1, nullptr, &descriptor_set_layout_read_subpass1) != VK_SUCCESS) {
-		throw std::runtime_error("failed to create descriptor set layout!");
+
+
+		VkDescriptorSetLayoutCreateInfo LayoutBindingCISubpass1{};
+		LayoutBindingCISubpass1.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+		LayoutBindingCISubpass1.bindingCount = (uint32_t)LayoutBindingSubpass1.size();  //the amount of VkDescriptorSetLayoutBinding
+		LayoutBindingCISubpass1.pBindings = LayoutBindingSubpass1.data();
+
+
+		if (vkCreateDescriptorSetLayout(device_manager->GetLogicalDeviceRef(), &LayoutBindingCISubpass1, nullptr, &descriptor_set_layout_read_subpass1) != VK_SUCCESS) {
+			throw std::runtime_error("failed to create descriptor set layout!");
+		}
+
+
 	}
+
 
 
 
 }
 
-void Renderer::CreateGraphicsPipline()
+void MultiSubpassesRenderer::CreateGraphicsPipline()
 {
 
-	system("CompileShader.bat");
+	system("shaderbat//MultiSubpassShaderCompile.bat");
 
 
 	CreatePiplineSubpass0();
@@ -1186,7 +1205,7 @@ void Renderer::CreateGraphicsPipline()
 
 }
 
-void Renderer::CreateFramebuffers()
+void MultiSubpassesRenderer::CreateFramebuffers()
 {
 
 
@@ -1221,7 +1240,7 @@ void Renderer::CreateFramebuffers()
 
 }
 
-void Renderer::InitCommandBuffers()
+void MultiSubpassesRenderer::InitCommandBuffers()
 {
 
 
@@ -1241,7 +1260,7 @@ void Renderer::InitCommandBuffers()
 
 }
 
-void Renderer::CommandBufferRecording()
+void MultiSubpassesRenderer::CommandBufferRecording()
 {
 
 
@@ -1262,7 +1281,7 @@ void Renderer::CommandBufferRecording()
 			throw std::runtime_error("failed to begin recording command buffer!");
 		}
 
-		
+
 		VkRenderPassBeginInfo renderPassInfo{}; //开始信息这是，注意
 		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 		//renderPassInfo.renderPass = render_pass;
@@ -1299,10 +1318,12 @@ void Renderer::CommandBufferRecording()
 		vkCmdBindDescriptorSets(graphics_command_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_layout_subpass0, 0, 1, &descriptor_sets_write_subpass0[i], 0, NULL);
 
 
-		for (auto& model : scene) {
+		/*	for (auto& model : scene) {
 
-			model.DrawInstance(graphics_command_buffers[i]);
-		}
+				model.DrawInstance(graphics_command_buffers[i]);
+			}*/
+
+		viking_room_model->Draw(graphics_command_buffers[i]);
 
 
 
@@ -1336,7 +1357,7 @@ void Renderer::CommandBufferRecording()
 
 }
 
-void Renderer::InitSynObjects()
+void MultiSubpassesRenderer::InitSynObjects()
 {
 
 
@@ -1375,11 +1396,26 @@ void Renderer::InitSynObjects()
 
 
 
-void Renderer::CleanUpModels()
+void MultiSubpassesRenderer::CleanUpModels()
 {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }
 
-void Renderer::DrawFrame()
+void MultiSubpassesRenderer::DrawFrame()
 {
 
 
@@ -1448,12 +1484,10 @@ void Renderer::DrawFrame()
 
 
 
-	VkResult A = vkQueueSubmit(device_manager->GetGraphicsQueue(), 1, &submitInfo, inflight_fences[currentFrame]);
-
-	/*if (vkQueueSubmit(device_manager->GetGraphicsQueue(), 1, &submitInfo, inflight_fences[currentFrame]) != VK_SUCCESS)
+	if (vkQueueSubmit(device_manager->GetGraphicsQueue(), 1, &submitInfo, inflight_fences[currentFrame]) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to submit draw command buffer!");
-	}*/
+	}
 
 
 
@@ -1485,7 +1519,7 @@ void Renderer::DrawFrame()
 
 	//}
 
-	if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR ) {
+	if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
 		//recreateSwapChain();
 		return;
 	}
@@ -1498,32 +1532,19 @@ void Renderer::DrawFrame()
 
 }
 
-void Renderer::UpdateUniformBuffer(uint32_t currentImage)
+void MultiSubpassesRenderer::UpdateUniformBuffer(uint32_t currentImage)
 {
 
 
 
-	static auto startTime = std::chrono::high_resolution_clock::now();
-
-	auto currentTime = std::chrono::high_resolution_clock::now();
-	float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
 
 
+	ubo.model = glm::mat4(1.f);
+	ubo.view = m_pCamera->GetView();
+	ubo.proj = m_pCamera->GetProj();
 
-
-	UniformBufferObject ubo{};
-	ubo.model = glm::mat4(1.0f);
-	ubo.view = glm::lookAtRH(glm::vec3(0.f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-	ubo.proj = glm::perspectiveRH_ZO(glm::radians(90.f), swapchain_manager->GetSwapChainImageExtent().width / (float)swapchain_manager->GetSwapChainImageExtent().height, 3.f, 9.0f);
-
-
-
-
-
-	UniformBufferObjectTest ubo0{};
-	ubo0.model = glm::mat4(1.0f);
-	ubo0.view = glm::lookAtRH(glm::vec3(0.f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-
+	ubo0.model = glm::mat4(1.f);
+	ubo0.view = m_pCamera->GetView();
 
 
 	void* data;
@@ -1541,9 +1562,71 @@ void Renderer::UpdateUniformBuffer(uint32_t currentImage)
 
 }
 
+void MultiSubpassesRenderer::UpdateCamera(float dt)
+{
 
 
-void Renderer::CleanUpDescriptorSetLayoutAndDescriptorPool()
+	if (keyboard->GetIsKeyDown(GLFW_KEY_W)) {
+		m_pCamera->Walk(dt * -3.f);
+	}
+
+	if (keyboard->GetIsKeyDown(GLFW_KEY_S)) {
+		m_pCamera->Walk(dt * 3.f);
+	}
+
+	if (keyboard->GetIsKeyDown(GLFW_KEY_A)) {
+
+		m_pCamera->Strafe(dt *  -3.0f);
+	}
+
+	if (keyboard->GetIsKeyDown(GLFW_KEY_D)) {
+
+		m_pCamera->Strafe(dt * 3.0f);
+	}
+
+	if (keyboard->GetIsKeyDown(GLFW_KEY_UP)) {
+
+		m_pCamera->MoveForward(dt * -3.0f);
+	}
+
+	if (keyboard->GetIsKeyDown(GLFW_KEY_DOWN)) {
+
+		m_pCamera->MoveForward(dt * 3.0f);
+	}
+	//=====================================================================
+
+
+	m_pCamera->Pitch  (   dt * mouse->   GetPitchDiff());
+	m_pCamera->RotateY(  - dt * mouse->GetYawDiff());
+
+
+}
+
+void MultiSubpassesRenderer::CreateCamera()
+{
+
+
+
+	m_pCamera = std::make_unique<FirstPersonCamera>();
+	m_pCamera->SetFrustum(glm::radians(60.f), swapchain_manager->GetSwapChainImageExtent().width / (float)swapchain_manager->GetSwapChainImageExtent().height, 1.f, 10.f);
+	m_pCamera->LookAt(glm::vec3(0.f, 0.f, 1.f), glm::vec3(0.f, 0.f, -1.f), glm::vec3(0., 1., 0.));
+
+	VkViewport viewport{};
+	const VkExtent3D extend_of_swap_image = swapchain_manager->GetSwapChainImageExtent();
+	viewport.x = 0.0f;
+	viewport.y = (float)extend_of_swap_image.height;
+	viewport.width = (float)extend_of_swap_image.width;
+	viewport.height = -(float)extend_of_swap_image.height;
+	viewport.minDepth = 0.0f;
+	viewport.maxDepth = 1.0f;
+
+	m_pCamera->SetViewPort(viewport);
+
+}
+
+
+
+void MultiSubpassesRenderer::CleanUpDescriptorSetLayoutAndDescriptorPool()
 {
 
 
@@ -1556,7 +1639,7 @@ void Renderer::CleanUpDescriptorSetLayoutAndDescriptorPool()
 
 }
 
-void Renderer::CleanUpCommandBuffersAndCommandPool()
+void MultiSubpassesRenderer::CleanUpCommandBuffersAndCommandPool()
 {
 
 	vkFreeCommandBuffers(device_manager->GetLogicalDeviceRef(), graphics_command_pool, static_cast<uint32_t>(graphics_command_buffers.size()), graphics_command_buffers.data());
@@ -1569,7 +1652,7 @@ void Renderer::CleanUpCommandBuffersAndCommandPool()
 
 }
 
-void Renderer::CleanUpSyncObjects()
+void MultiSubpassesRenderer::CleanUpSyncObjects()
 {
 
 	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
@@ -1580,7 +1663,7 @@ void Renderer::CleanUpSyncObjects()
 
 }
 
-void Renderer::CleanupFrameBuffers()
+void MultiSubpassesRenderer::CleanupFrameBuffers()
 {
 
 
@@ -1590,7 +1673,7 @@ void Renderer::CleanupFrameBuffers()
 
 }
 
-void Renderer::CleanUpPiplineAndPiplineLayout()
+void MultiSubpassesRenderer::CleanUpPiplineAndPiplineLayout()
 {
 
 	vkDestroyPipeline(device_manager->GetLogicalDeviceRef(), graphics_pipeline_subpass0, nullptr);
@@ -1602,13 +1685,13 @@ void Renderer::CleanUpPiplineAndPiplineLayout()
 
 }
 
-void Renderer::CleanUpRenderPass()
+void MultiSubpassesRenderer::CleanUpRenderPass()
 {
 	vkDestroyRenderPass(device_manager->GetLogicalDeviceRef(), render_pass, nullptr);
 
 }
 
-void Renderer::CleanUpImages()
+void MultiSubpassesRenderer::CleanUpImages()
 {
 
 
@@ -1630,7 +1713,7 @@ void Renderer::CleanUpImages()
 }
 
 
-void Renderer::CreateGraphicsPiplineLayout()
+void MultiSubpassesRenderer::CreateGraphicsPiplineLayout()
 {
 
 
@@ -1675,13 +1758,22 @@ void Renderer::CreateGraphicsPiplineLayout()
 
 }
 
-void Renderer::CreateTextureImages()
+void MultiSubpassesRenderer::CreateTextureImages()
 {
 
+
+	//VK_FORMAT_B8G8R8A8_UNORM
+
 	human_face.InitTexture(std::string("textures//face.jpg"), device_manager, window, graphics_command_pool);
-	human_face.InitTextureView(VK_FORMAT_B8G8R8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT);
+	human_face.InitTextureView(VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT);
 	human_face.InitSampler();
 
+
+
+
+	viking_room.InitTexture(std::string("textures//viking_room.png"), device_manager, window, graphics_command_pool);
+	viking_room.InitTextureView(VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT);
+	viking_room.InitSampler();
 
 
 
@@ -1690,25 +1782,53 @@ void Renderer::CreateTextureImages()
 
 
 
-void Renderer::CreateAttachmentImages()
+void MultiSubpassesRenderer::SetUpUserInput()
+{
+
+
+
+	std::vector<int> tracked_keys = { GLFW_KEY_W ,GLFW_KEY_S ,GLFW_KEY_A, GLFW_KEY_D,GLFW_KEY_Q, GLFW_KEY_E,GLFW_KEY_Z, GLFW_KEY_C,GLFW_KEY_UP,GLFW_KEY_DOWN };
+	keyboard = std::make_unique<KeyBoardInputManager>(tracked_keys);
+	keyboard->SetupKeyInputs(window->GetWindowPtr());
+
+
+	mouse = std::make_unique<MouseInputManager>(swapchain_manager->GetSwapChainImageExtent());
+	mouse->SetupMouseInputs(window->GetWindowPtr());
+
+
+
+
+
+}
+
+void MultiSubpassesRenderer::CreateAttachmentImages()
 {
 
 
 	red_color_attachment.resize(swapchain_manager->GetSwapImageCount());
 	for (uint32_t i = 0; i < swapchain_manager->GetSwapImageCount(); i++) {
-
 		red_color_attachment[i].Init(VK_IMAGE_TYPE_2D, VK_FORMAT_R8G8B8A8_UNORM, swapchain_manager->GetSwapChainImageExtent(), 1, 1, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT, VK_SHARING_MODE_EXCLUSIVE, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, device_manager);
 
 		red_color_attachment[i].TransitionImageLayout(VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, graphics_command_pool, device_manager->GetLogicalDeviceRef(), device_manager->GetGraphicsQueue());
 
 
 		red_color_attachment[i].InitImageView(VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_ASPECT_COLOR_BIT);
-
 	}
 
 
 
 
+}
 
 
+namespace std {
+	template<>
+	struct hash<MultiSubpassesRenderer::Vertex>
+	{
+		size_t operator()(MultiSubpassesRenderer::Vertex const& vertex) const {
+			return ((hash<glm::vec3>()(vertex.pos) ^
+				(hash<glm::vec3>()(vertex.color) << 1)) >> 1) ^
+				(hash<glm::vec2>()(vertex.texCoord) << 1);
+		}
+	};
 }

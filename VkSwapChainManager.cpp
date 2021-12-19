@@ -265,9 +265,6 @@ VkExtent2D VkSwapChainManager::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& 
 VkFormat VkSwapChainManager::GetSwapChainImageFormat() const
 {
 
-
-
-
 	return swap_chain_image_format;
 }
 

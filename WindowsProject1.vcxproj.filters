@@ -19,6 +19,27 @@
     <Filter Include="Header Files\ImGui">
       <UniqueIdentifier>{07d189a5-c5db-4f11-b241-6e472dea3342}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Renderers">
+      <UniqueIdentifier>{75f5e640-21bc-4612-98fe-8b023cce93b5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shader Files\multisubpass">
+      <UniqueIdentifier>{31578612-1922-4491-954a-c21d763192c3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Camera">
+      <UniqueIdentifier>{b5e554c1-69f5-4de3-b285-98661de25c25}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\InputManager">
+      <UniqueIdentifier>{7ed93721-316e-48ab-b4ba-2b0e0832c1fd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Texture">
+      <UniqueIdentifier>{14e10ad6-753a-4943-b6a2-84e8180379c5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Model">
+      <UniqueIdentifier>{0259e414-9277-4b81-bdea-a55419c5eb68}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shader Files\shadowmapping">
+      <UniqueIdentifier>{e01cf843-8de3-4522-a3dc-993605770411}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -45,9 +66,6 @@
     <ClCompile Include="VkSwapChainManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Renderer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="VkImageWrapper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -67,6 +85,33 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="VkUniformBuffer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ModelLoader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ShadowMapping.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BaseRenderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Multisubpass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Camera.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="KeyBoardInputManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Transform.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FirstPersonCamera.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MouseInputManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -98,9 +143,6 @@
     <ClInclude Include="VkSwapChainManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Renderer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="VkImageWrapper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -110,13 +152,7 @@
     <ClInclude Include="ShaderManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="VkModel.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="VkMemoryWrapper.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Texture.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="VkCommandManager.h">
@@ -125,19 +161,64 @@
     <ClInclude Include="VkUniformBuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ModelLoader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="BaseRenderer.h">
+      <Filter>Header Files\Renderers</Filter>
+    </ClInclude>
+    <ClInclude Include="Multisubpass.h">
+      <Filter>Header Files\Renderers</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera.h">
+      <Filter>Header Files\Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="Transform.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FirstPersonCamera.h">
+      <Filter>Header Files\Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="KeyBoardInputManager.h">
+      <Filter>Header Files\InputManager</Filter>
+    </ClInclude>
+    <ClInclude Include="MouseInputManager.h">
+      <Filter>Header Files\InputManager</Filter>
+    </ClInclude>
+    <ClInclude Include="Texture.h">
+      <Filter>Header Files\Texture</Filter>
+    </ClInclude>
+    <ClInclude Include="VkModel.h">
+      <Filter>Header Files\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="ShadowMapping.h">
+      <Filter>Header Files\Renderers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="shader.vert">
-      <Filter>Shader Files</Filter>
+    <None Include="shaders\multisubpasses\multisubpass_vertex_shader_subpass0.vert">
+      <Filter>Shader Files\multisubpass</Filter>
     </None>
-    <None Include="shader.frag">
-      <Filter>Shader Files</Filter>
+    <None Include="shaders\multisubpasses\multisubpass_vertex_shader_subpass1.vert">
+      <Filter>Shader Files\multisubpass</Filter>
     </None>
-    <None Include="shader0.frag">
-      <Filter>Shader Files</Filter>
+    <None Include="shaders\multisubpasses\multisubpass_fragment_shader_subpass0.frag">
+      <Filter>Shader Files\multisubpass</Filter>
     </None>
-    <None Include="shader0.vert">
-      <Filter>Shader Files</Filter>
+    <None Include="shaders\multisubpasses\multisubpass_fragment_shader_subpass1.frag">
+      <Filter>Shader Files\multisubpass</Filter>
+    </None>
+    <None Include="shaders\shadowmapping\shadow_mapping_vertex_shader_shadow_pass.vert">
+      <Filter>Shader Files\shadowmapping</Filter>
+    </None>
+    <None Include="shaders\shadowmapping\shadow_mapping_fragment_shader_shadow_pass.frag">
+      <Filter>Shader Files\shadowmapping</Filter>
+    </None>
+    <None Include="shaders\shadowmapping\shadow_mapping_fragment_shader_scene_pass.frag">
+      <Filter>Shader Files\shadowmapping</Filter>
+    </None>
+    <None Include="shaders\shadowmapping\shadow_mapping_vertex_shader_scene_pass.vert">
+      <Filter>Shader Files\shadowmapping</Filter>
     </None>
   </ItemGroup>
 </Project>

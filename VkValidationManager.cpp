@@ -127,27 +127,27 @@ VKAPI_ATTR VkBool32 VKAPI_CALL VkValidationManager::debugCallback(VkDebugUtilsMe
 	std::string message(pCallbackData->pMessage);
 	std::string debugMessage("DEBUG-PRINTF ]");
 
-	if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT) {
-		if (message.find(debugMessage) != std::string::npos) {
-			std::cerr << "validation layer: " << std::endl << "--------------------------------------------------------------------------------" << std::endl;
-			const auto sizeline = 140;
-			for (int i = 0; i < message.length(); i += sizeline) {
+	//if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT) {
+	//	if (message.find(debugMessage) != std::string::npos) {
+	//		std::cerr << "validation layer: " << std::endl << "--------------------------------------------------------------------------------" << std::endl;
+	//		const auto sizeline = 140;
+	//		for (int i = 0; i < message.length(); i += sizeline) {
 
-				std::cout << message.substr(i, sizeline) << std::endl;
-			}
-			std::cout << "--------------------------------------------------------------------------------" << std::endl << std::endl;
-		}
+	//			std::cout << message.substr(i, sizeline) << std::endl;
+	//		}
+	//		std::cout << "--------------------------------------------------------------------------------" << std::endl << std::endl;
+	//	}
 
-	}
-	else {
-		/*std::cerr << "validation layer: " << std::endl << "--------------------------------------------------------------------------------" << std::endl;
-		const auto sizeline = 140;
-		for (int i = 0; i < message.length(); i += sizeline) {
+	//}
+	//else {
+	//	/*std::cerr << "validation layer: " << std::endl << "--------------------------------------------------------------------------------" << std::endl;
+	//	const auto sizeline = 140;
+	//	for (int i = 0; i < message.length(); i += sizeline) {
 
-			std::cout << message.substr(i, sizeline) << std::endl;
-		}
-		std::cout << "--------------------------------------------------------------------------------" << std::endl << std::endl;*/
-	}
+	//		std::cout << message.substr(i, sizeline) << std::endl;
+	//	}
+	//	std::cout << "--------------------------------------------------------------------------------" << std::endl << std::endl;*/
+	//}
 	return VK_FALSE;
 }
 

@@ -42,6 +42,23 @@ public:
 
 
 
+
+
+
+
+
+
+	VkBool32 FormatIsFilterable(VkFormat format, VkImageTiling tiling);
+
+
+
+
+
+
+
+
+
+
 	VkCommandPool CreateCommandPool(CommandPoolType type, VkSurfaceKHR surface);
 	void CreateLogicalDeviceAndQueues( VkSurfaceKHR& surface);
 

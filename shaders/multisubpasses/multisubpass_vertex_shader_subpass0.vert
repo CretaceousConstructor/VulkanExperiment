@@ -26,7 +26,7 @@ layout(set = 0,binding = 1) uniform UniformBufferObjectTest {
 layout(location = 0) in vec3 inPosition;
 layout(location = 1) in vec3 inColor;
 layout(location = 2) in vec2 inTexCoord;
-layout(location = 3) in mat4 instanceMatrix;
+//layout(location = 3) in mat4 instanceMatrix;
 ////Output
 layout(location = 0) out vec3 fragColor;
 layout(location = 1) out vec2 fragTexCoord;
@@ -34,12 +34,13 @@ layout(location = 1) out vec2 fragTexCoord;
 //
 void main() 
 {
-//
-    float myfloat = 3.1415f;
-    debugPrintfEXT("My float is %f", myfloat);
+
+     //float myfloat = 3.1415f;
+     //debugPrintfEXT("My float is %f", myfloat);
 ////
     //以下三个值均进行了interpolation
-     gl_Position = ubo1.proj * uboShit.view  * uboShit.model* instanceMatrix * vec4(inPosition, 1.0);
+//     gl_Position = ubo1.proj * uboShit.view  * uboShit.model* instanceMatrix * vec4(inPosition, 1.0);
+     gl_Position = ubo1.proj * uboShit.view  * uboShit.model*  vec4(inPosition, 1.0);
      fragColor = inColor;
      fragTexCoord = inTexCoord;
 //

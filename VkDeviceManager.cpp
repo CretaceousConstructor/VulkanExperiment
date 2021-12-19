@@ -176,6 +176,20 @@ uint32_t VkDeviceManager::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFl
 	throw std::runtime_error("failed to find suitable memory type!");
 }
 
+VkBool32 VkDeviceManager::FormatIsFilterable(VkFormat format, VkImageTiling tiling)
+{
+	VkFormatProperties formatProps;
+	vkGetPhysicalDeviceFormatProperties(physical_device, format, &formatProps);
+
+	if (tiling == VK_IMAGE_TILING_OPTIMAL)
+		return formatProps.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT;
+
+	if (tiling == VK_IMAGE_TILING_LINEAR)
+		return formatProps.linearTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT;
+
+	return false;
+}
+
 
 
 
