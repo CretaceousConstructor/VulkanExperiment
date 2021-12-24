@@ -9,10 +9,6 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
     </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
-    </Filter>
     <Filter Include="Shader Files">
       <UniqueIdentifier>{95214fe5-4d92-42ad-87ca-fc0874188aaf}</UniqueIdentifier>
     </Filter>
@@ -40,185 +36,185 @@
     <Filter Include="Shader Files\shadowmapping">
       <UniqueIdentifier>{e01cf843-8de3-4522-a3dc-993605770411}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Transform">
+      <UniqueIdentifier>{2112289d-a2de-44ce-a799-7a18bf435c4a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Vk">
+      <UniqueIdentifier>{050df9e2-4ba4-4754-968c-a8463ad0b466}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Shaders">
+      <UniqueIdentifier>{d3b66d4d-7c34-4f44-b77d-580f65250ab5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
+    <None Include="data\shaders\multisubpasses\multisubpass_vertex_shader_subpass0.vert">
+      <Filter>Shader Files\multisubpass</Filter>
+    </None>
+    <None Include="data\shaders\multisubpasses\multisubpass_vertex_shader_subpass1.vert">
+      <Filter>Shader Files\multisubpass</Filter>
+    </None>
+    <None Include="data\shaders\multisubpasses\multisubpass_fragment_shader_subpass0.frag">
+      <Filter>Shader Files\multisubpass</Filter>
+    </None>
+    <None Include="data\shaders\multisubpasses\multisubpass_fragment_shader_subpass1.frag">
+      <Filter>Shader Files\multisubpass</Filter>
+    </None>
+    <None Include="data\shaders\shadowmapping\shadow_mapping_vertex_shader_scene_pass.vert">
+      <Filter>Shader Files\shadowmapping</Filter>
+    </None>
+    <None Include="data\shaders\shadowmapping\shadow_mapping_vertex_shader_shadow_pass.vert">
+      <Filter>Shader Files\shadowmapping</Filter>
+    </None>
+    <None Include="data\shaders\shadowmapping\shadow_mapping_fragment_shader_scene_pass.frag">
+      <Filter>Shader Files\shadowmapping</Filter>
+    </None>
+    <None Include="data\shaders\shadowmapping\shadow_mapping_fragment_shader_shadow_pass.frag">
+      <Filter>Shader Files\shadowmapping</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="base\VkUniformBuffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="VkWindows.cpp">
+    <ClCompile Include="base\VkValidationManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="VkValidationManager.cpp">
+    <ClCompile Include="base\VkWindows.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="VkExtensionManager.cpp">
+    <ClCompile Include="base\App.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="VkDeviceManager.cpp">
+    <ClCompile Include="base\BaseRenderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="VkInitializer.cpp">
+    <ClCompile Include="base\Camera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="App.cpp">
+    <ClCompile Include="base\FirstPersonCamera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="VkSwapChainManager.cpp">
+    <ClCompile Include="base\KeyBoardInputManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="VkImageWrapper.cpp">
+    <ClCompile Include="base\ModelLoader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="VkMemoryManager.cpp">
+    <ClCompile Include="base\MouseInputManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ShaderManager.cpp">
+    <ClCompile Include="base\ShaderManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="VkMemoryWrapper.cpp">
+    <ClCompile Include="base\ShadowMappingRenderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Texture.cpp">
+    <ClCompile Include="base\Texture.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="VkCommandManager.cpp">
+    <ClCompile Include="base\Transform.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="VkUniformBuffer.cpp">
+    <ClCompile Include="base\VkCommandManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ModelLoader.cpp">
+    <ClCompile Include="base\VkDeviceManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ShadowMapping.cpp">
+    <ClCompile Include="base\VkExtensionManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="BaseRenderer.cpp">
+    <ClCompile Include="base\VkImageWrapper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Multisubpass.cpp">
+    <ClCompile Include="base\VkInitializer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Camera.cpp">
+    <ClCompile Include="base\VkMemoryManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="KeyBoardInputManager.cpp">
+    <ClCompile Include="base\VkMemoryWrapper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Transform.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="FirstPersonCamera.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="MouseInputManager.cpp">
+    <ClCompile Include="base\VkSwapChainManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="EngineMarco.h">
+    <ClInclude Include="base\include\App.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="VkWindows.h">
+    <ClInclude Include="base\include\EngineHeader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="VkValidationManager.h">
+    <ClInclude Include="base\include\EngineMarco.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EngineHeader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="VkExtensionManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="VkDeviceManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="VkInitializer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="App.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="VkSwapChainManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="VkImageWrapper.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="VkMemoryManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ShaderManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="VkMemoryWrapper.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="VkCommandManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="VkUniformBuffer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ModelLoader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="BaseRenderer.h">
-      <Filter>Header Files\Renderers</Filter>
-    </ClInclude>
-    <ClInclude Include="Multisubpass.h">
-      <Filter>Header Files\Renderers</Filter>
-    </ClInclude>
-    <ClInclude Include="Camera.h">
+    <ClInclude Include="base\include\Camera.h">
       <Filter>Header Files\Camera</Filter>
     </ClInclude>
-    <ClInclude Include="Transform.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="base\include\BaseRenderer.h">
+      <Filter>Header Files\Renderers</Filter>
     </ClInclude>
-    <ClInclude Include="FirstPersonCamera.h">
-      <Filter>Header Files\Camera</Filter>
-    </ClInclude>
-    <ClInclude Include="KeyBoardInputManager.h">
-      <Filter>Header Files\InputManager</Filter>
-    </ClInclude>
-    <ClInclude Include="MouseInputManager.h">
-      <Filter>Header Files\InputManager</Filter>
-    </ClInclude>
-    <ClInclude Include="Texture.h">
-      <Filter>Header Files\Texture</Filter>
-    </ClInclude>
-    <ClInclude Include="VkModel.h">
+    <ClInclude Include="base\include\ModelLoader.h">
       <Filter>Header Files\Model</Filter>
     </ClInclude>
-    <ClInclude Include="ShadowMapping.h">
+    <ClInclude Include="base\include\Texture.h">
+      <Filter>Header Files\Texture</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\ShadowMappingRenderer.h">
       <Filter>Header Files\Renderers</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="shaders\multisubpasses\multisubpass_vertex_shader_subpass0.vert">
-      <Filter>Shader Files\multisubpass</Filter>
-    </None>
-    <None Include="shaders\multisubpasses\multisubpass_vertex_shader_subpass1.vert">
-      <Filter>Shader Files\multisubpass</Filter>
-    </None>
-    <None Include="shaders\multisubpasses\multisubpass_fragment_shader_subpass0.frag">
-      <Filter>Shader Files\multisubpass</Filter>
-    </None>
-    <None Include="shaders\multisubpasses\multisubpass_fragment_shader_subpass1.frag">
-      <Filter>Shader Files\multisubpass</Filter>
-    </None>
-    <None Include="shaders\shadowmapping\shadow_mapping_vertex_shader_shadow_pass.vert">
-      <Filter>Shader Files\shadowmapping</Filter>
-    </None>
-    <None Include="shaders\shadowmapping\shadow_mapping_fragment_shader_shadow_pass.frag">
-      <Filter>Shader Files\shadowmapping</Filter>
-    </None>
-    <None Include="shaders\shadowmapping\shadow_mapping_fragment_shader_scene_pass.frag">
-      <Filter>Shader Files\shadowmapping</Filter>
-    </None>
-    <None Include="shaders\shadowmapping\shadow_mapping_vertex_shader_scene_pass.vert">
-      <Filter>Shader Files\shadowmapping</Filter>
-    </None>
+    <ClInclude Include="base\include\VkModel.h">
+      <Filter>Header Files\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\MouseInputManager.h">
+      <Filter>Header Files\InputManager</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\KeyBoardInputManager.h">
+      <Filter>Header Files\InputManager</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\Transform.h">
+      <Filter>Header Files\Transform</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\FirstPersonCamera.h">
+      <Filter>Header Files\Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\ShaderManager.h">
+      <Filter>Header Files\Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\VkCommandManager.h">
+      <Filter>Header Files\Vk</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\VkDeviceManager.h">
+      <Filter>Header Files\Vk</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\VkExtensionManager.h">
+      <Filter>Header Files\Vk</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\VkWindows.h">
+      <Filter>Header Files\Vk</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\VkValidationManager.h">
+      <Filter>Header Files\Vk</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\VkUniformBuffer.h">
+      <Filter>Header Files\Vk</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\VkSwapChainManager.h">
+      <Filter>Header Files\Vk</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\VkMemoryWrapper.h">
+      <Filter>Header Files\Vk</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\VkMemoryManager.h">
+      <Filter>Header Files\Vk</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\VkInitializer.h">
+      <Filter>Header Files\Vk</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\VkImageWrapper.h">
+      <Filter>Header Files\Vk</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

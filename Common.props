@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ImportGroup Label="PropertySheets" />
+  <PropertyGroup Label="UserMacros">
+    <Bin>bin\</Bin>
+    <Intermediate>intermediate\</Intermediate>
+    <Log>log\</Log>
+  </PropertyGroup>
+  <PropertyGroup>
+    <OutDir>$(ProjectDir)$(Bin)$(Configuration)\</OutDir>
+    <IntDir>$(Intermediate)$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>D:\CS\ComputerGraphics\vulkan\WindowsProject1\base\include;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\stb;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\tinyobjloader;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\glfw-3.3.3.bin.WIN64\include;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\glm;D:\ProgrammingTools\vulkan\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+    </ClCompile>
+    <BuildLog>
+      <Path>$(Log)$(Configuration)\$(MSBuildProjectName).log</Path>
+    </BuildLog>
+    <Link>
+      <AdditionalLibraryDirectories>D:\CS\ComputerGraphics\vulkan\WindowsProject1\lib;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\glfw-3.3.3.bin.WIN64\lib-vc2019;D:\ProgrammingTools\vulkan\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Base.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <BuildMacro Include="Bin">
+      <Value>$(Bin)</Value>
+    </BuildMacro>
+    <BuildMacro Include="Intermediate">
+      <Value>$(Intermediate)</Value>
+    </BuildMacro>
+    <BuildMacro Include="Log">
+      <Value>$(Log)</Value>
+    </BuildMacro>
+  </ItemGroup>
+</Project>

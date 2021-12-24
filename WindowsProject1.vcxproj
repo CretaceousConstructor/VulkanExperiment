@@ -19,68 +19,65 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="App.cpp" />
-    <ClCompile Include="BaseRenderer.cpp" />
-    <ClCompile Include="Camera.cpp" />
-    <ClCompile Include="ModelLoader.cpp" />
-    <ClCompile Include="MouseInputManager.cpp" />
-    <ClCompile Include="ShadowMapping.cpp" />
-    <ClCompile Include="KeyBoardInputManager.cpp" />
-    <ClCompile Include="FirstPersonCamera.cpp" />
-    <ClCompile Include="Transform.cpp" />
-    <ClCompile Include="VkCommandManager.cpp" />
-    <ClCompile Include="main.cpp" />
-    <ClCompile Include="Multisubpass.cpp" />
-    <ClCompile Include="ShaderManager.cpp" />
-    <ClCompile Include="Texture.cpp" />
-    <ClCompile Include="VkImageWrapper.cpp" />
-    <ClCompile Include="VkMemoryManager.cpp" />
-    <ClCompile Include="VkMemoryWrapper.cpp" />
-    <ClCompile Include="VkSwapChainManager.cpp" />
-    <ClCompile Include="VkDeviceManager.cpp" />
-    <ClCompile Include="VkExtensionManager.cpp" />
-    <ClCompile Include="VkUniformBuffer.cpp" />
-    <ClCompile Include="VkValidationManager.cpp" />
-    <ClCompile Include="VkWindows.cpp" />
-    <ClCompile Include="VkInitializer.cpp" />
+    <None Include="data\shaders\multisubpasses\multisubpass_fragment_shader_subpass0.frag" />
+    <None Include="data\shaders\multisubpasses\multisubpass_fragment_shader_subpass1.frag" />
+    <None Include="data\shaders\multisubpasses\multisubpass_vertex_shader_subpass0.vert" />
+    <None Include="data\shaders\multisubpasses\multisubpass_vertex_shader_subpass1.vert" />
+    <None Include="data\shaders\shadowmapping\shadow_mapping_fragment_shader_scene_pass.frag" />
+    <None Include="data\shaders\shadowmapping\shadow_mapping_fragment_shader_shadow_pass.frag" />
+    <None Include="data\shaders\shadowmapping\shadow_mapping_vertex_shader_scene_pass.vert" />
+    <None Include="data\shaders\shadowmapping\shadow_mapping_vertex_shader_shadow_pass.vert" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="App.h" />
-    <ClInclude Include="BaseRenderer.h" />
-    <ClInclude Include="Camera.h" />
-    <ClInclude Include="ModelLoader.h" />
-    <ClInclude Include="MouseInputManager.h" />
-    <ClInclude Include="ShadowMapping.h" />
-    <ClInclude Include="KeyBoardInputManager.h" />
-    <ClInclude Include="FirstPersonCamera.h" />
-    <ClInclude Include="Transform.h" />
-    <ClInclude Include="VkCommandManager.h" />
-    <ClInclude Include="EngineHeader.h" />
-    <ClInclude Include="EngineMarco.h" />
-    <ClInclude Include="Multisubpass.h" />
-    <ClInclude Include="ShaderManager.h" />
-    <ClInclude Include="Texture.h" />
-    <ClInclude Include="VkImageWrapper.h" />
-    <ClInclude Include="VkMemoryManager.h" />
-    <ClInclude Include="VkMemoryWrapper.h" />
-    <ClInclude Include="VkModel.h" />
-    <ClInclude Include="VkSwapChainManager.h" />
-    <ClInclude Include="VkDeviceManager.h" />
-    <ClInclude Include="VkExtensionManager.h" />
-    <ClInclude Include="VkUniformBuffer.h" />
-    <ClInclude Include="VkValidationManager.h" />
-    <ClInclude Include="VkWindows.h" />
-    <ClInclude Include="VkInitializer.h" />
+    <ClCompile Include="base\App.cpp" />
+    <ClCompile Include="base\BaseRenderer.cpp" />
+    <ClCompile Include="base\Camera.cpp" />
+    <ClCompile Include="base\FirstPersonCamera.cpp" />
+    <ClCompile Include="base\KeyBoardInputManager.cpp" />
+    <ClCompile Include="base\ModelLoader.cpp" />
+    <ClCompile Include="base\MouseInputManager.cpp" />
+    <ClCompile Include="base\ShaderManager.cpp" />
+    <ClCompile Include="base\ShadowMappingRenderer.cpp" />
+    <ClCompile Include="base\Texture.cpp" />
+    <ClCompile Include="base\Transform.cpp" />
+    <ClCompile Include="base\VkCommandManager.cpp" />
+    <ClCompile Include="base\VkDeviceManager.cpp" />
+    <ClCompile Include="base\VkExtensionManager.cpp" />
+    <ClCompile Include="base\VkImageWrapper.cpp" />
+    <ClCompile Include="base\VkInitializer.cpp" />
+    <ClCompile Include="base\VkMemoryManager.cpp" />
+    <ClCompile Include="base\VkMemoryWrapper.cpp" />
+    <ClCompile Include="base\VkSwapChainManager.cpp" />
+    <ClCompile Include="base\VkUniformBuffer.cpp" />
+    <ClCompile Include="base\VkValidationManager.cpp" />
+    <ClCompile Include="base\VkWindows.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="shaders\multisubpasses\multisubpass_fragment_shader_subpass0.frag" />
-    <None Include="shaders\multisubpasses\multisubpass_fragment_shader_subpass1.frag" />
-    <None Include="shaders\multisubpasses\multisubpass_vertex_shader_subpass0.vert" />
-    <None Include="shaders\multisubpasses\multisubpass_vertex_shader_subpass1.vert" />
-    <None Include="shaders\shadowmapping\shadow_mapping_fragment_shader_scene_pass.frag" />
-    <None Include="shaders\shadowmapping\shadow_mapping_fragment_shader_shadow_pass.frag" />
-    <None Include="shaders\shadowmapping\shadow_mapping_vertex_shader_scene_pass.vert" />
-    <None Include="shaders\shadowmapping\shadow_mapping_vertex_shader_shadow_pass.vert" />
+    <ClInclude Include="base\include\App.h" />
+    <ClInclude Include="base\include\BaseRenderer.h" />
+    <ClInclude Include="base\include\Camera.h" />
+    <ClInclude Include="base\include\EngineHeader.h" />
+    <ClInclude Include="base\include\EngineMarco.h" />
+    <ClInclude Include="base\include\FirstPersonCamera.h" />
+    <ClInclude Include="base\include\KeyBoardInputManager.h" />
+    <ClInclude Include="base\include\ModelLoader.h" />
+    <ClInclude Include="base\include\MouseInputManager.h" />
+    <ClInclude Include="base\include\ShaderManager.h" />
+    <ClInclude Include="base\include\ShadowMappingRenderer.h" />
+    <ClInclude Include="base\include\Texture.h" />
+    <ClInclude Include="base\include\Transform.h" />
+    <ClInclude Include="base\include\VkCommandManager.h" />
+    <ClInclude Include="base\include\VkDeviceManager.h" />
+    <ClInclude Include="base\include\VkExtensionManager.h" />
+    <ClInclude Include="base\include\VkImageWrapper.h" />
+    <ClInclude Include="base\include\VkInitializer.h" />
+    <ClInclude Include="base\include\VkMemoryManager.h" />
+    <ClInclude Include="base\include\VkMemoryWrapper.h" />
+    <ClInclude Include="base\include\VkModel.h" />
+    <ClInclude Include="base\include\VkSwapChainManager.h" />
+    <ClInclude Include="base\include\VkUniformBuffer.h" />
+    <ClInclude Include="base\include\VkValidationManager.h" />
+    <ClInclude Include="base\include\VkWindows.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
@@ -88,33 +85,38 @@
     <ProjectGuid>{49df340c-46bc-43e2-8db4-09e805354f9f}</ProjectGuid>
     <RootNamespace>WindowsProject1</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>Base</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -136,15 +138,21 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)lib\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)lib\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)lib\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)lib\</OutDir>
+    <IntDir>
+    </IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -152,15 +160,18 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>D:\ProgrammingTools\vulkan\Include;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\glm;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\glfw-3.3.3.bin.WIN64\include;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\tinyobjloader;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\stb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\ProgrammingTools\vulkan\Include;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\glm;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\glfw-3.3.3.bin.WIN64\include;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\tinyobjloader;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\stb;D:\CS\ComputerGraphics\vulkan\WindowsProject1\base\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>D:\ProgrammingTools\vulkan\Lib;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\glfw-3.3.3.bin.WIN64\lib-vc2019;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
     </Link>
+    <Lib>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -170,7 +181,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>D:\ProgrammingTools\vulkan\Include;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\glm;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\glfw-3.3.3.bin.WIN64\include;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\tinyobjloader;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\stb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\ProgrammingTools\vulkan\Include;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\glm;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\glfw-3.3.3.bin.WIN64\include;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\tinyobjloader;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\stb;D:\CS\ComputerGraphics\vulkan\WindowsProject1\base\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -179,8 +190,11 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>D:\ProgrammingTools\vulkan\Lib;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\glfw-3.3.3.bin.WIN64\lib-vc2019;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
     </Link>
+    <Lib>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -188,14 +202,14 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>D:\ProgrammingTools\vulkan\Include;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\glm;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\glfw-3.3.3.bin.WIN64\include;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\tinyobjloader;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\stb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\ProgrammingTools\vulkan\Include;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\glm;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\glfw-3.3.3.bin.WIN64\include;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\tinyobjloader;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\stb;D:\CS\ComputerGraphics\vulkan\WindowsProject1\base\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>D:\ProgrammingTools\vulkan\Lib;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\glfw-3.3.3.bin.WIN64\lib-vc2019;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -206,7 +220,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>D:\ProgrammingTools\vulkan\Include;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\glm;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\glfw-3.3.3.bin.WIN64\include;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\tinyobjloader;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\stb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\ProgrammingTools\vulkan\Include;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\glm;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\glfw-3.3.3.bin.WIN64\include;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\tinyobjloader;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\stb;D:\CS\ComputerGraphics\vulkan\WindowsProject1\base\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -215,7 +229,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>D:\ProgrammingTools\vulkan\Lib;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\glfw-3.3.3.bin.WIN64\lib-vc2019;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
