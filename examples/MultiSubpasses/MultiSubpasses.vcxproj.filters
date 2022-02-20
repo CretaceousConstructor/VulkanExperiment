@@ -9,9 +9,18 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
     </Filter>
-    <Filter Include="Resource Files">
+    <Filter Include="Shader Files">
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Shaderbat Files">
+      <UniqueIdentifier>{3c23e2a0-7e29-4a8d-824f-cfcfbad68905}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shader Files\subpass0">
+      <UniqueIdentifier>{8e57ef35-cc5b-4114-a730-a38c63f7b498}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shader Files\subpass1">
+      <UniqueIdentifier>{23a3982f-fe98-4c96-9d09-f8ffdd66b4c2}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -32,5 +41,31 @@
     <ClInclude Include="Multisubpass.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\data\shaderbat\MultiSubpassShaderCompile.bat">
+      <Filter>Shaderbat Files</Filter>
+    </None>
+    <None Include="..\..\data\shaders\multisubpasses\multisubpass_fragment_shader_subpass0.frag">
+      <Filter>Shader Files\subpass0</Filter>
+    </None>
+    <None Include="..\..\data\shaders\multisubpasses\multisubpass_geometry_shader_subpass0_normal.geom">
+      <Filter>Shader Files\subpass0</Filter>
+    </None>
+    <None Include="..\..\data\shaders\multisubpasses\multisubpass_vertex_shader_subpass0.vert">
+      <Filter>Shader Files\subpass0</Filter>
+    </None>
+    <None Include="..\..\data\shaders\multisubpasses\multisubpass_vertex_shader_subpass1.vert">
+      <Filter>Shader Files\subpass1</Filter>
+    </None>
+    <None Include="..\..\data\shaders\multisubpasses\multisubpass_fragment_shader_subpass1.frag">
+      <Filter>Shader Files\subpass1</Filter>
+    </None>
+    <None Include="..\..\data\shaders\multisubpasses\multisubpass_fragment_shader_subpass0_normal.frag">
+      <Filter>Shader Files\subpass0</Filter>
+    </None>
+    <None Include="..\..\data\shaders\multisubpasses\multisubpass_vertex_shader_subpass0_normal.vert">
+      <Filter>Shader Files\subpass0</Filter>
+    </None>
   </ItemGroup>
 </Project>

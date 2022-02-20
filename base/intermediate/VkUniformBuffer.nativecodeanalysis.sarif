@@ -1,0 +1,1552 @@
+{
+  "version": "2.1.0",
+  "$schema": "https://schemastore.azurewebsites.net/schemas/json/sarif-2.1.0-rtm.5.json",
+  "runs": [
+    {
+      "results": [],
+      "tool": {
+        "driver": {
+          "name": "PREfast",
+          "fullName": "PREfast Code Analysis",
+          "version": "14.28.29337.0"
+        }
+      },
+      "invocations": [
+        {
+          "commandLine": "D:\\ProgrammingTools\\VisualStudioPack\\VisualStudio\\VC\\Tools\\MSVC\\14.28.29333\\bin\\HostX64\\x64\\c1xx.dll -ACf{1F7B090C-16DB-4822-966A-A93D26ED4681} -ACpmspft140.dll -Alint -D_PREFAST_ -D_AST_FE_ -Analyze -zm0x00007FF7880BCC90 -il C:\\Users\\Peter\\AppData\\Local\\Temp\\_CL_e03acd98ast -typedil -f base\\VkUniformBuffer.cpp -Ze -D_MSC_EXTENSIONS -Zp16 -pc \\:/ -D_MSC_VER=1928 -D_MSC_FULL_VER=192829337 -D_MSC_BUILD=0 -D_M_AMD64=100 -ZILP448 -D_M_X64=100 -D_WIN64 -D_WIN32 -GR -D_CPPRTTI -I D:\\ProgrammingTools\\VisualStudioPack\\VisualStudio\\Libraries\\tinygltf -I D:\\ProgrammingTools\\vulkan\\Include -I D:\\ProgrammingTools\\VisualStudioPack\\VisualStudio\\Libraries\\glm -I D:\\ProgrammingTools\\VisualStudioPack\\VisualStudio\\Libraries\\glfw-3.3.3.bin.WIN64\\include -I D:\\ProgrammingTools\\VisualStudioPack\\VisualStudio\\Libraries\\tinyobjloader -I D:\\CS\\ComputerGraphics\\vulkan\\WindowsProject1\\base\\include -nologo -W 3 -diagnostics:column -D_GUARDOVERFLOW_CRT_ALLOCATORS=1 -Ot -DCODE_ANALYSIS -D_DEBUG -D_WINDOWS -D_UNICODE -DUNICODE -EHs -D_CPPUNWIND -EHc -D__MSVC_RUNTIME_CHECKS -RTCs -RTCu -MDd -D_DEBUG -D_MT -D_DLL -GS -D_M_FP_PRECISE -permissive- -Zc:wchar_t -Zc:forScope -std:c++17 -FoD:\\CS\\ComputerGraphics\\vulkan\\WindowsProject1\\base\\intermediate\\VkUniformBuffer.obj -FdD:\\CS\\ComputerGraphics\\vulkan\\WindowsProject1\\base\\intermediate\\Base.pdb -Gd -analyze:projectdirectory D:\\CS\\ComputerGraphics\\vulkan\\WindowsProject1 -analyze:rulesetdirectory ;D:\\ProgrammingTools\\VisualStudioPack\\VisualStudio\\Team Tools\\Static Analysis Tools\\\\Rule Sets; -analyze:ruleset D:\\ProgrammingTools\\VisualStudioPack\\VisualStudio\\Team Tools\\Static Analysis Tools\\Rule Sets\\NativeRecommendedRules.ruleset -analyze:quiet -analyze:plugin D:\\ProgrammingTools\\VisualStudioPack\\VisualStudio\\VC\\Tools\\MSVC\\14.28.29333\\bin\\HostX64\\x64\\EspXEngine.dll -FC -errorreport:prompt -I D:\\ProgrammingTools\\VisualStudioPack\\VisualStudio\\VC\\Tools\\MSVC\\14.28.29333\\include -I D:\\ProgrammingTools\\VisualStudioPack\\VisualStudio\\VC\\Tools\\MSVC\\14.28.29333\\atlmfc\\include -I D:\\ProgrammingTools\\VisualStudioPack\\VisualStudio\\VC\\Auxiliary\\VS\\include -I D:\\Windows Kits\\10\\Include\\10.0.18362.0\\ucrt -I D:\\Windows Kits\\10\\Include\\10.0.18362.0\\um -I D:\\Windows Kits\\10\\Include\\10.0.18362.0\\shared -I D:\\Windows Kits\\10\\Include\\10.0.18362.0\\winrt -I D:\\Windows Kits\\10\\Include\\10.0.18362.0\\cppwinrt -I D:\\CS\\ComputerGraphics\\vulkan\\WindowsProject1\\Include\\um",
+          "executionSuccessful": true
+        }
+      ],
+      "artifacts": [
+        {
+          "location": {
+            "uri": "file:///d:/cs/computergraphics/vulkan/windowsproject1/base/vkuniformbuffer.cpp"
+          },
+          "roles": [
+            "analysisTarget"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/cs/computergraphics/vulkan/windowsproject1/base/include/vkuniformbuffer.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/cs/computergraphics/vulkan/windowsproject1/base/include/enginemarco.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/cs/computergraphics/vulkan/windowsproject1/base/include/engineheader.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glfw-3.3.3.bin.win64/include/glfw/glfw3.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/vulkan/include/vulkan/vulkan.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/vulkan/include/vulkan/vk_platform.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/vulkan/include/vulkan/vulkan_core.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/vulkan/include/vulkan/vulkan_win32.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glfw-3.3.3.bin.win64/include/glfw/glfw3native.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/glm.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/detail/_fixes.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/detail/setup.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/simd/platform.h"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/fwd.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/detail/qualifier.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/vec2.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/vector_bool2.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/detail/type_vec2.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/detail/type_vec2.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/detail/compute_vector_relational.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/vector_bool2_precision.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/vector_float2.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/vector_float2_precision.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/vector_double2.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/vector_double2_precision.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/vector_int2.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/vector_int2_sized.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/scalar_int_sized.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/vector_uint2.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/vector_uint2_sized.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/scalar_uint_sized.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/vec3.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/vector_bool3.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/detail/type_vec3.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/detail/type_vec3.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/vector_bool3_precision.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/vector_float3.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/vector_float3_precision.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/vector_double3.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/vector_double3_precision.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/vector_int3.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/vector_int3_sized.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/vector_uint3.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/vector_uint3_sized.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/vec4.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/vector_bool4.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/detail/type_vec4.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/detail/type_vec4.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/vector_bool4_precision.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/vector_float4.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/vector_float4_precision.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/vector_double4.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/vector_double4_precision.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/vector_int4.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/vector_int4_sized.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/vector_uint4.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/vector_uint4_sized.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/mat2x2.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/matrix_double2x2.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/detail/type_mat2x2.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/detail/type_mat2x2.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/matrix.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/mat2x3.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/matrix_double2x3.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/detail/type_mat2x3.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/detail/type_mat2x3.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/matrix_double2x3_precision.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/matrix_float2x3.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/matrix_float2x3_precision.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/mat2x4.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/matrix_double2x4.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/detail/type_mat2x4.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/detail/type_mat2x4.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/matrix_double2x4_precision.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/matrix_float2x4.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/matrix_float2x4_precision.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/mat3x2.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/matrix_double3x2.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/detail/type_mat3x2.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/detail/type_mat3x2.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/matrix_double3x2_precision.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/matrix_float3x2.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/matrix_float3x2_precision.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/mat3x3.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/matrix_double3x3.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/detail/type_mat3x3.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/detail/type_mat3x3.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/matrix_double3x3_precision.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/matrix_float3x3.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/matrix_float3x3_precision.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/mat3x4.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/matrix_double3x4.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/detail/type_mat3x4.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/detail/type_mat3x4.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/matrix_double3x4_precision.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/matrix_float3x4.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/matrix_float3x4_precision.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/mat4x2.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/matrix_double4x2.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/detail/type_mat4x2.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/detail/type_mat4x2.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/matrix_double4x2_precision.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/matrix_float4x2.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/matrix_float4x2_precision.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/mat4x3.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/matrix_double4x3.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/detail/type_mat4x3.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/detail/type_mat4x3.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/matrix_double4x3_precision.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/matrix_float4x3.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/matrix_float4x3_precision.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/mat4x4.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/matrix_double4x4.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/detail/type_mat4x4.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/detail/type_mat4x4.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/matrix_double4x4_precision.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/matrix_float4x4.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/matrix_float4x4_precision.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/detail/func_matrix.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/geometric.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/detail/func_geometric.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/exponential.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/detail/type_vec1.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/detail/type_vec1.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/detail/func_exponential.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/vector_relational.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/detail/func_vector_relational.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/detail/_vectorize.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/common.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/detail/func_common.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/detail/compute_common.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/matrix_double2x2_precision.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/matrix_float2x2.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/matrix_float2x2_precision.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/trigonometric.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/detail/func_trigonometric.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/packing.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/detail/func_packing.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/detail/type_half.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/detail/type_half.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/integer.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/detail/func_integer.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/gtc/matrix_transform.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/matrix_projection.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/gtc/constants.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/scalar_constants.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/scalar_constants.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/gtc/constants.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/matrix_projection.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/matrix_clip_space.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/matrix_clip_space.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/matrix_transform.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/matrix_transform.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/gtc/matrix_transform.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/gtc/type_ptr.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/gtc/quaternion.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/vector_relational.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/vector_relational.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/detail/type_float.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/quaternion_common.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/quaternion_geometric.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/quaternion_geometric.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/quaternion_common.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/quaternion_float.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/detail/type_quat.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/quaternion_relational.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/quaternion_relational.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/detail/type_quat.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/quaternion_float_precision.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/quaternion_double.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/quaternion_double_precision.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/quaternion_trigonometric.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/quaternion_trigonometric.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/quaternion_transform.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/quaternion_transform.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/gtc/quaternion.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/gtc/epsilon.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/gtc/epsilon.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/gtc/vec1.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/vector_bool1.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/vector_bool1_precision.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/vector_float1.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/vector_float1_precision.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/vector_double1.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/vector_double1_precision.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/vector_int1.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/vector_int1_sized.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/vector_uint1.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/ext/vector_uint1_sized.hpp"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        },
+        {
+          "location": {
+            "uri": "file:///d:/programmingtools/visualstudiopack/visualstudio/libraries/glm/glm/gtc/type_ptr.inl"
+          },
+          "roles": [
+            "responseFile"
+          ]
+        }
+      ]
+    }
+  ]
+}

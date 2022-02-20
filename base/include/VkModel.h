@@ -3,9 +3,10 @@
 #include "EngineMarco.h"
 #include "EngineHeader.h"
 #include "VkDeviceManager.h"
-#include "Texture.h"
+#include "VkTexture.h"
 #include "ModelLoader.h"
 #include "Transform.h"
+
 #include <vector>
 #include <unordered_map>
 
@@ -23,7 +24,7 @@ public:
 
 
 
-	VkModel(const std::string model_path, VkDeviceManager* para_device_manager, VkWindows* window, VkCommandPool& command_pool, VkSurfaceKHR surface, VkCommandBuffer& transfer_command_buffer);
+	VkModel(const std::string model_path, VkDeviceManager* para_device_manager, VkWindows* window,  VkSurfaceKHR surface, VkCommandBuffer& transfer_command_buffer);
 
 	VkModel(std::vector<V>& para_vertex, std::vector<InsType>& para_instance_data, std::vector<uint32_t>& para_indices, VkDeviceManager* para_device_manager, VkSurfaceKHR surface, VkCommandBuffer& transfer_command_buffer);
 
@@ -70,6 +71,9 @@ private:
 		VkDeviceMemory memory;
 	};
 
+
+
+
 private:
 
 	VkDeviceManager* device_manager;
@@ -78,7 +82,7 @@ private:
 	InstancesData instance_data;
 
 	Transform m_Transform;
-
+	std::vector<VkTexture> textures;
 
 
 
@@ -102,14 +106,31 @@ private:
 
 
 template<class V, class InsType>
-VkModel< V, InsType>::VkModel(const std::string model_path, VkDeviceManager* para_device_manager, VkWindows* window, VkCommandPool& command_pool, VkSurfaceKHR surface, VkCommandBuffer& transfer_command_buffer)
+VkModel< V, InsType>::VkModel(const std::string model_path, VkDeviceManager* para_device_manager, VkWindows* window, VkSurfaceKHR surface, VkCommandBuffer& transfer_command_buffer)
 	:device_manager(para_device_manager)
 {
+
+
+
+
+
 
 
 	std::vector<V> para_vertex;
 	std::vector<uint32_t> para_indices;
 	std::unordered_map<V, uint32_t> unique_vertices{};
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 	std::vector<std::vector<ModelLoader::Vertex>> all_shapes{ ModelLoader::GetVetexArray(model_path) };

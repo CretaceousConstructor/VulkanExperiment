@@ -19,26 +19,15 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <None Include="data\shaders\multisubpasses\multisubpass_fragment_shader_subpass0.frag" />
-    <None Include="data\shaders\multisubpasses\multisubpass_fragment_shader_subpass1.frag" />
-    <None Include="data\shaders\multisubpasses\multisubpass_vertex_shader_subpass0.vert" />
-    <None Include="data\shaders\multisubpasses\multisubpass_vertex_shader_subpass1.vert" />
-    <None Include="data\shaders\shadowmapping\shadow_mapping_fragment_shader_scene_pass.frag" />
-    <None Include="data\shaders\shadowmapping\shadow_mapping_fragment_shader_shadow_pass.frag" />
-    <None Include="data\shaders\shadowmapping\shadow_mapping_vertex_shader_scene_pass.vert" />
-    <None Include="data\shaders\shadowmapping\shadow_mapping_vertex_shader_shadow_pass.vert" />
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="base\App.cpp" />
     <ClCompile Include="base\BaseRenderer.cpp" />
     <ClCompile Include="base\Camera.cpp" />
     <ClCompile Include="base\FirstPersonCamera.cpp" />
+    <ClCompile Include="base\GltfModel.cpp" />
     <ClCompile Include="base\KeyBoardInputManager.cpp" />
     <ClCompile Include="base\ModelLoader.cpp" />
     <ClCompile Include="base\MouseInputManager.cpp" />
     <ClCompile Include="base\ShaderManager.cpp" />
-    <ClCompile Include="base\ShadowMappingRenderer.cpp" />
-    <ClCompile Include="base\Texture.cpp" />
     <ClCompile Include="base\Transform.cpp" />
     <ClCompile Include="base\VkCommandManager.cpp" />
     <ClCompile Include="base\VkDeviceManager.cpp" />
@@ -48,6 +37,7 @@
     <ClCompile Include="base\VkMemoryManager.cpp" />
     <ClCompile Include="base\VkMemoryWrapper.cpp" />
     <ClCompile Include="base\VkSwapChainManager.cpp" />
+    <ClCompile Include="base\VkTexture.cpp" />
     <ClCompile Include="base\VkUniformBuffer.cpp" />
     <ClCompile Include="base\VkValidationManager.cpp" />
     <ClCompile Include="base\VkWindows.cpp" />
@@ -59,12 +49,11 @@
     <ClInclude Include="base\include\EngineHeader.h" />
     <ClInclude Include="base\include\EngineMarco.h" />
     <ClInclude Include="base\include\FirstPersonCamera.h" />
+    <ClInclude Include="base\include\GltfModel.h" />
     <ClInclude Include="base\include\KeyBoardInputManager.h" />
     <ClInclude Include="base\include\ModelLoader.h" />
     <ClInclude Include="base\include\MouseInputManager.h" />
     <ClInclude Include="base\include\ShaderManager.h" />
-    <ClInclude Include="base\include\ShadowMappingRenderer.h" />
-    <ClInclude Include="base\include\Texture.h" />
     <ClInclude Include="base\include\Transform.h" />
     <ClInclude Include="base\include\VkCommandManager.h" />
     <ClInclude Include="base\include\VkDeviceManager.h" />
@@ -75,6 +64,7 @@
     <ClInclude Include="base\include\VkMemoryWrapper.h" />
     <ClInclude Include="base\include\VkModel.h" />
     <ClInclude Include="base\include\VkSwapChainManager.h" />
+    <ClInclude Include="base\include\VkTexture.h" />
     <ClInclude Include="base\include\VkUniformBuffer.h" />
     <ClInclude Include="base\include\VkValidationManager.h" />
     <ClInclude Include="base\include\VkWindows.h" />
@@ -139,20 +129,22 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)lib\</OutDir>
+    <IntDir>$(SolutionDir)base\intermediate\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)lib\</OutDir>
+    <IntDir>$(SolutionDir)base\intermediate\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)lib\</OutDir>
+    <IntDir>$(SolutionDir)base\intermediate\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)lib\</OutDir>
-    <IntDir>
-    </IntDir>
+    <IntDir>$(SolutionDir)base\intermediate\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -160,7 +152,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>D:\ProgrammingTools\vulkan\Include;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\glm;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\glfw-3.3.3.bin.WIN64\include;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\tinyobjloader;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\stb;D:\CS\ComputerGraphics\vulkan\WindowsProject1\base\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\ProgrammingTools\vulkan\Include;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\ktx\other_include;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\ktx\include;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\tinygltf;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\glm;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\glfw-3.3.3.bin.WIN64\include;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\tinyobjloader;D:\CS\ComputerGraphics\vulkan\WindowsProject1\base\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -181,7 +173,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>D:\ProgrammingTools\vulkan\Include;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\glm;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\glfw-3.3.3.bin.WIN64\include;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\tinyobjloader;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\stb;D:\CS\ComputerGraphics\vulkan\WindowsProject1\base\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\ProgrammingTools\vulkan\Include;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\ktx\other_include;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\ktx\include;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\tinygltf;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\glm;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\glfw-3.3.3.bin.WIN64\include;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\tinyobjloader;D:\CS\ComputerGraphics\vulkan\WindowsProject1\base\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -202,7 +194,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>D:\ProgrammingTools\vulkan\Include;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\glm;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\glfw-3.3.3.bin.WIN64\include;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\tinyobjloader;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\stb;D:\CS\ComputerGraphics\vulkan\WindowsProject1\base\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\ProgrammingTools\vulkan\Include;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\ktx\other_include;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\ktx\include;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\tinygltf;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\glm;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\glfw-3.3.3.bin.WIN64\include;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\tinyobjloader;D:\CS\ComputerGraphics\vulkan\WindowsProject1\base\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -220,7 +212,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>D:\ProgrammingTools\vulkan\Include;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\glm;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\glfw-3.3.3.bin.WIN64\include;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\tinyobjloader;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\stb;D:\CS\ComputerGraphics\vulkan\WindowsProject1\base\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\ProgrammingTools\vulkan\Include;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\ktx\other_include;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\ktx\include;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\tinygltf;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\glm;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\glfw-3.3.3.bin.WIN64\include;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\tinyobjloader;D:\CS\ComputerGraphics\vulkan\WindowsProject1\base\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>

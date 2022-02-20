@@ -2,21 +2,33 @@
 #extension GL_ARB_separate_shader_objects : enable
 #extension GL_EXT_debug_printf : enable
 
-//
-////Input
-layout(location = 0) in vec3 fragColor;   //interpolation之后得到的值
-layout(location = 1) in vec2 fragTexCoord;//interpolation之后得到的值
-//
-////Output
-//
+layout(set = 0,binding = 0) uniform  ShaderDataUBO{
 
-layout(location = 0) out vec4 RoutColor;
+	mat4 view;
+	mat4 proj;
+	vec4 lightPos;
+	vec3 lightColor;
+	vec3 eyePos;
+	float ambientStrength;
+	float specularStrength;
+
+
+
+} ubo_scene;
 
 
 ////uniform 
-//layout(set = 0,binding = 2) uniform sampler2D CombinedTexSampler_human_face;
-layout(set = 0,binding = 2) uniform sampler2D CombinedTexSampler_For_FS[2];
-//layout(set = 0,binding = 3) uniform sampler2D CombinedTexSampler_viking_room;
+layout (set = 1, binding = 0) uniform sampler2D samplerColorMap;
+
+////Input
+layout (location = 0) in vec3 inNormal;
+layout (location = 1) in vec3 inColor;
+layout (location = 2) in vec2 inUV;
+layout (location = 3) in vec3 inWoldPos;
+
+////Output
+layout(location = 0) out vec4 outFragColor;
+
 
 
 void main() {
@@ -24,18 +36,25 @@ void main() {
 
 
 
+	 	vec4 objectColor = texture(samplerColorMap, inUV) * vec4(inColor, 1.0); //得到texutre中的颜色后，乘以baseColorFactor
 
-        vec4 outColor;
-        outColor = texture(CombinedTexSampler_For_FS[0], fragTexCoord);
-        
-//      
-//        
-//        debugPrintfEXT("interpolated color = %v2f and corresponding color = = %v4f",fragTexCoord,outColor);
-//     
-//   
+		vec3 norm  = normalize(inNormal);
+		vec3 lightDir  = normalize(vec3(ubo_scene.lightPos) - inWoldPos);
+		vec3 viewDir = normalize(ubo_scene.eyePos - inWoldPos);
+		vec3 reflectDir = reflect(-lightDir, norm);  
 
-        RoutColor = outColor;
+		vec3 ambient = ubo_scene.ambientStrength * ubo_scene.lightColor;
 
-    
+		float diff = max(dot(norm, lightDir), 0.0);
+		vec3 diffuse = diff * ubo_scene.lightColor;
+
+		float spec = pow(max(dot(viewDir, reflectDir), 0.0), 256);
+		vec3 specular = ubo_scene.specularStrength * spec * ubo_scene.lightColor; 
+
+
+		vec3 result = (ambient + diffuse + specular ) * vec3(objectColor);
+
+		outFragColor = vec4(result, 1.0);
+  
 
 }

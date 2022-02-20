@@ -4,17 +4,6 @@
 
 class MultiSubPassesApp : public App
 {
-
-
-protected:
-	void Init() override;
-
-
-
-
-
-
-
-
+  protected:
+	void InitRenderer() override;
 };
-

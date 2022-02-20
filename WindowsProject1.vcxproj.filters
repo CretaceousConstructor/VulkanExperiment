@@ -9,17 +9,11 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
     </Filter>
-    <Filter Include="Shader Files">
-      <UniqueIdentifier>{95214fe5-4d92-42ad-87ca-fc0874188aaf}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\ImGui">
       <UniqueIdentifier>{07d189a5-c5db-4f11-b241-6e472dea3342}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files\Renderers">
       <UniqueIdentifier>{75f5e640-21bc-4612-98fe-8b023cce93b5}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Shader Files\multisubpass">
-      <UniqueIdentifier>{31578612-1922-4491-954a-c21d763192c3}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files\Camera">
       <UniqueIdentifier>{b5e554c1-69f5-4de3-b285-98661de25c25}</UniqueIdentifier>
@@ -33,9 +27,6 @@
     <Filter Include="Header Files\Model">
       <UniqueIdentifier>{0259e414-9277-4b81-bdea-a55419c5eb68}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Shader Files\shadowmapping">
-      <UniqueIdentifier>{e01cf843-8de3-4522-a3dc-993605770411}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\Transform">
       <UniqueIdentifier>{2112289d-a2de-44ce-a799-7a18bf435c4a}</UniqueIdentifier>
     </Filter>
@@ -45,32 +36,6 @@
     <Filter Include="Header Files\Shaders">
       <UniqueIdentifier>{d3b66d4d-7c34-4f44-b77d-580f65250ab5}</UniqueIdentifier>
     </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="data\shaders\multisubpasses\multisubpass_vertex_shader_subpass0.vert">
-      <Filter>Shader Files\multisubpass</Filter>
-    </None>
-    <None Include="data\shaders\multisubpasses\multisubpass_vertex_shader_subpass1.vert">
-      <Filter>Shader Files\multisubpass</Filter>
-    </None>
-    <None Include="data\shaders\multisubpasses\multisubpass_fragment_shader_subpass0.frag">
-      <Filter>Shader Files\multisubpass</Filter>
-    </None>
-    <None Include="data\shaders\multisubpasses\multisubpass_fragment_shader_subpass1.frag">
-      <Filter>Shader Files\multisubpass</Filter>
-    </None>
-    <None Include="data\shaders\shadowmapping\shadow_mapping_vertex_shader_scene_pass.vert">
-      <Filter>Shader Files\shadowmapping</Filter>
-    </None>
-    <None Include="data\shaders\shadowmapping\shadow_mapping_vertex_shader_shadow_pass.vert">
-      <Filter>Shader Files\shadowmapping</Filter>
-    </None>
-    <None Include="data\shaders\shadowmapping\shadow_mapping_fragment_shader_scene_pass.frag">
-      <Filter>Shader Files\shadowmapping</Filter>
-    </None>
-    <None Include="data\shaders\shadowmapping\shadow_mapping_fragment_shader_shadow_pass.frag">
-      <Filter>Shader Files\shadowmapping</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="base\VkUniformBuffer.cpp">
@@ -106,12 +71,6 @@
     <ClCompile Include="base\ShaderManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="base\ShadowMappingRenderer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="base\Texture.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="base\Transform.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -139,6 +98,12 @@
     <ClCompile Include="base\VkSwapChainManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="base\GltfModel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="base\VkTexture.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="base\include\App.h">
@@ -158,12 +123,6 @@
     </ClInclude>
     <ClInclude Include="base\include\ModelLoader.h">
       <Filter>Header Files\Model</Filter>
-    </ClInclude>
-    <ClInclude Include="base\include\Texture.h">
-      <Filter>Header Files\Texture</Filter>
-    </ClInclude>
-    <ClInclude Include="base\include\ShadowMappingRenderer.h">
-      <Filter>Header Files\Renderers</Filter>
     </ClInclude>
     <ClInclude Include="base\include\VkModel.h">
       <Filter>Header Files\Model</Filter>
@@ -215,6 +174,12 @@
     </ClInclude>
     <ClInclude Include="base\include\VkImageWrapper.h">
       <Filter>Header Files\Vk</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\GltfModel.h">
+      <Filter>Header Files\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\VkTexture.h">
+      <Filter>Header Files\Texture</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

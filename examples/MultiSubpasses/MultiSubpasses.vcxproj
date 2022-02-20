@@ -163,6 +163,16 @@
     <ClInclude Include="Multisubpass.h" />
     <ClInclude Include="MultiSubPassesApp.h" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\data\shaderbat\MultiSubpassShaderCompile.bat" />
+    <None Include="..\..\data\shaders\multisubpasses\multisubpass_fragment_shader_subpass0.frag" />
+    <None Include="..\..\data\shaders\multisubpasses\multisubpass_fragment_shader_subpass1.frag" />
+    <None Include="..\..\data\shaders\multisubpasses\multisubpass_fragment_shader_subpass0_normal.frag" />
+    <None Include="..\..\data\shaders\multisubpasses\multisubpass_geometry_shader_subpass0_normal.geom" />
+    <None Include="..\..\data\shaders\multisubpasses\multisubpass_vertex_shader_subpass0_normal.vert" />
+    <None Include="..\..\data\shaders\multisubpasses\multisubpass_vertex_shader_subpass0.vert" />
+    <None Include="..\..\data\shaders\multisubpasses\multisubpass_vertex_shader_subpass1.vert" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

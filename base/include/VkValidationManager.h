@@ -6,6 +6,7 @@
 #include <stdint.h>
 #include <vector>
 #include <iostream>
+#include <fstream>
 
 
 class VkValidationManager

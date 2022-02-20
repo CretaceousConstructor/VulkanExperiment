@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DEFECTS>
+  <DEFECT>
+    <SFA>
+      <FILEPATH>D:\CS\ComputerGraphics\vulkan\WindowsProject1\base\</FILEPATH>
+      <FILENAME>ShaderManager.cpp</FILENAME>
+      <LINE>3</LINE>
+      <COLUMN>15</COLUMN>
+    </SFA>
+    <DEFECTCODE>26812</DEFECTCODE>
+    <DESCRIPTION>The enum type 'VkShaderStageFlagBits' is unscoped. Prefer 'enum class' over 'enum' (Enum.3).</DESCRIPTION>
+    <FUNCTION>ShaderManager::{ctor}</FUNCTION>
+    <DECORATED>??0ShaderManager@@QEAA@V?$basic_string@DU?$char_traits@D@std@@V?$allocator@D@2@@std@@0W4VkShaderStageFlagBits@@AEAPEAUVkDevice_T@@@Z</DECORATED>
+    <FUNCLINE>3</FUNCLINE>
+    <PATH></PATH>
+  </DEFECT>
+</DEFECTS>

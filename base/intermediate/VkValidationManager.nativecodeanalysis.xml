@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DEFECTS>
+  <DEFECT>
+    <SFA>
+      <FILEPATH>D:\CS\ComputerGraphics\vulkan\WindowsProject1\base\</FILEPATH>
+      <FILENAME>VkValidationManager.cpp</FILENAME>
+      <LINE>93</LINE>
+      <COLUMN>2</COLUMN>
+    </SFA>
+    <DEFECTCODE>26812</DEFECTCODE>
+    <DESCRIPTION>The enum type 'VkResult' is unscoped. Prefer 'enum class' over 'enum' (Enum.3).</DESCRIPTION>
+    <FUNCTION>VkValidationManager::CreateDebugUtilsMessengerEXT</FUNCTION>
+    <DECORATED>?CreateDebugUtilsMessengerEXT@VkValidationManager@@SA?AW4VkResult@@AEAPEAUVkInstance_T@@PEBUVkDebugUtilsMessengerCreateInfoEXT@@PEBUVkAllocationCallbacks@@PEAPEAUVkDebugUtilsMessengerEXT_T@@@Z</DECORATED>
+    <FUNCLINE>89</FUNCLINE>
+    <PATH></PATH>
+  </DEFECT>
+  <DEFECT>
+    <SFA>
+      <FILEPATH>D:\CS\ComputerGraphics\vulkan\WindowsProject1\base\</FILEPATH>
+      <FILENAME>VkValidationManager.cpp</FILENAME>
+      <LINE>128</LINE>
+      <COLUMN>52</COLUMN>
+    </SFA>
+    <DEFECTCODE>26812</DEFECTCODE>
+    <DESCRIPTION>The enum type 'VkDebugUtilsMessageSeverityFlagBitsEXT' is unscoped. Prefer 'enum class' over 'enum' (Enum.3).</DESCRIPTION>
+    <FUNCTION>VkValidationManager::debugCallback</FUNCTION>
+    <DECORATED>?debugCallback@VkValidationManager@@CAIW4VkDebugUtilsMessageSeverityFlagBitsEXT@@IPEBUVkDebugUtilsMessengerCallbackDataEXT@@PEAX@Z</DECORATED>
+    <FUNCLINE>128</FUNCLINE>
+    <PATH></PATH>
+  </DEFECT>
+</DEFECTS>

@@ -6,7 +6,7 @@
 #include "VkSwapChainManager.h"
 #include "ShaderManager.h"
 #include "VkWindows.h"
-#include "Texture.h"
+#include "VkTexture.h"
 #include "VkCommandManager.h"
 #include "VkModel.h"
 #include "VkUniformBuffer.h"

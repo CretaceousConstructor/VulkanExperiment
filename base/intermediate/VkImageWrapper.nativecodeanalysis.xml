@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<DEFECTS>
+  <DEFECT>
+    <SFA>
+      <FILEPATH>D:\CS\ComputerGraphics\vulkan\WindowsProject1\base\</FILEPATH>
+      <FILENAME>VkImageWrapper.cpp</FILENAME>
+      <LINE>21</LINE>
+      <COLUMN>21</COLUMN>
+    </SFA>
+    <DEFECTCODE>26812</DEFECTCODE>
+    <DESCRIPTION>The enum type 'VkFormat' is unscoped. Prefer 'enum class' over 'enum' (Enum.3).</DESCRIPTION>
+    <FUNCTION>VkImageWrapper::InitImageView</FUNCTION>
+    <DECORATED>?InitImageView@VkImageWrapper@@QEAAXW4VkFormat@@I@Z</DECORATED>
+    <FUNCLINE>21</FUNCLINE>
+    <PATH></PATH>
+  </DEFECT>
+  <DEFECT>
+    <SFA>
+      <FILEPATH>D:\CS\ComputerGraphics\vulkan\WindowsProject1\base\</FILEPATH>
+      <FILENAME>VkImageWrapper.cpp</FILENAME>
+      <LINE>46</LINE>
+      <COLUMN>25</COLUMN>
+    </SFA>
+    <DEFECTCODE>26812</DEFECTCODE>
+    <DESCRIPTION>The enum type 'VkComponentSwizzle' is unscoped. Prefer 'enum class' over 'enum' (Enum.3).</DESCRIPTION>
+    <FUNCTION>VkImageWrapper::InitImageView</FUNCTION>
+    <DECORATED>?InitImageView@VkImageWrapper@@QEAAXW4VkFormat@@I@Z</DECORATED>
+    <FUNCLINE>21</FUNCLINE>
+    <PATH></PATH>
+  </DEFECT>
+  <DEFECT>
+    <SFA>
+      <FILEPATH>D:\CS\ComputerGraphics\vulkan\WindowsProject1\base\</FILEPATH>
+      <FILENAME>VkImageWrapper.cpp</FILENAME>
+      <LINE>118</LINE>
+      <COLUMN>21</COLUMN>
+    </SFA>
+    <DEFECTCODE>26812</DEFECTCODE>
+    <DESCRIPTION>The enum type 'VkImageLayout' is unscoped. Prefer 'enum class' over 'enum' (Enum.3).</DESCRIPTION>
+    <FUNCTION>VkImageWrapper::TransitionImageLayout</FUNCTION>
+    <DECORATED>?TransitionImageLayout@VkImageWrapper@@QEAAXW4VkFormat@@W4VkImageLayout@@1AEAPEAUVkCommandPool_T@@AEAPEAUVkDevice_T@@AEAPEAUVkQueue_T@@@Z</DECORATED>
+    <FUNCLINE>118</FUNCLINE>
+    <PATH></PATH>
+  </DEFECT>
+  <DEFECT>
+    <SFA>
+      <FILEPATH>D:\CS\ComputerGraphics\vulkan\WindowsProject1\base\</FILEPATH>
+      <FILENAME>VkImageWrapper.cpp</FILENAME>
+      <LINE>232</LINE>
+      <COLUMN>21</COLUMN>
+    </SFA>
+    <DEFECTCODE>26812</DEFECTCODE>
+    <DESCRIPTION>The enum type 'VkImageType' is unscoped. Prefer 'enum class' over 'enum' (Enum.3).</DESCRIPTION>
+    <FUNCTION>VkImageWrapper::Init</FUNCTION>
+    <DECORATED>?Init@VkImageWrapper@@QEAAXW4VkImageType@@W4VkFormat@@UVkExtent3D@@IIW4VkSampleCountFlagBits@@W4VkImageTiling@@IW4VkSharingMode@@W4VkImageLayout@@W4VkMemoryPropertyFlagBits@@PEAVVkDeviceManager@@@Z</DECORATED>
+    <FUNCLINE>232</FUNCLINE>
+    <PATH></PATH>
+  </DEFECT>
+  <DEFECT>
+    <SFA>
+      <FILEPATH>D:\CS\ComputerGraphics\vulkan\WindowsProject1\base\</FILEPATH>
+      <FILENAME>VkImageWrapper.cpp</FILENAME>
+      <LINE>232</LINE>
+      <COLUMN>21</COLUMN>
+    </SFA>
+    <DEFECTCODE>26812</DEFECTCODE>
+    <DESCRIPTION>The enum type 'VkSampleCountFlagBits' is unscoped. Prefer 'enum class' over 'enum' (Enum.3).</DESCRIPTION>
+    <FUNCTION>VkImageWrapper::Init</FUNCTION>
+    <DECORATED>?Init@VkImageWrapper@@QEAAXW4VkImageType@@W4VkFormat@@UVkExtent3D@@IIW4VkSampleCountFlagBits@@W4VkImageTiling@@IW4VkSharingMode@@W4VkImageLayout@@W4VkMemoryPropertyFlagBits@@PEAVVkDeviceManager@@@Z</DECORATED>
+    <FUNCLINE>232</FUNCLINE>
+    <PATH></PATH>
+  </DEFECT>
+  <DEFECT>
+    <SFA>
+      <FILEPATH>D:\CS\ComputerGraphics\vulkan\WindowsProject1\base\</FILEPATH>
+      <FILENAME>VkImageWrapper.cpp</FILENAME>
+      <LINE>232</LINE>
+      <COLUMN>21</COLUMN>
+    </SFA>
+    <DEFECTCODE>26812</DEFECTCODE>
+    <DESCRIPTION>The enum type 'VkImageTiling' is unscoped. Prefer 'enum class' over 'enum' (Enum.3).</DESCRIPTION>
+    <FUNCTION>VkImageWrapper::Init</FUNCTION>
+    <DECORATED>?Init@VkImageWrapper@@QEAAXW4VkImageType@@W4VkFormat@@UVkExtent3D@@IIW4VkSampleCountFlagBits@@W4VkImageTiling@@IW4VkSharingMode@@W4VkImageLayout@@W4VkMemoryPropertyFlagBits@@PEAVVkDeviceManager@@@Z</DECORATED>
+    <FUNCLINE>232</FUNCLINE>
+    <PATH></PATH>
+  </DEFECT>
+  <DEFECT>
+    <SFA>
+      <FILEPATH>D:\CS\ComputerGraphics\vulkan\WindowsProject1\base\</FILEPATH>
+      <FILENAME>VkImageWrapper.cpp</FILENAME>
+      <LINE>232</LINE>
+      <COLUMN>21</COLUMN>
+    </SFA>
+    <DEFECTCODE>26812</DEFECTCODE>
+    <DESCRIPTION>The enum type 'VkSharingMode' is unscoped. Prefer 'enum class' over 'enum' (Enum.3).</DESCRIPTION>
+    <FUNCTION>VkImageWrapper::Init</FUNCTION>
+    <DECORATED>?Init@VkImageWrapper@@QEAAXW4VkImageType@@W4VkFormat@@UVkExtent3D@@IIW4VkSampleCountFlagBits@@W4VkImageTiling@@IW4VkSharingMode@@W4VkImageLayout@@W4VkMemoryPropertyFlagBits@@PEAVVkDeviceManager@@@Z</DECORATED>
+    <FUNCLINE>232</FUNCLINE>
+    <PATH></PATH>
+  </DEFECT>
+  <DEFECT>
+    <SFA>
+      <FILEPATH>D:\CS\ComputerGraphics\vulkan\WindowsProject1\base\</FILEPATH>
+      <FILENAME>VkImageWrapper.cpp</FILENAME>
+      <LINE>232</LINE>
+      <COLUMN>21</COLUMN>
+    </SFA>
+    <DEFECTCODE>26812</DEFECTCODE>
+    <DESCRIPTION>The enum type 'VkMemoryPropertyFlagBits' is unscoped. Prefer 'enum class' over 'enum' (Enum.3).</DESCRIPTION>
+    <FUNCTION>VkImageWrapper::Init</FUNCTION>
+    <DECORATED>?Init@VkImageWrapper@@QEAAXW4VkImageType@@W4VkFormat@@UVkExtent3D@@IIW4VkSampleCountFlagBits@@W4VkImageTiling@@IW4VkSharingMode@@W4VkImageLayout@@W4VkMemoryPropertyFlagBits@@PEAVVkDeviceManager@@@Z</DECORATED>
+    <FUNCLINE>232</FUNCLINE>
+    <PATH></PATH>
+  </DEFECT>
+</DEFECTS>

@@ -1,78 +1,58 @@
 #pragma once
 #include "BaseRenderer.h"
+#include "FirstPersonCamera.h"
 #include "KeyBoardInputManager.h"
 #include "MouseInputManager.h"
-#include "FirstPersonCamera.h"
 
+#include "GltfModel.h"
+
+#include <array>
 #include <chrono>
-#include <iostream>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/hash.hpp>
-#include <array>
-#include <vector>
-#include <random>
+#include <iostream>
 #include <memory>
+#include <random>
+#include <vector>
+
+
+
 
 class MultiSubpassesRenderer : public BaseRenderer
 {
-
-public:
-
-
+  public:
 	void SetUpUserInput() override;
-
+	void CreateCamera() override;
 
 	void CreateAttachmentImages() override;
 	void CreateTextureImages() override;
 	void CreateDepthImages() override;
-
 
 	void CreateRenderPass() override;
 
 	void CreateUniformBuffer() override;
 	void CreateFramebuffers() override;
 
-
-
-
 	void CreateDescriptorSetLayout() override;
 	void CreateDescriptorPool() override;
 	void CreateDescriptorSets() override;
 
+	void CreateGraphicsPiplineLayout() override;
+	void CreateGraphicsPipline() override;
 
-	void CreateGraphicsPiplineLayout()override;
-	void CreateGraphicsPipline()override;
+	void InitCommandBuffers() override;
+	void PrepareModels() override;
+	void CommandBufferRecording() override;
 
-
-	void InitCommandBuffers()override;
-	void PrepareModels()override;
-	void CommandBufferRecording()override;
-
-
-
-
-	void InitSynObjects()override;
-
-
+	void InitSynObjects() override;
 
 	void DrawFrame() override;
 	void UpdateUniformBuffer(uint32_t currentImage) override;
 
-
-
-
-
-
-
 	void UpdateCamera(float dt) override;
-	void CreateCamera()override;
 
-
-
-
-
-public:
+  public:
 	void CleanUpModels() override;
 	void CleanUpDescriptorSetLayoutAndDescriptorPool() override;
 	void CleanUpCommandBuffersAndCommandPool() override;
@@ -82,71 +62,73 @@ public:
 	void CleanUpRenderPass() override;
 	void CleanUpImages() override;
 
-private:
+  private:
 	void CreatePiplineSubpass0();
 	void CreatePiplineSubpass1();
 
-
-private:
+  private:
 	static constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 
-
-
-public:
-
-
-	struct Vertex {
-	public:
+  public:
+	struct Vertex
+	{
+	  public:
 		glm::vec3 pos;
 		glm::vec3 color;
 		glm::vec2 texCoord;
 
-		bool operator==(const Vertex& other) const {
+		bool operator==(const Vertex &other) const
+		{
 			return pos == other.pos && color == other.color && texCoord == other.texCoord;
 		}
-
 	};
 
-
-
-private:
-
-
-	struct InsatnceTranformation {
-	public:
+  private:
+	struct InsatnceTranformation
+	{
+	  public:
 		glm::mat4 worldTrans;
 	};
 
-
-
-	struct UniformBufferObject {
-	public:
-		glm::mat4 model;
+	//UBO DATA
+	struct ShaderData
+	{
+	  public:
 		glm::mat4 view;
 		glm::mat4 proj;
+		glm::vec4 lightPos               = glm::vec4(-15.0f, 10.0f, 5.0f, 1.0f);
+		alignas(16) glm::vec3 lightColor = glm::vec3(1.f, 1.f, 1.f);
+		alignas(16) glm::vec3 eyePos;
+		alignas(4) float ambientStrength  = 0.1f;
+		alignas(4) float specularStrength = 0.5f;
 	};
 
-	struct UniformBufferObjectTest {
-	public:
-		glm::mat4 model;
+	struct UniformBufferObjectTest
+	{
+	  public:
+		glm::mat4 view;
+	};
+
+	struct UniformBufferOjectGS
+	{
+		glm::mat4 projection;
 		glm::mat4 view;
 
-	};
+	} uboGS;
 
-
-private:
-
+  private:
 	//RENDER PASS
-	VkRenderPass		 render_pass;
-
+	VkRenderPass render_pass;
 
 	//DESCRIPTOR
-	VkDescriptorPool descriptor_pool;
+	VkDescriptorPool      descriptor_pool;
 	VkDescriptorSetLayout descriptor_set_layout_write_subpass0;
-	VkDescriptorSetLayout descriptor_set_layout_read_subpass1;
-	std::vector<VkDescriptorSet> descriptor_sets_write_subpass0;
-	std::vector<VkDescriptorSet> descriptor_sets_read_subpass1;
+	VkDescriptorSetLayout descriptor_set_layout_write_subpass0_materials;
 
+	VkDescriptorSetLayout descriptor_set_layout_read_subpass1;
+	//DESCRIPTOR SETS
+	std::vector<VkDescriptorSet> descriptor_sets_write_subpass0;        //3¸ö
+	std::vector<VkDescriptorSet> descriptor_sets_read_subpass1;         //3¸ö
 
 	//PIPLINE
 	VkPipelineLayout pipeline_layout_subpass0;
@@ -154,88 +136,51 @@ private:
 
 	VkPipeline graphics_pipeline_subpass0;
 	VkPipeline graphics_pipeline_subpass1;
-
-
+	VkPipeline graphics_pipeline_subpass0_normal;
 
 	//UNIFORM BUFFER
 
 	std::vector<VkUniformBuffer> uniform_buffers;
 	std::vector<VkUniformBuffer> uniform_buffers_test;
+	std::vector<VkUniformBuffer> uniform_buffers_GS;
 
-
-
-	UniformBufferObject ubo{};
+	ShaderData              ubo{};
 	UniformBufferObjectTest ubo0{};
-
-
-
-
-
-
+	UniformBufferOjectGS    ubo_gs{};
 
 	//TEXTURE
-	Texture human_face;
-	Texture viking_room;
+	VkTexture human_face;
+	VkTexture viking_room;
 
 	//ATTACHMENT
 	std::vector<VkImageWrapper> red_color_attachment;
 	std::vector<VkImageWrapper> depth_attachment;
 
-
-
 	//FRAMEBUFFER
 	std::vector<VkFramebuffer> frame_buffers;
 
-
-
-
 	//COMMAND BUFFERS
-	std::vector<VkCommandBuffer> graphics_command_buffers;  //3
-	VkCommandBuffer transfer_command_buffer;
-
-
-
+	std::vector<VkCommandBuffer> graphics_command_buffers;        //3
+	VkCommandBuffer              transfer_command_buffer;
 
 	//SYN OBJECTS
 
 	std::vector<VkSemaphore> image_available_semaphores;
 	std::vector<VkSemaphore> render_finished_semaphores;
-	std::vector<VkFence> inflight_fences;
-	std::vector<VkFence> images_inflight;
-
+	std::vector<VkFence>     inflight_fences;
+	std::vector<VkFence>     images_inflight;
 
 	//MODELS
 	std::vector<VkModel<Vertex, InsatnceTranformation>> scene;
-	std::unique_ptr<VkModel<Vertex>> viking_room_model;
+	std::unique_ptr<VkModel<Vertex>>                    viking_room_model;
+
+	std::unique_ptr<GltfModel> test_model;
 
 	//INPUT MANAGER
 
 	std::unique_ptr<KeyBoardInputManager> keyboard;
-	std::unique_ptr<MouseInputManager> mouse;
-	
+	std::unique_ptr<MouseInputManager>    mouse;
+
 	//CAMERA
 	std::unique_ptr<FirstPersonCamera> m_pCamera;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 };
-
-
-
-

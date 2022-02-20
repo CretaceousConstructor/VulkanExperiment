@@ -45,7 +45,7 @@ bool VkValidationManager::CheckValidationLayerSupport()
 	std::vector<const char*> instanceValidationLayerRequiredToUse;
 	if (enableValidationLayers) {
 		instanceValidationLayerRequiredToUse.push_back(validationLayerName);
-		
+
 
 	}
 
@@ -74,7 +74,13 @@ void VkValidationManager::populateDebugMessengerCreateInfo(VkDebugUtilsMessenger
 {
 	createInfo = {};
 	createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+
+
 	createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT;
+
+	//createInfo.messageSeverity =    VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT;
+
+
 	createInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
 	createInfo.pfnUserCallback = debugCallback;
 
@@ -111,44 +117,62 @@ void VkValidationManager::SetupDebugMessenger(VkInstance& instance, VkValidation
 
 void VkValidationManager::DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT para_debugMessenger, const VkAllocationCallbacks* pAllocator)
 {
-	
+
 	PFN_vkDestroyDebugUtilsMessengerEXT func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
-		if (func != nullptr) {
-			func(instance, para_debugMessenger, pAllocator);
-		}
-	
+	if (func != nullptr) {
+		func(instance, para_debugMessenger, pAllocator);
+	}
+
 }
 
 VKAPI_ATTR VkBool32 VKAPI_CALL VkValidationManager::debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
 {
 
+	//std::ofstream file1;
+	//file1.open("D:/CS/ComputerGraphics/vulkan/WindowsProject1/log.txt", std::ios::app);
 
 
 	std::string message(pCallbackData->pMessage);
-	std::string debugMessage("DEBUG-PRINTF ]");
+	//std::string debugMessage("DEBUG-PRINTF ]");
 
 	//if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT) {
-	//	if (message.find(debugMessage) != std::string::npos) {
-	//		std::cerr << "validation layer: " << std::endl << "--------------------------------------------------------------------------------" << std::endl;
-	//		const auto sizeline = 140;
-	//		for (int i = 0; i < message.length(); i += sizeline) {
-
-	//			std::cout << message.substr(i, sizeline) << std::endl;
-	//		}
-	//		std::cout << "--------------------------------------------------------------------------------" << std::endl << std::endl;
-	//	}
-
-	//}
-	//else {
-	//	/*std::cerr << "validation layer: " << std::endl << "--------------------------------------------------------------------------------" << std::endl;
-	//	const auto sizeline = 140;
+	//	//if (message.find(debugMessage) != std::string::npos) {
+	//	file1 << "validation layer: " << std::endl << "--------------------------------------------------------------------------------" << std::endl;
+	//	file1 << message << std::endl;
+	//	/*const auto sizeline = 140;
 	//	for (int i = 0; i < message.length(); i += sizeline) {
 
 	//		std::cout << message.substr(i, sizeline) << std::endl;
-	//	}
-	//	std::cout << "--------------------------------------------------------------------------------" << std::endl << std::endl;*/
+	//	}*/
+	//	file1 << "--------------------------------------------------------------------------------" << std::endl << std::endl;
 	//}
+
+
+
+	/*if (message.find(debugMessage) != std::string::npos) {
+		std::cout << "validation layer: " << std::endl << "--------------------------------------------------------------------------------" << std::endl;
+		const auto sizeline = 140;
+		for (int i = 0; i < message.length(); i += sizeline) {
+
+			std::cout << message.substr(i, sizeline) << std::endl;
+		}
+		std::cout << "--------------------------------------------------------------------------------" << std::endl << std::endl;
+	}
+	else*/
+
+	std::cout << "validation layer: " << std::endl << "--------------------------------------------------------------------------------" << std::endl;
+	const auto sizeline = 140;
+	for (int i = 0; i < message.length(); i += sizeline) {
+
+		std::cout << message.substr(i, sizeline) << std::endl;
+	}
+	std::cout << "--------------------------------------------------------------------------------" << std::endl << std::endl;
+
+
 	return VK_FALSE;
+
+
+
 }
 
 

@@ -4,7 +4,7 @@
 #include "VkExtensionManager.h"
 #include "VkSwapChainManager.h"
 #include "VkWindows.h"
-#include "ShadowMappingRenderer.h"
+#include "BaseRenderer.h"
 
 
 #include <glm/glm.hpp>
@@ -20,16 +20,18 @@ class App
 public:
 
 	void Run();
+private:
+
+	void Init();
+	void RendererSetUp();
+	void RenderingPreparation();
+	void MainLoop();
+	void CleanUp();
+	void DestroyInstance();
+
 
 protected:
-
-	virtual void Init() = 0;
-	virtual void RendererSetUp();
-	virtual void RenderingPreparation();
-	virtual void MainLoop();
-	virtual void CleanUp();
-	virtual void DestroyInstance();
-
+	virtual void InitRenderer() = 0;
 
 
 	VkWindows window;

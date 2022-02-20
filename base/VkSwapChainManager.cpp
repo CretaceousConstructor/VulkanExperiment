@@ -23,6 +23,20 @@ void VkSwapChainManager::CreateSwapChainAndSwapImages(VkPhysicalDevice& physical
 
 	VkPresentModeKHR presentMode = ChooseSwapPresentMode(swapChainSupport.present_modes);
 
+
+	//VK_PRESENT_MODE_MAILBOX_KHR:等待下一次的vertical blanking的时候才会把渲染好的帧给front buffer，内部存在一个队列存放渲染好的帧；如果队列满了，会用新渲染的帧替换队列中已有的帧，并且被替换的那些帧可以被应用程序再次利用。
+
+
+
+
+
+
+
+
+
+
+
+
 	VkExtent2D extent = ChooseSwapExtent(swapChainSupport.capabilities, window);
 
 	//3

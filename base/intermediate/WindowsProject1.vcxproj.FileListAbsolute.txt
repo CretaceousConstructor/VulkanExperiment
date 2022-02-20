@@ -1,0 +1,2 @@
+D:\CS\ComputerGraphics\vulkan\WindowsProject1\lib\Base.pdb
+D:\CS\ComputerGraphics\vulkan\WindowsProject1\base\intermediate\Base.pdb
