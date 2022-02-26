@@ -384,11 +384,12 @@ void MultiSubpassesRenderer::CreateDepthImages()
 	VkFormat depthFormat = swapchain_manager->FindDepthFormat(*device_manager);
 	depth_attachment.resize(swapchain_manager->GetSwapImageCount());
 
+	VkDeviceManager::QueueFamilyIndices  queue_family_index  = device_manager->FindQueueFamilies(device_manager->GetPhysicalDeviceRef(),window->GetSurface());
 	for (uint32_t i = 0; i < swapchain_manager->GetSwapImageCount(); i++)
 	{
 		depth_attachment[i].Init(VK_IMAGE_TYPE_2D, depthFormat, swapchain_manager->GetSwapChainImageExtent(), 1, 1, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT, VK_SHARING_MODE_EXCLUSIVE, VK_IMAGE_LAYOUT_UNDEFINED, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, device_manager);
 
-		depth_attachment[i].TransitionImageLayout(depthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, graphics_command_pool, device_manager->GetLogicalDeviceRef(), device_manager->GetGraphicsQueue());
+		depth_attachment[i].TransitionImageLayout(depthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, graphics_command_pool, device_manager->GetLogicalDeviceRef(), device_manager->GetGraphicsQueue(),queue_family_index);
 		depth_attachment[i].InitImageView(depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
 	}
 }
@@ -1076,11 +1077,13 @@ void MultiSubpassesRenderer::CreateAttachmentImages()
 	//VK_FORMAT_R8G8B8A8_UNORM
 
 	red_color_attachment.resize(swapchain_manager->GetSwapImageCount());
+
+	VkDeviceManager::QueueFamilyIndices  queue_family_index  = device_manager->FindQueueFamilies(device_manager->GetPhysicalDeviceRef(),window->GetSurface());
 	for (uint32_t i = 0; i < swapchain_manager->GetSwapImageCount(); i++)
 	{
 		red_color_attachment[i].Init(VK_IMAGE_TYPE_2D, swapchain_manager->GetSwapChainImageFormat(), swapchain_manager->GetSwapChainImageExtent(), 1, 1, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT, VK_SHARING_MODE_EXCLUSIVE, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, device_manager);
 
-		red_color_attachment[i].TransitionImageLayout(swapchain_manager->GetSwapChainImageFormat(), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, graphics_command_pool, device_manager->GetLogicalDeviceRef(), device_manager->GetGraphicsQueue());
+		red_color_attachment[i].TransitionImageLayout(swapchain_manager->GetSwapChainImageFormat(), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, graphics_command_pool, device_manager->GetLogicalDeviceRef(), device_manager->GetGraphicsQueue(),queue_family_index);
 
 		red_color_attachment[i].InitImageView(swapchain_manager->GetSwapChainImageFormat(), VK_IMAGE_ASPECT_COLOR_BIT);
 	}

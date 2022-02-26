@@ -34,7 +34,6 @@ void VkInitializer::CreateInstance(VkInstance& instance, VkValidationManager& va
 
 
 
-
 	auto extensions = VkExtensionManager::GetNeededInstanceExtensions(VkValidationManager::enableValidationLayers);
 
 
@@ -42,34 +41,34 @@ void VkInitializer::CreateInstance(VkInstance& instance, VkValidationManager& va
 	createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
 	createInfo.ppEnabledExtensionNames = extensions.data();
 
-	VkValidationFeaturesEXT validationFeatureExt = {};
-	validationFeatureExt.sType = VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT;
-	validationFeatureExt.pNext = nullptr;
+	//VkValidationFeaturesEXT validationFeatureExt = {};
+	//validationFeatureExt.sType = VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT;
+	//validationFeatureExt.pNext = nullptr;
 
-	validationFeatureExt.enabledValidationFeatureCount = static_cast<uint32_t> (validationManager.enabled.size());
-	validationFeatureExt.pEnabledValidationFeatures = validationManager.enabled.data();
-
-
-
-	validationFeatureExt.disabledValidationFeatureCount = static_cast<uint32_t> (validationManager.disabled.size());
-	validationFeatureExt.pDisabledValidationFeatures = validationManager.disabled.data();
-	createInfo.pNext = static_cast<const void*>(&validationFeatureExt);
+	//validationFeatureExt.enabledValidationFeatureCount = static_cast<uint32_t> (validationManager.enabled.size());
+	//validationFeatureExt.pEnabledValidationFeatures = validationManager.enabled.data();
 
 
 
-	VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo;
-	if (VkValidationManager::enableValidationLayers) {
-		//获得 实例 会用到的 层(layer)，并且打开
-		createInfo.enabledLayerCount = static_cast<uint32_t>(validationManager.instanceValidationLayerRequiredToUse.size());
-		createInfo.ppEnabledLayerNames = validationManager.instanceValidationLayerRequiredToUse.data();
+	//validationFeatureExt.disabledValidationFeatureCount = static_cast<uint32_t> (validationManager.disabled.size());
+	//validationFeatureExt.pDisabledValidationFeatures = validationManager.disabled.data();
+	//createInfo.pNext = static_cast<const void*>(&validationFeatureExt);
 
-		VkValidationManager::populateDebugMessengerCreateInfo(debugCreateInfo);
-		validationFeatureExt.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&debugCreateInfo;//这样赋值pNext就可以输出vkCreateInstance和vkDestroyInstance这两个函数可能会生成的debuginfo了
-	}
-	else {
-		createInfo.enabledLayerCount = 0;
-		createInfo.pNext = nullptr;
-	}
+
+
+	//VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo;
+	//if (VkValidationManager::enableValidationLayers) {
+	//	////获得 实例 会用到的 层(layer)，并且打开
+	//	createInfo.enabledLayerCount = static_cast<uint32_t>(validationManager.instanceValidationLayerRequiredToUse.size());
+	//	createInfo.ppEnabledLayerNames = validationManager.instanceValidationLayerRequiredToUse.data();
+
+	//	VkValidationManager::populateDebugMessengerCreateInfo(debugCreateInfo);
+	//	validationFeatureExt.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&debugCreateInfo;//这样赋值pNext就可以输出vkCreateInstance和vkDestroyInstance这两个函数可能会生成的debuginfo了
+	//}
+	//else {
+	//	createInfo.enabledLayerCount = 0;
+	//	createInfo.pNext = nullptr;
+	//}
 
 
 

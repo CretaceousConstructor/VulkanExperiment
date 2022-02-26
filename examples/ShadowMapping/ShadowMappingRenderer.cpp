@@ -1185,29 +1185,6 @@ void ShadowMappingRenderer::CreateSceneRenderPass()
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 }
 
 

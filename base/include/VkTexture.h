@@ -40,6 +40,6 @@ class VkTexture
 	VkImageWrapper   texture_image;
 	VkSampler        texture_sampler;
 	VkImageLayout    imageLayout;
-	VkBool32         ktx_use_staging = false;
+	VkBool32         ktx_use_staging = true;
 	uint32_t         mip_levels = 1;
 };

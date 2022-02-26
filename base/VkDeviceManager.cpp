@@ -282,6 +282,12 @@ void VkDeviceManager::CreateLogicalDeviceAndQueues(VkSurfaceKHR &surface)
 	vkGetDeviceQueue(device, indices.graphicsFamily.value(), 0, &graphics_queue);
 	vkGetDeviceQueue(device, indices.presentFamily.value(), 0, &present_queue);
 	vkGetDeviceQueue(device, indices.transferFamily.value(), 0, &tranfer_queue);
+
+
+
+
+
+
 }
 
 VkDevice &VkDeviceManager::GetLogicalDeviceRef()
@@ -334,8 +340,7 @@ VkFormat VkDeviceManager::FindSupportedFormat(const std::vector<VkFormat> &candi
 	throw std::runtime_error("failed to find supported format!");
 }
 
-void VkDeviceManager::CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer &buffer, VkDeviceMemory &bufferMemory, VkSharingMode sharingmode, VkSurfaceKHR &surface)
-{
+void VkDeviceManager::CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer &buffer, VkDeviceMemory &bufferMemory, VkSharingMode sharingmode, VkSurfaceKHR &surface) {
 	/*typedef struct VkBufferCreateInfo {
 		VkStructureType        sType;
 		const void* pNext;
@@ -379,10 +384,10 @@ void VkDeviceManager::CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, 
 	VkMemoryAllocateInfo allocInfo{};
 	allocInfo.sType          = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 	allocInfo.allocationSize = memRequirements.size;
-	if (size != memRequirements.size)
-	{
-		throw std::runtime_error("memRequirements size differs from size parameter!");
-	}
+	//if (size != memRequirements.size)
+	//{
+	//	throw std::runtime_error("memRequirements size differs from size parameter!");
+	//}
 	allocInfo.memoryTypeIndex = FindMemoryType(memRequirements.memoryTypeBits, properties, physical_device);
 
 	if (vkAllocateMemory(device, &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS)

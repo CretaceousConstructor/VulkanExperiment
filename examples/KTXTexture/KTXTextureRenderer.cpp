@@ -13,11 +13,10 @@ void KTXTextureRenderer::PrepareModels()
 {
 	std::vector<Vertex> vertices =
 	    {
-	        {{1.0f, 1.0f, 0.0f}, {1.0f, 1.0f}, {0.0f, 0.0f, 1.0f}},
-	        {{-1.0f, 1.0f, 0.0f}, {0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}},
-	        {{-1.0f, -1.0f, 0.0f}, {0.0f, 0.0f}, {0.0f, 0.0f, 1.0f}},
-	        {{1.0f, -1.0f, 0.0f}, {1.0f, 0.0f}, {0.0f, 0.0f, 1.0f}}};
-
+	        {glm::vec3{4.0f, 3.0f, -5.0f}, glm::vec3{0.0f, 0.0f, 1.0f}, glm::vec2{1.0f, 1.0f}},
+	        {glm::vec3{-4.0f, 3.0f, -5.0f}, glm::vec3{0.0f, 0.0f, 1.0f}, glm::vec2{0.0f, 1.0f}},
+	        {glm::vec3{-4.0f, -3.0f, -5.0f}, glm::vec3{0.0f, 0.0f, 1.0f}, glm::vec2{0.0f, 0.0f}},
+	        {glm::vec3{4.0f, -3.0f, -5.0f}, glm::vec3{0.0f, 0.0f, 1.0f}, glm::vec2{1.0f, 0.0f}}};
 	// Setup indices
 	std::vector<uint32_t> indices = {0, 1, 2, 2, 3, 0};
 
@@ -28,7 +27,7 @@ void KTXTextureRenderer::CreateDescriptorPool()
 {
 	{
 		// Create the global descriptor pool
-		std::array<VkDescriptorPoolSize, 3> poolSizes{};
+		std::array<VkDescriptorPoolSize, 2> poolSizes{};
 
 		poolSizes[0].type            = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 		poolSizes[0].descriptorCount = 3;        // 3        uniform_buffers  共3帧。1*3 = 3
@@ -42,8 +41,7 @@ void KTXTextureRenderer::CreateDescriptorPool()
 		descriptorPoolCI.pPoolSizes                 = poolSizes.data();
 
 		// Max. number of descriptor sets that can be allocated from this pool
-		descriptorPoolCI.maxSets = static_cast<uint32_t>(3);        //一帧一个set是否浪费？如果只用一个set会不会有同步问题
-
+		descriptorPoolCI.maxSets = static_cast<uint32_t>(swapchain_manager->GetSwapImageCount());        //一帧一个set是否浪费？如果只用一个set会不会有同步问题?
 		if (vkCreateDescriptorPool(device_manager->GetLogicalDeviceRef(), &descriptorPoolCI, nullptr, &descriptor_pool) != VK_SUCCESS)
 		{
 			throw std::runtime_error("failed to create descriptor pool!");
@@ -104,16 +102,16 @@ void KTXTextureRenderer::CreateDescriptorSets()
 				throw std::runtime_error("failed to allocate descriptor sets!");
 			}
 
-			VkDescriptorBufferInfo buffer_info_write_subpass0{};
-			buffer_info_write_subpass0.buffer = uniform_buffers[i].buffer;
-			buffer_info_write_subpass0.offset = 0;
-			buffer_info_write_subpass0.range  = sizeof(Ubo_data);
-
 			std::vector<VkWriteDescriptorSet> writeDescriptorSets;
 			VkWriteDescriptorSet              temp_writeDescriptorSet{};
 			/*
 				Set 0,Binding 0: VS matrices Uniform buffer
 			*/
+			VkDescriptorBufferInfo buffer_info_write_subpass0{};
+			buffer_info_write_subpass0.buffer = uniform_buffers[i].buffer;
+			buffer_info_write_subpass0.offset = 0;
+			buffer_info_write_subpass0.range  = sizeof(Ubo_data);
+
 			temp_writeDescriptorSet.sType           = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 			temp_writeDescriptorSet.dstSet          = descriptor_sets_write_subpass0[i];
 			temp_writeDescriptorSet.dstBinding      = 0;
@@ -125,7 +123,7 @@ void KTXTextureRenderer::CreateDescriptorSets()
 			writeDescriptorSets.push_back(temp_writeDescriptorSet);
 
 			/*
-				Set 0,Binding 1: FS texture image
+				Set 0,Binding 1: FS texture image and sampler
 			*/
 
 			VkDescriptorImageInfo image_info_write_subpass0{};
@@ -141,6 +139,8 @@ void KTXTextureRenderer::CreateDescriptorSets()
 			temp_writeDescriptorSet.descriptorCount = 1;
 			temp_writeDescriptorSet.dstArrayElement = 0;
 			writeDescriptorSets.push_back(temp_writeDescriptorSet);
+
+			vkUpdateDescriptorSets(device_manager->GetLogicalDeviceRef(), static_cast<uint32_t>(writeDescriptorSets.size()), writeDescriptorSets.data(), 0, nullptr);
 		}
 	}
 }
@@ -156,7 +156,6 @@ void KTXTextureRenderer::CreateUniformBuffer()
 		//exclusive mode因为uniform buffer只会被graphics queue使用
 	}
 
-	//
 	////CPU SIDE
 	//ubo.model = viking_room_model->GetTransform().GetLocalToWorldMatrix();
 	//ubo.view = m_pCamera->GetView();
@@ -171,11 +170,12 @@ void KTXTextureRenderer::CreateDepthImages()
 	VkFormat depthFormat = swapchain_manager->FindDepthFormat(*device_manager);
 	depth_attachment.resize(swapchain_manager->GetSwapImageCount());
 
+	VkDeviceManager::QueueFamilyIndices queue_family_index = device_manager->FindQueueFamilies(device_manager->GetPhysicalDeviceRef(), window->GetSurface());
 	for (uint32_t i = 0; i < swapchain_manager->GetSwapImageCount(); i++)
 	{
 		depth_attachment[i].Init(VK_IMAGE_TYPE_2D, depthFormat, swapchain_manager->GetSwapChainImageExtent(), 1, 1, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT, VK_SHARING_MODE_EXCLUSIVE, VK_IMAGE_LAYOUT_UNDEFINED, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, device_manager);
 
-		depth_attachment[i].TransitionImageLayout(depthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, graphics_command_pool, device_manager->GetLogicalDeviceRef(), device_manager->GetGraphicsQueue());
+		depth_attachment[i].TransitionImageLayout(depthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, graphics_command_pool, device_manager->GetLogicalDeviceRef(), device_manager->GetGraphicsQueue(), queue_family_index);
 		depth_attachment[i].InitImageView(depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
 	}
 }
@@ -183,9 +183,6 @@ void KTXTextureRenderer::CreateDepthImages()
 void KTXTextureRenderer::CreatePiplineSubpass0()
 {
 	//										 subpass0
-	/******************************************************************************************************/
-	/******************************************************************************************************/
-	/******************************************************************************************************/
 	/******************************************************************************************************/
 	ShaderManager vertex_shader_subpass0(std::string("../../data/shaders/KTXTexture/KTXTexture_vertex_shader.spv"), std::string("main"), VK_SHADER_STAGE_VERTEX_BIT, device_manager->GetLogicalDeviceRef());
 	ShaderManager fragment_shader_subpass0(std::string("../../data/shaders/KTXTexture/KTXTexture_fragment_shader.spv"), std::string("main"), VK_SHADER_STAGE_FRAGMENT_BIT, device_manager->GetLogicalDeviceRef());
@@ -217,8 +214,6 @@ void KTXTextureRenderer::CreatePiplineSubpass0()
 
 	VkViewport       viewport{};
 	const VkExtent3D extend_of_swap_image = swapchain_manager->GetSwapChainImageExtent();
-	viewport.x                            = 0.0f;
-	viewport.y                            = (float) extend_of_swap_image.height;
 	viewport.width                        = (float) extend_of_swap_image.width;
 	viewport.height                       = -(float) extend_of_swap_image.height;
 	viewport.minDepth                     = 0.0f;
@@ -362,7 +357,7 @@ void KTXTextureRenderer::CreatePiplineSubpass0()
 
 void KTXTextureRenderer::CreateRenderPass()
 {
-	//swapchain color index 0
+	//swapchain color attachment index 0
 	VkAttachmentDescription colorAttachment{};
 	colorAttachment.format         = swapchain_manager->GetSwapChainImageFormat();
 	colorAttachment.samples        = VK_SAMPLE_COUNT_1_BIT;
@@ -373,7 +368,7 @@ void KTXTextureRenderer::CreateRenderPass()
 	colorAttachment.initialLayout  = VK_IMAGE_LAYOUT_UNDEFINED;
 	colorAttachment.finalLayout    = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
-	//Depth index 1
+	//Depth attachment index 1
 	VkAttachmentDescription depthAttachment{};
 	depthAttachment.format         = swapchain_manager->FindDepthFormat(*device_manager);
 	depthAttachment.samples        = VK_SAMPLE_COUNT_1_BIT;
@@ -387,21 +382,21 @@ void KTXTextureRenderer::CreateRenderPass()
 	//The index of the attachment ref in this array is directly referenced from the fragment shader with the
 	//layout(location = 0) out vec4 outColor directive!
 
-	VkAttachmentReference depthAttachmentRefForWrite{};
-	depthAttachmentRefForWrite.attachment = 1;
-	depthAttachmentRefForWrite.layout     = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-
 	VkAttachmentReference colorAttachmentRef{};
 	colorAttachmentRef.attachment = 0;
 	colorAttachmentRef.layout     = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
+	VkAttachmentReference depthAttachmentRefForWrite{};
+	depthAttachmentRefForWrite.attachment = 1;
+	depthAttachmentRefForWrite.layout     = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
 	//======================================================================================================
+	VkSubpassDescription subpass0{};
+	subpass0.pipelineBindPoint                                             = VK_PIPELINE_BIND_POINT_GRAPHICS;
 	std::vector<VkAttachmentReference> WriteColorAttachmentRefsForSubpass0 = {colorAttachmentRef};
-	VkSubpassDescription               subpass0{};
-	subpass0.pipelineBindPoint       = VK_PIPELINE_BIND_POINT_GRAPHICS;
-	subpass0.colorAttachmentCount    = static_cast<uint32_t>(WriteColorAttachmentRefsForSubpass0.size());
-	subpass0.pColorAttachments       = WriteColorAttachmentRefsForSubpass0.data();
-	subpass0.pDepthStencilAttachment = &depthAttachmentRefForWrite;
+	subpass0.colorAttachmentCount                                          = static_cast<uint32_t>(WriteColorAttachmentRefsForSubpass0.size());
+	subpass0.pColorAttachments                                             = WriteColorAttachmentRefsForSubpass0.data();
+	subpass0.pDepthStencilAttachment                                       = &depthAttachmentRefForWrite;
 
 	//-------------------------------------------------------------------------------------
 	std::array<VkSubpassDescription, 1> subpasses = {subpass0};
@@ -423,10 +418,10 @@ void KTXTextureRenderer::CreateRenderPass()
 
 	dependencies[1].srcSubpass    = 0;        // Last subpass attachment is used in
 	dependencies[1].dstSubpass    = VK_SUBPASS_EXTERNAL;
-	dependencies[1].srcStageMask  = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
+	dependencies[1].srcStageMask  = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
 	dependencies[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+	dependencies[1].dstStageMask  = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
 
-	dependencies[1].dstStageMask    = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
 	dependencies[1].dstAccessMask   = 0;
 	dependencies[1].dependencyFlags = 0;
 
@@ -451,7 +446,7 @@ void KTXTextureRenderer::CreateGraphicsPiplineLayout()
 		std::vector<VkDescriptorSetLayout> setLayouts = {descriptor_set_layout_write_subpass0};
 		VkPipelineLayoutCreateInfo         pipelineLayoutInfo_subpass0{};
 		pipelineLayoutInfo_subpass0.sType          = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-		pipelineLayoutInfo_subpass0.setLayoutCount = setLayouts.size();
+		pipelineLayoutInfo_subpass0.setLayoutCount = (uint32_t) setLayouts.size();
 		pipelineLayoutInfo_subpass0.pSetLayouts    = setLayouts.data();
 
 		//TODO: testing multiple push constants and how to access it
@@ -465,8 +460,7 @@ void KTXTextureRenderer::CreateGraphicsPiplineLayout()
 
 void KTXTextureRenderer::CreateGraphicsPipline()
 {
-	system("../../data/shaderbat/KTXTextureShaderCompile.bat");
-
+	system("..\\..\\data\\shaderbat\\KTXTextureShaderCompile.bat");
 	CreatePiplineSubpass0();
 }
 
@@ -525,8 +519,8 @@ void KTXTextureRenderer::CommandBufferRecording()
 		}
 
 		VkRenderPassBeginInfo renderPassInfo{};        //开始信息这是，注意
-		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-		renderPassInfo.renderPass = render_pass;
+		renderPassInfo.sType       = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+		renderPassInfo.renderPass  = render_pass;
 		renderPassInfo.framebuffer = frame_buffers[i];
 
 		renderPassInfo.renderArea.offset = {0, 0};
@@ -534,20 +528,16 @@ void KTXTextureRenderer::CommandBufferRecording()
 
 		std::array<VkClearValue, 2> clearValues{};
 		clearValues[0].color        = {0.0f, 0.0f, 0.0f, 1.0f};
-		clearValues[2].depthStencil = {1.0f, 0};
+		clearValues[1].depthStencil = {1.0f, 0};
 
 		renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
 		renderPassInfo.pClearValues    = clearValues.data();
 
 		vkCmdBeginRenderPass(graphics_command_buffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);        //
 
-		///*
-		//*/
-
-
 		vkCmdBindPipeline(graphics_command_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphics_pipeline_subpass0);
 		vkCmdBindDescriptorSets(graphics_command_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_layout_subpass0, 0, 1, &descriptor_sets_write_subpass0[i], 0, NULL);
-		quad_model->Draw( graphics_command_buffers[i]);
+		quad_model->Draw(graphics_command_buffers[i]);
 
 		vkCmdEndRenderPass(graphics_command_buffers[i]);
 
@@ -562,7 +552,7 @@ void KTXTextureRenderer::InitSynObjects()
 {
 	image_available_semaphores.resize(MAX_FRAMES_IN_FLIGHT);
 	render_finished_semaphores.resize(MAX_FRAMES_IN_FLIGHT);
-	inflight_fences.resize(MAX_FRAMES_IN_FLIGHT);
+	inflight_fences_frame.resize(MAX_FRAMES_IN_FLIGHT);
 	images_inflight.resize(swapchain_manager->GetSwapImageCount(), VK_NULL_HANDLE);        ///???
 
 	//可以通过fence查询vkQueueSubmit的动作是否完成   vkGetFenceStatus非阻塞的查询
@@ -579,13 +569,12 @@ void KTXTextureRenderer::InitSynObjects()
 	{
 		if (vkCreateSemaphore(device_manager->GetLogicalDeviceRef(), &semaphoreInfo, nullptr, &image_available_semaphores[i]) != VK_SUCCESS ||
 		    vkCreateSemaphore(device_manager->GetLogicalDeviceRef(), &semaphoreInfo, nullptr, &render_finished_semaphores[i]) != VK_SUCCESS ||
-		    vkCreateFence(device_manager->GetLogicalDeviceRef(), &fenceInfo, nullptr, &inflight_fences[i]) != VK_SUCCESS)
+		    vkCreateFence(device_manager->GetLogicalDeviceRef(), &fenceInfo, nullptr, &inflight_fences_frame[i]) != VK_SUCCESS)
 		{
 			throw std::runtime_error("failed to create synchronization objects for a frame!");
 		}
 	}
 }
-
 
 void KTXTextureRenderer::SetUpUserInput()
 {
@@ -599,30 +588,17 @@ void KTXTextureRenderer::SetUpUserInput()
 
 void KTXTextureRenderer::CreateAttachmentImages()
 {
-	//swapchain_manager->GetSwapChainImageFormat()
-
-	//VK_FORMAT_R8G8B8A8_UNORM
-
-	color_attachment.resize(swapchain_manager->GetSwapImageCount());
-	for (uint32_t i = 0; i < swapchain_manager->GetSwapImageCount(); i++)
-	{
-		color_attachment[i].Init(VK_IMAGE_TYPE_2D, swapchain_manager->GetSwapChainImageFormat(), swapchain_manager->GetSwapChainImageExtent(), 1, 1, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT, VK_SHARING_MODE_EXCLUSIVE, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, device_manager);
-
-		color_attachment[i].TransitionImageLayout(swapchain_manager->GetSwapChainImageFormat(), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, graphics_command_pool, device_manager->GetLogicalDeviceRef(), device_manager->GetGraphicsQueue());
-
-		color_attachment[i].InitImageView(swapchain_manager->GetSwapChainImageFormat(), VK_IMAGE_ASPECT_COLOR_BIT);
-	}
 }
 
 void KTXTextureRenderer::DrawFrame()
 {
 	static size_t currentFrame = 0;
-
-	vkWaitForFences(device_manager->GetLogicalDeviceRef(), 1, &inflight_fences[currentFrame], VK_TRUE, UINT64_MAX);        //vkWaitForFences无限时阻塞CPU，等待fence被signal后 从 unsignaled状态 变成 signaled状态 这里应该是防止和自己(currentFrame)冲突。To wait for one or more fences to enter the signaled state on the host,
-
+	//所有fence在初始化时都处于signaled的状态
+	//等待frame
+	vkWaitForFences(device_manager->GetLogicalDeviceRef(), 1, &inflight_fences_frame[currentFrame], VK_TRUE, UINT64_MAX);        //vkWaitForFences无限时阻塞CPU，等待fence被signal后 从 unsignaled状态 变成 signaled状态才会停止阻塞。这里应该是防止和自己(currentFrame)冲突。比如此时currentFrame为0，那么这里就是等待和一次currentFrame等于0的时候渲染时使用的command buffer使用完成                    To wait for one or more fences to enter the signaled state on the host,
 	uint32_t imageIndex;
 
-	VkResult result = vkAcquireNextImageKHR(device_manager->GetLogicalDeviceRef(), swapchain_manager->GetSwapChain(), UINT64_MAX, image_available_semaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);        //As such, all vkAcquireNextImageKHR function does is let you know which image will be made available to you next. This is the minimum that needs to happen in order for you to be able to use that image (for example, by building command buffers that reference the image in some way). However, that image is not YET available to you.This is why this function requires you to provide a semaphore and/or a fence: so that the process which consumes the image can wait for the image to be made available.得到下一个可以使用的image的index，但是这个image可能还没用完，这里获得的imageIndex对应的image很有可能是最快被某一帧使用完毕的那一个，由vulkan实现具体决定
+	VkResult result = vkAcquireNextImageKHR(device_manager->GetLogicalDeviceRef(), swapchain_manager->GetSwapChain(), UINT64_MAX, image_available_semaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);        //As such, all vkAcquireNextImageKHR function does is let you know which image will be made available to you next. This is the minimum that needs to happen in order for you to be able to use that image (for example, by building command buffers that reference the image in some way). However, that image is not YET available to you.This is why this function requires you to provide a semaphore and/or a fence: so that the process which consumes the image can wait for the image to be made available.得到下一个可以使用的image的index，但是这个image可能还没用完，这里获得的imageIndex对应的image很有可能是在最短的时间内被某一帧使用完毕的那一个，由vulkan实现具体决定
 
 	if (result == VK_ERROR_OUT_OF_DATE_KHR)
 	{
@@ -631,6 +607,7 @@ void KTXTextureRenderer::DrawFrame()
 	}
 	else if (result == VK_NOT_READY)
 	{
+		//VK_NOT_READY A fence or query has not yet completed
 		std::cout << ",rely on semophore" << std::endl;
 	}
 	else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
@@ -640,13 +617,19 @@ void KTXTextureRenderer::DrawFrame()
 
 	UpdateUniformBuffer(imageIndex);
 
-	//images_inflight大小为3在这个例子里，注意它的大小不是MAX_FRAMES_IN_FLIGHT
+	//images_inflight大小为3在这个例子里，注意它的大小不是2(MAX_FRAMES_IN_FLIGHT)
 	if (images_inflight[imageIndex] != VK_NULL_HANDLE)
-	{        //images_inflight[imageIndex] 不是 nullptr，说明某一帧的GPU资源正在被以imageIndex为下标的image使用，那么我们就要等待。
+	{
+		//images_inflight[imageIndex] 不是 nullptr，说明某一帧的GPU资源(和image有关的资源)正在被以imageIndex为下标的image使用，那么我们就要等待。
+		//无限等待fence,
+
 		vkWaitForFences(device_manager->GetLogicalDeviceRef(), 1, &images_inflight[imageIndex], VK_TRUE, UINT64_MAX);
+
+
+
 	}
 
-	images_inflight[imageIndex] = inflight_fences[currentFrame];        //等待完毕后的images，被我们的currentFrame所占有(表示currentFrame这一帧的GPU资源正在被index为imageIndex的image占用)，目前inflight_fences[currentFrame]处于signled的状态。
+	images_inflight[imageIndex] = inflight_fences_frame[currentFrame];        //等待完images毕后，让当前的image被currentFrame所占有(表示currentFrame这一帧的GPU资源正在被index为imageIndex的image占用)，目前inflight_fences[currentFrame]处于signled的状态。
 	//	 inflight_fences[currentFrame]状态改变后，images_inflight[imageIndex]状态也会改变
 
 	VkSubmitInfo submitInfo{};
@@ -657,20 +640,121 @@ void KTXTextureRenderer::DrawFrame()
 	submitInfo.pWaitSemaphores            = waitSemaphores;
 	submitInfo.pWaitDstStageMask          = waitStages;
 	submitInfo.commandBufferCount         = 1;
-	submitInfo.pCommandBuffers            = &graphics_command_buffers[imageIndex];
+	//submitInfo.pCommandBuffers            = &graphics_command_buffers[imageIndex];
+	submitInfo.pCommandBuffers            = &graphics_command_buffers[imageIndex];          
+	
+	
+	//可以看到这里graphics_command_buffers[imageIndex]使用完以后，inflight_fences_frame[currentFrame]会被signal（读vkQueueSubmit的定义），那么怎么确定这里的graphics_command_buffers[imageIndex]已经被前几帧使用完毕了呢？
+	
+	//假设这样的渲染流程，
+
+
+//===========================================================================================================================================================
+	//第一帧            currentFrame = 0      
+	//1.阻塞cup等待   frame_fences[currentFrame 0](第一次使用不用等)，
+	//2.阻塞cup等待   images_fences[imageIndex（这个下标是从acquireImageindex函数获取的）假设为0（由实现决定)]（但第一次使用时，images_fences[imageIndex 0]为nullptr），
+	//3.赋值:        images_fences[imageIndex 0（这个下标是从acquireImageindex获取的）]    =    frame_fences[currentFrame 0]
+	//4.渲染:        graphics_command_buffers[imageIndex 0]被使用
+//===========================================================================================================================================================
+	//第二帧            currentFrame = 1      
+	//1.阻塞cup等待   frame_fences[currentFrame 1](第一次用不用等)，
+	//2.阻塞cup等待   images_fences[imageIndex（这个下标是从acquireImageindex函数获取的）假设为2（由实现决定)]（但第一次使用时，images_fences[imageIndex 2]为nullptr），
+	//3.赋值:        images_fences[imageIndex 2（这个下标是从acquireImageindex获取的）]    =    frame_fences[currentFrame 1];
+	//4.渲染:        graphics_command_buffers[imageIndex 2]被使用
+//===========================================================================================================================================================
+
+	//第三帧（第一种可能) currentFrame = 0     
+	//1.阻塞cup等待   frame_fences[currentFrame 0](graphics_command_buffers[imageIndex 0]渲染使用结束后对它的等待也就结束了), 
+	//2.阻塞cup等待   images_fences[imageIndex（这个下标是从acquireImageindex函数获取的）假设为1（由实现决定)]（但第一次使用时，images_fences[imageIndex 1]为nullptr），
+	//3.赋值:        images_fences[imageIndex 1（这个下标是从acquireImageindex获取的）]    =    frame_fences[currentFrame 0]
+	//4.渲染:        graphics_command_buffers[imageIndex 1]被使用
+
+	//第三帧(第二种可能) currentFrame = 0     
+	//1.阻塞cup等待   frame_fences[currentFrame 0](graphics_command_buffers[imageIndex 0]渲染使用结束后对它的等待也就结束了), 
+	//2.阻塞cup等待   images_fences[imageIndex（这个下标是从acquireImageindex函数获取的）假设为0（由实现决定)]（images_fences[0]之前被frame_fences[currentFrame 0]赋值，这里就是等待frame_fences[currentFrame 0]），
+	//3.赋值:        images_fences[imageIndex 0（这个下标是从acquireImageindex获取的）]    =    frame_fences[currentFrame 0]
+	//4.渲染:        graphics_command_buffers[imageIndex 0]被使用
+
+	//第三帧(第三种可能) currentFrame = 0     
+	//1.阻塞cup等待   frame_fences[currentFrame 0](graphics_command_buffers[imageIndex 0]渲染使用结束后对它的等待也就结束了), 
+	//2.阻塞cup等待   images_fences[imageIndex（这个下标是从acquireImageindex函数获取的）假设为2（由实现决定)]（images_fences[2]之前被frame_fences[currentFrame 1]赋值，这里就是等待frame_fences[currentFrame 1]），
+	//3.赋值:        images_fences[imageIndex 2（这个下标是从acquireImageindex获取的）]    =    frame_fences[currentFrame 0]
+	//4.渲染:        graphics_command_buffers[imageIndex 2]被使用
+
+//===========================================================================================================================================================
+
+	//#1（假设为第三帧为第一种可能）
+	//第四帧（第一种可能） currentFrame = 1     
+	//1.阻塞cup等待   frame_fences[currentFrame 1](graphics_command_buffers[imageIndex 2]渲染使用结束后对它的等待也就结束了) , 
+	//2.阻塞cpu等待   images_fences[imageIndex（这个下标是从acquireImageindex函数获取的）假设为0（由实现决定)]（之前被frame_fences[currentFrame 0]赋值），
+	//3.赋值:        images_fences[imageIndex 0（这个下标是从acquireImageindex获取的）]    =    frame_fences[currentFrame 1]赋值
+	//4.渲染:        graphics_command_buffers[imageIndex 0]被使用中
+
+	//#1（假设为第三帧为第一种可能）
+	//第四帧（第二种可能） currentFrame = 1     
+	//1.阻塞cup等待   frame_fences[currentFrame 1](graphics_command_buffers[imageIndex 2]渲染使用结束后对它的等待也就结束了) , 
+	//2.阻塞cpu等待   images_fences[imageIndex（这个下标是从acquireImageindex函数获取的）假设为2（由实现决定)]（之前被frame_fences[currentFrame 1]赋值），
+	//3.赋值:        images_fences[imageIndex 2（这个下标是从acquireImageindex获取的）]    =    frame_fences[currentFrame 1]赋值
+	//4.渲染:        graphics_command_buffers[imageIndex 2]被使用中
+
+	//#1（假设为第三帧为第一种可能）
+	//第四帧（第三种可能） currentFrame = 1     
+	//1.阻塞cup等待   frame_fences[currentFrame 1](graphics_command_buffers[imageIndex 2]渲染使用结束后对它的等待也就结束了) , 
+	//2.阻塞cpu等待   images_fences[imageIndex（这个下标是从acquireImageindex函数获取的）假设为1（由实现决定)]（之前被frame_fences[currentFrame 0]赋值），
+	//3.赋值:        images_fences[imageIndex 1（这个下标是从acquireImageindex获取的）]    =    frame_fences[currentFrame 1]赋值
+	//4.渲染:        graphics_command_buffers[imageIndex 1]被使用中
+
+//===========================================================================================================================================================
+	
+	//#1（假设为第三帧为第二种可能）
+	//第四帧（第一种可能） currentFrame = 1     
+	//1.阻塞cup等待   frame_fences[currentFrame 1](graphics_command_buffers[imageIndex 2]渲染使用结束后对它的等待也就结束了) , 
+	//2.阻塞cpu等待   images_fences[imageIndex（这个下标是从acquireImageindex函数获取的）假设为0（由实现决定)]（images_fences[0]之前被frame_fences[currentFrame 0]赋值），这里就是等待frame_fences[currentFrame 0]），
+	//3.赋值:        images_fences[imageIndex 0（这个下标是从acquireImageindex获取的）]    =    frame_fences[currentFrame 1]赋值
+	//4.渲染:        graphics_command_buffers[imageIndex 0]被使用中
+
+	//#1（假设为第三帧为第二种可能）
+	//第四帧（第二种可能） currentFrame = 1     
+	//1.阻塞cup等待   frame_fences[currentFrame 1](graphics_command_buffers[imageIndex 2]渲染使用结束后对它的等待也就结束了) , 
+	//2.阻塞cpu等待   images_fences[imageIndex（这个下标是从acquireImageindex函数获取的）假设为2（由实现决定)]（images_fences[2]之前被frame_fences[currentFrame 1]赋值），这里就是等待frame_fences[currentFrame 1]），
+	//3.赋值:        images_fences[imageIndex 0（这个下标是从acquireImageindex获取的）]    =    frame_fences[currentFrame 1]赋值
+	//4.渲染:        graphics_command_buffers[imageIndex 2]被使用中
+
+	//#1（假设为第三帧为第二种可能）
+	//第四帧（第二种可能） currentFrame = 1     
+	//1.阻塞cup等待   frame_fences[currentFrame 1](graphics_command_buffers[imageIndex 2]渲染使用结束后对它的等待也就结束了) , 
+	//2.阻塞cpu等待   images_fences[imageIndex（这个下标是从acquireImageindex函数获取的）假设为1（由实现决定)]（但第一次使用时，images_fences[imageIndex 1]为nullptr）
+	//3.赋值:        images_fences[imageIndex 1（这个下标是从acquireImageindex获取的）]    =    frame_fences[currentFrame 1]赋值
+	//4.渲染:        graphics_command_buffers[imageIndex 1]被使用中
+
+//===========================================================================================================================================================
+
+	//#1（假设为第三帧为第三种可能）
+	//第四帧（第一种可能） currentFrame = 1     
+	//1.阻塞cup等待   frame_fences[currentFrame 1](graphics_command_buffers[imageIndex 2]渲染使用结束后对它的等待也就结束了) , 
+	//2.阻塞cpu等待   images_fences[imageIndex（这个下标是从acquireImageindex函数获取的）假设为0（由实现决定)]（之前被frame_fences[currentFrame 0]赋值），这里就是等待frame_fences[currentFrame 0]），
+	//3.赋值:        images_fences[imageIndex 0（这个下标是从acquireImageindex获取的）]    =    frame_fences[currentFrame 1]赋值
+	//4.渲染:        graphics_command_buffers[imageIndex 0]被使用中
+
+//===========================================================================================================================================================
+
+
+
+
+
 	VkSemaphore signalSemaphores[]        = {render_finished_semaphores[currentFrame]};        //graphics_command_buffers执行完以后会signal这里，随后presentation engine知道渲染完成可以展示了。
+
 	submitInfo.signalSemaphoreCount       = 1;
 	submitInfo.pSignalSemaphores          = signalSemaphores;
 
-	//因为上面有images_inflight[imageIndex] = inflight_fences[currentFrame]; 所以这时候images_inflight[imageIndex]和 inflight_fences[currentFrame];应该同时进入了unsignaled状态
-	vkResetFences(device_manager->GetLogicalDeviceRef(), 1, &inflight_fences[currentFrame]);        //To set the state of fences to unsignaled from the host
-
-	if (vkQueueSubmit(device_manager->GetGraphicsQueue(), 1, &submitInfo, inflight_fences[currentFrame]) != VK_SUCCESS)
+	//因为上面有images_inflight[imageIndex] = inflight_fences[currentFrame]; 所以这时候images_inflight[imageIndex]和 inflight_fences[currentFrame]会有同样的状态;并且应该同时进入了unsignaled状态
+	vkResetFences(device_manager->GetLogicalDeviceRef(), 1, &inflight_fences_frame[currentFrame]);        //To set the state of fences to unsignaled from the host side
+	//vkQueueSubmit:   fence(last parameter is an optional handle to a fence to be signaled once all submitted command buffers have completed execution. If fence is not VK_NULL_HANDLE, it defines a fence signal operation.
+	if (vkQueueSubmit(device_manager->GetGraphicsQueue(), 1, &submitInfo, inflight_fences_frame[currentFrame]) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to submit draw command buffer!");
 	}
 
-	//fence is an optional handle to a fence to be signaled once all submitted command buffers have completed execution.If fence is not VK_NULL_HANDLE, it defines a fence signal operation.
 
 	VkPresentInfoKHR presentInfo{};
 	presentInfo.sType              = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -700,25 +784,24 @@ void KTXTextureRenderer::DrawFrame()
 	{
 		throw std::runtime_error("failed to present swap chain image!");
 	}
-
 	currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 
 void KTXTextureRenderer::UpdateUniformBuffer(uint32_t currentImage)
 {
 	ubo.projection = m_pCamera->GetProj();
-	ubo.view= m_pCamera->GetView();
-	ubo.eyepos = glm::vec4(m_pCamera->GetPosition(),1.f);
+	ubo.view       = m_pCamera->GetView();
+	ubo.eyepos     = glm::vec4(m_pCamera->GetPosition(), 1.f);
 
 	void *data;
 	vkMapMemory(device_manager->GetLogicalDeviceRef(), uniform_buffers[currentImage].memory, 0, sizeof(ubo), 0, &data);
 	memcpy(data, &ubo, sizeof(Ubo_data));
 	vkUnmapMemory(device_manager->GetLogicalDeviceRef(), uniform_buffers[currentImage].memory);
-
 }
 
 void KTXTextureRenderer::UpdateCamera(float dt)
 {
+	
 	if (keyboard->GetIsKeyDown(GLFW_KEY_W))
 	{
 		m_pCamera->Walk(dt * -3.f);
@@ -757,8 +840,8 @@ void KTXTextureRenderer::UpdateCamera(float dt)
 void KTXTextureRenderer::CreateCamera()
 {
 	m_pCamera = std::make_unique<FirstPersonCamera>();
-	m_pCamera->SetFrustum(glm::radians(60.f), swapchain_manager->GetSwapChainImageExtent().width / (float) swapchain_manager->GetSwapChainImageExtent().height, 0.1f, 256.f);
-	m_pCamera->LookAt(glm::vec3(0.f, 0.f, 1.f), glm::vec3(0.f, 0.f, -1.f), glm::vec3(0., 1., 0.));
+	m_pCamera->SetFrustum(glm::radians(90.f), swapchain_manager->GetSwapChainImageExtent().width / (float) swapchain_manager->GetSwapChainImageExtent().height, 3.f, 9.f);
+	m_pCamera->LookAt(glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 0.f, -1.f), glm::vec3(0., 1., 0.));
 
 	VkViewport       viewport{};
 	const VkExtent3D extend_of_swap_image = swapchain_manager->GetSwapChainImageExtent();
@@ -797,7 +880,7 @@ void KTXTextureRenderer::CleanUpSyncObjects()
 	{
 		vkDestroySemaphore(device_manager->GetLogicalDeviceRef(), render_finished_semaphores[i], nullptr);
 		vkDestroySemaphore(device_manager->GetLogicalDeviceRef(), image_available_semaphores[i], nullptr);
-		vkDestroyFence(device_manager->GetLogicalDeviceRef(), inflight_fences[i], nullptr);
+		vkDestroyFence(device_manager->GetLogicalDeviceRef(), inflight_fences_frame[i], nullptr);
 	}
 }
 
@@ -813,7 +896,6 @@ void KTXTextureRenderer::CleanUpPiplineAndPiplineLayout()
 {
 	vkDestroyPipeline(device_manager->GetLogicalDeviceRef(), graphics_pipeline_subpass0, nullptr);
 	vkDestroyPipelineLayout(device_manager->GetLogicalDeviceRef(), pipeline_layout_subpass0, nullptr);
-
 }
 
 void KTXTextureRenderer::CleanUpRenderPass()
@@ -823,11 +905,6 @@ void KTXTextureRenderer::CleanUpRenderPass()
 
 void KTXTextureRenderer::CleanUpImages()
 {
-	for (auto &var : color_attachment)
-	{
-		var.CleanUp();
-	}
-
 	for (auto &var : depth_attachment)
 	{
 		var.CleanUp();

@@ -9,7 +9,7 @@ class VkWindows
 public:
 	//800 600
 	//VkWindows(uint32_t w = 1280, uint32_t h = 740,std::string winName = "default");
-	VkWindows(uint32_t w = 1280, uint32_t h = 740,std::string winName = "default");
+	VkWindows(uint32_t w = 800, uint32_t h = 600,std::string winName = "default");
 	void Init(void* renderer_ptr);
 	void CleanUp(VkInstance& instance);
 	GLFWwindow* GetWindowPtr();

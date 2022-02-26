@@ -2,14 +2,13 @@
 
 void App::Init()
 {
-	//renderer = std::make_unique<MultiSubpassesRenderer>();
 	InitRenderer();
 	//global initialization
 	window.Init((void *) (renderer.get()));
 
 	VkInitializer::CreateInstance(instance, validation_manager);
 
-	VkValidationManager::SetupDebugMessenger(instance, validation_manager);
+//	VkValidationManager::SetupDebugMessenger(instance, validation_manager);
 
 	VkInitializer::CreateSurface(instance, window);
 

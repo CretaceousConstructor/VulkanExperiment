@@ -8,6 +8,7 @@ void VkTexture::CleanUp()
 {
 	if (device_manager != nullptr)
 	{
+
 		vkDestroySampler(device_manager->GetLogicalDeviceRef(), texture_sampler, nullptr);
 	}
 	else
@@ -61,11 +62,17 @@ void VkTexture::InitTexture(std::string image_path, VkDeviceManager *para_device
 	image_extent.height = texHeight;
 	image_extent.depth  = 1;
 
+	
+
+		VkDeviceManager::QueueFamilyIndices  queue_family_index  = device_manager->FindQueueFamilies(device_manager->GetPhysicalDeviceRef(),window->GetSurface());
+
+
+
 	texture_image.Init(VK_IMAGE_TYPE_2D, format_of_texture, image_extent, 1, 1, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_SHARING_MODE_EXCLUSIVE, VK_IMAGE_LAYOUT_UNDEFINED, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, device_manager);
 
-	texture_image.TransitionImageLayout(format_of_texture, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, command_pool, para_device_manager->GetLogicalDeviceRef(), para_device_manager->GetGraphicsQueue());
+	texture_image.TransitionImageLayout(format_of_texture, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, command_pool, para_device_manager->GetLogicalDeviceRef(), para_device_manager->GetGraphicsQueue(),queue_family_index);
 	texture_image.CopyBufferToImage(stagingBuffer, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight), command_pool, para_device_manager->GetLogicalDeviceRef(), para_device_manager->GetGraphicsQueue());
-	texture_image.TransitionImageLayout(format_of_texture, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, imageLayout, command_pool, para_device_manager->GetLogicalDeviceRef(), para_device_manager->GetGraphicsQueue());
+	texture_image.TransitionImageLayout(format_of_texture, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, imageLayout, command_pool, para_device_manager->GetLogicalDeviceRef(), para_device_manager->GetGraphicsQueue(),queue_family_index);
 
 	// Clean up staging resources
 	vkDestroyBuffer(device_manager->GetLogicalDeviceRef(), stagingBuffer, nullptr);
@@ -96,10 +103,16 @@ void VkTexture::InitTexture(void *buffer, VkDeviceSize bufferSize, uint32_t texW
 	image_extent.height = texHeight;
 	image_extent.depth  = 1;
 
+	
+
+	VkDeviceManager::QueueFamilyIndices  queue_family_index  = device_manager->FindQueueFamilies(device_manager->GetPhysicalDeviceRef(),window->GetSurface());
+
+
+
 	texture_image.Init(VK_IMAGE_TYPE_2D, format_of_texture, image_extent, 1, 1, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_SHARING_MODE_EXCLUSIVE, VK_IMAGE_LAYOUT_UNDEFINED, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, device_manager);
-	texture_image.TransitionImageLayout(format_of_texture, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, command_pool, para_device_manager->GetLogicalDeviceRef(), para_device_manager->GetGraphicsQueue());
+	texture_image.TransitionImageLayout(format_of_texture, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, command_pool, para_device_manager->GetLogicalDeviceRef(), para_device_manager->GetGraphicsQueue(),queue_family_index);
 	texture_image.CopyBufferToImage(stagingBuffer, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight), command_pool, para_device_manager->GetLogicalDeviceRef(), para_device_manager->GetGraphicsQueue());
-	texture_image.TransitionImageLayout(format_of_texture, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, imageLayout, command_pool, para_device_manager->GetLogicalDeviceRef(), para_device_manager->GetGraphicsQueue());
+	texture_image.TransitionImageLayout(format_of_texture, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, imageLayout, command_pool, para_device_manager->GetLogicalDeviceRef(), para_device_manager->GetGraphicsQueue(),queue_family_index);
 
 	vkDestroyBuffer(device_manager->GetLogicalDeviceRef(), stagingBuffer, nullptr);
 	vkFreeMemory(device_manager->GetLogicalDeviceRef(), stagingBufferMemory, nullptr);
@@ -192,10 +205,15 @@ void VkTexture::InitKTXTexture(std::string image_path, VkDeviceManager *para_dev
 			bufferCopyRegions.push_back(bufferCopyRegion);
 		}
 
+
+		
+		VkDeviceManager::QueueFamilyIndices  queue_family_index  = device_manager->FindQueueFamilies(device_manager->GetPhysicalDeviceRef(),window->GetSurface());
+
+
 		texture_image.Init(VK_IMAGE_TYPE_2D, format, image_extent, mip_levels, 1, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_SHARING_MODE_EXCLUSIVE, VK_IMAGE_LAYOUT_UNDEFINED, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, device_manager);
-		texture_image.TransitionImageLayout(format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, command_pool, para_device_manager->GetLogicalDeviceRef(), para_device_manager->GetGraphicsQueue(), mip_levels);
-		texture_image.CopyBufferToImage(stagingBuffer, command_pool, para_device_manager->GetLogicalDeviceRef(), para_device_manager->GetGraphicsQueue(), bufferCopyRegions);
-		texture_image.TransitionImageLayout(format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, imageLayout, command_pool, para_device_manager->GetLogicalDeviceRef(), para_device_manager->GetGraphicsQueue());
+		texture_image.TransitionImageLayout(format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, command_pool, para_device_manager->GetLogicalDeviceRef(), para_device_manager->GetTransferQueue(), queue_family_index,mip_levels);
+		texture_image.CopyBufferToImage(stagingBuffer, command_pool, para_device_manager->GetLogicalDeviceRef(), para_device_manager->GetTransferQueue(), bufferCopyRegions);
+		texture_image.TransitionImageLayout(format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, imageLayout, command_pool, para_device_manager->GetLogicalDeviceRef(), para_device_manager->GetTransferQueue(),queue_family_index,mip_levels);
 
 		vkDestroyBuffer(device_manager->GetLogicalDeviceRef(), stagingBuffer, nullptr);
 		vkFreeMemory(device_manager->GetLogicalDeviceRef(), stagingBufferMemory, nullptr);
@@ -255,6 +273,7 @@ void VkTexture::InitSampler()
 		throw std::runtime_error("failed to create texture sampler!");
 	}
 }
+//1 l L i I o O 0
 
 VkDescriptorImageInfo VkTexture::GetDescriptor()
 {

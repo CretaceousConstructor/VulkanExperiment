@@ -4,10 +4,10 @@
 #extension GL_EXT_debug_printf : enable
 
 layout (location = 0) in vec3 inPos;
-layout (location = 1) in vec2 inUV;
-layout (location = 2) in vec3 inNormal;
+layout (location = 1) in vec3 inNormal;
+layout (location = 2) in vec2 inUV;
 
-layout (set = 0 ,binding = 0) uniform UBO 
+layout (set = 0,binding = 0) uniform UBO 
 {
 	mat4 projection;
 	mat4 view;
@@ -15,11 +15,11 @@ layout (set = 0 ,binding = 0) uniform UBO
 	float lodBias;
 } ubo;
 
-layout (location = 0) out vec2 outUV;
-layout (location = 1) out float outLodBias;
-layout (location = 2) out vec3 outNormal;
-layout (location = 3) out vec3 outViewVec;
-layout (location = 4) out vec3 outLightVec;
+layout (location = 0) out vec3 outNormal;
+layout (location = 1) out vec3 outViewVec;
+layout (location = 2) out vec3 outLightVec;
+layout (location = 3) out vec2 outUV;
+layout (location = 4) out float outLodBias;
 
 out gl_PerVertex 
 {
@@ -32,7 +32,8 @@ void main()
 	outLodBias = ubo.lodBias;
 	//简单模型，没有传入model matrix
 	mat4 model =  mat4(1.0);
-	gl_Position = ubo.projection * ubo.view * model * vec4(inPos.xyz, 1.0);
+	//gl_Position = ubo.projection * ubo.view * model * vec4(inPos.xyz, 1.0);
+	gl_Position = ubo.projection * vec4(inPos.xyz, 1.0);
 	//所有运算在worldspace进行
 	//pos in world space
     vec4 pos = model * vec4(inPos, 1.0);

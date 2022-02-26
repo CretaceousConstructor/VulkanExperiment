@@ -3,9 +3,8 @@
 #include "FirstPersonCamera.h"
 #include "KeyBoardInputManager.h"
 #include "MouseInputManager.h"
-
 #include "GltfModel.h"
-
+#include "VkTexture.h"
 #include <array>
 #include <chrono>
 #include <glm/glm.hpp>
@@ -79,13 +78,13 @@ class KTXTextureRenderer : public BaseRenderer
 	//vertex layout
 	struct Vertex
 	{
-		float                                                 pos[3];
-		float                                                 uv[2];
-		float                                                 normal[3];
+		glm::vec3                                                 pos;
+		glm::vec3                                                 normal;
+		glm::vec2                                                 uv;
 		static std::vector<VkVertexInputAttributeDescription> GetAttributeDescriptions()
 		{
 			std::vector<VkVertexInputAttributeDescription> attributeDescriptions{};
-			attributeDescriptions.resize(4);
+			attributeDescriptions.resize(3);
 
 			attributeDescriptions[0].binding  = 0;
 			attributeDescriptions[0].location = 0;
@@ -94,13 +93,13 @@ class KTXTextureRenderer : public BaseRenderer
 
 			attributeDescriptions[1].binding  = 0;
 			attributeDescriptions[1].location = 1;
-			attributeDescriptions[1].format   = VK_FORMAT_R32G32_SFLOAT;
-			attributeDescriptions[1].offset   = offsetof(Vertex, uv);
+			attributeDescriptions[1].format   = VK_FORMAT_R32G32B32_SFLOAT;
+			attributeDescriptions[1].offset   = offsetof(Vertex, normal);
 
 			attributeDescriptions[2].binding  = 0;
 			attributeDescriptions[2].location = 2;
-			attributeDescriptions[2].format   = VK_FORMAT_R32G32B32_SFLOAT;
-			attributeDescriptions[2].offset   = offsetof(Vertex, normal);
+			attributeDescriptions[2].format   = VK_FORMAT_R32G32_SFLOAT;
+			attributeDescriptions[2].offset   = offsetof(Vertex, uv);
 
 			return attributeDescriptions;
 		}
@@ -128,7 +127,6 @@ class KTXTextureRenderer : public BaseRenderer
 	VkTexture ktx_texure;
 
 	//ATTACHMENT
-	std::vector<VkImageWrapper> color_attachment;
 	std::vector<VkImageWrapper> depth_attachment;
 
 	//FRAMEBUFFER
@@ -141,7 +139,7 @@ class KTXTextureRenderer : public BaseRenderer
 	//SYN OBJECTS
 	std::vector<VkSemaphore> image_available_semaphores;
 	std::vector<VkSemaphore> render_finished_semaphores;
-	std::vector<VkFence>     inflight_fences;
+	std::vector<VkFence>     inflight_fences_frame;
 	std::vector<VkFence>     images_inflight;
 
 	//MODELS

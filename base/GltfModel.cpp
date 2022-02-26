@@ -281,7 +281,7 @@ void GltfModel::LoadNode(const tinygltf::Node& inputNode, const tinygltf::Model&
 
 	//BUGS:vector push back memory address changed!! solved
 	nodes.emplace_back();
-	int index_of_current_node = nodes.size() - 1;
+	int index_of_current_node = static_cast<int>(nodes.size() - 1);
 
 	glm::mat4 node_matrix;
 	node_matrix = glm::mat4(1.0f);
@@ -345,7 +345,7 @@ void GltfModel::LoadNode(const tinygltf::Node& inputNode, const tinygltf::Model&
 					const tinygltf::Accessor& accessor = input.accessors[glTFPrimitive.attributes.find("POSITION")->second];
 					const tinygltf::BufferView& view = input.bufferViews[accessor.bufferView];
 					positionBuffer = reinterpret_cast<const float*>(&(input.buffers[view.buffer].data[accessor.byteOffset + view.byteOffset]));
-					vertexCount = accessor.count;
+					vertexCount = static_cast<uint32_t>(accessor.count);
 				}
 				// Get buffer data for vertex normals
 				if (glTFPrimitive.attributes.find("NORMAL") != glTFPrimitive.attributes.end()) {
