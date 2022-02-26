@@ -552,8 +552,8 @@ void KTXTextureRenderer::InitSynObjects()
 {
 	image_available_semaphores.resize(MAX_FRAMES_IN_FLIGHT);
 	render_finished_semaphores.resize(MAX_FRAMES_IN_FLIGHT);
-	inflight_fences_frame.resize(MAX_FRAMES_IN_FLIGHT);
-	images_inflight.resize(swapchain_manager->GetSwapImageCount(), VK_NULL_HANDLE);        ///???
+	frame_fences_inflight.resize(MAX_FRAMES_IN_FLIGHT);
+	images_fences_inflight.resize(swapchain_manager->GetSwapImageCount(), VK_NULL_HANDLE);        ///???
 
 	//可以通过fence查询vkQueueSubmit的动作是否完成   vkGetFenceStatus非阻塞的查询
 	//											   vkWaitForFences阻塞查询，直到其中至少一个，或者所有的fence都处于signaled状态，或者超时（时间限制由参数给出），才会返回。
@@ -569,7 +569,7 @@ void KTXTextureRenderer::InitSynObjects()
 	{
 		if (vkCreateSemaphore(device_manager->GetLogicalDeviceRef(), &semaphoreInfo, nullptr, &image_available_semaphores[i]) != VK_SUCCESS ||
 		    vkCreateSemaphore(device_manager->GetLogicalDeviceRef(), &semaphoreInfo, nullptr, &render_finished_semaphores[i]) != VK_SUCCESS ||
-		    vkCreateFence(device_manager->GetLogicalDeviceRef(), &fenceInfo, nullptr, &inflight_fences_frame[i]) != VK_SUCCESS)
+		    vkCreateFence(device_manager->GetLogicalDeviceRef(), &fenceInfo, nullptr, &frame_fences_inflight[i]) != VK_SUCCESS)
 		{
 			throw std::runtime_error("failed to create synchronization objects for a frame!");
 		}
@@ -595,7 +595,7 @@ void KTXTextureRenderer::DrawFrame()
 	static size_t currentFrame = 0;
 	//所有fence在初始化时都处于signaled的状态
 	//等待frame
-	vkWaitForFences(device_manager->GetLogicalDeviceRef(), 1, &inflight_fences_frame[currentFrame], VK_TRUE, UINT64_MAX);        //vkWaitForFences无限时阻塞CPU，等待fence被signal后 从 unsignaled状态 变成 signaled状态才会停止阻塞。这里应该是防止和自己(currentFrame)冲突。比如此时currentFrame为0，那么这里就是等待和一次currentFrame等于0的时候渲染时使用的command buffer使用完成                    To wait for one or more fences to enter the signaled state on the host,
+	vkWaitForFences(device_manager->GetLogicalDeviceRef(), 1, &frame_fences_inflight[currentFrame], VK_TRUE, UINT64_MAX);        //vkWaitForFences无限时阻塞CPU，等待fence被signal后 从 unsignaled状态 变成 signaled状态才会停止阻塞。这里应该是防止和自己(currentFrame)冲突。比如此时currentFrame为0，那么这里就是等待和一次currentFrame等于0的时候渲染时使用的command buffer使用完成                    To wait for one or more fences to enter the signaled state on the host,
 	uint32_t imageIndex;
 
 	VkResult result = vkAcquireNextImageKHR(device_manager->GetLogicalDeviceRef(), swapchain_manager->GetSwapChain(), UINT64_MAX, image_available_semaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);        //As such, all vkAcquireNextImageKHR function does is let you know which image will be made available to you next. This is the minimum that needs to happen in order for you to be able to use that image (for example, by building command buffers that reference the image in some way). However, that image is not YET available to you.This is why this function requires you to provide a semaphore and/or a fence: so that the process which consumes the image can wait for the image to be made available.得到下一个可以使用的image的index，但是这个image可能还没用完，这里获得的imageIndex对应的image很有可能是在最短的时间内被某一帧使用完毕的那一个，由vulkan实现具体决定
@@ -618,18 +618,18 @@ void KTXTextureRenderer::DrawFrame()
 	UpdateUniformBuffer(imageIndex);
 
 	//images_inflight大小为3在这个例子里，注意它的大小不是2(MAX_FRAMES_IN_FLIGHT)
-	if (images_inflight[imageIndex] != VK_NULL_HANDLE)
+	if (images_fences_inflight[imageIndex] != VK_NULL_HANDLE)
 	{
 		//images_inflight[imageIndex] 不是 nullptr，说明某一帧的GPU资源(和image有关的资源)正在被以imageIndex为下标的image使用，那么我们就要等待。
 		//无限等待fence,
 
-		vkWaitForFences(device_manager->GetLogicalDeviceRef(), 1, &images_inflight[imageIndex], VK_TRUE, UINT64_MAX);
+		vkWaitForFences(device_manager->GetLogicalDeviceRef(), 1, &images_fences_inflight[imageIndex], VK_TRUE, UINT64_MAX);
 
 
 
 	}
 
-	images_inflight[imageIndex] = inflight_fences_frame[currentFrame];        //等待完images毕后，让当前的image被currentFrame所占有(表示currentFrame这一帧的GPU资源正在被index为imageIndex的image占用)，目前inflight_fences[currentFrame]处于signled的状态。
+	images_fences_inflight[imageIndex] = frame_fences_inflight[currentFrame];        //等待完images毕后，让当前的image被currentFrame所占有(表示currentFrame这一帧的GPU资源正在被index为imageIndex的image占用)，目前inflight_fences[currentFrame]处于signled的状态。
 	//	 inflight_fences[currentFrame]状态改变后，images_inflight[imageIndex]状态也会改变
 
 	VkSubmitInfo submitInfo{};
@@ -748,9 +748,9 @@ void KTXTextureRenderer::DrawFrame()
 	submitInfo.pSignalSemaphores          = signalSemaphores;
 
 	//因为上面有images_inflight[imageIndex] = inflight_fences[currentFrame]; 所以这时候images_inflight[imageIndex]和 inflight_fences[currentFrame]会有同样的状态;并且应该同时进入了unsignaled状态
-	vkResetFences(device_manager->GetLogicalDeviceRef(), 1, &inflight_fences_frame[currentFrame]);        //To set the state of fences to unsignaled from the host side
+	vkResetFences(device_manager->GetLogicalDeviceRef(), 1, &frame_fences_inflight[currentFrame]);        //To set the state of fences to unsignaled from the host side
 	//vkQueueSubmit:   fence(last parameter is an optional handle to a fence to be signaled once all submitted command buffers have completed execution. If fence is not VK_NULL_HANDLE, it defines a fence signal operation.
-	if (vkQueueSubmit(device_manager->GetGraphicsQueue(), 1, &submitInfo, inflight_fences_frame[currentFrame]) != VK_SUCCESS)
+	if (vkQueueSubmit(device_manager->GetGraphicsQueue(), 1, &submitInfo, frame_fences_inflight[currentFrame]) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to submit draw command buffer!");
 	}
@@ -880,7 +880,7 @@ void KTXTextureRenderer::CleanUpSyncObjects()
 	{
 		vkDestroySemaphore(device_manager->GetLogicalDeviceRef(), render_finished_semaphores[i], nullptr);
 		vkDestroySemaphore(device_manager->GetLogicalDeviceRef(), image_available_semaphores[i], nullptr);
-		vkDestroyFence(device_manager->GetLogicalDeviceRef(), inflight_fences_frame[i], nullptr);
+		vkDestroyFence(device_manager->GetLogicalDeviceRef(), frame_fences_inflight[i], nullptr);
 	}
 }
 
