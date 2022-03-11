@@ -13,10 +13,10 @@ void KTXTextureRenderer::PrepareModels()
 {
 	std::vector<Vertex> vertices =
 	    {
-	        {glm::vec3{4.0f, 3.0f, -5.0f}, glm::vec3{0.0f, 0.0f, 1.0f}, glm::vec2{1.0f, 1.0f}},
-	        {glm::vec3{-4.0f, 3.0f, -5.0f}, glm::vec3{0.0f, 0.0f, 1.0f}, glm::vec2{0.0f, 1.0f}},
+	        {glm::vec3{4.0f, 3.0f,   -5.0f}, glm::vec3{0.0f, 0.0f, 1.0f}, glm::vec2{1.0f, 1.0f}},
+	        {glm::vec3{-4.0f, 3.0f,  -5.0f}, glm::vec3{0.0f, 0.0f, 1.0f}, glm::vec2{0.0f, 1.0f}},
 	        {glm::vec3{-4.0f, -3.0f, -5.0f}, glm::vec3{0.0f, 0.0f, 1.0f}, glm::vec2{0.0f, 0.0f}},
-	        {glm::vec3{4.0f, -3.0f, -5.0f}, glm::vec3{0.0f, 0.0f, 1.0f}, glm::vec2{1.0f, 0.0f}}};
+	        {glm::vec3{4.0f, -3.0f,  -5.0f}, glm::vec3{0.0f, 0.0f, 1.0f}, glm::vec2{1.0f, 0.0f}}};
 	// Setup indices
 	std::vector<uint32_t> indices = {0, 1, 2, 2, 3, 0};
 
@@ -171,6 +171,7 @@ void KTXTextureRenderer::CreateDepthImages()
 	depth_attachment.resize(swapchain_manager->GetSwapImageCount());
 
 	VkDeviceManager::QueueFamilyIndices queue_family_index = device_manager->FindQueueFamilies(device_manager->GetPhysicalDeviceRef(), window->GetSurface());
+
 	for (uint32_t i = 0; i < swapchain_manager->GetSwapImageCount(); i++)
 	{
 		depth_attachment[i].Init(VK_IMAGE_TYPE_2D, depthFormat, swapchain_manager->GetSwapChainImageExtent(), 1, 1, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT, VK_SHARING_MODE_EXCLUSIVE, VK_IMAGE_LAYOUT_UNDEFINED, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, device_manager);
@@ -592,10 +593,11 @@ void KTXTextureRenderer::CreateAttachmentImages()
 
 void KTXTextureRenderer::DrawFrame()
 {
+	//image使用完毕和subpass dependency的关系
 	static size_t currentFrame = 0;
 	//所有fence在初始化时都处于signaled的状态
 	//等待frame
-	vkWaitForFences(device_manager->GetLogicalDeviceRef(), 1, &frame_fences_inflight[currentFrame], VK_TRUE, UINT64_MAX);        //vkWaitForFences无限时阻塞CPU，等待fence被signal后 从 unsignaled状态 变成 signaled状态才会停止阻塞。这里应该是防止和自己(currentFrame)冲突。比如此时currentFrame为0，那么这里就是等待和一次currentFrame等于0的时候渲染时使用的command buffer使用完成                    To wait for one or more fences to enter the signaled state on the host,
+	vkWaitForFences(device_manager->GetLogicalDeviceRef(), 1, &frame_fences_inflight[currentFrame], VK_TRUE, UINT64_MAX);        //vkWaitForFences无限时阻塞CPU，等待fence被signal后 从 unsignaled状态 变成 signaled状态才会停止阻塞。                  To wait for one or more fences to enter the signaled state on the host,
 	uint32_t imageIndex;
 
 	VkResult result = vkAcquireNextImageKHR(device_manager->GetLogicalDeviceRef(), swapchain_manager->GetSwapChain(), UINT64_MAX, image_available_semaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);        //As such, all vkAcquireNextImageKHR function does is let you know which image will be made available to you next. This is the minimum that needs to happen in order for you to be able to use that image (for example, by building command buffers that reference the image in some way). However, that image is not YET available to you.This is why this function requires you to provide a semaphore and/or a fence: so that the process which consumes the image can wait for the image to be made available.得到下一个可以使用的image的index，但是这个image可能还没用完，这里获得的imageIndex对应的image很有可能是在最短的时间内被某一帧使用完毕的那一个，由vulkan实现具体决定
@@ -641,7 +643,7 @@ void KTXTextureRenderer::DrawFrame()
 	submitInfo.pWaitDstStageMask          = waitStages;
 	submitInfo.commandBufferCount         = 1;
 	//submitInfo.pCommandBuffers            = &graphics_command_buffers[imageIndex];
-	submitInfo.pCommandBuffers            = &graphics_command_buffers[imageIndex];          
+	submitInfo.pCommandBuffers            = &graphics_command_buffers[imageIndex];       //用的就是swap image[imageIndex]   
 	
 	
 	//可以看到这里graphics_command_buffers[imageIndex]使用完以后，inflight_fences_frame[currentFrame]会被signal（读vkQueueSubmit的定义），那么怎么确定这里的graphics_command_buffers[imageIndex]已经被前几帧使用完毕了呢？
@@ -745,11 +747,9 @@ void KTXTextureRenderer::DrawFrame()
 	VkSemaphore signalSemaphores[]        = {render_finished_semaphores[currentFrame]};        //graphics_command_buffers执行完以后会signal这里，随后presentation engine知道渲染完成可以展示了。
 
 	submitInfo.signalSemaphoreCount       = 1;
-	submitInfo.pSignalSemaphores          = signalSemaphores;
-
 	//因为上面有images_inflight[imageIndex] = inflight_fences[currentFrame]; 所以这时候images_inflight[imageIndex]和 inflight_fences[currentFrame]会有同样的状态;并且应该同时进入了unsignaled状态
 	vkResetFences(device_manager->GetLogicalDeviceRef(), 1, &frame_fences_inflight[currentFrame]);        //To set the state of fences to unsignaled from the host side
-	//vkQueueSubmit:   fence(last parameter is an optional handle to a fence to be signaled once all submitted command buffers have completed execution. If fence is not VK_NULL_HANDLE, it defines a fence signal operation.
+	//vkQueueSubmit:   fence(last parameter is an optional handle to a fence to be signaled once all submitted command buffers have completed execution. If fence is not VK_NULL_HANDLE, it defines a fence signal operation.当command buffer中的命令执行结束以后
 	if (vkQueueSubmit(device_manager->GetGraphicsQueue(), 1, &submitInfo, frame_fences_inflight[currentFrame]) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to submit draw command buffer!");

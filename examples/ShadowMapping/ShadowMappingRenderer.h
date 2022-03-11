@@ -86,7 +86,7 @@ public:
 
 private:
 	void CreateSceneRenderPass();
-	void CreateOffSceenRenderPass();
+	void CreateOffScreenRenderPass();
 
 
 
@@ -94,7 +94,7 @@ private:
 	void CreateOffScreenUniformBuffer();
 
 
-	void CreateFramebuffersOffScreen();
+	void CreateFrameBuffersOffScreen();
 	void CreateFrameBufferScene();
 
 
@@ -114,8 +114,8 @@ private:
 
 
 private:
-	static constexpr int MAX_FRAMES_IN_FLIGHT = 2;
-	static constexpr int SHADOWMAP_DIM = 2048;
+	static constexpr int s_MAX_FRAMES_IN_FLIGHT = 2;
+	static constexpr int s_SHADOWMAP_DIM = 2048;
 
 	// Depth bias (and slope) are used to avoid shadowing artifacts
 	// Constant depth bias factor (always applied)
@@ -133,10 +133,10 @@ public:
 		glm::vec3 pos;
 		glm::vec3 color;
 		glm::vec3 normal;
-		glm::vec2 texCoord;
+		glm::vec2 tex_coord;
 
 		bool operator==(const Vertex& other) const {
-			return pos == other.pos && color == other.color && texCoord == other.texCoord && normal == other.normal;
+			return pos == other.pos && color == other.color && tex_coord == other.tex_coord && normal == other.normal;
 		}
 
 	};
@@ -152,13 +152,13 @@ private:
 		glm::mat4 projection;
 		glm::mat4 view;
 		glm::mat4 model;
-		glm::mat4 depthVP;
-		glm::vec3 lightPos;
-	} uboVSscene;                   //用于顶点着色器的uniform buffer object
+		glm::mat4 depth_VP;
+		glm::vec3 light_pos;
+	} ubo_vs_scene;                   //用于顶点着色器的uniform buffer object
 
 	struct {
-		glm::mat4 depthMVP;
-	} uboOffscreenVS;               //离屏渲染使用到的顶点着色器的uniform buffer object
+		glm::mat4 depth_MVP;
+	} ubo_vs_off_screen;               //离屏渲染使用到的顶点着色器的uniform buffer object
 
 	//COMMAND BUFFERS
 	std::vector<VkCommandBuffer> graphics_command_buffers;  //3
@@ -177,9 +177,10 @@ private:
 
 
 	//DESCRIPTORS
-	VkDescriptorSetLayout descriptor_set_layout;  //两套renderpass用一个set layout
+	VkDescriptorSetLayout descriptor_set_layout_shadow_pass;  //shadow pass的 layout
+	VkDescriptorSetLayout descriptor_set_layout_scene_pass;  //scene pass的 layout
 	VkDescriptorPool descriptor_pool = VK_NULL_HANDLE;
-	std::vector<VkDescriptorSet> offscreen_descriptor_sets;
+	std::vector<VkDescriptorSet> off_screen_descriptor_sets;
 	std::vector<VkDescriptorSet> scene_descriptor_sets;
 
 
@@ -190,6 +191,17 @@ private:
 	std::vector<VkImageWrapper> depth_attachment_off_screen;
 	std::vector<VkImageWrapper> depth_attachment_scene;
 
+
+
+
+
+	//TEXTURE
+	VkTexture ktx_texure;
+
+
+
+
+	
 	//SAMPLER
 	VkSampler depth_sampler;
 
@@ -205,22 +217,22 @@ private:
 
 
 	//UNIFORM BUFFER
-	std::vector<VkUniformBuffer> uniform_buffers_offscreen_pass;
+	std::vector<VkUniformBuffer> uniform_buffers_off_screen;
 	std::vector<VkUniformBuffer> uniform_buffers_scene;
 
 
 
 	//OFFSCREEN EXTEND
-	VkExtent3D off_screen_extend{ SHADOWMAP_DIM ,SHADOWMAP_DIM ,1 };
+	VkExtent3D off_screen_extend{ s_SHADOWMAP_DIM ,s_SHADOWMAP_DIM ,1 };
 
 
 
 	//INPUT MANAGER
-	std::unique_ptr<KeyBoardInputManager> keyboard;
-	std::unique_ptr<MouseInputManager> mouse;
+	std::unique_ptr<KeyBoardInputManager> mp_keyboard;
+	std::unique_ptr<MouseInputManager> mp_mouse;
 
 	//CAMERA
-	std::unique_ptr<FirstPersonCamera> m_pCamera;
+	std::unique_ptr<FirstPersonCamera> mp_camera;
 
 
 
@@ -229,21 +241,14 @@ private:
 	//SYN OBJECTS
 	std::vector<VkSemaphore> image_available_semaphores;
 	std::vector<VkSemaphore> rendering_finished_semaphores;
-	std::vector<VkFence> inflight_fences;
-	std::vector<VkFence> images_inflight;
+	std::vector<VkFence> frame_fences;
+	std::vector<VkFence> image_fences;
 
 
 
 
 	//SCENE
 	std::vector<VkModel<Vertex>> scenes;
-
-
-
-
-
-
-
 
 
 

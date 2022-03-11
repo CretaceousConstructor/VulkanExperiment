@@ -204,7 +204,7 @@ VkCommandPool VkDeviceManager::CreateCommandPool(CommandPoolType type, VkSurface
 			VkCommandPoolCreateInfo graphicsPoolInfo{};
 			graphicsPoolInfo.sType            = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 			graphicsPoolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
-			graphicsPoolInfo.flags            = 0;        // Optional
+			graphicsPoolInfo.flags            = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT ;        // Optional
 
 			if (vkCreateCommandPool(device, &graphicsPoolInfo, nullptr, &graphicsCommandPool) != VK_SUCCESS)
 			{
@@ -217,7 +217,7 @@ VkCommandPool VkDeviceManager::CreateCommandPool(CommandPoolType type, VkSurface
 			VkCommandPoolCreateInfo transforPoolInfo{};
 			transforPoolInfo.sType            = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
 			transforPoolInfo.queueFamilyIndex = queueFamilyIndices.transferFamily.value();
-			transforPoolInfo.flags            = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT;        // 仅仅用于短暂的使用 并且可以复用 DON'T KNOW
+			transforPoolInfo.flags            = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT  | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;        // 仅仅用于短暂的使用 并且可以复用 DON'T KNOW
 
 			if (vkCreateCommandPool(device, &transforPoolInfo, nullptr, &transforCommandPool) != VK_SUCCESS)
 			{

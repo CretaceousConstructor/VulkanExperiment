@@ -31,9 +31,6 @@ public:
 	void CopyBufferToImage(VkBuffer buffer, VkCommandPool& command_pool, VkDevice& device, VkQueue& command_quque,std::vector<VkBufferImageCopy>& bufferCopyRegions );
 
 
-
-
-
 	VkImage& GetImageRef();
 	VkImageView& GetImageView();
 	VkFormat& GetImageViewFormat();

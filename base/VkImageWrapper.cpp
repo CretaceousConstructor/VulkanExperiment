@@ -14,6 +14,17 @@ void VkImageWrapper::CleanUp()
 	}
 }
 
+
+
+
+
+
+
+
+
+
+
+
 void VkImageWrapper::InitImageView(VkFormat format, VkImageAspectFlags aspectFlags,uint32_t mip_levels)
 {
 	/*typedef struct VkImageViewCreateInfo {
@@ -43,7 +54,7 @@ void VkImageWrapper::InitImageView(VkFormat format, VkImageAspectFlags aspectFla
 	viewInfo.subresourceRange.layerCount     = 1;
 
 	image_view_format = format;
-
+	
 	if (vkCreateImageView(device_manager->GetLogicalDeviceRef(), &viewInfo, nullptr, &image_view) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to create texture image view!");

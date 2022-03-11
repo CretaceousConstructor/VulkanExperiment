@@ -72,7 +72,7 @@ class KTXTextureRenderer : public BaseRenderer
 		glm::mat4 projection;
 		glm::mat4 view;
 		glm::vec4 eyepos;
-		float     lodBias = 0.0f;
+		alignas(4) float     lodBias = 0.0f;
 	} ubo_vs;
 
 	//vertex layout

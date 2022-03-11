@@ -24,7 +24,7 @@ void main()
 	vec4 temp_inshadowCamPos = inshadowCamPos;
 	temp_inshadowCamPos /= vec4(inshadowCamPos.w,inshadowCamPos.w,inshadowCamPos.w,inshadowCamPos.w);
 	float shadow_bias = 0.0005;
-	vec4 shadow = texture(shadowMap, temp_inshadowCamPos.xy);//采样出[0,1]的值 
+	vec4 shadow = texture(shadowMap, temp_inshadowCamPos.xy);//采样出[0,1]的depth值 
 
 	if(shadow.r > temp_inshadowCamPos.z - shadow_bias){
 
