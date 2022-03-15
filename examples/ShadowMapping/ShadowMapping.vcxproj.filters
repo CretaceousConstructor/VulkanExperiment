@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Shaderbat Files">
+      <UniqueIdentifier>{b0097ef3-ce15-45ff-bbb1-ea6fd4e5a16f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ShadowMappingRenderer.cpp">
@@ -45,6 +48,9 @@
     </None>
     <None Include="..\..\data\shaders\shadowmapping\shadow_mapping_vertex_shader_shadow_pass.vert">
       <Filter>Shader Files</Filter>
+    </None>
+    <None Include="..\..\data\shaderbat\ShadowMappingShaderCompile.bat">
+      <Filter>Shaderbat Files</Filter>
     </None>
   </ItemGroup>
 </Project>

@@ -131,26 +131,23 @@ void VkTexture::InitKTXTexture(std::string image_path, VkDeviceManager *para_dev
 	ktxTexture *ktxTexture;
 
 	result = ktxTexture_CreateFromNamedFile(filename.c_str(), KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, &ktxTexture);
-
 	assert(result == KTX_SUCCESS);
-
+	
+	
+	
 	VkExtent3D image_extent;
-
 	image_extent.width = ktxTexture->baseWidth;
-
 	image_extent.height = ktxTexture->baseHeight;
-
 	image_extent.depth = ktxTexture->baseDepth;
 
-	mip_levels = ktxTexture->numLevels;
 
+	mip_levels = ktxTexture->numLevels;
 	ktx_uint8_t *ktxTextureData = ktxTexture_GetData(ktxTexture);
 	ktx_size_t   ktxTextureSize = ktxTexture_GetSize(ktxTexture);
 
 	// We prefer using staging to copy the texture data to a device local optimal image
-
 	// Only use linear tiling if forced
-	// 如果要强行使用linear tiling，则   如果形式参数的format_of_texuref支持VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT，就不使用staging buffer，否则使用staging buffer
+	// 如果要强行使用linear tiling，则 如果形式参数format_of_texure支持VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT，就不使用staging buffer，否则使用staging buffer
 	bool forceLinearTiling = false;
 	if (forceLinearTiling)
 	{
@@ -160,6 +157,9 @@ void VkTexture::InitKTXTexture(std::string image_path, VkDeviceManager *para_dev
 		vkGetPhysicalDeviceFormatProperties(device_manager->GetPhysicalDeviceRef(), format, &formatProperties);
 		ktx_use_staging = !(formatProperties.linearTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT);
 	}
+
+
+
 
 	if (ktx_use_staging)
 	{
@@ -176,7 +176,7 @@ void VkTexture::InitKTXTexture(std::string image_path, VkDeviceManager *para_dev
 
 		void *data;
 		//TODO: whether to use memReqs.size or just ktxTexureSize
-		//	VK_CHECK_RESULT(vkMapMemory(device, stagingMemory, 0, memReqs.size, 0, (void **) &data));
+		//VK_CHECK_RESULT(vkMapMemory(device, stagingMemory, 0, memReqs.size, 0, (void **) &data));
 		vkMapMemory(device_manager->GetLogicalDeviceRef(), stagingBufferMemory, 0, ktxTextureSize, (VkMemoryMapFlags) 0, (void **) &data);
 		memcpy(data, ktxTextureData, static_cast<size_t>(ktxTextureSize));
 		vkUnmapMemory(device_manager->GetLogicalDeviceRef(), stagingBufferMemory);
@@ -213,10 +213,16 @@ void VkTexture::InitKTXTexture(std::string image_path, VkDeviceManager *para_dev
 		texture_image.Init(VK_IMAGE_TYPE_2D, format, image_extent, mip_levels, 1, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_SHARING_MODE_EXCLUSIVE, VK_IMAGE_LAYOUT_UNDEFINED, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, device_manager);
 		texture_image.TransitionImageLayout(format, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, command_pool, para_device_manager->GetLogicalDeviceRef(), para_device_manager->GetTransferQueue(), queue_family_index,mip_levels);
 		texture_image.CopyBufferToImage(stagingBuffer, command_pool, para_device_manager->GetLogicalDeviceRef(), para_device_manager->GetTransferQueue(), bufferCopyRegions);
+
+
+
 		texture_image.TransitionImageLayout(format, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, imageLayout, command_pool, para_device_manager->GetLogicalDeviceRef(), para_device_manager->GetTransferQueue(),queue_family_index,mip_levels);
 
-		vkDestroyBuffer(device_manager->GetLogicalDeviceRef(), stagingBuffer, nullptr);
+
+
+
 		vkFreeMemory(device_manager->GetLogicalDeviceRef(), stagingBufferMemory, nullptr);
+		vkDestroyBuffer(device_manager->GetLogicalDeviceRef(), stagingBuffer, nullptr);
 	}
 
 	else
@@ -273,7 +279,6 @@ void VkTexture::InitSampler()
 		throw std::runtime_error("failed to create texture sampler!");
 	}
 }
-//1 l L i I o O 0
 
 VkDescriptorImageInfo VkTexture::GetDescriptor()
 {

@@ -59,8 +59,8 @@ void ShadowMappingRenderer::CreateDepthImages()
 
 			depth_attachment_off_screen[i].InitImageView(depth_format_offscreen, VK_IMAGE_ASPECT_DEPTH_BIT);
 		}
-		//depth sampler
-		//TODO:SAMPLER CREATION ABSTRACTION
+		//DEPTH SAMPLER
+		//TODO:SAMPLER CREATION NEEDS MORE ABSTRACTION
 		VkFilter            shadowmap_filter = device_manager->FormatIsFilterable(depth_format_offscreen, VK_IMAGE_TILING_OPTIMAL) ? VK_FILTER_LINEAR : VK_FILTER_NEAREST;
 		VkSamplerCreateInfo samplerCreateInfo{};
 		samplerCreateInfo.sType         = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
@@ -99,9 +99,6 @@ void ShadowMappingRenderer::CreateDepthImages()
 			depth_attachment_scene[i].InitImageView(depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);        //VK_IMAGE_ASPECT_COLOR_BIT?
 		}
 	}
-
-
-
 }
 
 void ShadowMappingRenderer::CreateRenderPass()
@@ -117,6 +114,7 @@ void ShadowMappingRenderer::CreateUniformBuffer()
 	CreateSceneUniformBuffer();
 
 	//CPU SIDE
+	//light position is fixed right now for testing purpose
 	/*light_pos.x = cos(glm::radians(0.f * 360.0f)) * 40.0f;
 	light_pos.y = -50.0f + sin(glm::radians(0.f * 360.0f)) * 20.0f;
 	light_pos.z = 25.0f + sin(glm::radians(0.f * 360.0f)) * 5.0f;*/
@@ -126,7 +124,6 @@ void ShadowMappingRenderer::CreateUniformBuffer()
 	glm::mat4 depthViewMatrix       = glm::lookAtRH(lightPos, glm::vec3(0.f, 0.f, 0.0f), glm::vec3(0, 1, 0));
 	glm::mat4 depthModelMatrix      = glm::mat4(1.0f);        // = model matrix of some models
 	ubo_vs_off_screen.depth_MVP     = depthProjectionMatrix * depthViewMatrix * depthModelMatrix;
-
 
 	// matrix for scene pass
 	ubo_vs_scene.projection = mp_camera->GetProj();
@@ -138,7 +135,6 @@ void ShadowMappingRenderer::CreateUniformBuffer()
 
 void ShadowMappingRenderer::CreateFramebuffers()
 {
-
 	CreateFrameBuffersOffScreen();
 	CreateFrameBufferScene();
 }
@@ -175,7 +171,7 @@ void ShadowMappingRenderer::CreateDescriptorSetLayout()
 
 		VkDescriptorSetLayoutBinding LayoutBinding_temp{};
 
-		LayoutBinding_temp.binding            = 0;        // Vertex shader uniform buffer
+		LayoutBinding_temp.binding            = 0;        // Vertex shader uniform buffer.Contains all matrices needed in scene pass.
 		LayoutBinding_temp.descriptorType     = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 		LayoutBinding_temp.descriptorCount    = 1;
 		LayoutBinding_temp.stageFlags         = VK_SHADER_STAGE_VERTEX_BIT;
@@ -221,8 +217,7 @@ void ShadowMappingRenderer::CreateDescriptorPool()
 	descriptorPoolCI.pPoolSizes                 = poolSizes.data();
 	// Max. number of descriptor sets that can be allocated from this pool (one per object)
 
-
-	descriptorPoolCI.maxSets = static_cast<uint32_t>(swapchain_manager->GetSwapImageCount() * 2);
+	descriptorPoolCI.maxSets = static_cast<uint32_t>(swapchain_manager->GetSwapImageCount() * 2);        //3 Sets per renderpass
 
 	if (vkCreateDescriptorPool(device_manager->GetLogicalDeviceRef(), &descriptorPoolCI, nullptr, &descriptor_pool) != VK_SUCCESS)
 	{
@@ -238,6 +233,7 @@ void ShadowMappingRenderer::CreateDescriptorSets()
 	// descriptors for Offscreen shadow map generation
 	for (size_t i = 0; i < swapchain_manager->GetSwapImageCount(); i++)
 	{
+		//ALLOCATE DESCRIPTORS
 		VkDescriptorSetAllocateInfo allocInfoWrite{};
 		allocInfoWrite.sType              = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 		allocInfoWrite.descriptorPool     = descriptor_pool;
@@ -275,6 +271,7 @@ void ShadowMappingRenderer::CreateDescriptorSets()
 	// Scene rendering with the shadow map generated in the first renderpass
 	for (size_t i = 0; i < swapchain_manager->GetSwapImageCount(); i++)
 	{
+		//ALLOCATE DESCRIPTORS
 		VkDescriptorSetAllocateInfo allocInfoWrite{};
 		allocInfoWrite.sType              = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 		allocInfoWrite.descriptorPool     = descriptor_pool;
@@ -358,8 +355,9 @@ void ShadowMappingRenderer::CreateGraphicsPiplineLayout()
 
 void ShadowMappingRenderer::CreateGraphicsPipline()
 {
-	system("shaderbat\\ShadowMappingShaderCompile.bat");
-
+	system("..\\..\\data\\shaderbat\\ShadowMappingShaderCompile.bat");
+	
+	
 	CreatePipelineCache();
 	CreatePiplineShadowPass();
 	CreatePiplineScenePass();
@@ -738,44 +736,44 @@ void ShadowMappingRenderer::CreateSceneRenderPass()
 	depthAttachmentRefForWrite.attachment = 1;
 	depthAttachmentRefForWrite.layout     = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
-
 	//======================================================================================================
 	std::vector<VkAttachmentReference> outPutColorAttachmentRefsForScenepass = {colorAttachmentRef};
 
 	VkSubpassDescription subpass{};
-	subpass.pipelineBindPoint    = VK_PIPELINE_BIND_POINT_GRAPHICS;
-	subpass.colorAttachmentCount = static_cast<uint32_t>(outPutColorAttachmentRefsForScenepass.size());
-	subpass.pColorAttachments    = outPutColorAttachmentRefsForScenepass.data();
+	subpass.pipelineBindPoint       = VK_PIPELINE_BIND_POINT_GRAPHICS;
+	subpass.colorAttachmentCount    = static_cast<uint32_t>(outPutColorAttachmentRefsForScenepass.size());
+	subpass.pColorAttachments       = outPutColorAttachmentRefsForScenepass.data();
 	subpass.pDepthStencilAttachment = &depthAttachmentRefForWrite;
 
 	//-------------------------------------------------------------------------------------
 	std::array<VkSubpassDescription, 1> subpasses = {subpass};
-	
+
 	std::vector<VkAttachmentDescription> attachments = {colorAttachment, depthAttachmentForWrite};
-	std::array<VkSubpassDependency, 1> dependencies;
-
-	dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
-	dependencies[0].dstSubpass = 0;
-
-	dependencies[0].srcStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;        //这两个stages会往depth attachmen 写入值，但是这两个阶段执行完毕是否就已经转换到了VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL？
-	dependencies[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
-
-	dependencies[0].srcAccessMask   = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
-	dependencies[0].dstAccessMask   = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_INPUT_ATTACHMENT_READ_BIT;
-	dependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
-
-	//	dependencies[1].srcSubpass      = 0;
-	//	dependencies[1].dstSubpass      = VK_SUBPASS_EXTERNAL;
-	//	dependencies[1].srcStageMask    = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-	//	dependencies[1].dstStageMask    = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-	//	dependencies[1].srcAccessMask   = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-	//	dependencies[1].dstAccessMask   = VK_ACCESS_MEMORY_READ_BIT;
-	//	dependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+	//同步layout transition
+	//std::array<VkSubpassDependency, 1>   dependencies;
+	//dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
+	//dependencies[0].dstSubpass = 0;
+	//dependencies[0].srcStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;  
+	//dependencies[0].srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+	//dependencies[0].dstStageMask =  VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+	//dependencies[0].dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_UNIFORM_READ_BIT;
+	//dependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+	//dependencies[1].srcSubpass      = 0;
+	//dependencies[1].dstSubpass      = VK_SUBPASS_EXTERNAL;
+	//dependencies[1].srcStageMask    = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	//dependencies[1].dstStageMask    = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+	//dependencies[1].srcAccessMask   = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+	//dependencies[1].dstAccessMask   = VK_ACCESS_MEMORY_READ_BIT;
+	//dependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
 	VkRenderPassCreateInfo renderPassInfo{};
 	renderPassInfo.sType           = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-	renderPassInfo.dependencyCount = static_cast<uint32_t>(dependencies.size());
-	renderPassInfo.pDependencies   = dependencies.data();
+	//renderPassInfo.dependencyCount = static_cast<uint32_t>(dependencies.size());
+	//renderPassInfo.pDependencies   = dependencies.data();
+
+	renderPassInfo.dependencyCount = 0;
+	renderPassInfo.pDependencies   = nullptr;
+
 	renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
 	renderPassInfo.pAttachments    = attachments.data();
 	renderPassInfo.subpassCount    = static_cast<uint32_t>(subpasses.size());
@@ -810,38 +808,33 @@ void ShadowMappingRenderer::CreateOffScreenRenderPass()
 	subpass.colorAttachmentCount    = 0;                      // No color attachments
 	subpass.pDepthStencilAttachment = &depthReference;        // Reference to our depth attachment
 
-	// Use subpass dependencies for layout transitions
-	//std::array<VkSubpassDependency, 2> dependencies;
 
-	//dependencies[0].srcSubpass      = VK_SUBPASS_EXTERNAL;
-	//dependencies[0].dstSubpass      = 0;
-	//dependencies[0].srcStageMask    = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;        //上一帧的FRAGMENT_SHADER运行完以后(VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT?????????????)
-	//dependencies[0].dstStageMask    = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-	//dependencies[0].srcAccessMask   = VK_ACCESS_SHADER_READ_BIT;
-	//dependencies[0].dstAccessMask   = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-	//dependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
-	//dependencies[1].srcSubpass      = 0;
-	//dependencies[1].dstSubpass      = VK_SUBPASS_EXTERNAL;
-	//dependencies[1].srcStageMask    = VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;        //VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT结束以后,depth image就不会再被当前renderpass使用了
-	//dependencies[1].dstStageMask    = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;            //FRAGMENT_SHADER之前都不会用到这个renderpass里面产生的depth image,要停在VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT(为什么不是VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT？？？？)
-	//dependencies[1].srcAccessMask   = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-	//dependencies[1].dstAccessMask   = VK_ACCESS_SHADER_READ_BIT;
-	//dependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+
+
+
+	std::array<VkSubpassDependency, 1> dependencies;
+	//这里是为了让	depth image从VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL转换到VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+
+	dependencies[0].srcSubpass      = 0;
+	dependencies[0].dstSubpass      = VK_SUBPASS_EXTERNAL;
+	dependencies[0].srcStageMask    = VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;        //VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT结束以后,depth image就不会再被当前renderpass使用写入）了，也就是说写入已经完成了
+	dependencies[0].dstStageMask    = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;            //FRAGMENT_SHADER之前都不会用到第一个render pass 渲染的depth buffer,要停在VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT
+	dependencies[0].srcAccessMask   = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+	dependencies[0].dstAccessMask   = VK_ACCESS_SHADER_READ_BIT;
+	dependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
 	VkRenderPassCreateInfo renderPassCreateInfo{};
 	renderPassCreateInfo.sType           = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
 	renderPassCreateInfo.attachmentCount = 1;
 	renderPassCreateInfo.pAttachments    = &attachmentDescription;
 
-	//renderPassCreateInfo.dependencyCount = static_cast<uint32_t>(dependencies.size());
-	//renderPassCreateInfo.pDependencies   = dependencies.data();
-
-	renderPassCreateInfo.dependencyCount = 0;
-	renderPassCreateInfo.pDependencies   = nullptr;
+	renderPassCreateInfo.dependencyCount = static_cast<uint32_t>(dependencies.size());
+	renderPassCreateInfo.pDependencies   = dependencies.data();
 
 	renderPassCreateInfo.subpassCount = 1;
 	renderPassCreateInfo.pSubpasses   = &subpass;
+
 
 	if (vkCreateRenderPass(device_manager->GetLogicalDeviceRef(), &renderPassCreateInfo, nullptr, &render_pass_off_screen) != VK_SUCCESS)
 	{
@@ -1028,7 +1021,7 @@ void ShadowMappingRenderer::CreatePiplineShadowPass()
 	colorBlending.logicOpEnable = VK_FALSE;
 	//colorBlending.logicOp = VK_LOGIC_OP_COPY; // Optional
 	colorBlending.attachmentCount = 0;
-	colorBlending.pAttachments = nullptr;
+	colorBlending.pAttachments    = nullptr;
 	//colorBlending.pAttachments = &colorBlendAttachment;
 	//colorBlending.blendConstants[0] = 0.0f; // Optional
 	//colorBlending.blendConstants[1] = 0.0f; // Optional

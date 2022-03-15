@@ -14,9 +14,9 @@ void VkInitializer::CreateInstance(VkInstance& instance, VkValidationManager& va
 	//应用信息
 	VkApplicationInfo appInfo{};
 	appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-	appInfo.pApplicationName = "VulkanEngine";
+	appInfo.pApplicationName = "Raster";
 	appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
-	appInfo.pEngineName = "No Engine";
+	appInfo.pEngineName = "Engine";
 	appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
 	appInfo.apiVersion = VK_API_VERSION_1_0;
 	//VkApplicationInfo pNext must be NULL
@@ -33,11 +33,8 @@ void VkInitializer::CreateInstance(VkInstance& instance, VkValidationManager& va
 		//之后的vkcreateinstance会用这里的值
 
 
-
+	//获得 实例 会用到的 扩展(extensions)
 	auto extensions = VkExtensionManager::GetNeededInstanceExtensions(VkValidationManager::enableValidationLayers);
-
-
-
 	createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
 	createInfo.ppEnabledExtensionNames = extensions.data();
 

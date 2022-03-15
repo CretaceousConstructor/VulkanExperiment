@@ -38,7 +38,7 @@ public:
 	//这些是我们想要拿来调试用到的validationLayers,
 	const std::vector<VkValidationFeatureEnableEXT> enabled =
 	{
-		VK_VALIDATION_FEATURE_ENABLE_DEBUG_PRINTF_EXT
+		VK_VALIDATION_FEATURE_ENABLE_DEBUG_PRINTF_EXT,
 	};
 
 	const std::vector<VkValidationFeatureDisableEXT> disabled =
@@ -46,7 +46,7 @@ public:
 		VK_VALIDATION_FEATURE_DISABLE_THREAD_SAFETY_EXT,
 		VK_VALIDATION_FEATURE_DISABLE_API_PARAMETERS_EXT,
 		VK_VALIDATION_FEATURE_DISABLE_OBJECT_LIFETIMES_EXT,
-		VK_VALIDATION_FEATURE_DISABLE_CORE_CHECKS_EXT
+		//VK_VALIDATION_FEATURE_DISABLE_CORE_CHECKS_EXT
 	};
 
 	const std::vector<const char*> instanceValidationLayerRequiredToUse = {

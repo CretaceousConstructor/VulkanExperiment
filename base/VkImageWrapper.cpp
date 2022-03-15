@@ -158,14 +158,19 @@ void VkImageWrapper::TransitionImageLayout(VkFormat format, VkImageLayout oldLay
 		sourceStage      = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT_KHR;
 		destinationStage = VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT_KHR;
 	}
+
+
+	//checked
 	else if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
 	{
-		barrier.srcAccessMask = VK_ACCESS_HOST_WRITE_BIT;
+		barrier.srcAccessMask = 0;
 		barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 		//VK_PIPELINE_STAGE_HOST_BIT
 		sourceStage      = VK_PIPELINE_STAGE_HOST_BIT;
 		destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
 	}
+
+	//uncheck ?
 	else if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
 	{
 		barrier.srcAccessMask = 0;
@@ -174,19 +179,30 @@ void VkImageWrapper::TransitionImageLayout(VkFormat format, VkImageLayout oldLay
 		sourceStage      = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
 		destinationStage = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
 	}
+
+
+
+
+
+	//checked
 	else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
 	{
 
-		sourceStage =  VK_PIPELINE_STAGE_2_TRANSFER_BIT_KHR;
-        barrier.srcAccessMask = VK_ACCESS_2_TRANSFER_WRITE_BIT_KHR;
+		sourceStage =  VK_PIPELINE_STAGE_TRANSFER_BIT;
+        barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 
-		destinationStage = VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT_KHR,
-       	barrier.dstAccessMask = VK_ACCESS_2_SHADER_READ_BIT_KHR,
 
-		barrier.srcQueueFamilyIndex = queue_family_indices.transferFamily.value();
+
+		destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+       	barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT,
+
+		//barrier.srcQueueFamilyIndex = queue_family_indices.transferFamily.value();
+		barrier.srcQueueFamilyIndex = queue_family_indices.graphicsFamily.value();
 		barrier.dstQueueFamilyIndex = queue_family_indices.graphicsFamily.value();
 
 	}
+
+
 	else
 	{
 		throw std::invalid_argument("unsupported layout transition!");
@@ -201,6 +217,10 @@ void VkImageWrapper::TransitionImageLayout(VkFormat format, VkImageLayout oldLay
 	    1, &barrier);
 
 	VkCommandManager::EndSingleTimeCommands(command_pool, device, commandBuffer, command_quque);
+
+
+
+
 }
 
 VkFormat &VkImageWrapper::GetImageViewFormat()

@@ -15,9 +15,7 @@ layout (location = 0) out vec4 outFragColor;
 
 void main() 
 {
-	//vec4 color = texture(samplerColor, inUV, inLodBias);
-	vec4 color =  vec4(1.f,1.f,1.f,1.f);
-	debugPrintfEXT("H");
+	vec4 color = texture(samplerColor, inUV, inLodBias);
 
 	vec3 N = normalize(inNormal);
 	vec3 L = normalize(inLightVec);
@@ -26,6 +24,7 @@ void main()
 	vec3 diffuse = max(dot(N, L), 0.0) * vec3(1.0);
 	float specular = pow(max(dot(R, V), 0.0), 16.0) * color.a;
 
-	//outFragColor = vec4(diffuse * color.rgb + specular, 1.0);	
-	outFragColor = vec4(1.f,1.f,1.f,1.f);
+	outFragColor = vec4(diffuse * color.rgb + specular, 1.0);	
+
+
 }

@@ -139,8 +139,8 @@ class KTXTextureRenderer : public BaseRenderer
 	//SYN OBJECTS
 	std::vector<VkSemaphore> image_available_semaphores;
 	std::vector<VkSemaphore> render_finished_semaphores;
-	std::vector<VkFence>     frame_fences_inflight;
-	std::vector<VkFence>     images_fences_inflight;
+	std::vector<VkFence>     frame_fences;
+	std::vector<VkFence>     image_fences;
 
 	//MODELS
 	std::unique_ptr<VkModel<Vertex>> quad_model;

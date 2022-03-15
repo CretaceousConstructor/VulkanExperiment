@@ -37,9 +37,6 @@ public:
 
 	void Draw(VkCommandBuffer& graphics_command_buffer);
 
-
-
-
 	Transform& GetTransform();
 
 	const Transform& GetTransform() const;
@@ -245,6 +242,7 @@ VkModel< V, InsType>::VkModel(std::vector<V>& para_vertex, std::vector<uint32_t>
 		device_manager->CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory, VK_SHARING_MODE_EXCLUSIVE, surface);
 
 		void* data;
+
 		vkMapMemory(device_manager->GetLogicalDeviceRef(), stagingBufferMemory, 0, bufferSize, 0, &data);
 		memcpy(data, para_vertex.data(), (size_t)bufferSize);
 		vkUnmapMemory(device_manager->GetLogicalDeviceRef(), stagingBufferMemory);

@@ -152,6 +152,7 @@
     <ClInclude Include="ShadowMappingRenderer.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\..\data\shaderbat\ShadowMappingShaderCompile.bat" />
     <None Include="..\..\data\shaders\shadowmapping\shadow_mapping_fragment_shader_scene_pass.frag" />
     <None Include="..\..\data\shaders\shadowmapping\shadow_mapping_fragment_shader_shadow_pass.frag" />
     <None Include="..\..\data\shaders\shadowmapping\shadow_mapping_vertex_shader_scene_pass.vert" />

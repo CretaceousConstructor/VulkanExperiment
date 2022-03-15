@@ -8,7 +8,7 @@ void App::Init()
 
 	VkInitializer::CreateInstance(instance, validation_manager);
 
-//	VkValidationManager::SetupDebugMessenger(instance, validation_manager);
+	//VkValidationManager::SetupDebugMessenger(instance, validation_manager);
 
 	VkInitializer::CreateSurface(instance, window);
 
