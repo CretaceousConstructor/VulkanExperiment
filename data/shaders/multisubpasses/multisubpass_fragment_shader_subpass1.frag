@@ -17,9 +17,9 @@ void main() {
 
 
 
-		// Read color from previous color input attachment
+	// Read color from previous color input attachment
 	
-		 outColor = subpassLoad(inputRColor);
+	outColor = subpassLoad(inputRColor);
 		
 
 

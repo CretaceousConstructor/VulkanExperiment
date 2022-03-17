@@ -12,11 +12,11 @@ void KTXTextureRenderer::CreateTextureImages()
 void KTXTextureRenderer::PrepareModels()
 {
 	std::vector<Vertex> vertices =
-	{
-		{glm::vec3{3.0f, 3.0f, -5.0f}, glm::vec3{0.0f, 0.0f, 1.0f}, glm::vec2{1.0f, 1.0f}},
-		{glm::vec3{-3.0f, 3.0f, -5.0f}, glm::vec3{0.0f, 0.0f, 1.0f}, glm::vec2{0.0f, 1.0f}},
-		{glm::vec3{-3.0f, -3.0f, -5.0f}, glm::vec3{0.0f, 0.0f, 1.0f}, glm::vec2{0.0f, 0.0f}},
-		{glm::vec3{3.0f, -3.0f, -5.0f}, glm::vec3{0.0f, 0.0f, 1.0f}, glm::vec2{1.0f, 0.0f}}};
+	    {
+	        {glm::vec3{1.0f, 1.0f, -5.0f}, glm::vec3{0.0f, 0.0f, 1.0f}, glm::vec2{1.0f, 1.0f}},
+	        {glm::vec3{-1.0f, 1.0f, -5.0f}, glm::vec3{0.0f, 0.0f, 1.0f}, glm::vec2{0.0f, 1.0f}},
+	        {glm::vec3{-1.0f, -1.0f, -5.0f}, glm::vec3{0.0f, 0.0f, 1.0f}, glm::vec2{0.0f, 0.0f}},
+	        {glm::vec3{1.0f, -1.0f, -5.0f}, glm::vec3{0.0f, 0.0f, 1.0f}, glm::vec2{1.0f, 0.0f}}};
 	// Setup indices
 	std::vector<uint32_t> indices = {0, 1, 2, 2, 3, 0};
 
@@ -105,9 +105,8 @@ void KTXTextureRenderer::CreateDescriptorSets()
 
 			std::vector<VkWriteDescriptorSet> writeDescriptorSets;
 			VkWriteDescriptorSet              temp_writeDescriptorSet{};
-			
-			
-			//SET INFOS	
+
+			//SET INFOS
 			/*
 				Set 0,Binding 0: VS matrices Uniform buffer
 			*/
@@ -123,7 +122,7 @@ void KTXTextureRenderer::CreateDescriptorSets()
 			temp_writeDescriptorSet.descriptorCount = 1;
 			temp_writeDescriptorSet.pBufferInfo     = &buffer_info_write_subpass0;
 			temp_writeDescriptorSet.dstArrayElement = 0;
-			
+
 			writeDescriptorSets.push_back(temp_writeDescriptorSet);
 
 			/*
@@ -162,33 +161,16 @@ void KTXTextureRenderer::CreateUniformBuffer()
 
 	////CPU SIDE
 
-
-
-
-
-
-
-
 	ubo.projection = m_pCamera->GetProj();
 	ubo.view       = m_pCamera->GetView();
 	ubo.eyepos     = glm::vec4(m_pCamera->GetPosition(), 1.f);
-
-
-
-
-
-
-
-
 }
 
 void KTXTextureRenderer::CreateDepthImages()
 {
 	VkFormat depthFormat = swapchain_manager->FindDepthFormat(*device_manager);
 
-
 	depth_attachment.resize(swapchain_manager->GetSwapImageCount());
-
 
 	VkDeviceManager::QueueFamilyIndices queue_family_index = device_manager->FindQueueFamilies(device_manager->GetPhysicalDeviceRef(), window->GetSurface());
 
@@ -232,8 +214,6 @@ void KTXTextureRenderer::CreatePiplineSubpass0()
 	inputAssembly.topology               = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 	inputAssembly.primitiveRestartEnable = VK_FALSE;
 
-
-
 	VkViewport       viewport{};
 	const VkExtent3D extend_of_swap_image = swapchain_manager->GetSwapChainImageExtent();
 	viewport.x                            = 0.0f;
@@ -242,15 +222,6 @@ void KTXTextureRenderer::CreatePiplineSubpass0()
 	viewport.height                       = -(float) extend_of_swap_image.height;
 	viewport.minDepth                     = 0.0f;
 	viewport.maxDepth                     = 1.0f;
-
-
-
-
-
-
-
-
-
 
 	VkExtent2D swapChainExtent;
 	swapChainExtent.height = extend_of_swap_image.height;
@@ -275,8 +246,8 @@ void KTXTextureRenderer::CreatePiplineSubpass0()
 
 	rasterizer.lineWidth = 1.f;
 
-	rasterizer.cullMode  = VK_CULL_MODE_NONE;
-	//rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+	rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
+	rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
 
 	rasterizer.depthBiasEnable         = VK_FALSE;
 	rasterizer.depthBiasConstantFactor = 0.0f;        // Optional
@@ -409,7 +380,7 @@ void KTXTextureRenderer::CreateRenderPass()
 	depthAttachment.storeOp        = VK_ATTACHMENT_STORE_OP_STORE;
 	depthAttachment.stencilLoadOp  = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 	depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-	depthAttachment.initialLayout  = VK_IMAGE_LAYOUT_UNDEFINED;    //VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL?
+	depthAttachment.initialLayout  = VK_IMAGE_LAYOUT_UNDEFINED;        //VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL?
 	depthAttachment.finalLayout    = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
 	//The index of the attachment ref in this array is directly referenced from the fragment shader with the
@@ -458,14 +429,6 @@ void KTXTextureRenderer::CreateRenderPass()
 	//dependencies[1].dstAccessMask   = 0;
 	//dependencies[1].dependencyFlags = 0;
 
-
-
-
-
-
-
-
-
 	//std::array<VkSubpassDependency, 1> dependencies{};
 
 	//dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
@@ -477,24 +440,14 @@ void KTXTextureRenderer::CreateRenderPass()
 	//dependencies[0].dstStageMask    = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
 	//dependencies[0].dstAccessMask   = VK_ACCESS_SHADER_READ_BIT;
 
-
 	//dependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
-
-
-
-
-
-
-
-
 	VkRenderPassCreateInfo renderPassInfo{};
-	renderPassInfo.sType           = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
 	//renderPassInfo.dependencyCount = static_cast<uint32_t>(dependencies.size());
 	//renderPassInfo.pDependencies   = dependencies.data();
 
-
-	renderPassInfo.dependencyCount = 0 ;
+	renderPassInfo.dependencyCount = 0;
 	renderPassInfo.pDependencies   = nullptr;
 
 	renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
@@ -606,13 +559,7 @@ void KTXTextureRenderer::CommandBufferRecording()
 		vkCmdBindPipeline(graphics_command_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphics_pipeline_subpass0);
 		vkCmdBindDescriptorSets(graphics_command_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_layout_subpass0, 0, 1, &descriptor_sets_write_subpass0[i], 0, NULL);
 
-
-
-
 		quad_model->Draw(graphics_command_buffers[i]);
-
-
-
 
 		vkCmdEndRenderPass(graphics_command_buffers[i]);
 
@@ -695,8 +642,8 @@ void KTXTextureRenderer::DrawFrame()
 	//images_inflight大小为3在这个例子里，注意它的大小不是2(MAX_FRAMES_IN_FLIGHT)
 	if (image_fences[imageIndex] != VK_NULL_HANDLE)
 	{
-	//	//images_inflight[imageIndex] 不是 nullptr，说明某一帧的GPU资源(和image有关的资源)正在被以imageIndex为下标的image使用，那么我们就要等待。
-	//	//无限等待fence,
+		//	//images_inflight[imageIndex] 不是 nullptr，说明某一帧的GPU资源(和image有关的资源)正在被以imageIndex为下标的image使用，那么我们就要等待。
+		//	//无限等待fence,
 
 		vkWaitForFences(device_manager->GetLogicalDeviceRef(), 1, &image_fences[imageIndex], VK_TRUE, UINT64_MAX);
 	}
@@ -714,15 +661,11 @@ void KTXTextureRenderer::DrawFrame()
 	submitInfo.commandBufferCount         = 1;
 
 	//	submitInfo.pCommandBuffers = &graphics_command_buffers[imageIndex];        //用的就是swap image[imageIndex]
-	submitInfo.pCommandBuffers            = &graphics_command_buffers[imageIndex];
+	submitInfo.pCommandBuffers = &graphics_command_buffers[imageIndex];
 
-
-	VkSemaphore signalSemaphores[]        = {render_finished_semaphores[currentFrame]};        //graphics_command_buffers执行完以后会signal这里，随后presentation engine知道渲染完成可以展示了。
-	submitInfo.signalSemaphoreCount       = 1;
-	submitInfo.pSignalSemaphores          = signalSemaphores;
-
-
-
+	VkSemaphore signalSemaphores[]  = {render_finished_semaphores[currentFrame]};        //graphics_command_buffers执行完以后会signal这里，随后presentation engine知道渲染完成可以展示了。
+	submitInfo.signalSemaphoreCount = 1;
+	submitInfo.pSignalSemaphores    = signalSemaphores;
 
 	////可以看到这里graphics_command_buffers[imageIndex]使用完以后，inflight_fences_frame[currentFrame]会被signal（读vkQueueSubmit的定义），那么怎么确定这里的graphics_command_buffers[imageIndex]已经被前几帧使用完毕了呢？
 
@@ -853,9 +796,6 @@ void KTXTextureRenderer::DrawFrame()
 		throw std::runtime_error("failed to present swap chain image!");
 	}
 	currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
-
-
-
 }
 
 void KTXTextureRenderer::UpdateUniformBuffer(uint32_t currentImage)
@@ -951,7 +891,8 @@ void KTXTextureRenderer::CleanUpSyncObjects()
 	{
 		vkDestroySemaphore(device_manager->GetLogicalDeviceRef(), render_finished_semaphores[i], nullptr);
 		vkDestroySemaphore(device_manager->GetLogicalDeviceRef(), image_available_semaphores[i], nullptr);
-		vkDestroyFence(device_manager->GetLogicalDeviceRef(), frame_fences[i], nullptr);
+	//	vkDestroyFence(device_manager->GetLogicalDeviceRef(), frame_fences[i], nullptr);
+	//	vkDestroyFence(device_manager->GetLogicalDeviceRef(), image_fences[i], nullptr);
 	}
 }
 
@@ -981,4 +922,12 @@ void KTXTextureRenderer::CleanUpImages()
 		var.CleanUp();
 	}
 	ktx_texure.CleanUp();
+}
+
+
+
+void KTXTextureRenderer::CleanUpUniformBuffers()
+{
+
+
 }

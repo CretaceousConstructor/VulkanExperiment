@@ -40,6 +40,7 @@
     <ClCompile Include="base\VkExtensionManager.cpp" />
     <ClCompile Include="base\VkImageWrapper.cpp" />
     <ClCompile Include="base\VkInitializer.cpp" />
+    <ClCompile Include="base\VkInstanceWrapper.cpp" />
     <ClCompile Include="base\VkMemoryManager.cpp" />
     <ClCompile Include="base\VkMemoryWrapper.cpp" />
     <ClCompile Include="base\VkSwapChainManager.cpp" />
@@ -66,6 +67,7 @@
     <ClInclude Include="base\include\VkExtensionManager.h" />
     <ClInclude Include="base\include\VkImageWrapper.h" />
     <ClInclude Include="base\include\VkInitializer.h" />
+    <ClInclude Include="base\include\VkInstanceWrapper.h" />
     <ClInclude Include="base\include\VkMemoryManager.h" />
     <ClInclude Include="base\include\VkMemoryWrapper.h" />
     <ClInclude Include="base\include\VkModel.h" />

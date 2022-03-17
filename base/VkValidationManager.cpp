@@ -26,17 +26,22 @@ bool VkValidationManager::CheckValidationLayerSupport()
 	//VK_LAYER_KHRONOS_validation
 	//VK_LAYER_LUNARG_monitor
 	//VK_LAYER_LUNARG_screenshot
+
+
+
+
+
 	uint32_t layerCount;
 	vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
 	std::vector<VkLayerProperties> availableLayers(layerCount);
 	vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
 
-#ifdef DEBUG
+#ifdef DEBUG   // DEBUG MODE
 	for (auto layer : availableLayers)
 	{
 		std::cout << layer.layerName << std::endl;
 	}
-#endif        // DEBUG MODE
+#endif        
 
 	std::vector<const char *> instanceValidationLayerRequiredToUse;
 	if (enableValidationLayers)
@@ -61,6 +66,8 @@ bool VkValidationManager::CheckValidationLayerSupport()
 		}
 	}
 	return true;
+
+
 }
 
 void VkValidationManager::populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT &createInfo)

@@ -57,6 +57,7 @@ class KTXTextureRenderer : public BaseRenderer
 	void CleanUpPiplineAndPiplineLayout() override;
 	void CleanUpRenderPass() override;
 	void CleanUpImages() override;
+	void CleanUpUniformBuffers() override;
 
   private:
 	void CreatePiplineSubpass0();

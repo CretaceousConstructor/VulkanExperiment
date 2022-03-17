@@ -2,44 +2,7 @@
 
 void MultiSubpassesRenderer::PrepareModels()
 {
-	std::vector<InsatnceTranformation> instanceData;
-	std::vector<Vertex>                vertices;
-	vertices.resize(4);
-	vertices[0]                   = Vertex{glm::vec3(-1.f, 0.f, -1.f), glm::vec3(1.f, 0.f, 1.f), glm::vec2(1.f, 0.f)};
-	vertices[1]                   = Vertex{glm::vec3(1.f, 0.f, -1.f), glm::vec3(1.f, 0.f, 1.f), glm::vec2(1.f, 1.f)};
-	vertices[2]                   = Vertex{glm::vec3(1.f, 0.f, 1.f), glm::vec3(1.f, 0.f, 1.f), glm::vec2(0.f, 1.f)};
-	vertices[3]                   = Vertex{glm::vec3(-1.f, 0.f, 1.f), glm::vec3(1.f, 0.f, 1.f), glm::vec2(0.f, 0.f)};
-	std::vector<uint32_t> indices = {0, 1, 2, 0, 2, 3};
-
-	std::default_random_engine            randomEngine{15u};
-	std::uniform_real_distribution<float> myUnifFlaotDist{-5.f, 5.f};
-
-	auto numOfInstance = 7;
-
-	instanceData.resize(numOfInstance);
-	for (int i = 0; i < numOfInstance; i++)
-	{
-		float xDis = myUnifFlaotDist(randomEngine);
-		float yDis = myUnifFlaotDist(randomEngine);
-		float zDis = myUnifFlaotDist(randomEngine);
-
-		float     angleAroundX         = myUnifFlaotDist(randomEngine);
-		glm::mat4 transforRoate        = glm::mat4(1.0f);
-		transforRoate                  = glm::rotate(transforRoate, angleAroundX, glm::vec3(1.0, 0.0, 0.0));
-		glm::mat4 transforDisplacement = glm::mat4(1.0f);
-		transforDisplacement           = glm::translate(transforDisplacement, glm::vec3(xDis, yDis, -5.f));
-		instanceData[i].worldTrans     = transforDisplacement * transforRoate;
-	}
-
-	scene.emplace_back(vertices, instanceData, indices, device_manager, window->GetSurface(), transfer_command_buffer);
 	//========================================================================================================================
-
-	//viking_room_model = std::make_unique<VkModel<Vertex>>(std::string("..//..//data//models//viking_room.obj"), device_manager, window,  window->GetSurface(), transfer_command_buffer) ;
-	//viking_room_model->GetTransform().SetPosition(0.f,0.f,-3.f);
-	//viking_room_model->GetTransform().SetRotation(0.f,0.f,0.f);
-	//viking_room_model->GetTransform().SetScale(1.f,1.f,1.f);
-
-	//"..//..//data//models//FlightHelmet//FlightHelmet.gltf"
 
 	test_model = std::make_unique<GltfModel>(std::string("../../data/models/FlightHelmet/FlightHelmet.gltf"), device_manager, window, window->GetSurface(), graphics_command_pool, transfer_command_buffer);
 }
@@ -50,13 +13,13 @@ void MultiSubpassesRenderer::CreateDescriptorPool()
 	std::array<VkDescriptorPoolSize, 3> poolSizes{};
 
 	poolSizes[0].type            = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	poolSizes[0].descriptorCount = 9;        // 9        uniform_buffers    uniform_buffers_test  uniform_buffers_gs 三个，共3帧。3*3 = 9
+	poolSizes[0].descriptorCount = 6;        // 6        uniform_buffers  uniform_buffers_gs 两个，共3帧。2*3 = 6
 
-	poolSizes[1].type            = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	poolSizes[1].type            = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;        //根据模型使用的材质数目决定
 	poolSizes[1].descriptorCount = test_model->images.size();
 
 	poolSizes[2].type            = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
-	poolSizes[2].descriptorCount = 6;        //6          depthcolor 和rcolor 两个，共3帧。2*3 = 6
+	poolSizes[2].descriptorCount = 6;        //6          depthcolor 和rcolor 两个，共3帧。2*3 = 6。rcolor仅仅是用来测试的，没有实际用途
 
 	VkDescriptorPoolCreateInfo descriptorPoolCI = {};
 	descriptorPoolCI.sType                      = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -80,100 +43,101 @@ void MultiSubpassesRenderer::CreateDescriptorSetLayout()
 			Attachment write
 	*/
 	{
-	    // Pipeline layout using both descriptor sets (set 0 = matrices, set 1 = material)
-	    // Descriptor set layout for passing matrices
+	    // Pipeline layout using both descriptor sets (set 0 = matrices, set 1 = material for model)
+
+
+		//LAYOUT FOR SET 0
+		// Descriptor set layout for passing matrices
 	    {
 
 	        std::vector<VkDescriptorSetLayoutBinding> LayoutBindingSubpass0;
-	VkDescriptorSetLayoutBinding LayoutBindingSubpass0_temp{};
+			VkDescriptorSetLayoutBinding LayoutBindingSubpass0_temp{};
 
-	LayoutBindingSubpass0_temp.binding            = 0;        //index  uniform buffer
-	LayoutBindingSubpass0_temp.descriptorType     = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	LayoutBindingSubpass0_temp.descriptorCount    = 1;
-	LayoutBindingSubpass0_temp.stageFlags         = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
-	LayoutBindingSubpass0_temp.pImmutableSamplers = nullptr;        // Optional
-	LayoutBindingSubpass0.push_back(LayoutBindingSubpass0_temp);
+			LayoutBindingSubpass0_temp.binding            = 0;        //uniform buffer
+			LayoutBindingSubpass0_temp.descriptorType     = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			LayoutBindingSubpass0_temp.descriptorCount    = 1;
+			LayoutBindingSubpass0_temp.stageFlags         = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT; //uniform buffer will be used both in VS and FS stages
+			LayoutBindingSubpass0_temp.pImmutableSamplers = nullptr;        // Optional
+			LayoutBindingSubpass0.push_back(LayoutBindingSubpass0_temp);
 
-	LayoutBindingSubpass0_temp.binding            = 1;        //index  testing purposes uniform buffer
-	LayoutBindingSubpass0_temp.descriptorType     = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	LayoutBindingSubpass0_temp.descriptorCount    = 1;
-	LayoutBindingSubpass0_temp.stageFlags         = VK_SHADER_STAGE_VERTEX_BIT;
-	LayoutBindingSubpass0_temp.pImmutableSamplers = nullptr;        // Optional
-	LayoutBindingSubpass0.push_back(LayoutBindingSubpass0_temp);
 
-	LayoutBindingSubpass0_temp.binding            = 2;        //index  uniform buffer for Geometry shader
-	LayoutBindingSubpass0_temp.descriptorType     = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	LayoutBindingSubpass0_temp.descriptorCount    = 1;
-	LayoutBindingSubpass0_temp.stageFlags         = VK_SHADER_STAGE_GEOMETRY_BIT;
-	LayoutBindingSubpass0_temp.pImmutableSamplers = nullptr;        // Optional
-	LayoutBindingSubpass0.push_back(LayoutBindingSubpass0_temp);
+			LayoutBindingSubpass0_temp.binding            = 1;        //uniform buffer for Geometry shader
+			LayoutBindingSubpass0_temp.descriptorType     = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			LayoutBindingSubpass0_temp.descriptorCount    = 1;
+			LayoutBindingSubpass0_temp.stageFlags         = VK_SHADER_STAGE_GEOMETRY_BIT;
+			LayoutBindingSubpass0_temp.pImmutableSamplers = nullptr;        // Optional
+			LayoutBindingSubpass0.push_back(LayoutBindingSubpass0_temp);
 
-	VkDescriptorSetLayoutCreateInfo LayoutBindingCISubpass0{};
-	LayoutBindingCISubpass0.sType        = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-	LayoutBindingCISubpass0.bindingCount = (uint32_t) LayoutBindingSubpass0.size();        //the amount of VkDescriptorSetLayoutBinding
-	LayoutBindingCISubpass0.pBindings    = LayoutBindingSubpass0.data();
-	if (vkCreateDescriptorSetLayout(device_manager->GetLogicalDeviceRef(), &LayoutBindingCISubpass0, nullptr, &descriptor_set_layout_write_subpass0) != VK_SUCCESS)
-	{
-		throw std::runtime_error("failed to create descriptor set layout!");
-	}
-}
-// Descriptor set layout for passing material textures
-{
-	// Pipeline layout using both descriptor sets (set 0 = matrices, set 1 = material)
+			VkDescriptorSetLayoutCreateInfo LayoutBindingCISubpass0{};
+			LayoutBindingCISubpass0.sType        = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+			LayoutBindingCISubpass0.bindingCount = (uint32_t) LayoutBindingSubpass0.size();        //the amount of VkDescriptorSetLayoutBinding
+			LayoutBindingCISubpass0.pBindings    = LayoutBindingSubpass0.data();
+			if (vkCreateDescriptorSetLayout(device_manager->GetLogicalDeviceRef(), &LayoutBindingCISubpass0, nullptr, &descriptor_set_layout_write_subpass0) != VK_SUCCESS)
+			{
+				throw std::runtime_error("failed to create descriptor set layout!");
+			}
+		}
 
-	std::vector<VkDescriptorSetLayoutBinding> LayoutBindingSubpass0;
-	VkDescriptorSetLayoutBinding              LayoutBindingSubpass0_temp{};
 
-	//TODO: check the binding number here
-	//材质的texture会在set = 1中使用，set 1中的binding 0 还没有被使用
-	LayoutBindingSubpass0_temp.binding            = 0;        //index  texture mapping
-	LayoutBindingSubpass0_temp.descriptorType     = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	LayoutBindingSubpass0_temp.descriptorCount    = 1;
-	LayoutBindingSubpass0_temp.stageFlags         = VK_SHADER_STAGE_FRAGMENT_BIT;
-	LayoutBindingSubpass0_temp.pImmutableSamplers = nullptr;        // Optional
-	LayoutBindingSubpass0.push_back(LayoutBindingSubpass0_temp);
 
-	VkDescriptorSetLayoutCreateInfo LayoutBindingCISubpass0{};
-	LayoutBindingCISubpass0.sType        = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-	LayoutBindingCISubpass0.bindingCount = (uint32_t) LayoutBindingSubpass0.size();        //the amount of VkDescriptorSetLayoutBinding
-	LayoutBindingCISubpass0.pBindings    = LayoutBindingSubpass0.data();
-	if (vkCreateDescriptorSetLayout(device_manager->GetLogicalDeviceRef(), &LayoutBindingCISubpass0, nullptr, &descriptor_set_layout_write_subpass0_materials) != VK_SUCCESS)
-	{
-		throw std::runtime_error("failed to create descriptor set layout!");
-	}
-}
+		//LAYOUT FOR SET 1
+		// Descriptor set layout for passing material textures
+		{
+
+			std::vector<VkDescriptorSetLayoutBinding> LayoutBindingSubpass0;
+			VkDescriptorSetLayoutBinding              LayoutBindingSubpass0_temp{};
+
+			//TODO: check the binding number here
+			//材质的texture会在set = 1中使用，set 1中的binding 0 还没有被使用，所以当然不会和之前的matrix UB发生冲突
+			LayoutBindingSubpass0_temp.binding            = 0;        //index  texture mapping
+			LayoutBindingSubpass0_temp.descriptorType     = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			LayoutBindingSubpass0_temp.descriptorCount    = 1;
+			LayoutBindingSubpass0_temp.stageFlags         = VK_SHADER_STAGE_FRAGMENT_BIT;
+			LayoutBindingSubpass0_temp.pImmutableSamplers = nullptr;        // Optional
+			LayoutBindingSubpass0.push_back(LayoutBindingSubpass0_temp);
+
+			VkDescriptorSetLayoutCreateInfo LayoutBindingCISubpass0{};
+			LayoutBindingCISubpass0.sType        = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+			LayoutBindingCISubpass0.bindingCount = (uint32_t) LayoutBindingSubpass0.size();        //the amount of VkDescriptorSetLayoutBinding
+			LayoutBindingCISubpass0.pBindings    = LayoutBindingSubpass0.data();
+			if (vkCreateDescriptorSetLayout(device_manager->GetLogicalDeviceRef(), &LayoutBindingCISubpass0, nullptr, &descriptor_set_layout_write_subpass0_materials) != VK_SUCCESS)
+			{
+				throw std::runtime_error("failed to create descriptor set layout!");
+			}
+		}
 }
 
-/*
+	/*
 		Attachment read
 	*/
-{
-	std::vector<VkDescriptorSetLayoutBinding> LayoutBindingSubpass1;
-
-	VkDescriptorSetLayoutBinding LayoutBindingSubpass1_temp{};
-
-	LayoutBindingSubpass1_temp.binding         = 0;        //index  color read
-	LayoutBindingSubpass1_temp.descriptorCount = 1;
-	LayoutBindingSubpass1_temp.descriptorType  = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
-	LayoutBindingSubpass1_temp.stageFlags      = VK_SHADER_STAGE_FRAGMENT_BIT;
-	LayoutBindingSubpass1.push_back(LayoutBindingSubpass1_temp);
-
-	LayoutBindingSubpass1_temp.binding         = 1;        //index   depth value read
-	LayoutBindingSubpass1_temp.descriptorCount = 1;
-	LayoutBindingSubpass1_temp.descriptorType  = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
-	LayoutBindingSubpass1_temp.stageFlags      = VK_SHADER_STAGE_FRAGMENT_BIT;
-	LayoutBindingSubpass1.push_back(LayoutBindingSubpass1_temp);
-
-	VkDescriptorSetLayoutCreateInfo LayoutBindingCISubpass1{};
-	LayoutBindingCISubpass1.sType        = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-	LayoutBindingCISubpass1.bindingCount = (uint32_t) LayoutBindingSubpass1.size();        //the amount of VkDescriptorSetLayoutBinding
-	LayoutBindingCISubpass1.pBindings    = LayoutBindingSubpass1.data();
-
-	if (vkCreateDescriptorSetLayout(device_manager->GetLogicalDeviceRef(), &LayoutBindingCISubpass1, nullptr, &descriptor_set_layout_read_subpass1) != VK_SUCCESS)
+	//LAYOUT FOR SET 0
 	{
-		throw std::runtime_error("failed to create descriptor set layout!");
+		std::vector<VkDescriptorSetLayoutBinding> LayoutBindingSubpass1;
+
+		VkDescriptorSetLayoutBinding LayoutBindingSubpass1_temp{};
+
+		LayoutBindingSubpass1_temp.binding         = 0;        //color for  read
+		LayoutBindingSubpass1_temp.descriptorCount = 1;
+		LayoutBindingSubpass1_temp.descriptorType  = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+		LayoutBindingSubpass1_temp.stageFlags      = VK_SHADER_STAGE_FRAGMENT_BIT;
+		LayoutBindingSubpass1.push_back(LayoutBindingSubpass1_temp);
+
+		LayoutBindingSubpass1_temp.binding         = 1;        //depth value for read
+		LayoutBindingSubpass1_temp.descriptorCount = 1;
+		LayoutBindingSubpass1_temp.descriptorType  = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+		LayoutBindingSubpass1_temp.stageFlags      = VK_SHADER_STAGE_FRAGMENT_BIT;
+		LayoutBindingSubpass1.push_back(LayoutBindingSubpass1_temp);
+
+		VkDescriptorSetLayoutCreateInfo LayoutBindingCISubpass1{};
+		LayoutBindingCISubpass1.sType        = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+		LayoutBindingCISubpass1.bindingCount = (uint32_t) LayoutBindingSubpass1.size();        //the amount of VkDescriptorSetLayoutBinding
+		LayoutBindingCISubpass1.pBindings    = LayoutBindingSubpass1.data();
+
+		if (vkCreateDescriptorSetLayout(device_manager->GetLogicalDeviceRef(), &LayoutBindingCISubpass1, nullptr, &descriptor_set_layout_read_subpass1) != VK_SUCCESS)
+		{
+			throw std::runtime_error("failed to create descriptor set layout!");
+		}
 	}
-}
 }
 
 void MultiSubpassesRenderer::CreateDescriptorSets()
@@ -183,9 +147,13 @@ void MultiSubpassesRenderer::CreateDescriptorSets()
 
 	//subpass0 writing
 	{
-		//Descriptor sets for vs matrix and gs data set = 0
+
+		//set = 0
+		//Descriptor sets for vs matrix and gs UB 
 		for (size_t i = 0; i < swapchain_manager->GetSwapImageCount(); i++)
 		{
+
+			//ALLOCATE DESCRIPTORS
 			VkDescriptorSetAllocateInfo allocInfoWrite{};
 			allocInfoWrite.sType              = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 			allocInfoWrite.descriptorPool     = descriptor_pool;
@@ -196,22 +164,20 @@ void MultiSubpassesRenderer::CreateDescriptorSets()
 			{
 				throw std::runtime_error("failed to allocate descriptor sets!");
 			}
-
+			//DESCRIPTORS INFOS
 			VkDescriptorBufferInfo buffer_info_write_subpass0{};
 			buffer_info_write_subpass0.buffer = uniform_buffers[i].buffer;
 			buffer_info_write_subpass0.offset = 0;
 			buffer_info_write_subpass0.range  = sizeof(ShaderData);
 
-			VkDescriptorBufferInfo buffer_info_write_subpass0_test{};
-			buffer_info_write_subpass0_test.buffer = uniform_buffers_test[i].buffer;
-			buffer_info_write_subpass0_test.offset = 0;
-			buffer_info_write_subpass0_test.range  = sizeof(UniformBufferObjectTest);
 
 			VkDescriptorBufferInfo buffer_info_write_subpass0_GS{};
 			buffer_info_write_subpass0_GS.buffer = uniform_buffers_GS[i].buffer;
 			buffer_info_write_subpass0_GS.offset = 0;
 			buffer_info_write_subpass0_GS.range  = sizeof(UniformBufferOjectGS);
 
+
+			//UPDATE DESCRIPTORS 
 			std::vector<VkWriteDescriptorSet> writeDescriptorSets;
 			VkWriteDescriptorSet              temp_writeDescriptorSet{};
 			/*
@@ -222,33 +188,17 @@ void MultiSubpassesRenderer::CreateDescriptorSets()
 			temp_writeDescriptorSet.dstBinding     = 0;
 			temp_writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 			//Otherwise, descriptorCount is one of the number of elements in pImageInfo the number of elements in pBufferInfo
-
 			temp_writeDescriptorSet.descriptorCount = 1;
 			temp_writeDescriptorSet.pBufferInfo     = &buffer_info_write_subpass0;
 			temp_writeDescriptorSet.dstArrayElement = 0;
 
 			writeDescriptorSets.push_back(temp_writeDescriptorSet);
-
 			/*
-				Binding 1: VS test purposes uniform buffer
+				Binding 1: GS uniform buffer
 			*/
-
 			temp_writeDescriptorSet.sType           = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 			temp_writeDescriptorSet.dstSet          = descriptor_sets_write_subpass0[i];
 			temp_writeDescriptorSet.dstBinding      = 1;
-			temp_writeDescriptorSet.descriptorType  = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-			temp_writeDescriptorSet.pBufferInfo     = &buffer_info_write_subpass0_test;
-			temp_writeDescriptorSet.descriptorCount = 1;
-			temp_writeDescriptorSet.dstArrayElement = 0;
-			writeDescriptorSets.push_back(temp_writeDescriptorSet);
-
-			/*
-				Binding 2: GS uniform buffer
-			*/
-
-			temp_writeDescriptorSet.sType           = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-			temp_writeDescriptorSet.dstSet          = descriptor_sets_write_subpass0[i];
-			temp_writeDescriptorSet.dstBinding      = 2;
 			temp_writeDescriptorSet.descriptorType  = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 			temp_writeDescriptorSet.pBufferInfo     = &buffer_info_write_subpass0_GS;
 			temp_writeDescriptorSet.descriptorCount = 1;
@@ -257,10 +207,11 @@ void MultiSubpassesRenderer::CreateDescriptorSets()
 
 			vkUpdateDescriptorSets(device_manager->GetLogicalDeviceRef(), static_cast<uint32_t>(writeDescriptorSets.size()), writeDescriptorSets.data(), 0, nullptr);
 		}
-
-		// Descriptor sets for materials set=1
+		// set=1
+		// Descriptor sets for materials of models
 		for (auto &image : test_model->images)
 		{
+			//ALLOCATE DESCRIPTORS
 			VkDescriptorSetAllocateInfo allocInfoWrite{};
 			allocInfoWrite.sType              = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 			allocInfoWrite.descriptorPool     = descriptor_pool;
@@ -271,7 +222,7 @@ void MultiSubpassesRenderer::CreateDescriptorSets()
 			{
 				throw std::runtime_error("failed to allocate descriptor sets!");
 			}
-
+			//DESCRIPTOR INFOS
 			VkWriteDescriptorSet temp_writeDescriptorSet{};
 
 			temp_writeDescriptorSet.sType           = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -281,17 +232,19 @@ void MultiSubpassesRenderer::CreateDescriptorSets()
 			auto image_info                         = image.texture.GetDescriptor();
 			temp_writeDescriptorSet.pImageInfo      = &image_info;
 			temp_writeDescriptorSet.descriptorCount = 1;
-			//TODO CHECK THIS dstArrayElement
-			//temp_writeDescriptorSet.dstArrayElement = 0;
-
+			temp_writeDescriptorSet.dstArrayElement = 0;
+			
+			//UPDATE DESCRIPTOR SET	
 			vkUpdateDescriptorSets(device_manager->GetLogicalDeviceRef(), 1, &temp_writeDescriptorSet, 0, nullptr);
 		}
 	}
 
 	//subpass1 reading
-
+	//set = 0 
 	for (uint32_t i = 0; i < swapchain_manager->GetSwapImageCount(); i++)
 	{
+
+		//ALLOCATE DESCRIPTORS
 		VkDescriptorSetAllocateInfo allocInfoRead{};
 		allocInfoRead.sType              = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 		allocInfoRead.descriptorPool     = descriptor_pool;
@@ -303,19 +256,23 @@ void MultiSubpassesRenderer::CreateDescriptorSets()
 			throw std::runtime_error("failed to allocate descriptor sets!");
 		}
 
+
+
+		//DESCRIPTOR INFOS
 		std::array<VkDescriptorImageInfo, 2> imageInfoForSubPass1{};
 		imageInfoForSubPass1[0].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-		imageInfoForSubPass1[0].imageView   = red_color_attachment[i].GetImageView();
+		imageInfoForSubPass1[0].imageView   = all_color_attachment[i].GetImageView();
 		imageInfoForSubPass1[0].sampler     = VK_NULL_HANDLE;
 
 		imageInfoForSubPass1[1].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 		imageInfoForSubPass1[1].imageView   = depth_attachment[i].GetImageView();
 		imageInfoForSubPass1[1].sampler     = VK_NULL_HANDLE;
 
+		//UPDATE DESCRIPTOR SET	
 		std::array<VkWriteDescriptorSet, 2> writeDescriptorSets{};
 
 		/*
-			Binding 0: Rcolor
+			Binding 0: color
 		*/
 		writeDescriptorSets[0].sType           = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 		writeDescriptorSets[0].dstSet          = descriptor_sets_read_subpass1[i];
@@ -327,7 +284,7 @@ void MultiSubpassesRenderer::CreateDescriptorSets()
 		writeDescriptorSets[0].pBufferInfo     = VK_NULL_HANDLE;
 
 		/*
-			Binding 2: depthValue
+			Binding 1: depthValue
 		*/
 		writeDescriptorSets[1].sType           = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 		writeDescriptorSets[1].dstSet          = descriptor_sets_read_subpass1[i];
@@ -353,13 +310,6 @@ void MultiSubpassesRenderer::CreateUniformBuffer()
 		//exclusive mode因为uniform buffer只会被graphics queue使用
 	}
 
-	VkDeviceSize bufferSizeTest = sizeof(UniformBufferObjectTest);
-	uniform_buffers_test.resize(swapchain_manager->GetSwapImageCount());
-	for (size_t i = 0; i < swapchain_manager->GetSwapImageCount(); i++)
-	{
-		device_manager->CreateBuffer(bufferSizeTest, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, uniform_buffers_test[i].buffer, uniform_buffers_test[i].memory, VK_SHARING_MODE_EXCLUSIVE, window->GetSurface());
-		//exclusive mode因为uniform buffer只会被graphics queue使用
-	}
 
 	VkDeviceSize bufferSizeGS = sizeof(UniformBufferOjectGS);
 	uniform_buffers_GS.resize(swapchain_manager->GetSwapImageCount());
@@ -369,7 +319,9 @@ void MultiSubpassesRenderer::CreateUniformBuffer()
 		//exclusive mode因为uniform buffer只会被graphics queue使用
 	}
 
-	//
+	
+	
+	
 	////CPU SIDE
 	//ubo.model = viking_room_model->GetTransform().GetLocalToWorldMatrix();
 	//ubo.view = m_pCamera->GetView();
@@ -384,12 +336,13 @@ void MultiSubpassesRenderer::CreateDepthImages()
 	VkFormat depthFormat = swapchain_manager->FindDepthFormat(*device_manager);
 	depth_attachment.resize(swapchain_manager->GetSwapImageCount());
 
-	VkDeviceManager::QueueFamilyIndices  queue_family_index  = device_manager->FindQueueFamilies(device_manager->GetPhysicalDeviceRef(),window->GetSurface());
+	VkDeviceManager::QueueFamilyIndices queue_family_index = device_manager->FindQueueFamilies(device_manager->GetPhysicalDeviceRef(), window->GetSurface());
 	for (uint32_t i = 0; i < swapchain_manager->GetSwapImageCount(); i++)
 	{
 		depth_attachment[i].Init(VK_IMAGE_TYPE_2D, depthFormat, swapchain_manager->GetSwapChainImageExtent(), 1, 1, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT, VK_SHARING_MODE_EXCLUSIVE, VK_IMAGE_LAYOUT_UNDEFINED, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, device_manager);
 
-		depth_attachment[i].TransitionImageLayout(depthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, graphics_command_pool, device_manager->GetLogicalDeviceRef(), device_manager->GetGraphicsQueue(),queue_family_index);
+		depth_attachment[i].TransitionImageLayout(depthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, graphics_command_pool, device_manager->GetLogicalDeviceRef(), device_manager->GetGraphicsQueue(), queue_family_index);
+
 		depth_attachment[i].InitImageView(depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
 	}
 }
@@ -424,6 +377,8 @@ void MultiSubpassesRenderer::CreatePiplineSubpass0()
 	//bindingDescription1.inputRate = VK_VERTEX_INPUT_RATE_INSTANCE;
 
 	//std::vector<VkVertexInputBindingDescription>  VIBDS = { bindingDescription0 ,bindingDescription1 };
+	
+	
 	std::vector<VkVertexInputBindingDescription> VIBDS = {bindingDescription0};
 
 	auto attributeDescriptions = GltfModel::Vertex::GetAttributeDescriptions();
@@ -431,9 +386,9 @@ void MultiSubpassesRenderer::CreatePiplineSubpass0()
 	VkPipelineVertexInputStateCreateInfo vertex_input_info{};
 	vertex_input_info.sType                           = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 	vertex_input_info.vertexBindingDescriptionCount   = (uint32_t) VIBDS.size();
-	vertex_input_info.pVertexBindingDescriptions      = VIBDS.data();        // Optional
+	vertex_input_info.pVertexBindingDescriptions      = VIBDS.data();
 	vertex_input_info.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
-	vertex_input_info.pVertexAttributeDescriptions    = attributeDescriptions.data();        // Optional
+	vertex_input_info.pVertexAttributeDescriptions    = attributeDescriptions.data();    
 
 	VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
 	inputAssembly.sType                  = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -516,6 +471,7 @@ void MultiSubpassesRenderer::CreatePiplineSubpass0()
 	//	VK_DYNAMIC_STATE_LINE_WIDTH
 	//};
 
+	//
 	VkPipelineDynamicStateCreateInfo dynamicState{};
 	dynamicState.sType             = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
 	dynamicState.dynamicStateCount = 0;
@@ -579,7 +535,7 @@ void MultiSubpassesRenderer::CreatePiplineSubpass0()
 
 	pipeline_subpass0_CI.basePipelineIndex  = -1;
 	pipeline_subpass0_CI.basePipelineHandle = VK_NULL_HANDLE;
-
+	//this pipline is for debugging purpose,to show normals of a model.
 	if (vkCreateGraphicsPipelines(device_manager->GetLogicalDeviceRef(), VK_NULL_HANDLE, 1, &pipeline_subpass0_CI, nullptr, &graphics_pipeline_subpass0_normal) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to create graphics pipeline!");
@@ -589,10 +545,15 @@ void MultiSubpassesRenderer::CreatePiplineSubpass0()
 	pipeline_subpass0_CI.stageCount = (uint32_t) shader_stages_create_info.size();
 	pipeline_subpass0_CI.pStages    = shader_stages_create_info.data();
 
+
+
+
 	if (vkCreateGraphicsPipelines(device_manager->GetLogicalDeviceRef(), VK_NULL_HANDLE, 1, &pipeline_subpass0_CI, nullptr, &graphics_pipeline_subpass0) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to create graphics pipeline!");
 	}
+
+
 }
 
 void MultiSubpassesRenderer::CreatePiplineSubpass1()
@@ -730,16 +691,16 @@ void MultiSubpassesRenderer::CreateRenderPass()
 	colorAttachment.finalLayout    = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
 	//R color index 1
-	VkAttachmentDescription RchannelcolorAttachment{};
-	RchannelcolorAttachment.format = swapchain_manager->GetSwapChainImageFormat();        //这里的format是否和上面的一致？
+	VkAttachmentDescription AllchannelcolorAttachment{};
+	AllchannelcolorAttachment.format = swapchain_manager->GetSwapChainImageFormat();        //这里的format是否和上面的一致？
 
-	RchannelcolorAttachment.samples        = VK_SAMPLE_COUNT_1_BIT;
-	RchannelcolorAttachment.loadOp         = VK_ATTACHMENT_LOAD_OP_CLEAR;
-	RchannelcolorAttachment.storeOp        = VK_ATTACHMENT_STORE_OP_STORE;
-	RchannelcolorAttachment.stencilLoadOp  = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-	RchannelcolorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-	RchannelcolorAttachment.initialLayout  = VK_IMAGE_LAYOUT_UNDEFINED;
-	RchannelcolorAttachment.finalLayout    = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	AllchannelcolorAttachment.samples        = VK_SAMPLE_COUNT_1_BIT;
+	AllchannelcolorAttachment.loadOp         = VK_ATTACHMENT_LOAD_OP_CLEAR;
+	AllchannelcolorAttachment.storeOp        = VK_ATTACHMENT_STORE_OP_STORE;
+	AllchannelcolorAttachment.stencilLoadOp  = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+	AllchannelcolorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	AllchannelcolorAttachment.initialLayout  = VK_IMAGE_LAYOUT_UNDEFINED;
+	AllchannelcolorAttachment.finalLayout    = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 	//Depth index 2
 	VkAttachmentDescription depthAttachment{};
@@ -752,8 +713,8 @@ void MultiSubpassesRenderer::CreateRenderPass()
 	depthAttachment.initialLayout  = VK_IMAGE_LAYOUT_UNDEFINED;
 	depthAttachment.finalLayout    = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-	//The index of the attachment ref in this array is directly referenced from the fragment shader with the
-	//layout(location = 0) out vec4 outColor directive!
+	//The index of the attachment ref is directly referenced from the fragment shader with the
+	//layout(location = 0) out vec4 outColor statement!
 
 	//subpass0用的
 	VkAttachmentReference RAttachmentRef{};
@@ -763,10 +724,14 @@ void MultiSubpassesRenderer::CreateRenderPass()
 	VkAttachmentReference depthAttachmentRefForWrite{};
 	depthAttachmentRefForWrite.attachment = 2;
 	depthAttachmentRefForWrite.layout     = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+
+
 	//subpass1用的
 	VkAttachmentReference colorAttachmentRef{};
 	colorAttachmentRef.attachment = 0;
 	colorAttachmentRef.layout     = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
 	VkAttachmentReference RAttachmentRefForRead{};
 	RAttachmentRefForRead.attachment = 1;
 	RAttachmentRefForRead.layout     = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
@@ -774,6 +739,7 @@ void MultiSubpassesRenderer::CreateRenderPass()
 	VkAttachmentReference depthAttachmentRefForRead{};
 	depthAttachmentRefForRead.attachment = 2;
 	depthAttachmentRefForRead.layout     = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
 
 	//======================================================================================================
 	std::vector<VkAttachmentReference> WriteColorAttachmentRefsForSubpass0 = {RAttachmentRef};
@@ -798,22 +764,28 @@ void MultiSubpassesRenderer::CreateRenderPass()
 	//-------------------------------------------------------------------------------------
 	std::array<VkSubpassDescription, 2> subpasses = {subpass0, subpass1};
 
-	std::vector<VkAttachmentDescription> attachments = {colorAttachment, RchannelcolorAttachment, depthAttachment};
+	std::vector<VkAttachmentDescription> attachments = {colorAttachment, AllchannelcolorAttachment, depthAttachment};
 
-	std::array<VkSubpassDependency, 3> dependencies{};
+
+
+
+
+
+
+
+	std::array<VkSubpassDependency, 2> dependencies{};
 
 	dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
 	dependencies[0].dstSubpass = 0;
 
 	dependencies[0].srcStageMask = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-	//dependencies[0].srcAccessMask = VK_ACCESS_MEMORY_READ_BIT;
 	dependencies[0].srcAccessMask = 0;
 
 	dependencies[0].dstStageMask    = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
 	dependencies[0].dstAccessMask   = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
 	dependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
-	// This dependency transitions the input attachment from color attachment to shader read only layout
+	// This dependency transitions the input attachment from color attachment to shader read only layout 
 	dependencies[1].srcSubpass = 0;
 	dependencies[1].dstSubpass = 1;
 
@@ -823,14 +795,14 @@ void MultiSubpassesRenderer::CreateRenderPass()
 	dependencies[1].dstAccessMask   = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_INPUT_ATTACHMENT_READ_BIT;
 	dependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
-	dependencies[2].srcSubpass    = 1;        // Last subpass attachment is used in
-	dependencies[2].dstSubpass    = VK_SUBPASS_EXTERNAL;
-	dependencies[2].srcStageMask  = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
-	dependencies[2].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+	//dependencies[2].srcSubpass    = 1;        // Last subpass 
+	//dependencies[2].dstSubpass    = VK_SUBPASS_EXTERNAL;
+	//dependencies[2].srcStageMask  = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
+	//dependencies[2].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
 
-	dependencies[2].dstStageMask    = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-	dependencies[2].dstAccessMask   = 0;
-	dependencies[2].dependencyFlags = 0;
+	//dependencies[2].dstStageMask    = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+	//dependencies[2].dstAccessMask   = 0;
+	//dependencies[2].dependencyFlags = 0;
 
 	VkRenderPassCreateInfo renderPassInfo{};
 	renderPassInfo.sType           = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
@@ -899,11 +871,14 @@ void MultiSubpassesRenderer::CreateFramebuffers()
 {
 	frame_buffers.resize(swapchain_manager->GetSwapImageCount());
 
+
+
+
 	for (size_t i = 0; i < swapchain_manager->GetSwapImageCount(); i++)
 	{
 		std::vector<VkImageView> attachments = {
 		    swapchain_manager->GetSwapImageViews()[i],
-		    red_color_attachment[i].GetImageView(),
+		    all_color_attachment[i].GetImageView(),
 		    depth_attachment[i].GetImageView()};
 
 		auto swap_chain_extent = swapchain_manager->GetSwapChainImageExtent();
@@ -934,6 +909,8 @@ void MultiSubpassesRenderer::InitCommandBuffers()
 	{
 		VkCommandManager::CreateCommandBuffer(device_manager->GetLogicalDeviceRef(), graphics_command_pool, graphics_command_buffers[i], VK_COMMAND_BUFFER_LEVEL_PRIMARY);
 	}
+
+
 }
 
 void MultiSubpassesRenderer::CommandBufferRecording()
@@ -979,12 +956,16 @@ void MultiSubpassesRenderer::CommandBufferRecording()
 		vkCmdBindPipeline(graphics_command_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphics_pipeline_subpass0);
 		test_model->Draw(graphics_command_buffers[i], pipeline_layout_subpass0);
 
-		/*vkCmdBindPipeline(graphics_command_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphics_pipeline_subpass0_normal);
+		vkCmdBindPipeline(graphics_command_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, graphics_pipeline_subpass0_normal);
 		test_model->Draw(graphics_command_buffers[i], pipeline_layout_subpass0);
 
-*/
 
-		///*
+
+
+
+
+
+
 		//	Second sub pass
 		//	Render a full screen quad, reading from the previously written attachments via input attachments
 		//*/
@@ -1009,8 +990,8 @@ void MultiSubpassesRenderer::InitSynObjects()
 {
 	image_available_semaphores.resize(MAX_FRAMES_IN_FLIGHT);
 	render_finished_semaphores.resize(MAX_FRAMES_IN_FLIGHT);
-	inflight_fences.resize(MAX_FRAMES_IN_FLIGHT);
-	images_inflight.resize(swapchain_manager->GetSwapImageCount(), VK_NULL_HANDLE);        ///???
+	frame_fences.resize(MAX_FRAMES_IN_FLIGHT);
+	images_fences.resize(swapchain_manager->GetSwapImageCount(), VK_NULL_HANDLE);        ///???
 
 	//可以通过fence查询vkQueueSubmit的动作是否完成   vkGetFenceStatus非阻塞的查询
 	//											   vkWaitForFences阻塞查询，直到其中至少一个，或者所有的fence都处于signaled状态，或者超时（时间限制由参数给出），才会返回。
@@ -1026,7 +1007,7 @@ void MultiSubpassesRenderer::InitSynObjects()
 	{
 		if (vkCreateSemaphore(device_manager->GetLogicalDeviceRef(), &semaphoreInfo, nullptr, &image_available_semaphores[i]) != VK_SUCCESS ||
 		    vkCreateSemaphore(device_manager->GetLogicalDeviceRef(), &semaphoreInfo, nullptr, &render_finished_semaphores[i]) != VK_SUCCESS ||
-		    vkCreateFence(device_manager->GetLogicalDeviceRef(), &fenceInfo, nullptr, &inflight_fences[i]) != VK_SUCCESS)
+		    vkCreateFence(device_manager->GetLogicalDeviceRef(), &fenceInfo, nullptr, &frame_fences[i]) != VK_SUCCESS)
 		{
 			throw std::runtime_error("failed to create synchronization objects for a frame!");
 		}
@@ -1041,7 +1022,7 @@ void MultiSubpassesRenderer::CreateTextureImages()
 	//VK_FORMAT_B8G8R8A8_SRGB
 	//VK_FORMAT_R8G8B8A8_UNORM
 	//
-	;
+	
 
 	//human_face.InitTexture(std::string("..//..//data//textures//face.jpg"), device_manager, window, graphics_command_pool, swapchain_manager->GetSwapChainImageFormat());
 	//human_face.InitTextureView(swapchain_manager->GetSwapChainImageFormat(), VK_IMAGE_ASPECT_COLOR_BIT);
@@ -1076,16 +1057,22 @@ void MultiSubpassesRenderer::CreateAttachmentImages()
 
 	//VK_FORMAT_R8G8B8A8_UNORM
 
-	red_color_attachment.resize(swapchain_manager->GetSwapImageCount());
 
-	VkDeviceManager::QueueFamilyIndices  queue_family_index  = device_manager->FindQueueFamilies(device_manager->GetPhysicalDeviceRef(),window->GetSurface());
+
+	all_color_attachment.resize(swapchain_manager->GetSwapImageCount());
+
+	VkDeviceManager::QueueFamilyIndices queue_family_index = device_manager->FindQueueFamilies(device_manager->GetPhysicalDeviceRef(), window->GetSurface());
 	for (uint32_t i = 0; i < swapchain_manager->GetSwapImageCount(); i++)
 	{
-		red_color_attachment[i].Init(VK_IMAGE_TYPE_2D, swapchain_manager->GetSwapChainImageFormat(), swapchain_manager->GetSwapChainImageExtent(), 1, 1, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT, VK_SHARING_MODE_EXCLUSIVE, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, device_manager);
+		all_color_attachment[i].Init(VK_IMAGE_TYPE_2D, swapchain_manager->GetSwapChainImageFormat(), swapchain_manager->GetSwapChainImageExtent(), 1, 1, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT, VK_SHARING_MODE_EXCLUSIVE, VK_IMAGE_LAYOUT_UNDEFINED, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, device_manager);
 
-		red_color_attachment[i].TransitionImageLayout(swapchain_manager->GetSwapChainImageFormat(), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, graphics_command_pool, device_manager->GetLogicalDeviceRef(), device_manager->GetGraphicsQueue(),queue_family_index);
 
-		red_color_attachment[i].InitImageView(swapchain_manager->GetSwapChainImageFormat(), VK_IMAGE_ASPECT_COLOR_BIT);
+
+
+
+		all_color_attachment[i].TransitionImageLayout(swapchain_manager->GetSwapChainImageFormat(), VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, graphics_command_pool, device_manager->GetLogicalDeviceRef(), device_manager->GetGraphicsQueue(), queue_family_index);
+
+		all_color_attachment[i].InitImageView(swapchain_manager->GetSwapChainImageFormat(), VK_IMAGE_ASPECT_COLOR_BIT);
 	}
 }
 
@@ -1093,7 +1080,7 @@ void MultiSubpassesRenderer::DrawFrame()
 {
 	static size_t currentFrame = 0;
 
-	vkWaitForFences(device_manager->GetLogicalDeviceRef(), 1, &inflight_fences[currentFrame], VK_TRUE, UINT64_MAX);        //vkWaitForFences无限时阻塞CPU，等待fence被signal后 从 unsignaled状态 变成 signaled状态 这里应该是防止和自己(currentFrame)冲突。To wait for one or more fences to enter the signaled state on the host,
+	vkWaitForFences(device_manager->GetLogicalDeviceRef(), 1, &frame_fences[currentFrame], VK_TRUE, UINT64_MAX);        //vkWaitForFences无限时阻塞CPU，等待fence被signal后 从 unsignaled状态 变成 signaled状态 这里应该是防止和自己(currentFrame)冲突。To wait for one or more fences to enter the signaled state on the host,
 
 	uint32_t imageIndex;
 
@@ -1115,14 +1102,14 @@ void MultiSubpassesRenderer::DrawFrame()
 
 	UpdateUniformBuffer(imageIndex);
 
-	//images_inflight大小为3在这个例子里，注意它的大小不是MAX_FRAMES_IN_FLIGHT
-	if (images_inflight[imageIndex] != VK_NULL_HANDLE)
-	{        //images_inflight[imageIndex] 不是 nullptr，说明某一帧的GPU资源正在被以imageIndex为下标的image使用，那么我们就要等待。
-		vkWaitForFences(device_manager->GetLogicalDeviceRef(), 1, &images_inflight[imageIndex], VK_TRUE, UINT64_MAX);
+	//images_fences大小为3在这个例子里，注意它的大小不是MAX_FRAMES_IN_FLIGHT
+	if (images_fences[imageIndex] != VK_NULL_HANDLE)
+	{        //images_fences[imageIndex] 不是 nullptr，说明某一帧的GPU资源正在被以imageIndex为下标的image使用，那么我们就要等待。
+		vkWaitForFences(device_manager->GetLogicalDeviceRef(), 1, &images_fences[imageIndex], VK_TRUE, UINT64_MAX);
 	}
 
-	images_inflight[imageIndex] = inflight_fences[currentFrame];        //等待完毕后的images，被我们的currentFrame所占有(表示currentFrame这一帧的GPU资源正在被index为imageIndex的image占用)，目前inflight_fences[currentFrame]处于signled的状态。
-	//	 inflight_fences[currentFrame]状态改变后，images_inflight[imageIndex]状态也会改变
+	images_fences[imageIndex] = frame_fences[currentFrame];        //等待完毕后的images，被我们的currentFrame所占有(表示currentFrame这一帧的GPU资源正在被index为imageIndex的image占用)，目前frame_fences[currentFrame]处于signled的状态。
+	//	 frame_fences[currentFrame]状态改变后，images_fences[imageIndex]状态也会改变
 
 	VkSubmitInfo submitInfo{};
 	submitInfo.sType                      = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -1137,10 +1124,10 @@ void MultiSubpassesRenderer::DrawFrame()
 	submitInfo.signalSemaphoreCount       = 1;
 	submitInfo.pSignalSemaphores          = signalSemaphores;
 
-	//因为上面有images_inflight[imageIndex] = inflight_fences[currentFrame]; 所以这时候images_inflight[imageIndex]和 inflight_fences[currentFrame];应该同时进入了unsignaled状态
-	vkResetFences(device_manager->GetLogicalDeviceRef(), 1, &inflight_fences[currentFrame]);        //To set the state of fences to unsignaled from the host
+	//因为上面有images_fences[imageIndex] = frame_fences[currentFrame]; 所以这时候images_fences[imageIndex]和 frame_fences[currentFrame];应该同时进入了unsignaled状态
+	vkResetFences(device_manager->GetLogicalDeviceRef(), 1, &frame_fences[currentFrame]);        //To set the state of fences to unsignaled from the host
 
-	if (vkQueueSubmit(device_manager->GetGraphicsQueue(), 1, &submitInfo, inflight_fences[currentFrame]) != VK_SUCCESS)
+	if (vkQueueSubmit(device_manager->GetGraphicsQueue(), 1, &submitInfo, frame_fences[currentFrame]) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to submit draw command buffer!");
 	}
@@ -1185,7 +1172,6 @@ void MultiSubpassesRenderer::UpdateUniformBuffer(uint32_t currentImage)
 	ubo.view   = m_pCamera->GetView();
 	ubo.eyePos = m_pCamera->GetPosition();
 
-	ubo0.view = m_pCamera->GetView();
 
 	ubo_gs.projection = m_pCamera->GetProj();
 	ubo_gs.view       = m_pCamera->GetView();
@@ -1200,10 +1186,9 @@ void MultiSubpassesRenderer::UpdateUniformBuffer(uint32_t currentImage)
 	memcpy(data_gs, &ubo_gs, sizeof(UniformBufferOjectGS));
 	vkUnmapMemory(device_manager->GetLogicalDeviceRef(), uniform_buffers_GS[currentImage].memory);
 
-	void *data0;
-	vkMapMemory(device_manager->GetLogicalDeviceRef(), uniform_buffers_test[currentImage].memory, 0, sizeof(ubo0), 0, &data0);
-	memcpy(data0, &ubo0, sizeof(UniformBufferObjectTest));
-	vkUnmapMemory(device_manager->GetLogicalDeviceRef(), uniform_buffers_test[currentImage].memory);
+
+
+
 }
 
 void MultiSubpassesRenderer::UpdateCamera(float dt)
@@ -1287,7 +1272,7 @@ void MultiSubpassesRenderer::CleanUpSyncObjects()
 	{
 		vkDestroySemaphore(device_manager->GetLogicalDeviceRef(), render_finished_semaphores[i], nullptr);
 		vkDestroySemaphore(device_manager->GetLogicalDeviceRef(), image_available_semaphores[i], nullptr);
-		vkDestroyFence(device_manager->GetLogicalDeviceRef(), inflight_fences[i], nullptr);
+		vkDestroyFence(device_manager->GetLogicalDeviceRef(), frame_fences[i], nullptr);
 	}
 }
 
@@ -1315,7 +1300,7 @@ void MultiSubpassesRenderer::CleanUpRenderPass()
 
 void MultiSubpassesRenderer::CleanUpImages()
 {
-	for (auto &var : red_color_attachment)
+	for (auto &var : all_color_attachment)
 	{
 		var.CleanUp();
 	}
@@ -1326,6 +1311,10 @@ void MultiSubpassesRenderer::CleanUpImages()
 	}
 
 	human_face.CleanUp();
+}
+
+void MultiSubpassesRenderer::CleanUpUniformBuffers()
+{
 }
 
 namespace std

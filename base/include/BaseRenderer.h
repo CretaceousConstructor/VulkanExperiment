@@ -25,6 +25,11 @@ class BaseRenderer
 {
 
 public:
+
+	BaseRenderer() = default;
+
+	~BaseRenderer() = default;
+
 	void SetDeviceManager(VkDeviceManager& para_device_manager);
 	void SetSwapChinManager(VkSwapChainManager& para_swapchain_manager);
 	void SetWindow(VkWindows& para_window);
@@ -79,7 +84,8 @@ public:
 
 
 
-
+public:
+	BaseRenderer* GetThisPtr();
 
 
 
@@ -96,6 +102,7 @@ public:
 	virtual void CleanUpRenderPass() = 0;
 	virtual void CleanUpImages() = 0;
 
+	virtual void CleanUpUniformBuffers() = 0;
 
 
 

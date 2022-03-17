@@ -122,6 +122,9 @@
     <ClCompile Include="..\..\..\vulkanExample\Vulkan\external\ktx\lib\hashlist.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="base\VkInstanceWrapper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="base\include\App.h">
@@ -198,6 +201,9 @@
     </ClInclude>
     <ClInclude Include="base\include\VkTexture.h">
       <Filter>Header Files\Texture</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\VkInstanceWrapper.h">
+      <Filter>Header Files\Vk</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

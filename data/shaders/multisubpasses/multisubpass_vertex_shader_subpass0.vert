@@ -16,11 +16,6 @@ layout(set = 0,binding = 0) uniform  ShaderDataUBO{
 
 } ubo_scene;
 //
-layout(set = 0,binding = 1) uniform ShaderDataUBOTest {
-	
-	mat4 view;
-
-} ubo_test;
 
 
 layout(push_constant) uniform PushConsts {

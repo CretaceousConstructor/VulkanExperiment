@@ -7,7 +7,7 @@
 layout (triangles) in;
 layout (line_strip, max_vertices = 6) out;
 
-layout (set = 0,binding = 2) uniform UBO 
+layout (set = 0,binding = 1) uniform UBO 
 {
 	mat4 projection;
 	mat4 view;
@@ -15,6 +15,9 @@ layout (set = 0,binding = 2) uniform UBO
 
 layout (location = 0) in vec3 inNormal[];
 layout (location = 1) in mat4 inModel[];
+
+
+
 
 layout (location = 0) out vec3 outColor;
 

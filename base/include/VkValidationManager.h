@@ -19,7 +19,7 @@ public:
 
 public:
 	static bool CheckValidationLayerSupport();
-	static const bool enableValidationLayers = true;
+	static constexpr bool enableValidationLayers = true;
 
 
 	static void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
@@ -58,15 +58,6 @@ public:
 
 private:
 	static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData);
-
-
-
-
-
-
-
-
-
 
 
 };

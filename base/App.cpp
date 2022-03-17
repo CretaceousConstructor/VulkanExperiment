@@ -1,5 +1,23 @@
 #include "App.h"
 
+
+
+
+App::App()
+{
+	//InitRenderer();
+	//window_v1 = std::make_shared<VkWindows>((void *)(renderer->GetThisPtr()));
+	//instance_v1 = std::make_shared<VkInstanceWrapper>(validation_manager);
+}
+
+
+
+
+
+
+
+
+
 void App::Init()
 {
 	InitRenderer();
@@ -7,6 +25,7 @@ void App::Init()
 	window.Init((void *) (renderer.get()));
 
 	VkInitializer::CreateInstance(instance, validation_manager);
+
 
 	//VkValidationManager::SetupDebugMessenger(instance, validation_manager);
 
@@ -32,6 +51,7 @@ void App::RendererSetUp()
 	    device_manager.CreateCommandPool(VkDeviceManager::CommandPoolType::graphics_command_pool, window.GetSurface()));
 	renderer->SetTransforCommandPool(
 	    device_manager.CreateCommandPool(VkDeviceManager::CommandPoolType::transfor_command_pool, window.GetSurface()));
+
 }
 
 void App::RenderingPreparation()
@@ -92,6 +112,8 @@ void App::CleanUp()
 	renderer->CleanUpCommandBuffersAndCommandPool();
 	renderer->CleanupFrameBuffers();
 	//TODO:clean up uniformBuffers;
+	renderer->CleanUpUniformBuffers();
+
 	renderer->CleanUpRenderPass();
 	renderer->CleanUpImages();
 	swap_chain_manager.CleanUp(device_manager.GetLogicalDeviceRef());
@@ -105,6 +127,7 @@ void App::DestroyInstance()
 {
 	vkDestroyInstance(instance, nullptr);
 }
+
 
 void App::Run()
 {

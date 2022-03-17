@@ -4,6 +4,7 @@
 #include "VkExtensionManager.h"
 #include "VkSwapChainManager.h"
 #include "VkWindows.h"
+#include "VkInstanceWrapper.h"
 #include "BaseRenderer.h"
 
 
@@ -18,9 +19,9 @@ class App
 {
 
 public:
-
+	App();
 	void Run();
-private:
+	~App() = default;
 
 	void Init();
 	void RendererSetUp();
@@ -40,20 +41,17 @@ protected:
 
 	VkValidationManager validation_manager;
 
+
 	VkDeviceManager device_manager;
-
 	VkSwapChainManager swap_chain_manager;
-
-	//Renderer renderer;
-
-
 	std::unique_ptr<BaseRenderer> renderer;
-
-
-
-
-
-
+	
+	
+	
+	
+	
+	//std::shared_ptr<VkWindows> window_v1;
+	//std::shared_ptr<VkInstanceWrapper> instance_v1;
 
 
 

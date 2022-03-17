@@ -814,7 +814,7 @@ void ShadowMappingRenderer::CreateOffScreenRenderPass()
 
 
 	std::array<VkSubpassDependency, 1> dependencies;
-	//这里是为了让	depth image从VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL转换到VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+	//这里的dependency是为了让	depth image从VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL转换到VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,从renderpass0到renderpass1的转换
 
 	dependencies[0].srcSubpass      = 0;
 	dependencies[0].dstSubpass      = VK_SUBPASS_EXTERNAL;
@@ -1405,5 +1405,9 @@ void ShadowMappingRenderer::CleanUpRenderPass()
 }
 
 void ShadowMappingRenderer::CleanUpImages()
+{
+}
+
+void ShadowMappingRenderer::CleanUpUniformBuffers()
 {
 }

@@ -75,8 +75,7 @@ public:
 	void CleanUpPiplineAndPiplineLayout() override;
 	void CleanUpRenderPass() override;
 	void CleanUpImages() override;
-
-
+	void CleanUpUniformBuffers() override;
 
 
 

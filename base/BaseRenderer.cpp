@@ -24,3 +24,8 @@ void BaseRenderer::SetTransforCommandPool(VkCommandPool commandpool)
 	transfor_command_pool = commandpool;
 	return;
 }
+
+BaseRenderer *BaseRenderer::GetThisPtr()
+{
+	return this;
+}

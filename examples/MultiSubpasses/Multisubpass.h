@@ -61,6 +61,7 @@ class MultiSubpassesRenderer : public BaseRenderer
 	void CleanUpPiplineAndPiplineLayout() override;
 	void CleanUpRenderPass() override;
 	void CleanUpImages() override;
+	void CleanUpUniformBuffers() override;
 
   private:
 	void CreatePiplineSubpass0();
@@ -103,11 +104,8 @@ class MultiSubpassesRenderer : public BaseRenderer
 		alignas(4) float specularStrength = 0.5f;
 	};
 
-	struct UniformBufferObjectTest
-	{
-	  public:
-		glm::mat4 view;
-	};
+
+
 
 	struct UniformBufferOjectGS
 	{
@@ -115,6 +113,7 @@ class MultiSubpassesRenderer : public BaseRenderer
 		glm::mat4 view;
 
 	} uboGS;
+
 
   private:
 	//RENDER PASS
@@ -145,7 +144,6 @@ class MultiSubpassesRenderer : public BaseRenderer
 	std::vector<VkUniformBuffer> uniform_buffers_GS;
 
 	ShaderData              ubo{};
-	UniformBufferObjectTest ubo0{};
 	UniformBufferOjectGS    ubo_gs{};
 
 	//TEXTURE
@@ -153,7 +151,7 @@ class MultiSubpassesRenderer : public BaseRenderer
 	VkTexture viking_room;
 
 	//ATTACHMENT
-	std::vector<VkImageWrapper> red_color_attachment;
+	std::vector<VkImageWrapper> all_color_attachment;
 	std::vector<VkImageWrapper> depth_attachment;
 
 	//FRAMEBUFFER
@@ -167,19 +165,22 @@ class MultiSubpassesRenderer : public BaseRenderer
 
 	std::vector<VkSemaphore> image_available_semaphores;
 	std::vector<VkSemaphore> render_finished_semaphores;
-	std::vector<VkFence>     inflight_fences;
-	std::vector<VkFence>     images_inflight;
+	std::vector<VkFence>     frame_fences;
+	std::vector<VkFence>     images_fences;
 
 	//MODELS
-	std::vector<VkModel<Vertex, InsatnceTranformation>> scene;
-	std::unique_ptr<VkModel<Vertex>>                    viking_room_model;
-
 	std::unique_ptr<GltfModel> test_model;
 
+	
+	
+	
+	
 	//INPUT MANAGER
-
 	std::unique_ptr<KeyBoardInputManager> keyboard;
 	std::unique_ptr<MouseInputManager>    mouse;
+
+
+
 
 	//CAMERA
 	std::unique_ptr<FirstPersonCamera> m_pCamera;

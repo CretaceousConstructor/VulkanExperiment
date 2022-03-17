@@ -18,21 +18,33 @@ layout (set = 0,binding = 0) uniform UBO
 layout (location = 0) out vec3 outNormal;
 layout (location = 1) out vec3 outViewVec;
 layout (location = 2) out vec3 outLightVec;
-layout (location = 3) out vec2 outUV;
-layout (location = 4) out float outLodBias;
+
+
+layout (location = 3) out vec3 outPos;
+
+
+layout (location = 4) out vec2 outUV;
+layout (location = 5) out float outLodBias;
 
 
 void main() 
 {
 	outUV = inUV;
-	outLodBias = ubo.lodBias;
-	//简单模型，没有传入model matrix
+	outLodBias = ubo.lodBias; //level of detail
+	//简单模型，没有传入model matrix,用identity matrix代替即可
 	mat4 model =  mat4(1.0);
-	//gl_Position = ubo.projection * ubo.view * model * vec4(inPos.xyz, 1.0);
-	gl_Position = ubo.projection * vec4(inPos.xyz, 1.0);
-	//所有运算在worldspace进行
+
+
+
+	gl_Position = ubo.projection * ubo.view * model * vec4(inPos.xyz, 1.0);
+	//gl_Position = ubo.projection * vec4(inPos.xyz, 1.0);
+
+
+	//所有运算均在worldspace进行
 	//pos in world space
     vec4 pos = model * vec4(inPos, 1.0);
+	outPos = vec3(pos);	
+	
 	//normal in world space
 	outNormal = mat3(inverse(transpose(model))) * inNormal;
 	//assume light at (0,0,0)
@@ -40,5 +52,10 @@ void main()
 	//light positon in world space
 	vec3 lPos =  lightPos.xyz;
     outLightVec = lPos - pos.xyz;
-    outViewVec = ubo.eyepos.xyz - pos.xyz;		
+    outViewVec = ubo.eyepos.xyz - pos.xyz;
+
+
+
+
+
 }
