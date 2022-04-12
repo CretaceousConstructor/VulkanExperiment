@@ -12,14 +12,14 @@
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\ktx\include;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\ktx\other_include;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\tinygltf;D:\CS\ComputerGraphics\vulkan\WindowsProject1\base\include;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\tinyobjloader;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\glfw-3.3.3.bin.WIN64\include;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\glm;D:\ProgrammingTools\vulkan\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)external\ktx\include;$(SolutionDir)external\ktx\other_include;$(SolutionDir)external\tinygltf;$(SolutionDir)base\include;$(SolutionDir)external\tinyobjloader;$(SolutionDir)external\glfw-3.3.3.bin.WIN64\include;$(SolutionDir)external\glm;$(SolutionDir)external\vulkan\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <BuildLog>
       <Path>$(Log)$(Configuration)\$(MSBuildProjectName).log</Path>
     </BuildLog>
     <Link>
-      <AdditionalLibraryDirectories>D:\CS\ComputerGraphics\vulkan\WindowsProject1\lib;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\glfw-3.3.3.bin.WIN64\lib-vc2019;D:\ProgrammingTools\vulkan\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)lib;$(SolutionDir)external\glfw-3.3.3.bin.WIN64\lib-vc2019;$(SolutionDir)external\vulkan\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>Base.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>

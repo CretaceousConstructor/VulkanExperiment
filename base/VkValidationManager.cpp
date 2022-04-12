@@ -113,11 +113,11 @@ void VkValidationManager::SetupDebugMessenger(VkInstance &instance, VkValidation
 
 void VkValidationManager::DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT para_debugMessenger, const VkAllocationCallbacks *pAllocator)
 {
-	PFN_vkDestroyDebugUtilsMessengerEXT func = (PFN_vkDestroyDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
-	if (func != nullptr)
-	{
-		func(instance, para_debugMessenger, pAllocator);
-	}
+	//PFN_vkDestroyDebugUtilsMessengerEXT func = (PFN_vkDestroyDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
+	//if (func != nullptr)
+	//{
+	//	func(instance, para_debugMessenger, pAllocator);
+	//}
 }
 
 VKAPI_ATTR VkBool32 VKAPI_CALL VkValidationManager::debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData, void *pUserData)

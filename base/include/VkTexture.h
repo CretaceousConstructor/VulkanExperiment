@@ -42,4 +42,7 @@ class VkTexture
 	VkImageLayout    imageLayout;
 	VkBool32         ktx_use_staging = true;
 	uint32_t         mip_levels = 1;
+
+
+
 };

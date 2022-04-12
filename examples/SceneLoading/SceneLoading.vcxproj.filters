@@ -1,0 +1,59 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Shader Files">
+      <UniqueIdentifier>{0f69ade3-ec7e-43c5-9b8e-4ae703ef3baa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaderbat Files">
+      <UniqueIdentifier>{c663c0ae-dff1-42c0-a575-4b7138b8c207}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="SceneLoadingApp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SceneLoadingRenderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="SceneLoadingApp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SceneLoadingRenderer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\data\shaderbat\SceneLoadingCompile.bat">
+      <Filter>Shaderbat Files</Filter>
+    </None>
+    <None Include="..\..\data\shaders\SceneLoading\SceneLoading_vertex_shader.vert">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="..\..\data\shaders\SceneLoading\SceneLoading_fragment_shader.frag">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="..\..\data\shaders\SceneLoading\LightIndicator_fragment_shader.frag">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="..\..\data\shaders\SceneLoading\LightIndicator_vertex_shader.vert">
+      <Filter>Shader Files</Filter>
+    </None>
+  </ItemGroup>
+</Project>

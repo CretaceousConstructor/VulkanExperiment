@@ -9,6 +9,7 @@ void VkTexture::CleanUp()
 	if (device_manager != nullptr)
 	{
 
+		texture_image.CleanUp();
 		vkDestroySampler(device_manager->GetLogicalDeviceRef(), texture_sampler, nullptr);
 	}
 	else
@@ -231,6 +232,10 @@ void VkTexture::InitKTXTexture(std::string image_path, VkDeviceManager *para_dev
 	}
 
 	ktxTexture_Destroy(ktxTexture);
+
+
+
+
 }
 
 void VkTexture::InitTextureView(VkFormat format, VkImageAspectFlags aspectFlags)

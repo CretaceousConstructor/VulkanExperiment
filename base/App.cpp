@@ -3,13 +3,6 @@
 
 
 
-App::App()
-{
-	//InitRenderer();
-	//window_v1 = std::make_shared<VkWindows>((void *)(renderer->GetThisPtr()));
-	//instance_v1 = std::make_shared<VkInstanceWrapper>(validation_manager);
-}
-
 
 
 
@@ -21,11 +14,10 @@ App::App()
 void App::Init()
 {
 	InitRenderer();
-	//global initialization
+
 	window.Init((void *) (renderer.get()));
 
 	VkInitializer::CreateInstance(instance, validation_manager);
-
 
 	//VkValidationManager::SetupDebugMessenger(instance, validation_manager);
 
@@ -111,11 +103,11 @@ void App::CleanUp()
 	renderer->CleanUpDescriptorSetLayoutAndDescriptorPool();
 	renderer->CleanUpCommandBuffersAndCommandPool();
 	renderer->CleanupFrameBuffers();
-	//TODO:clean up uniformBuffers;
-	renderer->CleanUpUniformBuffers();
 
+	renderer->CleanUpUniformBuffers();
 	renderer->CleanUpRenderPass();
 	renderer->CleanUpImages();
+
 	swap_chain_manager.CleanUp(device_manager.GetLogicalDeviceRef());
 	device_manager.CleanUp();
 	window.CleanUp(instance);

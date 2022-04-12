@@ -6,6 +6,10 @@
 
 class ShadowMappingApp : public App
 {
+  public:
+	ShadowMappingApp() = default;
+	~ShadowMappingApp() = default;
+
 protected:
 	void InitRenderer() override;
 

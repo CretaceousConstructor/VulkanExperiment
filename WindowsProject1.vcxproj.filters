@@ -205,5 +205,8 @@
     <ClInclude Include="base\include\VkInstanceWrapper.h">
       <Filter>Header Files\Vk</Filter>
     </ClInclude>
+    <ClInclude Include="base\include\Geometry.h">
+      <Filter>Header Files\Model</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -56,6 +56,7 @@
     <ClInclude Include="base\include\EngineHeader.h" />
     <ClInclude Include="base\include\EngineMarco.h" />
     <ClInclude Include="base\include\FirstPersonCamera.h" />
+    <ClInclude Include="base\include\Geometry.h" />
     <ClInclude Include="base\include\GltfModel.h" />
     <ClInclude Include="base\include\KeyBoardInputManager.h" />
     <ClInclude Include="base\include\ModelLoader.h" />
@@ -160,7 +161,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\ktx\include;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\ktx\lib;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\ktx\other_include;D:\ProgrammingTools\vulkan\Include;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\tinygltf;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\tinyobjloader;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\glm;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\glfw-3.3.3.bin.WIN64\include;D:\CS\ComputerGraphics\vulkan\WindowsProject1\base\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)external\ktx\include;$(SolutionDir)external\ktx\lib;$(SolutionDir)external\ktx\other_include;$(SolutionDir)external\vulkan\Include;$(SolutionDir)external\tinygltf;$(SolutionDir)external\glm;$(SolutionDir)external\glfw-3.3.3.bin.WIN64\include;$(SolutionDir)base\include;$(SolutionDir)external\tinyobjloader;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -181,7 +182,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\ktx\include;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\ktx\lib;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\ktx\other_include;D:\ProgrammingTools\vulkan\Include;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\tinygltf;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\tinyobjloader;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\glm;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\glfw-3.3.3.bin.WIN64\include;D:\CS\ComputerGraphics\vulkan\WindowsProject1\base\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)external\ktx\include;$(SolutionDir)external\ktx\lib;$(SolutionDir)external\ktx\other_include;$(SolutionDir)external\vulkan\Include;$(SolutionDir)external\tinygltf;$(SolutionDir)external\glm;$(SolutionDir)external\glfw-3.3.3.bin.WIN64\include;$(SolutionDir)base\include;$(SolutionDir)external\tinyobjloader;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -202,7 +203,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\ktx\include;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\ktx\lib;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\ktx\other_include;D:\ProgrammingTools\vulkan\Include;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\tinygltf;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\tinyobjloader;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\glm;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\glfw-3.3.3.bin.WIN64\include;D:\CS\ComputerGraphics\vulkan\WindowsProject1\base\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)external\ktx\include;$(SolutionDir)external\ktx\lib;$(SolutionDir)external\ktx\other_include;$(SolutionDir)external\vulkan\Include;$(SolutionDir)external\tinygltf;$(SolutionDir)external\glm;$(SolutionDir)external\glfw-3.3.3.bin.WIN64\include;$(SolutionDir)base\include;$(SolutionDir)external\tinyobjloader;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -220,7 +221,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\ktx\include;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\ktx\lib;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\ktx\other_include;D:\ProgrammingTools\vulkan\Include;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\tinygltf;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\tinyobjloader;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\glm;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\glfw-3.3.3.bin.WIN64\include;D:\CS\ComputerGraphics\vulkan\WindowsProject1\base\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)external\ktx\include;$(SolutionDir)external\ktx\lib;$(SolutionDir)external\ktx\other_include;$(SolutionDir)external\vulkan\Include;$(SolutionDir)external\tinygltf;$(SolutionDir)external\glm;$(SolutionDir)external\glfw-3.3.3.bin.WIN64\include;$(SolutionDir)base\include;$(SolutionDir)external\tinyobjloader;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
