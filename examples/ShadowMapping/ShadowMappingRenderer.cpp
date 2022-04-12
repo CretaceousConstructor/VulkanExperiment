@@ -35,7 +35,7 @@ void ShadowMappingRenderer::CreateAttachmentImages()
 void ShadowMappingRenderer::CreateTextureImages()
 {
 	VkFormat format_of_texture = VK_FORMAT_R8G8B8A8_SRGB;
-	ktx_texure.InitKTXTexture(std::string("../../data/textures/metalplate01_rgba.ktx"), device_manager, window, transfor_command_pool, format_of_texture, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+	ktx_texure.InitKTXTexture(std::string("../../data/textures/metalplate01_rgba.ktx"), device_manager, window, transfer_command_pool, format_of_texture, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 	ktx_texure.InitTextureView(format_of_texture, VK_IMAGE_ASPECT_COLOR_BIT);
 	ktx_texure.InitSampler();
 }
@@ -365,7 +365,7 @@ void ShadowMappingRenderer::CreateGraphicsPipline()
 
 void ShadowMappingRenderer::InitCommandBuffers()
 {
-	VkCommandManager::CreateCommandBuffer(device_manager->GetLogicalDeviceRef(), transfor_command_pool, transfer_command_buffer, VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+	VkCommandManager::CreateCommandBuffer(device_manager->GetLogicalDeviceRef(), transfer_command_pool, transfer_command_buffer, VK_COMMAND_BUFFER_LEVEL_PRIMARY);
 
 	graphics_command_buffers.resize(swapchain_manager->GetSwapImageCount());
 

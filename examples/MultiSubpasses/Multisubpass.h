@@ -1,10 +1,10 @@
 #pragma once
+
 #include "BaseRenderer.h"
-#include "FirstPersonCamera.h"
+#include "GltfModel.h"
 #include "KeyBoardInputManager.h"
 #include "MouseInputManager.h"
-
-#include "GltfModel.h"
+#include "FirstPersonCamera.h"
 
 #include <array>
 #include <chrono>
@@ -16,11 +16,12 @@
 #include <random>
 #include <vector>
 
-
-
-
 class MultiSubpassesRenderer : public BaseRenderer
 {
+  public:
+	MultiSubpassesRenderer() = default;
+	~MultiSubpassesRenderer() = default;
+
   public:
 	void SetUpUserInput() override;
 	void CreateCamera() override;
@@ -89,23 +90,21 @@ class MultiSubpassesRenderer : public BaseRenderer
 	{
 	  public:
 		glm::mat4 worldTrans;
+
 	};
 
 	//UBO DATA
-	struct ShaderData
+	struct UniformBufferOject
 	{
 	  public:
 		glm::mat4 view;
 		glm::mat4 proj;
 		glm::vec4 lightPos               = glm::vec4(-15.0f, 10.0f, 5.0f, 1.0f);
-		alignas(16) glm::vec3 lightColor = glm::vec3(1.f, 1.f, 1.f);
+		alignas(16) glm::vec3 lightColor = glm::vec3(0.5f, 0.5f, 0.5f);
 		alignas(16) glm::vec3 eyePos;
-		alignas(4) float ambientStrength  = 0.1f;
+		alignas(4) float ambientStrength  = 0.05f;
 		alignas(4) float specularStrength = 0.5f;
 	};
-
-
-
 
 	struct UniformBufferOjectGS
 	{
@@ -113,7 +112,6 @@ class MultiSubpassesRenderer : public BaseRenderer
 		glm::mat4 view;
 
 	} uboGS;
-
 
   private:
 	//RENDER PASS
@@ -132,6 +130,7 @@ class MultiSubpassesRenderer : public BaseRenderer
 	//PIPLINE
 	VkPipelineLayout pipeline_layout_subpass0;
 	VkPipelineLayout pipeline_layout_subpass1;
+	VkPipelineCache  pipelineCache;
 
 	VkPipeline graphics_pipeline_subpass0;
 	VkPipeline graphics_pipeline_subpass1;
@@ -140,11 +139,10 @@ class MultiSubpassesRenderer : public BaseRenderer
 	//UNIFORM BUFFER
 
 	std::vector<VkUniformBuffer> uniform_buffers;
-	std::vector<VkUniformBuffer> uniform_buffers_test;
 	std::vector<VkUniformBuffer> uniform_buffers_GS;
 
-	ShaderData              ubo{};
-	UniformBufferOjectGS    ubo_gs{};
+	UniformBufferOject   ubo{};
+	UniformBufferOjectGS ubo_gs{};
 
 	//TEXTURE
 	VkTexture human_face;
@@ -171,17 +169,12 @@ class MultiSubpassesRenderer : public BaseRenderer
 	//MODELS
 	std::unique_ptr<GltfModel> test_model;
 
-	
-	
-	
-	
 	//INPUT MANAGER
 	std::unique_ptr<KeyBoardInputManager> keyboard;
 	std::unique_ptr<MouseInputManager>    mouse;
 
-
-
-
 	//CAMERA
-	std::unique_ptr<FirstPersonCamera> m_pCamera;
+	std::unique_ptr<FirstPersonCamera>     camera;
+
+
 };

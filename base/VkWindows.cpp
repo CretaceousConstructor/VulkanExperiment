@@ -69,9 +69,9 @@ VkWindows::VkWindows(void * renderer_ptr, uint32_t w, uint32_t h, std::string wi
 VkWindows::~VkWindows()
 {
 
-	vkDestroySurfaceKHR(instance, surface, nullptr);
-	glfwDestroyWindow(raw_window_ptr);
-	glfwTerminate();
+//	vkDestroySurfaceKHR(instance, surface, nullptr);
+//	glfwDestroyWindow(raw_window_ptr);
+//	glfwTerminate();
 
 }
 

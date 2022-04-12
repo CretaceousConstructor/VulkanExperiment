@@ -5,13 +5,11 @@ void VkSwapChainManager::CreateSwapChainAndSwapImages(VkPhysicalDevice& physical
 
 	SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(physical_device, surface);
 	////支持的backbuffer格式
-		//colorSpace
-		//VK_COLOR_SPACE_SRGB_NONLINEAR_KHR = 0, 
 
 		//format;
-		//VK_FORMAT_B8G8R8A8_UNORM = 44,
-		//VK_FORMAT_B8G8R8A8_SRGB = 50,
-		//VK_FORMAT_A2B10G10R10_UNORM_PACK32 = 64,
+		//VK_FORMAT_B8G8R8A8_UNORM = 44,VK_COLOR_SPACE_SRGB_NONLINEAR_KHR
+		//VK_FORMAT_B8G8R8A8_SRGB = 50,VK_COLOR_SPACE_SRGB_NONLINEAR_KHR
+		//VK_FORMAT_A2B10G10R10_UNORM_PACK32 = 64,VK_COLOR_SPACE_SRGB_NONLINEAR_KHR
 	//可的展示的模式
 		//VK_PRESENT_MODE_FIFO_KHR = 2,
 		//VK_PRESENT_MODE_FIFO_RELAXED_KHR = 3,
@@ -102,7 +100,7 @@ void VkSwapChainManager::CreateSwapChainAndSwapImages(VkPhysicalDevice& physical
 	createInfo.oldSwapchain = VK_NULL_HANDLE;//窗口重新绘制，那么swapchain可能就失效了，失效的swapchain需要存在这里面。你要创建新的swapchain
 
 
-
+	//BGRA SRGB
 	swap_chain_image_format = surfaceFormat.format;
 	swap_chain_extent = extent;
 

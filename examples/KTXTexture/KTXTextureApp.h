@@ -5,7 +5,10 @@
 
 class KTXTextureApp : public App
 {
+  public:
+	~KTXTextureApp() = default;
+	KTXTextureApp()  = default;
 
-protected:
+  protected:
 	void InitRenderer() override;
 };

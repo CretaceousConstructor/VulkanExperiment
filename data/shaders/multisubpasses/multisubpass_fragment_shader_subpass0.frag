@@ -12,8 +12,6 @@ layout(set = 0,binding = 0) uniform  ShaderDataUBO{
 	float ambientStrength;
 	float specularStrength;
 
-
-
 } ubo_scene;
 
 
@@ -45,17 +43,24 @@ void main() {
 		vec3 reflectDir = reflect(-lightDir, norm);  
 
 		vec3 ambient = ubo_scene.ambientStrength * ubo_scene.lightColor;
-
+			
+		
 		float diff = max(dot(norm, lightDir), 0.0);
 		vec3 diffuse = diff * ubo_scene.lightColor;
-
-		float spec = pow(max(dot(viewDir, reflectDir), 0.0), 256);
-		vec3 specular = ubo_scene.specularStrength * spec * ubo_scene.lightColor; 
-
+	
+	
+		vec3 specular = vec3(0.); 
+		if( dot(norm,lightDir) > 0.){
+			float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
+			specular = ubo_scene.specularStrength * spec * ubo_scene.lightColor; 
+		}
 
 		vec3 result = (ambient + diffuse + specular ) * vec3(objectColor);
 
 		outFragColor = vec4(result, 1.0);
+
+
+
   
 
 }

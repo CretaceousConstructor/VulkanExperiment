@@ -31,13 +31,11 @@ void main()
 {
 	outUV = inUV;
 	outLodBias = ubo.lodBias; //level of detail
+
 	//简单模型，没有传入model matrix,用identity matrix代替即可
 	mat4 model =  mat4(1.0);
 
-
-
 	gl_Position = ubo.projection * ubo.view * model * vec4(inPos.xyz, 1.0);
-	//gl_Position = ubo.projection * vec4(inPos.xyz, 1.0);
 
 
 	//所有运算均在worldspace进行

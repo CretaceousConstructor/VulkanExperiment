@@ -1,7 +1,6 @@
 #include "Camera.h"
 
 
-
 Camera::~Camera()
 {
 }
@@ -9,6 +8,15 @@ Camera::~Camera()
 glm::vec3 Camera::GetPosition() const
 {
 	return m_Transform.GetPosition();
+}
+void Camera::SetPosition(float x, float y, float z)
+{
+	SetPosition(glm::vec3(x, y, z));
+}
+
+void Camera::SetPosition(const glm::vec3& pos)
+{
+	m_Transform.SetPosition(pos);
 }
 
 float Camera::GetRotationX() const

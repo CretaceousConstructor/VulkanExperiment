@@ -19,10 +19,12 @@ class App
 {
 
 public:
-	App();
-	void Run();
-	~App() = default;
+	App() = default;
+	virtual ~App() = default;
 
+	void Run();
+	
+	
 	void Init();
 	void RendererSetUp();
 	void RenderingPreparation();
@@ -36,17 +38,11 @@ protected:
 
 
 	VkWindows window;
-
 	VkInstance instance;
-
 	VkValidationManager validation_manager;
-
-
 	VkDeviceManager device_manager;
 	VkSwapChainManager swap_chain_manager;
 	std::unique_ptr<BaseRenderer> renderer;
-	
-	
 	
 	
 	

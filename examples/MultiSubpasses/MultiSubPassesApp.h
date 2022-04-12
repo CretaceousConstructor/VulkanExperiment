@@ -4,6 +4,11 @@
 
 class MultiSubPassesApp : public App
 {
+  public:
+	MultiSubPassesApp() = default;
+	~MultiSubPassesApp() = default;
+
+
   protected:
 	void InitRenderer() override;
 };

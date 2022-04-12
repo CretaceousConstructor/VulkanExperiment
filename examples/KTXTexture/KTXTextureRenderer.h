@@ -17,6 +17,9 @@
 
 class KTXTextureRenderer : public BaseRenderer
 {
+public: 
+	KTXTextureRenderer() = default;
+	~KTXTextureRenderer() = default;
   public:
 	void SetUpUserInput() override;
 	void CreateCamera() override;

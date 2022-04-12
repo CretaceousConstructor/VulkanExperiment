@@ -21,7 +21,7 @@ void BaseRenderer::SetGraphicsCommandPool(VkCommandPool commandpool)
 
 void BaseRenderer::SetTransforCommandPool(VkCommandPool commandpool)
 {
-	transfor_command_pool = commandpool;
+	transfer_command_pool = commandpool;
 	return;
 }
 

@@ -25,6 +25,8 @@ void main()
 	vec3 L = normalize(inLightVec);
 	vec3 V = normalize(inViewVec);
 	vec3 R = reflect(-L, N);
+
+
 	vec3 diffuse = max(dot(N, L), 0.0) * vec3(1.0);
 	float specular = pow(max(dot(R, V), 0.0), 16.0) * color.a;
 

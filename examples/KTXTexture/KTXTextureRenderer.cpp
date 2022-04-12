@@ -4,7 +4,7 @@ void KTXTextureRenderer::CreateTextureImages()
 {
 	VkFormat format_of_texture = VK_FORMAT_R8G8B8A8_SRGB;
 
-	ktx_texure.InitKTXTexture(std::string("../../data/textures/metalplate01_rgba.ktx"), device_manager, window, transfor_command_pool, format_of_texture, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+	ktx_texure.InitKTXTexture(std::string("../../data/textures/metalplate01_rgba.ktx"), device_manager, window, transfer_command_pool, format_of_texture, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 	ktx_texure.InitTextureView(format_of_texture, VK_IMAGE_ASPECT_COLOR_BIT);
 	ktx_texure.InitSampler();
 }
@@ -13,10 +13,10 @@ void KTXTextureRenderer::PrepareModels()
 {
 	std::vector<Vertex> vertices =
 	    {
-	        {glm::vec3{1.0f, 1.0f, -5.0f}, glm::vec3{0.0f, 0.0f, 1.0f}, glm::vec2{1.0f, 1.0f}},
-	        {glm::vec3{-1.0f, 1.0f, -5.0f}, glm::vec3{0.0f, 0.0f, 1.0f}, glm::vec2{0.0f, 1.0f}},
-	        {glm::vec3{-1.0f, -1.0f, -5.0f}, glm::vec3{0.0f, 0.0f, 1.0f}, glm::vec2{0.0f, 0.0f}},
-	        {glm::vec3{1.0f, -1.0f, -5.0f}, glm::vec3{0.0f, 0.0f, 1.0f}, glm::vec2{1.0f, 0.0f}}};
+	        {glm::vec3{1.0f, 1.0f, -5.0f}, glm::vec3{0.0f, 0.0f, 1.0f}, glm::vec2{1.0f, 0.f}},
+	        {glm::vec3{-1.0f, 1.0f, -5.0f}, glm::vec3{0.0f, 0.0f, 1.0f}, glm::vec2{0.0f, 0.0f}},
+	        {glm::vec3{-1.0f, -1.0f, -5.0f}, glm::vec3{0.0f, 0.0f, 1.0f}, glm::vec2{0.0f, 1.0f}},
+	        {glm::vec3{1.0f, -1.0f, -5.0f}, glm::vec3{0.0f, 0.0f, 1.0f}, glm::vec2{1.0f, 1.0f}}};
 	// Setup indices
 	std::vector<uint32_t> indices = {0, 1, 2, 2, 3, 0};
 
@@ -246,7 +246,7 @@ void KTXTextureRenderer::CreatePiplineSubpass0()
 
 	rasterizer.lineWidth = 1.f;
 
-	rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
+	rasterizer.cullMode  = VK_CULL_MODE_BACK_BIT;
 	rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
 
 	rasterizer.depthBiasEnable         = VK_FALSE;
@@ -515,7 +515,7 @@ void KTXTextureRenderer::CreateFramebuffers()
 
 void KTXTextureRenderer::InitCommandBuffers()
 {
-	VkCommandManager::CreateCommandBuffer(device_manager->GetLogicalDeviceRef(), transfor_command_pool, transfer_command_buffer, VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+	VkCommandManager::CreateCommandBuffer(device_manager->GetLogicalDeviceRef(), transfer_command_pool, transfer_command_buffer, VK_COMMAND_BUFFER_LEVEL_PRIMARY);
 
 	graphics_command_buffers.resize(swapchain_manager->GetSwapImageCount());
 
@@ -867,22 +867,24 @@ void KTXTextureRenderer::CreateCamera()
 
 void KTXTextureRenderer::CleanUpModels()
 {
+	quad_model->CleanUp();
 }
 
 void KTXTextureRenderer::CleanUpDescriptorSetLayoutAndDescriptorPool()
 {
 	vkDestroyDescriptorSetLayout(device_manager->GetLogicalDeviceRef(), descriptor_set_layout_write_subpass0, nullptr);
-
 	vkDestroyDescriptorPool(device_manager->GetLogicalDeviceRef(), descriptor_pool, nullptr);
+
+
 }
 
 void KTXTextureRenderer::CleanUpCommandBuffersAndCommandPool()
 {
 	vkFreeCommandBuffers(device_manager->GetLogicalDeviceRef(), graphics_command_pool, static_cast<uint32_t>(graphics_command_buffers.size()), graphics_command_buffers.data());
-	vkFreeCommandBuffers(device_manager->GetLogicalDeviceRef(), transfor_command_pool, 1, &transfer_command_buffer);
+	vkFreeCommandBuffers(device_manager->GetLogicalDeviceRef(), transfer_command_pool, 1, &transfer_command_buffer);
 
 	vkDestroyCommandPool(device_manager->GetLogicalDeviceRef(), graphics_command_pool, nullptr);
-	vkDestroyCommandPool(device_manager->GetLogicalDeviceRef(), transfor_command_pool, nullptr);
+	vkDestroyCommandPool(device_manager->GetLogicalDeviceRef(), transfer_command_pool, nullptr);
 }
 
 void KTXTextureRenderer::CleanUpSyncObjects()
@@ -891,9 +893,11 @@ void KTXTextureRenderer::CleanUpSyncObjects()
 	{
 		vkDestroySemaphore(device_manager->GetLogicalDeviceRef(), render_finished_semaphores[i], nullptr);
 		vkDestroySemaphore(device_manager->GetLogicalDeviceRef(), image_available_semaphores[i], nullptr);
-	//	vkDestroyFence(device_manager->GetLogicalDeviceRef(), frame_fences[i], nullptr);
-	//	vkDestroyFence(device_manager->GetLogicalDeviceRef(), image_fences[i], nullptr);
+		vkDestroyFence(device_manager->GetLogicalDeviceRef(), frame_fences[i], nullptr);
 	}
+
+
+
 }
 
 void KTXTextureRenderer::CleanupFrameBuffers()
@@ -924,10 +928,6 @@ void KTXTextureRenderer::CleanUpImages()
 	ktx_texure.CleanUp();
 }
 
-
-
 void KTXTextureRenderer::CleanUpUniformBuffers()
 {
-
-
 }

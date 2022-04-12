@@ -1,18 +1,15 @@
 #include "FirstPersonCamera.h"
 
-FirstPersonCamera::~FirstPersonCamera()
-{
-}
 
-void FirstPersonCamera::SetPosition(float x, float y, float z)
-{
-	SetPosition(glm::vec3(x, y, z));
-}
-
-void FirstPersonCamera::SetPosition(const glm::vec3& pos)
-{
-	m_Transform.SetPosition(pos);
-}
+//void FirstPersonCamera::SetPosition(float x, float y, float z)
+//{
+//	SetPosition(glm::vec3(x, y, z));
+//}
+//
+//void FirstPersonCamera::SetPosition(const glm::vec3& pos)
+//{
+//	m_Transform.SetPosition(pos);
+//}
 
 void FirstPersonCamera::LookAt(const glm::vec3& pos, const glm::vec3& target, const glm::vec3& up)
 {
