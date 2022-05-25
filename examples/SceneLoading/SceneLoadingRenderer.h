@@ -6,6 +6,10 @@
 #include "GltfModel.h"
 #include "KeyBoardInputManager.h"
 #include "MouseInputManager.h"
+#include "GltfModel.h"
+#include "VkTexture.h"
+
+
 
 #include <array>
 #include <chrono>
@@ -20,8 +24,9 @@
 class SceneLoadingRenderer : public BaseRenderer
 {
   public:
-	SceneLoadingRenderer()  = default;
-	~SceneLoadingRenderer() = default;
+	SceneLoadingRenderer()           = default;
+
+	~SceneLoadingRenderer() override = default ;
 
   public:
 	void SetUpUserInput() override;
@@ -34,14 +39,14 @@ class SceneLoadingRenderer : public BaseRenderer
 	void CreateRenderPass() override;
 
 	void CreateUniformBuffer() override;
-	void CreateFramebuffers() override;
+	void CreateFrameBuffers() override;
 
 	void CreateDescriptorSetLayout() override;
 	void CreateDescriptorPool() override;
 	void CreateDescriptorSets() override;
 
-	void CreateGraphicsPiplineLayout() override;
-	void CreateGraphicsPipline() override;
+	void CreateGraphicsPipelineLayout() override;
+	void CreateGraphicsPipeline() override;
 
 	void InitCommandBuffers() override;
 	void PrepareModels() override;
@@ -61,7 +66,7 @@ class SceneLoadingRenderer : public BaseRenderer
 	void CleanUpCommandBuffersAndCommandPool() override;
 	void CleanUpSyncObjects() override;
 	void CleanupFrameBuffers() override;
-	void CleanUpPiplineAndPiplineLayout() override;
+	void CleanUpPipelineAndPipelineLayout() override;
 	void CleanUpRenderPass() override;
 	void CleanUpImages() override;
 	void CleanUpUniformBuffers() override;
@@ -163,4 +168,7 @@ class SceneLoadingRenderer : public BaseRenderer
 
   private:
 	void CreateLightIndicatorPipeline();
+
+
+
 };

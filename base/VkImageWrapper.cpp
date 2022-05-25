@@ -51,7 +51,7 @@ void VkImageWrapper::InitImageView(VkFormat format, VkImageAspectFlags aspectFla
 	viewInfo.subresourceRange.baseMipLevel   = 0;
 	viewInfo.subresourceRange.levelCount     = mip_levels;
 	viewInfo.subresourceRange.baseArrayLayer = 0;
-	viewInfo.subresourceRange.layerCount     = 1;
+	viewInfo.subresourceRange.layerCount     = 1; //之后会加入指定layercount的功能
 
 	image_view_format = format;
 	
@@ -59,6 +59,8 @@ void VkImageWrapper::InitImageView(VkFormat format, VkImageAspectFlags aspectFla
 	{
 		throw std::runtime_error("failed to create texture image view!");
 	}
+
+
 }
 
 void VkImageWrapper::CopyBufferToImage(VkBuffer buffer, uint32_t width, uint32_t height, VkCommandPool &command_pool, VkDevice &device, VkQueue &command_quque)
@@ -92,6 +94,9 @@ void VkImageWrapper::CopyBufferToImage(VkBuffer buffer, uint32_t width, uint32_t
 
 void VkImageWrapper::CopyBufferToImage(VkBuffer buffer, VkCommandPool &command_pool, VkDevice &device, VkQueue &command_quque, std::vector<VkBufferImageCopy> &bufferCopyRegions)
 {
+
+
+
 	VkCommandBuffer commandBuffer = VkCommandManager::BeginSingleTimeCommands(command_pool, device);
 
 	vkCmdCopyBufferToImage(
@@ -103,6 +108,9 @@ void VkImageWrapper::CopyBufferToImage(VkBuffer buffer, VkCommandPool &command_p
 	    bufferCopyRegions.data());
 
 	VkCommandManager::EndSingleTimeCommands(command_pool, device, commandBuffer, command_quque);
+
+
+
 }
 
 bool VkImageWrapper::HasStencilComponent(VkFormat format)
@@ -145,11 +153,12 @@ void VkImageWrapper::TransitionImageLayout(VkFormat format, VkImageLayout oldLay
 	barrier.subresourceRange.baseMipLevel   = 0;
 	barrier.subresourceRange.levelCount     = miplevelcount;
 	barrier.subresourceRange.baseArrayLayer = 0;
-	barrier.subresourceRange.layerCount     = 1;
+	barrier.subresourceRange.layerCount     = 1; //layer count的指定会在之后加入
 
 	VkPipelineStageFlags sourceStage;
 	VkPipelineStageFlags destinationStage;
 
+	//unchecked
 	if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
 	{
 		barrier.srcAccessMask = 0;
@@ -158,7 +167,6 @@ void VkImageWrapper::TransitionImageLayout(VkFormat format, VkImageLayout oldLay
 		sourceStage      = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
 		destinationStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 	}
-
 
 	//checked
 	else if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
@@ -169,8 +177,7 @@ void VkImageWrapper::TransitionImageLayout(VkFormat format, VkImageLayout oldLay
 		sourceStage      = VK_PIPELINE_STAGE_HOST_BIT;
 		destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
 	}
-
-	//uncheck ?
+	//unchecked 
 	else if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
 	{
 		barrier.srcAccessMask = 0;
@@ -179,11 +186,6 @@ void VkImageWrapper::TransitionImageLayout(VkFormat format, VkImageLayout oldLay
 		sourceStage      = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
 		destinationStage = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
 	}
-
-
-
-
-
 	//checked
 	else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
 	{
@@ -196,13 +198,15 @@ void VkImageWrapper::TransitionImageLayout(VkFormat format, VkImageLayout oldLay
 		destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
        	barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT,
 
+
+
+		//TODO:修好这里的队列家族问题
+		//这里有问题的，队列家族index如果不同就根本没法运行，至今原因未知
 		//barrier.srcQueueFamilyIndex = queue_family_indices.transferFamily.value();
 		barrier.srcQueueFamilyIndex = queue_family_indices.graphicsFamily.value();
 		barrier.dstQueueFamilyIndex = queue_family_indices.graphicsFamily.value();
 
 	}
-
-
 	else
 	{
 		throw std::invalid_argument("unsupported layout transition!");
@@ -261,6 +265,8 @@ void VkImageWrapper::Init(VkImageType para_image_type, VkFormat para_format, VkE
 	//imageInfo.flags
 	imageInfo.imageType     = para_image_type;
 	imageInfo.format        = para_format;
+	image_format            = para_format;
+
 	imageInfo.extent.width  = para_image_extent.width;
 	imageInfo.extent.height = para_image_extent.height;
 	imageInfo.extent.depth  = para_image_extent.depth;

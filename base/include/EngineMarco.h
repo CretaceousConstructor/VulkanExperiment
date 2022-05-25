@@ -23,3 +23,11 @@
 #ifndef GLM_ENABLE_EXPERIMENTAL
 #define GLM_ENABLE_EXPERIMENTAL
 #endif // !1
+
+
+//#ifdef _DEBUG
+//#define IMGUI_VULKAN_DEBUG_REPORT
+//#endif
+
+
+

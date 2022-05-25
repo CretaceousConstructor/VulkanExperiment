@@ -20,7 +20,7 @@ void KTXTextureRenderer::PrepareModels()
 	// Setup indices
 	std::vector<uint32_t> indices = {0, 1, 2, 2, 3, 0};
 
-	quad_model = std::make_unique<VkModel<Vertex>>(vertices, indices, device_manager, window->GetSurface(), transfer_command_buffer);
+	quad_model = std::make_unique<VkModel<Vertex>>(vertices, indices, device_manager, window->GetSurfaceRef(), transfer_command_buffer);
 }
 
 void KTXTextureRenderer::CreateDescriptorPool()
@@ -155,7 +155,7 @@ void KTXTextureRenderer::CreateUniformBuffer()
 	uniform_buffers.resize(swapchain_manager->GetSwapImageCount());
 	for (size_t i = 0; i < swapchain_manager->GetSwapImageCount(); i++)
 	{
-		device_manager->CreateBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, uniform_buffers[i].buffer, uniform_buffers[i].memory, VK_SHARING_MODE_EXCLUSIVE, window->GetSurface());
+		device_manager->CreateBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, uniform_buffers[i].buffer, uniform_buffers[i].memory, VK_SHARING_MODE_EXCLUSIVE, window->GetSurfaceRef());
 		//exclusive mode因为uniform buffer只会被graphics queue使用
 	}
 
@@ -172,7 +172,7 @@ void KTXTextureRenderer::CreateDepthImages()
 
 	depth_attachment.resize(swapchain_manager->GetSwapImageCount());
 
-	VkDeviceManager::QueueFamilyIndices queue_family_index = device_manager->FindQueueFamilies(device_manager->GetPhysicalDeviceRef(), window->GetSurface());
+	VkDeviceManager::QueueFamilyIndices queue_family_index = device_manager->FindQueueFamilies(device_manager->GetPhysicalDeviceRef(), window->GetSurfaceRef());
 
 	for (uint32_t i = 0; i < swapchain_manager->GetSwapImageCount(); i++)
 	{
@@ -183,7 +183,7 @@ void KTXTextureRenderer::CreateDepthImages()
 	}
 }
 
-void KTXTextureRenderer::CreatePiplineSubpass0()
+void KTXTextureRenderer::CreatePipelineSubpass0()
 {
 	//										 subpass0
 	/******************************************************************************************************/
@@ -461,7 +461,7 @@ void KTXTextureRenderer::CreateRenderPass()
 	}
 }
 
-void KTXTextureRenderer::CreateGraphicsPiplineLayout()
+void KTXTextureRenderer::CreateGraphicsPipelineLayout()
 {
 	{
 		std::vector<VkDescriptorSetLayout> setLayouts = {descriptor_set_layout_write_subpass0};
@@ -479,13 +479,13 @@ void KTXTextureRenderer::CreateGraphicsPiplineLayout()
 	}
 }
 
-void KTXTextureRenderer::CreateGraphicsPipline()
+void KTXTextureRenderer::CreateGraphicsPipeline()
 {
 	system("..\\..\\data\\shaderbat\\KTXTextureShaderCompile.bat");
-	CreatePiplineSubpass0();
+	CreatePipelineSubpass0();
 }
 
-void KTXTextureRenderer::CreateFramebuffers()
+void KTXTextureRenderer::CreateFrameBuffers()
 {
 	frame_buffers.resize(swapchain_manager->GetSwapImageCount());
 
@@ -908,7 +908,7 @@ void KTXTextureRenderer::CleanupFrameBuffers()
 	}
 }
 
-void KTXTextureRenderer::CleanUpPiplineAndPiplineLayout()
+void KTXTextureRenderer::CleanUpPipelineAndPipelineLayout()
 {
 	vkDestroyPipeline(device_manager->GetLogicalDeviceRef(), graphics_pipeline_subpass0, nullptr);
 	vkDestroyPipelineLayout(device_manager->GetLogicalDeviceRef(), pipeline_layout_subpass0, nullptr);

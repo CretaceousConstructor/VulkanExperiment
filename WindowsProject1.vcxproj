@@ -30,6 +30,13 @@
     <ClCompile Include="base\Camera.cpp" />
     <ClCompile Include="base\FirstPersonCamera.cpp" />
     <ClCompile Include="base\GltfModel.cpp" />
+    <ClCompile Include="base\imgui.cpp" />
+    <ClCompile Include="base\imgui_demo.cpp" />
+    <ClCompile Include="base\imgui_draw.cpp" />
+    <ClCompile Include="base\imgui_impl_glfw.cpp" />
+    <ClCompile Include="base\imgui_impl_vulkan.cpp" />
+    <ClCompile Include="base\imgui_tables.cpp" />
+    <ClCompile Include="base\imgui_widgets.cpp" />
     <ClCompile Include="base\KeyBoardInputManager.cpp" />
     <ClCompile Include="base\ModelLoader.cpp" />
     <ClCompile Include="base\MouseInputManager.cpp" />
@@ -42,12 +49,13 @@
     <ClCompile Include="base\VkInitializer.cpp" />
     <ClCompile Include="base\VkInstanceWrapper.cpp" />
     <ClCompile Include="base\VkMemoryManager.cpp" />
-    <ClCompile Include="base\VkMemoryWrapper.cpp" />
+    <ClCompile Include="base\VkBufferWrapper.cpp" />
     <ClCompile Include="base\VkSwapChainManager.cpp" />
     <ClCompile Include="base\VkTexture.cpp" />
     <ClCompile Include="base\VkUniformBuffer.cpp" />
     <ClCompile Include="base\VkValidationManager.cpp" />
     <ClCompile Include="base\VkWindows.cpp" />
+    <ClCompile Include="VkImgui.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="base\include\App.h" />
@@ -58,6 +66,14 @@
     <ClInclude Include="base\include\FirstPersonCamera.h" />
     <ClInclude Include="base\include\Geometry.h" />
     <ClInclude Include="base\include\GltfModel.h" />
+    <ClInclude Include="base\include\imconfig.h" />
+    <ClInclude Include="base\include\imgui.h" />
+    <ClInclude Include="base\include\imgui_impl_glfw.h" />
+    <ClInclude Include="base\include\imgui_impl_vulkan.h" />
+    <ClInclude Include="base\include\imgui_internal.h" />
+    <ClInclude Include="base\include\imstb_rectpack.h" />
+    <ClInclude Include="base\include\imstb_textedit.h" />
+    <ClInclude Include="base\include\imstb_truetype.h" />
     <ClInclude Include="base\include\KeyBoardInputManager.h" />
     <ClInclude Include="base\include\ModelLoader.h" />
     <ClInclude Include="base\include\MouseInputManager.h" />
@@ -70,13 +86,19 @@
     <ClInclude Include="base\include\VkInitializer.h" />
     <ClInclude Include="base\include\VkInstanceWrapper.h" />
     <ClInclude Include="base\include\VkMemoryManager.h" />
-    <ClInclude Include="base\include\VkMemoryWrapper.h" />
+    <ClInclude Include="base\include\VkBufferWrapper.h" />
     <ClInclude Include="base\include\VkModel.h" />
     <ClInclude Include="base\include\VkSwapChainManager.h" />
     <ClInclude Include="base\include\VkTexture.h" />
     <ClInclude Include="base\include\VkUniformBuffer.h" />
     <ClInclude Include="base\include\VkValidationManager.h" />
     <ClInclude Include="base\include\VkWindows.h" />
+    <ClInclude Include="VkImgui.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="base\vulkan\generate_spv.sh" />
+    <None Include="base\vulkan\glsl_shader.frag" />
+    <None Include="base\vulkan\glsl_shader.vert" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
@@ -172,6 +194,8 @@
     </Link>
     <Lib>
       <TargetMachine>MachineX64</TargetMachine>
+      <AdditionalDependencies>glfw3.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)external\glfw-3.3.3.bin.WIN64\lib-vc2019;$(SolutionDir)external\vulkan\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -195,6 +219,8 @@
     </Link>
     <Lib>
       <TargetMachine>MachineX64</TargetMachine>
+      <AdditionalDependencies>glfw3.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)external\glfw-3.3.3.bin.WIN64\lib-vc2019;$(SolutionDir)external\vulkan\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -212,6 +238,12 @@
       <AdditionalLibraryDirectories>D:\ProgrammingTools\vulkan\Lib;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\glfw-3.3.3.bin.WIN64\lib-vc2019;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
     </Link>
+    <Lib>
+      <AdditionalDependencies>glfw3.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Lib>
+    <Lib>
+      <AdditionalLibraryDirectories>$(SolutionDir)external\glfw-3.3.3.bin.WIN64\lib-vc2019;$(SolutionDir)external\vulkan\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -232,6 +264,12 @@
       <AdditionalLibraryDirectories>D:\ProgrammingTools\vulkan\Lib;D:\ProgrammingTools\VisualStudioPack\VisualStudio\Libraries\glfw-3.3.3.bin.WIN64\lib-vc2019;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
     </Link>
+    <Lib>
+      <AdditionalDependencies>glfw3.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Lib>
+    <Lib>
+      <AdditionalLibraryDirectories>$(SolutionDir)external\glfw-3.3.3.bin.WIN64\lib-vc2019;$(SolutionDir)external\vulkan\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Lib>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -31,14 +31,14 @@ public:
 	void CreateRenderPass() override;
 
 	void CreateUniformBuffer() override;
-	void CreateFramebuffers() override;
+	void CreateFrameBuffers() override;
 
 	void CreateDescriptorSetLayout() override;
 	void CreateDescriptorPool() override;
 	void CreateDescriptorSets() override;
 
-	void CreateGraphicsPiplineLayout() override;
-	void CreateGraphicsPipline() override;
+	void CreateGraphicsPipelineLayout() override;
+	void CreateGraphicsPipeline() override;
 
 	void InitCommandBuffers() override;
 	void PrepareModels() override;
@@ -57,13 +57,13 @@ public:
 	void CleanUpCommandBuffersAndCommandPool() override;
 	void CleanUpSyncObjects() override;
 	void CleanupFrameBuffers() override;
-	void CleanUpPiplineAndPiplineLayout() override;
+	void CleanUpPipelineAndPipelineLayout() override;
 	void CleanUpRenderPass() override;
 	void CleanUpImages() override;
 	void CleanUpUniformBuffers() override;
 
   private:
-	void CreatePiplineSubpass0();
+	void CreatePipelineSubpass0();
 
   private:
 	static constexpr int MAX_FRAMES_IN_FLIGHT = 2;
@@ -156,4 +156,7 @@ public:
 
 	//CAMERA
 	std::unique_ptr<FirstPersonCamera> m_pCamera;
+
+
+
 };

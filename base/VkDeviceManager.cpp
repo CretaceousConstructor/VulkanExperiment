@@ -243,7 +243,10 @@ void VkDeviceManager::CreateLogicalDeviceAndQueues(VkSurfaceKHR &surface)
 		//每种队列家族创建一个queue,可以每一种队列家族多创建几个
 		VkDeviceQueueCreateInfo queueCreateInfo{};
 		queueCreateInfo.sType            = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-		queueCreateInfo.queueFamilyIndex = queueFamily;
+
+		//hard code直接全部创建0号家族的
+		//queueCreateInfo.queueFamilyIndex = queueFamily;
+		queueCreateInfo.queueFamilyIndex = 0;
 		queueCreateInfo.queueCount       = 1;
 		queueCreateInfo.pQueuePriorities = &queuePriority;
 		queueCreateInfos.push_back(queueCreateInfo);
@@ -281,6 +284,8 @@ void VkDeviceManager::CreateLogicalDeviceAndQueues(VkSurfaceKHR &surface)
 		throw std::runtime_error("failed to create logical device!");
 	}
 
+
+	//TODO:这里为什么只能用0号家族的队列？
 	vkGetDeviceQueue(device, indices.graphicsFamily.value(), 0, &graphics_queue);
 	vkGetDeviceQueue(device, indices.presentFamily.value(), 0, &present_queue);
 	//vkGetDeviceQueue(device, indices.transferFamily.value(), 0, &tranfer_queue);

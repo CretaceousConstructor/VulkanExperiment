@@ -19,7 +19,7 @@
       <Path>$(Log)$(Configuration)\$(MSBuildProjectName).log</Path>
     </BuildLog>
     <Link>
-      <AdditionalLibraryDirectories>$(SolutionDir)lib;$(SolutionDir)external\glfw-3.3.3.bin.WIN64\lib-vc2019;$(SolutionDir)external\vulkan\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>Base.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>

@@ -331,7 +331,7 @@ void GltfModel::LoadNode(const tinygltf::Node &inputNode, const tinygltf::Model 
 				const float *texCoordsBuffer = nullptr;
 				const float *tangentsBuffer  = nullptr;
 
-				// Get buffer data for vertex normals
+				// Get buffer data for vertex position
 				if (glTFPrimitive.attributes.find("POSITION") != glTFPrimitive.attributes.end())
 				{
 					const tinygltf::Accessor &  accessor = input.accessors[glTFPrimitive.attributes.find("POSITION")->second];
@@ -355,6 +355,7 @@ void GltfModel::LoadNode(const tinygltf::Node &inputNode, const tinygltf::Model 
 					texCoordsBuffer                      = reinterpret_cast<const float *>(&(input.buffers[view.buffer].data[accessor.byteOffset + view.byteOffset]));
 				}
 
+				// Get buffer data for vertex tangent
 				if (glTFPrimitive.attributes.find("TANGENT") != glTFPrimitive.attributes.end())
 				{
 					const tinygltf::Accessor &  accessor = input.accessors[glTFPrimitive.attributes.find("TANGENT")->second];

@@ -5,7 +5,7 @@ VkInstanceWrapper::VkInstanceWrapper(VkValidationManager& validationManager)
 
 
 	//检查 实例 会用到的 层(layer)
-	if (VkValidationManager::enableValidationLayers && !VkValidationManager::CheckValidationLayerSupport()) {
+	if (VkValidationManager::ValidationLayersEnabled && !VkValidationManager::CheckIfValidationLayerSupported()) {
 		throw std::runtime_error("validation layers requested, but not available!");
 	}
 	//应用信息
@@ -31,7 +31,7 @@ VkInstanceWrapper::VkInstanceWrapper(VkValidationManager& validationManager)
 
 
 	//获得 实例 会用到的 扩展(extensions)
-	auto extensions = VkExtensionManager::GetNeededInstanceExtensions(VkValidationManager::enableValidationLayers);
+	auto extensions = VkExtensionManager::GetNeededInstanceExtensions(VkValidationManager::ValidationLayersEnabled);
 	createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
 	createInfo.ppEnabledExtensionNames = extensions.data();
 

@@ -33,14 +33,14 @@ class MultiSubpassesRenderer : public BaseRenderer
 	void CreateRenderPass() override;
 
 	void CreateUniformBuffer() override;
-	void CreateFramebuffers() override;
+	void CreateFrameBuffers() override;
 
 	void CreateDescriptorSetLayout() override;
 	void CreateDescriptorPool() override;
 	void CreateDescriptorSets() override;
 
-	void CreateGraphicsPiplineLayout() override;
-	void CreateGraphicsPipline() override;
+	void CreateGraphicsPipelineLayout() override;
+	void CreateGraphicsPipeline() override;
 
 	void InitCommandBuffers() override;
 	void PrepareModels() override;
@@ -59,14 +59,14 @@ class MultiSubpassesRenderer : public BaseRenderer
 	void CleanUpCommandBuffersAndCommandPool() override;
 	void CleanUpSyncObjects() override;
 	void CleanupFrameBuffers() override;
-	void CleanUpPiplineAndPiplineLayout() override;
+	void CleanUpPipelineAndPipelineLayout() override;
 	void CleanUpRenderPass() override;
 	void CleanUpImages() override;
 	void CleanUpUniformBuffers() override;
 
   private:
-	void CreatePiplineSubpass0();
-	void CreatePiplineSubpass1();
+	void CreatePipelineSubpass0();
+	void CreatePipelineSubpass1();
 
   private:
 	static constexpr int MAX_FRAMES_IN_FLIGHT = 2;

@@ -46,7 +46,7 @@ void ShadowMappingRenderer::CreateDepthImages()
 	depth_extend.width                                     = s_SHADOWMAP_DIM;
 	depth_extend.height                                    = s_SHADOWMAP_DIM;
 	depth_extend.depth                                     = 1;
-	VkDeviceManager::QueueFamilyIndices queue_family_index = device_manager->FindQueueFamilies(device_manager->GetPhysicalDeviceRef(), window->GetSurface());
+	VkDeviceManager::QueueFamilyIndices queue_family_index = device_manager->FindQueueFamilies(device_manager->GetPhysicalDeviceRef(), window->GetSurfaceRef());
 	//OFFSCREEN PASS
 	{
 		depth_attachment_off_screen.resize(swapchain_manager->GetSwapImageCount());
@@ -133,7 +133,7 @@ void ShadowMappingRenderer::CreateUniformBuffer()
 	ubo_vs_scene.depth_VP   = depthProjectionMatrix * depthViewMatrix;
 }
 
-void ShadowMappingRenderer::CreateFramebuffers()
+void ShadowMappingRenderer::CreateFrameBuffers()
 {
 	CreateFrameBuffersOffScreen();
 	CreateFrameBufferScene();
@@ -326,7 +326,7 @@ void ShadowMappingRenderer::CreateDescriptorSets()
 	}
 }
 
-void ShadowMappingRenderer::CreateGraphicsPiplineLayout()
+void ShadowMappingRenderer::CreateGraphicsPipelineLayout()
 {
 	VkPipelineLayoutCreateInfo pipelineLayoutInfo_pass0{};
 	pipelineLayoutInfo_pass0.sType                  = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -353,14 +353,14 @@ void ShadowMappingRenderer::CreateGraphicsPiplineLayout()
 	}
 }
 
-void ShadowMappingRenderer::CreateGraphicsPipline()
+void ShadowMappingRenderer::CreateGraphicsPipeline()
 {
 	system("..\\..\\data\\shaderbat\\ShadowMappingShaderCompile.bat");
 	
 	
 	CreatePipelineCache();
-	CreatePiplineShadowPass();
-	CreatePiplineScenePass();
+	CreatePipelineShadowPass();
+	CreatePipelineScenePass();
 }
 
 void ShadowMappingRenderer::InitCommandBuffers()
@@ -391,7 +391,7 @@ void ShadowMappingRenderer::PrepareModels()
 
 	std::vector<uint32_t> indices = {2, 1, 0, 0, 3, 2, 4, 5, 6};
 
-	scenes.emplace_back(vertices, indices, device_manager, window->GetSurface(), transfer_command_buffer);
+	scenes.emplace_back(vertices, indices, device_manager, window->GetSurfaceRef(), transfer_command_buffer);
 }
 
 void ShadowMappingRenderer::CommandBufferRecording()
@@ -851,7 +851,7 @@ void ShadowMappingRenderer::CreateOffScreenUniformBuffer()
 
 	for (size_t i = 0; i < swapchain_manager->GetSwapImageCount(); i++)
 	{
-		device_manager->CreateBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, uniform_buffers_off_screen[i].buffer, uniform_buffers_off_screen[i].memory, VK_SHARING_MODE_EXCLUSIVE, window->GetSurface());
+		device_manager->CreateBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, uniform_buffers_off_screen[i].buffer, uniform_buffers_off_screen[i].memory, VK_SHARING_MODE_EXCLUSIVE, window->GetSurfaceRef());
 		//exclusive mode因为uniform buffer只会被graphics queue使用
 	}
 }
@@ -864,7 +864,7 @@ void ShadowMappingRenderer::CreateSceneUniformBuffer()
 
 	for (size_t i = 0; i < swapchain_manager->GetSwapImageCount(); i++)
 	{
-		device_manager->CreateBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, uniform_buffers_scene[i].buffer, uniform_buffers_scene[i].memory, VK_SHARING_MODE_EXCLUSIVE, window->GetSurface());
+		device_manager->CreateBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, uniform_buffers_scene[i].buffer, uniform_buffers_scene[i].memory, VK_SHARING_MODE_EXCLUSIVE, window->GetSurfaceRef());
 		//exclusive mode因为uniform buffer只会被graphics queue使用
 	}
 }
@@ -901,7 +901,7 @@ void ShadowMappingRenderer::CreateFrameBuffersOffScreen()
 	}
 }
 
-void ShadowMappingRenderer::CreatePiplineShadowPass()
+void ShadowMappingRenderer::CreatePipelineShadowPass()
 {
 	//										shadow pass
 	/******************************************************************************************************/
@@ -1101,7 +1101,7 @@ void ShadowMappingRenderer::CreatePiplineShadowPass()
 	}
 }
 
-void ShadowMappingRenderer::CreatePiplineScenePass()
+void ShadowMappingRenderer::CreatePipelineScenePass()
 {
 	ShaderManager vertex_shader_scene_pass(std::string("..\\..\\data\\shaders\\shadowmapping\\shadow_mapping_vertex_shader_scene_pass.spv"), std::string("main"), VK_SHADER_STAGE_VERTEX_BIT, device_manager->GetLogicalDeviceRef());
 	ShaderManager fragment_shader_scene_pass(std::string("..\\..\\data\\shaders\\shadowmapping\\shadow_mapping_fragment_shader_scene_pass.spv"), std::string("main"), VK_SHADER_STAGE_FRAGMENT_BIT, device_manager->GetLogicalDeviceRef());
@@ -1396,7 +1396,7 @@ void ShadowMappingRenderer::CleanupFrameBuffers()
 {
 }
 
-void ShadowMappingRenderer::CleanUpPiplineAndPiplineLayout()
+void ShadowMappingRenderer::CleanUpPipelineAndPipelineLayout()
 {
 }
 

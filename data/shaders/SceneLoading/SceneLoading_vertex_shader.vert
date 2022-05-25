@@ -34,26 +34,24 @@ layout (location = 6) out float outHandedness;
 
 void main() 
 {
+
+
+
 	outColor = inColor;
 	outUV = inUV;
-	//tangent向量只需要用model矩阵转换	
+	//tangent   向量只需要用model矩阵转换
 	outTangent = mat3(primitive.model) * vec3(inTangent);
-	//normal向量需要用model矩阵的 转置逆 来转换
+	//normal    向量需要用model矩阵的 转置逆 来转换
 	outNormal = transpose(inverse(mat3(primitive.model))) * inNormal;
-	//tangent向量的最后一个分量代表手性，这个值对一个三角形（primitive）来说只取 +1 或者 -1	
+	//tangent向量的最后一个分量代表手性，这个值对一个三角形图元（primitive）来说只取 +1 或者 -1	
 	outHandedness = inTangent.w;
 
-
-
-
-
-
-	gl_Position = uboScene.projection * uboScene.view * primitive.model * vec4(inPos.xyz, 1.0);
 	//pos代表worldspace中顶点的坐标
 	vec4 pos = primitive.model * vec4(inPos, 1.0);
 	//outLightVec和outViewVec都会进行interpolation
 	outLightVec = uboScene.lightPos.xyz - pos.xyz;
 	outViewVec = uboScene.viewPos.xyz - pos.xyz;
 
+	gl_Position = uboScene.projection * uboScene.view * primitive.model * vec4(inPos.xyz, 1.0);
 
 }

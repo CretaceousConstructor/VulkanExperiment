@@ -37,24 +37,21 @@ void main()
 	//施密特正交化：T向量在经过插值以后，可能不再和N向量相互垂直
 	vec3 T = normalize(inTangent.xyz - dot(inTangent.xyz, N) * N);
 	vec3 B = cross(N,T) * inHandedness;
-
-
 	mat3 TBN = mat3(T, B, N);
-	N = TBN * normalize(texture(samplerNormalMap, inUV).xyz * 2.0 - vec3(1.0));
 
-	const float ambient = 0.01;
+	N = TBN * normalize(texture(samplerNormalMap, inUV).xyz * 2.0 - vec3(1.0));
 
 
 	vec3 L = normalize(inLightVec);
 	vec3 V = normalize(inViewVec);
 	vec3 R = reflect(-L, N);
 
-
+	
+	
+	
+	const float ambient = 0.01;
 	vec3 diffuse = max(dot(N, L),0).rrr;
-
 	float specular = 0.0;
-
-
 	if( dot(N, L) > 0.){
 		specular = pow(max(dot(R, V), 0.0), 32.0);
 	}

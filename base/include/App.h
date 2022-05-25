@@ -6,7 +6,7 @@
 #include "VkWindows.h"
 #include "VkInstanceWrapper.h"
 #include "BaseRenderer.h"
-
+#include "VkCommandManager.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -42,6 +42,8 @@ protected:
 	VkValidationManager validation_manager;
 	VkDeviceManager device_manager;
 	VkSwapChainManager swap_chain_manager;
+	VkCommandManager    command_manager;
+	
 	std::unique_ptr<BaseRenderer> renderer;
 	
 	

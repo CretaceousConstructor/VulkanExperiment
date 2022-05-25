@@ -2,33 +2,30 @@
 
 void VkValidationManager::CleanUp(VkInstance &instance)
 {
-	if (enableValidationLayers)
+	if (ValidationLayersEnabled)
 	{
-		DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);
+		DestroyDebugUtilsMessengerEXT(instance, debug_messenger, nullptr);
 	}
 }
 
-bool VkValidationManager::CheckValidationLayerSupport()
+bool VkValidationManager::CheckIfValidationLayerSupported()
 {
-	const char *validationLayerName = "VK_LAYER_KHRONOS_validation";
-	//获取所有可以用的layer
-	//VK_LAYER_NV_optimus
-	//VK_LAYER_NV_nsight
-	//VK_LAYER_RENDERDOC_Capture
-	//VK_LAYER_NV_nomad_release_public_2021_1_1
-	//VK_LAYER_NV_GPU_Trace_release_public_2021_1_1
-	//VK_LAYER_VALVE_steam_overlay
-	//VK_LAYER_VALVE_steam_fossilize
-	//VK_LAYER_LUNARG_api_dump
-	//VK_LAYER_LUNARG_device_simulation
-	//VK_LAYER_LUNARG_gfxreconstruct
-	//VK_LAYER_KHRONOS_synchronization2
-	//VK_LAYER_KHRONOS_validation
-	//VK_LAYER_LUNARG_monitor
-	//VK_LAYER_LUNARG_screenshot
-
-
-
+	const char * const validation_layer_name = "VK_LAYER_KHRONOS_validation";
+	/* 获取所有可以用的layer
+	VK_LAYER_NV_optimus
+	VK_LAYER_NV_nsight
+	VK_LAYER_RENDERDOC_Capture
+	VK_LAYER_NV_nomad_release_public_2021_1_1
+	VK_LAYER_NV_GPU_Trace_release_public_2021_1_1
+	VK_LAYER_VALVE_steam_overlay
+	VK_LAYER_VALVE_steam_fossilize
+	VK_LAYER_LUNARG_api_dump
+	VK_LAYER_LUNARG_device_simulation
+	VK_LAYER_LUNARG_gfxreconstruct
+	VK_LAYER_KHRONOS_synchronization2
+	VK_LAYER_KHRONOS_validation
+	VK_LAYER_LUNARG_monitor
+	VK_LAYER_LUNARG_screenshot*/
 
 
 	uint32_t layerCount;
@@ -36,20 +33,20 @@ bool VkValidationManager::CheckValidationLayerSupport()
 	std::vector<VkLayerProperties> availableLayers(layerCount);
 	vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
 
-#ifdef DEBUG   // DEBUG MODE
+#ifdef DEBUG        // DEBUG MODE
 	for (auto layer : availableLayers)
 	{
 		std::cout << layer.layerName << std::endl;
 	}
-#endif        
+#endif
 
-	std::vector<const char *> instanceValidationLayerRequiredToUse;
-	if (enableValidationLayers)
+	std::vector<const char *> RequiredInstanceValidationLayer;
+	if (ValidationLayersEnabled)
 	{
-		instanceValidationLayerRequiredToUse.push_back(validationLayerName);
+		RequiredInstanceValidationLayer.push_back(validation_layer_name);
 	}
 
-	for (const char *layerName : instanceValidationLayerRequiredToUse)
+	for (const char *layerName : RequiredInstanceValidationLayer)
 	{
 		bool layerFound = false;
 		for (const auto &layerProperties : availableLayers)
@@ -66,11 +63,11 @@ bool VkValidationManager::CheckValidationLayerSupport()
 		}
 	}
 	return true;
-
-
 }
 
-void VkValidationManager::populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT &createInfo)
+
+
+void VkValidationManager::PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT &createInfo)
 {
 	createInfo       = {};
 	createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
@@ -80,7 +77,7 @@ void VkValidationManager::populateDebugMessengerCreateInfo(VkDebugUtilsMessenger
 	//createInfo.messageSeverity =    VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT;
 
 	createInfo.messageType     = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
-	createInfo.pfnUserCallback = debugCallback;
+	createInfo.pfnUserCallback = DebugCallback;
 }
 
 VkResult VkValidationManager::CreateDebugUtilsMessengerEXT(VkInstance &instance, const VkDebugUtilsMessengerCreateInfoEXT *pCreateInfo, const VkAllocationCallbacks *pAllocator, VkDebugUtilsMessengerEXT *pDebugMessenger)
@@ -98,29 +95,33 @@ VkResult VkValidationManager::CreateDebugUtilsMessengerEXT(VkInstance &instance,
 
 void VkValidationManager::SetupDebugMessenger(VkInstance &instance, VkValidationManager &validationManager)
 {
-	if (!VkValidationManager::enableValidationLayers)
+
+
+	if (!VkValidationManager::ValidationLayersEnabled)
 	{
 		return;
 	}
 	VkDebugUtilsMessengerCreateInfoEXT createInfo{};
-	VkValidationManager::populateDebugMessengerCreateInfo(createInfo);
+	VkValidationManager::PopulateDebugMessengerCreateInfo(createInfo);
 
-	if (VkValidationManager::CreateDebugUtilsMessengerEXT(instance, &createInfo, nullptr, &validationManager.debugMessenger) != VK_SUCCESS)
+	if (VkValidationManager::CreateDebugUtilsMessengerEXT(instance, &createInfo, nullptr, &validationManager.debug_messenger) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to set up debug messenger!");
 	}
+
+
 }
 
 void VkValidationManager::DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT para_debugMessenger, const VkAllocationCallbacks *pAllocator)
 {
-	//PFN_vkDestroyDebugUtilsMessengerEXT func = (PFN_vkDestroyDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
-	//if (func != nullptr)
-	//{
-	//	func(instance, para_debugMessenger, pAllocator);
-	//}
+	PFN_vkDestroyDebugUtilsMessengerEXT func = (PFN_vkDestroyDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
+	if (func != nullptr)
+	{
+		func(instance, para_debugMessenger, pAllocator);
+	}
 }
 
-VKAPI_ATTR VkBool32 VKAPI_CALL VkValidationManager::debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData, void *pUserData)
+VKAPI_ATTR VkBool32 VKAPI_CALL VkValidationManager::DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData, void *pUserData)
 {
 	//std::ofstream file1;
 	//file1.open("D:/CS/ComputerGraphics/vulkan/WindowsProject1/log.txt", std::ios::app);
@@ -142,30 +143,29 @@ VKAPI_ATTR VkBool32 VKAPI_CALL VkValidationManager::debugCallback(VkDebugUtilsMe
 	//	//	std::cout << "--------------------------------------------------------------------------------" << std::endl;
 	//	//}
 
-		//if (message.find(debugMessage) != std::string::npos)
-		//{
-		//	std::cout << "validation layer: " << std::endl
-		//	          << "--------------------------------------------------------------------------------" << std::endl;
-		//	const auto sizeline = 140;
-		//	for (int i = 0; i < message.length(); i += sizeline)
-		//	{
-		//		std::cout << message.substr(i, sizeline) << std::endl;
-		//	}
-		//	std::cout << "--------------------------------------------------------------------------------" << std::endl
-		//	          << std::endl;
-		//}
-		//else
+	//if (message.find(debugMessage) != std::string::npos)
+	//{
+	//	std::cout << "validation layer: " << std::endl
+	//	          << "--------------------------------------------------------------------------------" << std::endl;
+	//	const auto sizeline = 140;
+	//	for (int i = 0; i < message.length(); i += sizeline)
+	//	{
+	//		std::cout << message.substr(i, sizeline) << std::endl;
+	//	}
+	//	std::cout << "--------------------------------------------------------------------------------" << std::endl
+	//	          << std::endl;
+	//}
+	//else
 
-		std::cout << "validation layer: " << std::endl
-		          << "--------------------------------------------------------------------------------" << std::endl;
-		const auto sizeline = 140;
-		for (int i = 0; i < message.length(); i += sizeline)
-		{
-			std::cout << message.substr(i, sizeline) << std::endl;
-		}
-		std::cout << "--------------------------------------------------------------------------------" << std::endl
-		          << std::endl;
-
+	std::cout << "validation layer: " << std::endl
+	          << "--------------------------------------------------------------------------------" << std::endl;
+	const auto sizeline = 140;
+	for (int i = 0; i < message.length(); i += sizeline)
+	{
+		std::cout << message.substr(i, sizeline) << std::endl;
+	}
+	std::cout << "--------------------------------------------------------------------------------" << std::endl
+	          << std::endl;
 
 	return VK_FALSE;
 }

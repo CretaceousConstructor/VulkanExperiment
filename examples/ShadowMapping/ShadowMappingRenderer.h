@@ -21,14 +21,14 @@ class ShadowMappingRenderer : public BaseRenderer
 	void CreateRenderPass() override;
 
 	void CreateUniformBuffer() override;
-	void CreateFramebuffers() override;
+	void CreateFrameBuffers() override;
 
 	void CreateDescriptorSetLayout() override;
 	void CreateDescriptorPool() override;
 	void CreateDescriptorSets() override;
 
-	void CreateGraphicsPiplineLayout() override;
-	void CreateGraphicsPipline() override;
+	void CreateGraphicsPipelineLayout() override;
+	void CreateGraphicsPipeline() override;
 
 	void InitCommandBuffers() override;
 	void PrepareModels() override;
@@ -49,7 +49,7 @@ class ShadowMappingRenderer : public BaseRenderer
 	void CleanUpCommandBuffersAndCommandPool() override;
 	void CleanUpSyncObjects() override;
 	void CleanupFrameBuffers() override;
-	void CleanUpPiplineAndPiplineLayout() override;
+	void CleanUpPipelineAndPipelineLayout() override;
 	void CleanUpRenderPass() override;
 	void CleanUpImages() override;
 	void CleanUpUniformBuffers() override;
@@ -64,8 +64,8 @@ class ShadowMappingRenderer : public BaseRenderer
 	void CreateFrameBuffersOffScreen();
 	void CreateFrameBufferScene();
 
-	void CreatePiplineShadowPass();
-	void CreatePiplineScenePass();
+	void CreatePipelineShadowPass();
+	void CreatePipelineScenePass();
 
 	void UpdateLight();
 	void UpdateUniformBufferOffscreen(uint32_t currentImage);

@@ -16,27 +16,25 @@ public:
 
 
 
-	//VERSION 1
-	VkWindows(void* renderer_ptr,uint32_t w = 1280, uint32_t h = 740,std::string winName = "default");
+
+
 	~VkWindows();
 
 private:
 
-	static void framebufferResizeCallback(GLFWwindow* window, int width, int height)
-	{
-		//TO DO
-	}
+	static void FrameBufferResizeCallback(GLFWwindow *window, int width, int height);
+	static void GlfwElrrorCallback(int error, const char *description);
 
 
 public:
-	VkSurfaceKHR& GetSurface();
+	VkSurfaceKHR GetSurface();
 	VkSurfaceKHR& GetSurfaceRef();
 public:
 
 
 	const uint32_t WIDTH;
 	const uint32_t HEIGHT;
-	const std::string windowName;
+	const std::string window_name;
 
 private:
 
@@ -44,6 +42,7 @@ private:
 	VkInstance   instance;
 	VkSurfaceKHR surface;
 	GLFWwindow* raw_window_ptr = nullptr;
+
 
 
 };

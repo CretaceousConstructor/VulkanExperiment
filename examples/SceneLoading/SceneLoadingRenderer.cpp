@@ -2,12 +2,8 @@
 
 void SceneLoadingRenderer::InitCommandBuffers()
 {
-
 	//TRANSFER COMMAND BUFFERS
 	VkCommandManager::CreateCommandBuffer(device_manager->GetLogicalDeviceRef(), transfer_command_pool, transfer_command_buffer, VK_COMMAND_BUFFER_LEVEL_PRIMARY);
-
-
-
 
 	//GRAPHICS COMMAND BUFFERS
 	graphics_command_buffers.resize(swapchain_manager->GetSwapImageCount());
@@ -15,36 +11,27 @@ void SceneLoadingRenderer::InitCommandBuffers()
 	{
 		VkCommandManager::CreateCommandBuffer(device_manager->GetLogicalDeviceRef(), graphics_command_pool, graphics_command_buffers[i], VK_COMMAND_BUFFER_LEVEL_PRIMARY);
 	}
-
-
-
-
 }
 
 void SceneLoadingRenderer::PrepareModels()
 {
-
-
 	//D:/CS/ComputerGraphics/vulkan/WindowsProject1/data/models/sponza/sponza.gltf
 	//filename = "D:/CS/vulkanExample/Vulkan/data/models/sponza/sponza.gltf"
 	//../../data/models/sponza/sponza.gltf
 
-	gltf_scene_sponza = std::make_unique<GltfModel>(std::string("../../data/models/sponza/sponza.gltf"), device_manager, window, window->GetSurface(), transfer_command_pool, transfer_command_buffer, true);
+	gltf_scene_sponza = std::make_unique<GltfModel>(std::string("../../data/models/sponza/sponza.gltf"), device_manager, window, window->GetSurfaceRef(), transfer_command_pool, transfer_command_buffer, true);
 
-	auto data = Geometry::CreateSphere(.2f,20,40,glm::vec4(1.f,1.f,1.f,1.f));	
-	std::vector<Vertex> vertices;
+	auto                  data = Geometry::CreateSphere(.2f, 20, 40, glm::vec4(1.f, 1.f, 1.f, 1.f));
+	std::vector<Vertex>   vertices;
 	std::vector<uint32_t> indices;
 	for (auto &v : data.vertexVec)
 	{
 		vertices.push_back(Vertex(v.pos));
 	}
 	indices = std::move(data.indexVec);
-	
-	light_indicator   = std::make_unique<VkModel<Vertex>>(vertices,indices,device_manager,window->GetSurface(),transfer_command_buffer);
+
+	light_indicator = std::make_unique<VkModel<Vertex>>(vertices, indices, device_manager, window->GetSurfaceRef(), transfer_command_buffer);
 	light_indicator->GetTransform().SetPosition(ubo_vs_scene.light_pos);
-
-
-
 }
 
 void SceneLoadingRenderer::CommandBufferRecording()
@@ -62,8 +49,8 @@ void SceneLoadingRenderer::CommandBufferRecording()
 		}
 
 		VkRenderPassBeginInfo renderPassInfo{};        //开始信息这是，注意
-		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-		renderPassInfo.renderPass = render_pass;
+		renderPassInfo.sType       = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+		renderPassInfo.renderPass  = render_pass;
 		renderPassInfo.framebuffer = frame_buffers[i];
 
 		renderPassInfo.renderArea.offset = {0, 0};
@@ -82,16 +69,11 @@ void SceneLoadingRenderer::CommandBufferRecording()
 
 		gltf_scene_sponza->Draw(graphics_command_buffers[i], pipeline_layout);
 
-
 		vkCmdBindPipeline(graphics_command_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_light_indicator);
 		auto transform_light_indicator = light_indicator->GetTransform();
-		auto mat_light_indicator = transform_light_indicator.GetLocalToWorldMatrix();
+		auto mat_light_indicator       = transform_light_indicator.GetLocalToWorldMatrix();
 		vkCmdPushConstants(graphics_command_buffers[i], pipeline_layout_light_indicator, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &mat_light_indicator);
 		light_indicator->Draw(graphics_command_buffers[i]);
-
-
-
-
 
 		vkCmdEndRenderPass(graphics_command_buffers[i]);
 
@@ -228,17 +210,15 @@ void SceneLoadingRenderer::UpdateUniformBuffer(uint32_t currentImage)
 	//	glm::vec4 light_pos   = glm::vec4(0.0f, 2.5f, 0.0f, 1.0f);
 	//	glm::vec4 view_pos;
 	//} ubo_vs_scene;                   //用于顶点着色器的uniform buffer object
-	
-	
-	ubo_vs_scene.projection   = camera->GetProj();
-	ubo_vs_scene.view   = camera->GetView();
-	ubo_vs_scene.view_pos     = camera->GetPosition();
-	
+
+	ubo_vs_scene.projection = camera->GetProj();
+	ubo_vs_scene.view       = camera->GetView();
+	ubo_vs_scene.view_pos   = camera->GetPosition();
+
 	void *data;
 	vkMapMemory(device_manager->GetLogicalDeviceRef(), uniform_buffers[currentImage].memory, 0, sizeof(ubo_vs_scene), 0, &data);
 	memcpy(data, &ubo_vs_scene, sizeof(UBO_VS_SCENE));
 	vkUnmapMemory(device_manager->GetLogicalDeviceRef(), uniform_buffers[currentImage].memory);
-
 }
 
 void SceneLoadingRenderer::CreateRenderPass()
@@ -325,7 +305,7 @@ void SceneLoadingRenderer::CreateUniformBuffer()
 	uniform_buffers.resize(swapchain_manager->GetSwapImageCount());
 	for (size_t i = 0; i < swapchain_manager->GetSwapImageCount(); i++)
 	{
-		device_manager->CreateBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, uniform_buffers[i].buffer, uniform_buffers[i].memory, VK_SHARING_MODE_EXCLUSIVE, window->GetSurface());
+		device_manager->CreateBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, uniform_buffers[i].buffer, uniform_buffers[i].memory, VK_SHARING_MODE_EXCLUSIVE, window->GetSurfaceRef());
 		//exclusive mode因为uniform buffer只会被graphics queue使用
 	}
 
@@ -338,7 +318,7 @@ void SceneLoadingRenderer::CreateUniformBuffer()
 	//ubo0.view = m_pCamera->GetView();
 }
 
-void SceneLoadingRenderer::CreateFramebuffers()
+void SceneLoadingRenderer::CreateFrameBuffers()
 {
 	frame_buffers.resize(swapchain_manager->GetSwapImageCount());
 
@@ -380,7 +360,7 @@ void SceneLoadingRenderer::CreateDescriptorSetLayout()
 			LayoutBindingSubpass0_temp.binding            = 0;        //uniform buffer
 			LayoutBindingSubpass0_temp.descriptorType     = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 			LayoutBindingSubpass0_temp.descriptorCount    = 1;
-			LayoutBindingSubpass0_temp.stageFlags         = VK_SHADER_STAGE_VERTEX_BIT;        //uniform buffer will be used both in VS and FS stages
+			LayoutBindingSubpass0_temp.stageFlags         = VK_SHADER_STAGE_VERTEX_BIT;        //
 			LayoutBindingSubpass0_temp.pImmutableSamplers = nullptr;                           // Optional
 			LayoutBindingSubpass0.push_back(LayoutBindingSubpass0_temp);
 
@@ -555,7 +535,7 @@ void SceneLoadingRenderer::CreateDescriptorSets()
 	}
 }
 
-void SceneLoadingRenderer::CreateGraphicsPiplineLayout()
+void SceneLoadingRenderer::CreateGraphicsPipelineLayout()
 {
 	{
 		std::vector<VkDescriptorSetLayout> setLayouts = {descriptor_set_layout_matrices, descriptor_set_layout_textures};
@@ -567,7 +547,7 @@ void SceneLoadingRenderer::CreateGraphicsPiplineLayout()
 		//TODO: testing multiple push constants and how to access it
 		// We will use push constants to push the local matrices of a primitive to the vertex shader
 		VkPushConstantRange pushConstantRange{};
-		pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT  ;
+		pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 		pushConstantRange.size       = sizeof(glm::mat4);
 		pushConstantRange.offset     = 0;
 
@@ -580,8 +560,6 @@ void SceneLoadingRenderer::CreateGraphicsPiplineLayout()
 		}
 	}
 
-
-
 	{
 		std::vector<VkDescriptorSetLayout> setLayouts = {descriptor_set_layout_matrices};
 		VkPipelineLayoutCreateInfo         pipelineLayoutInfo_subpass0{};
@@ -589,9 +567,8 @@ void SceneLoadingRenderer::CreateGraphicsPiplineLayout()
 		pipelineLayoutInfo_subpass0.setLayoutCount = setLayouts.size();
 		pipelineLayoutInfo_subpass0.pSetLayouts    = setLayouts.data();
 
-
 		VkPushConstantRange pushConstantRange{};
-		pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT  ;
+		pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 		pushConstantRange.size       = sizeof(glm::mat4);
 		pushConstantRange.offset     = 0;
 
@@ -603,14 +580,10 @@ void SceneLoadingRenderer::CreateGraphicsPiplineLayout()
 			throw std::runtime_error("failed to create pipeline layout!");
 		}
 	}
-
-
-
 }
-void SceneLoadingRenderer::CreateGraphicsPipline()
+void SceneLoadingRenderer::CreateGraphicsPipeline()
 {
 	system("..\\..\\data\\shaderbat\\SceneLoadingCompile.bat");
-
 
 	ShaderManager vertex_shader(std::string("../../data/shaders/SceneLoading/SceneLoading_vertex_shader.spv"), std::string("main"), VK_SHADER_STAGE_VERTEX_BIT, device_manager->GetLogicalDeviceRef());
 	ShaderManager fragment_shader(std::string("../../data/shaders/SceneLoading/SceneLoading_fragment_shader.spv"), std::string("main"), VK_SHADER_STAGE_FRAGMENT_BIT, device_manager->GetLogicalDeviceRef());
@@ -820,10 +793,8 @@ void SceneLoadingRenderer::CreateGraphicsPipline()
 		}
 	}
 
-
 	CreateLightIndicatorPipeline();
 }
-
 
 void SceneLoadingRenderer::UpdateCamera(float dt)
 {
@@ -872,16 +843,15 @@ void SceneLoadingRenderer::CreatePipelineCache()
 	}
 }
 
+
 void SceneLoadingRenderer::SetUpUserInput()
-{	
-	
+{
 	std::vector<int> tracked_keys = {GLFW_KEY_W, GLFW_KEY_S, GLFW_KEY_A, GLFW_KEY_D, GLFW_KEY_Q, GLFW_KEY_E, GLFW_KEY_Z, GLFW_KEY_C, GLFW_KEY_UP, GLFW_KEY_DOWN};
 	keyboard                      = std::make_unique<KeyBoardInputManager>(tracked_keys);
 	keyboard->SetupKeyInputs(window->GetWindowPtr());
 
 	mouse = std::make_unique<MouseInputManager>(swapchain_manager->GetSwapChainImageExtent());
 	mouse->SetupMouseInputs(window->GetWindowPtr());
-
 }
 
 void SceneLoadingRenderer::CreateCamera()
@@ -900,8 +870,6 @@ void SceneLoadingRenderer::CreateCamera()
 	viewport.maxDepth                     = 1.0f;
 
 	camera->SetViewPort(viewport);
-
-
 }
 
 void SceneLoadingRenderer::CreateAttachmentImages()
@@ -917,7 +885,7 @@ void SceneLoadingRenderer::CreateDepthImages()
 	VkFormat depthFormat = swapchain_manager->FindDepthFormat(*device_manager);
 	depth_attachment.resize(swapchain_manager->GetSwapImageCount());
 
-	VkDeviceManager::QueueFamilyIndices queue_family_index = device_manager->FindQueueFamilies(device_manager->GetPhysicalDeviceRef(), window->GetSurface());
+	VkDeviceManager::QueueFamilyIndices queue_family_index = device_manager->FindQueueFamilies(device_manager->GetPhysicalDeviceRef(), window->GetSurfaceRef());
 	for (uint32_t i = 0; i < swapchain_manager->GetSwapImageCount(); i++)
 	{
 		depth_attachment[i].Init(VK_IMAGE_TYPE_2D, depthFormat, swapchain_manager->GetSwapChainImageExtent(), 1, 1, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT, VK_SHARING_MODE_EXCLUSIVE, VK_IMAGE_LAYOUT_UNDEFINED, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, device_manager);
@@ -965,7 +933,7 @@ void SceneLoadingRenderer::CleanupFrameBuffers()
 	}
 }
 
-void SceneLoadingRenderer::CleanUpPiplineAndPiplineLayout()
+void SceneLoadingRenderer::CleanUpPipelineAndPipelineLayout()
 {
 	//vkDestroyPipeline(device_manager->GetLogicalDeviceRef(), graphics_pipeline, nullptr);
 	vkDestroyPipelineLayout(device_manager->GetLogicalDeviceRef(), pipeline_layout, nullptr);
@@ -986,8 +954,6 @@ void SceneLoadingRenderer::CleanUpUniformBuffers()
 
 void SceneLoadingRenderer::CreateLightIndicatorPipeline()
 {
-
-
 	ShaderManager vertex_shader(std::string("../../data/shaders/SceneLoading/LightIndicator_vertex_shader.spv"), std::string("main"), VK_SHADER_STAGE_VERTEX_BIT, device_manager->GetLogicalDeviceRef());
 	ShaderManager fragment_shader(std::string("../../data/shaders/SceneLoading/LightIndicator_fragment_shader.spv"), std::string("main"), VK_SHADER_STAGE_FRAGMENT_BIT, device_manager->GetLogicalDeviceRef());
 
@@ -1159,14 +1125,4 @@ void SceneLoadingRenderer::CreateLightIndicatorPipeline()
 	{
 		throw std::runtime_error("failed to create graphics pipeline!");
 	}
-
-
-
-
-
-
-
-
-
-
 }

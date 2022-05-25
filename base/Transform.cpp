@@ -26,10 +26,11 @@ glm::vec3 Transform::GetPosition() const
 
 glm::vec3 Transform::GetRightAxis() const
 {
-	//x == pitch
 	//y = yaw
+	//x == pitch
 	//z = roll
 	auto R = glm::yawPitchRoll(m_Rotation.y, m_Rotation.x, m_Rotation.z);
+	
 	//GLM 都是列主矩阵
 	glm::vec3 result = R[0];
 	return result;
@@ -111,17 +112,14 @@ void Transform::SetPosition(float x, float y, float z)
 	m_Position.z = z;
 }
 
-void Transform::RotateAxis(const glm::vec3 &axis, float radian)
-{
-	auto R = glm::rotate(glm::mat4(1.0f), radian, glm::vec3(0.0, 0.0, 1.0)) * glm::yawPitchRoll(m_Rotation.y, m_Rotation.x, m_Rotation.z);
 
-	glm::extractEulerAngleYXZ(R, m_Rotation.y, m_Rotation.x, m_Rotation.z);
-}
+
 
 void Transform::Rotate(const glm::vec3 &eulerAnglesInRadian)
 {
 	m_Rotation = m_Rotation + eulerAnglesInRadian;
 }
+
 
 void Transform::Translate(const glm::vec3 &direction, float magnitude)
 {
@@ -132,7 +130,6 @@ void Transform::LookAt(const glm::vec3 &target, const glm::vec3 &up)
 {
 	auto view    = glm::lookAtRH(m_Position, target, up);
 	auto InvView = glm::inverse(view);
-
 	glm::extractEulerAngleYXZ(InvView, m_Rotation.y, m_Rotation.x, m_Rotation.z);
 }
 
