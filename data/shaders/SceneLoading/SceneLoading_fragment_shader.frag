@@ -59,6 +59,7 @@ void main()
 		specular = pow(max(dot(R, V), 0.0), 32.0);
 	}
 
+
 	outFragColor = vec4((diffuse+ specular + ambient) * color.rgb , color.a);
 
 
