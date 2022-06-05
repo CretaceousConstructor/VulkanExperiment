@@ -1,6 +1,38 @@
 #include "VkCommandManager.h"
 
-VkCommandBuffer VkCommandManager::BeginSingleTimeCommands(VkCommandPool& command_pool, VkDevice& device)
+VkCommandManager::VkCommandManager(VkDeviceManager& _device_man,size_t num_of_graphics_command_buffers,size_t num_of_transfer_command_buffer) :
+    device_manager(_device_man),
+    graphics_command_pool(device_manager.CreateCommandPool(VkDeviceManager::CommandPoolType::graphics_command_pool)),
+    transfer_command_pool(device_manager.CreateCommandPool(VkDeviceManager::CommandPoolType::transfor_command_pool))
+{
+
+
+
+
+	transfer_command_buffer.resize(num_of_graphics_command_buffers);
+	for (int i = 0; i < transfer_command_buffer.size(); i++)
+	{
+		
+	VkCommandManager::CreateCommandBuffer(device_manager.GetLogicalDeviceRef(), transfer_command_pool, transfer_command_buffer[i], VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+	}
+
+
+	graphics_command_buffers.resize(num_of_graphics_command_buffers);
+
+	for (int i = 0; i < graphics_command_buffers.size(); i++)
+	{
+		VkCommandManager::CreateCommandBuffer(device_manager.GetLogicalDeviceRef(), graphics_command_pool, graphics_command_buffers[i], VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+	}
+
+
+
+}
+
+
+
+
+
+VkCommandBuffer VkCommandManager::BeginSingleTimeCommands(VkCommandPool &command_pool, const VkDevice &device)
 {
 	/*typedef struct VkCommandBufferAllocateInfo {
 		VkStructureType         sType;
@@ -10,11 +42,10 @@ VkCommandBuffer VkCommandManager::BeginSingleTimeCommands(VkCommandPool& command
 		uint32_t                commandBufferCount;
 	} VkCommandBufferAllocateInfo;*/
 
-
 	VkCommandBufferAllocateInfo allocInfo{};
-	allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-	allocInfo.commandPool = command_pool;
-	allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+	allocInfo.sType              = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	allocInfo.commandPool        = command_pool;
+	allocInfo.level              = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 	allocInfo.commandBufferCount = 1;
 
 	VkCommandBuffer command_buffer;
@@ -29,7 +60,7 @@ VkCommandBuffer VkCommandManager::BeginSingleTimeCommands(VkCommandPool& command
 	return command_buffer;
 }
 
-void VkCommandManager::EndSingleTimeCommands(VkCommandPool& command_pool, VkDevice& device, VkCommandBuffer command_buffer ,VkQueue& command_quque)
+void VkCommandManager::EndSingleTimeCommands(VkCommandPool &command_pool, const VkDevice &device, VkCommandBuffer command_buffer, VkQueue &command_quque)
 {
 	vkEndCommandBuffer(command_buffer);
 	//typedef struct VkSubmitInfo {
@@ -44,36 +75,40 @@ void VkCommandManager::EndSingleTimeCommands(VkCommandPool& command_pool, VkDevi
 	//	const VkSemaphore* pSignalSemaphores;
 	//} VkSubmitInfo;
 
-
 	VkSubmitInfo submitInfo{};
-	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	submitInfo.sType              = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 	submitInfo.commandBufferCount = 1;
-	submitInfo.pCommandBuffers = &command_buffer;
+	submitInfo.pCommandBuffers    = &command_buffer;
 
 	vkQueueSubmit(command_quque, 1, &submitInfo, VK_NULL_HANDLE);
 
 	vkQueueWaitIdle(command_quque);
 
 	vkFreeCommandBuffers(device, command_pool, 1, &command_buffer);
+}
+
+void VkCommandManager::CreateCommandBuffer(const VkDevice &device, VkCommandPool &commandpool, VkCommandBuffer &CommandBuffer, VkCommandBufferLevel level)
+{
+	VkCommandBufferAllocateInfo BufferAllocInfo{};
+	BufferAllocInfo.sType              = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	BufferAllocInfo.level              = level;
+	BufferAllocInfo.commandPool        = commandpool;
+	BufferAllocInfo.commandBufferCount = 1;
+	vkAllocateCommandBuffers(device, &BufferAllocInfo, &CommandBuffer);
 
 
 
 
 }
 
-void VkCommandManager::CreateCommandBuffer(VkDevice& device, VkCommandPool& commandpool, VkCommandBuffer& CommandBuffer, VkCommandBufferLevel level)
+const std::vector<VkCommandBuffer> & VkCommandManager::GetGraphicsCommandBuffers() const
 {
+	return graphics_command_buffers;
 
+}
 
-
-	VkCommandBufferAllocateInfo BufferAllocInfo{};
-	BufferAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-	BufferAllocInfo.level = level;
-	BufferAllocInfo.commandPool = commandpool;
-	BufferAllocInfo.commandBufferCount = 1;
-	vkAllocateCommandBuffers(device, &BufferAllocInfo, &CommandBuffer);
-
-
-
+const std::vector<VkCommandBuffer> & VkCommandManager::GetTransferCommandBuffers() const
+{
+	return transfer_command_buffer;
 
 }

@@ -1,31 +1,27 @@
 #include "VkImageWrapper.h"
 
-void VkImageWrapper::CleanUp()
+VkImageWrapper::VkImageWrapper(VkDeviceManager &_device_manager, VkImageType para_image_type, VkFormat para_format, VkExtent3D para_image_extent, uint32_t para_mip_levels, uint32_t para_array_layers, VkSampleCountFlagBits para_samples, VkImageTiling para_tiling, VkBufferUsageFlags para_usage_image, VkSharingMode para_sharing_mode, VkImageLayout initialLayout, VkMemoryPropertyFlagBits para_image_mem_property_flag) :
+    device_manager(_device_manager)
 {
-	if (device_manager != nullptr)
-	{
-		vkDestroyImageView(device_manager->GetLogicalDeviceRef(), image_view, nullptr);
-		vkDestroyImage(device_manager->GetLogicalDeviceRef(), image, nullptr);
-		vkFreeMemory(device_manager->GetLogicalDeviceRef(), image_mem, nullptr);
-	}
-	else
-	{
-		throw std::runtime_error("device_manager is a nullptr ");
-	}
+	Init(para_image_type, para_format, para_image_extent, para_mip_levels, para_array_layers, para_samples, para_tiling, para_usage_image, para_sharing_mode, initialLayout, para_image_mem_property_flag);
+}
+
+VkImageWrapper::~VkImageWrapper()
+{
+	vkDestroyImageView(device_manager.GetLogicalDeviceRef(), image_view, nullptr);
+	vkDestroyImage(device_manager.GetLogicalDeviceRef(), image, nullptr);
+	vkFreeMemory(device_manager.GetLogicalDeviceRef(), image_mem, nullptr);
+}
+
+VkImageWrapper::VkImageWrapper(VkDeviceManager &_device_manager)
+	:device_manager(_device_manager)
+{
+
+
 }
 
 
-
-
-
-
-
-
-
-
-
-
-void VkImageWrapper::InitImageView(VkFormat format, VkImageAspectFlags aspectFlags,uint32_t mip_levels)
+void VkImageWrapper::InitImageView(VkFormat format, VkImageAspectFlags aspectFlags, uint32_t mip_levels)
 {
 	/*typedef struct VkImageViewCreateInfo {
 		VkStructureType            sType;
@@ -51,21 +47,19 @@ void VkImageWrapper::InitImageView(VkFormat format, VkImageAspectFlags aspectFla
 	viewInfo.subresourceRange.baseMipLevel   = 0;
 	viewInfo.subresourceRange.levelCount     = mip_levels;
 	viewInfo.subresourceRange.baseArrayLayer = 0;
-	viewInfo.subresourceRange.layerCount     = 1; //之后会加入指定layercount的功能
+	viewInfo.subresourceRange.layerCount     = 1;        //之后会加入指定layercount的功能
 
 	image_view_format = format;
-	
-	if (vkCreateImageView(device_manager->GetLogicalDeviceRef(), &viewInfo, nullptr, &image_view) != VK_SUCCESS)
+
+	if (vkCreateImageView(device_manager.GetLogicalDeviceRef(), &viewInfo, nullptr, &image_view) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to create texture image view!");
 	}
-
-
 }
 
-void VkImageWrapper::CopyBufferToImage(VkBuffer buffer, uint32_t width, uint32_t height, VkCommandPool &command_pool, VkDevice &device, VkQueue &command_quque)
+void VkImageWrapper::CopyBufferToImage(VkBuffer buffer, uint32_t width, uint32_t height, VkCommandPool &command_pool,  VkQueue &command_quque)
 {
-	VkCommandBuffer   commandBuffer = VkCommandManager::BeginSingleTimeCommands(command_pool, device);
+	VkCommandBuffer   commandBuffer = VkCommandManager::BeginSingleTimeCommands(command_pool, device_manager.GetLogicalDeviceRef());
 	VkBufferImageCopy region{};
 	region.bufferOffset      = 0;
 	region.bufferRowLength   = 0;
@@ -89,15 +83,13 @@ void VkImageWrapper::CopyBufferToImage(VkBuffer buffer, uint32_t width, uint32_t
 	    1,
 	    &region);
 
-	VkCommandManager::EndSingleTimeCommands(command_pool, device, commandBuffer, command_quque);
+	VkCommandManager::EndSingleTimeCommands(command_pool, device_manager.GetLogicalDeviceRef(), commandBuffer, command_quque);
 }
 
-void VkImageWrapper::CopyBufferToImage(VkBuffer buffer, VkCommandPool &command_pool, VkDevice &device, VkQueue &command_quque, std::vector<VkBufferImageCopy> &bufferCopyRegions)
+
+void VkImageWrapper::CopyBufferToImage(VkBuffer buffer, const std::vector<VkBufferImageCopy> &bufferCopyRegions,VkCommandPool &command_pool,  VkQueue &command_quque )
 {
-
-
-
-	VkCommandBuffer commandBuffer = VkCommandManager::BeginSingleTimeCommands(command_pool, device);
+	VkCommandBuffer commandBuffer = VkCommandManager::BeginSingleTimeCommands(command_pool, device_manager.GetLogicalDeviceRef());
 
 	vkCmdCopyBufferToImage(
 	    commandBuffer,
@@ -107,9 +99,7 @@ void VkImageWrapper::CopyBufferToImage(VkBuffer buffer, VkCommandPool &command_p
 	    bufferCopyRegions.size(),
 	    bufferCopyRegions.data());
 
-	VkCommandManager::EndSingleTimeCommands(command_pool, device, commandBuffer, command_quque);
-
-
+	VkCommandManager::EndSingleTimeCommands(command_pool, device_manager.GetLogicalDeviceRef(), commandBuffer, command_quque);
 
 }
 
@@ -118,9 +108,9 @@ bool VkImageWrapper::HasStencilComponent(VkFormat format)
 	return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
 }
 
-void VkImageWrapper::TransitionImageLayout(VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, VkCommandPool &command_pool, VkDevice &device, VkQueue &command_quque, VkDeviceManager::QueueFamilyIndices queue_family_indices,uint32_t miplevelcount)
+void VkImageWrapper::TransitionImageLayout(VkImageLayout oldLayout, VkImageLayout newLayout, VkCommandPool &command_pool,VkQueue &command_quque, VkDeviceManager::QueueFamilyIndices queue_family_indices, uint32_t miplevelcount)
 {
-	VkCommandBuffer commandBuffer = VkCommandManager::BeginSingleTimeCommands(command_pool, device);
+	VkCommandBuffer commandBuffer = VkCommandManager::BeginSingleTimeCommands(command_pool, device_manager.GetLogicalDeviceRef());
 
 	VkImageMemoryBarrier barrier{};
 	barrier.sType     = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -133,14 +123,11 @@ void VkImageWrapper::TransitionImageLayout(VkFormat format, VkImageLayout oldLay
 	barrier.image                       = image;
 	barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 
-
-
-
 	if (newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
 	{
 		barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
 
-		if (HasStencilComponent(format))
+		if (HasStencilComponent(image_format))
 		{
 			barrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
 		}
@@ -153,7 +140,7 @@ void VkImageWrapper::TransitionImageLayout(VkFormat format, VkImageLayout oldLay
 	barrier.subresourceRange.baseMipLevel   = 0;
 	barrier.subresourceRange.levelCount     = miplevelcount;
 	barrier.subresourceRange.baseArrayLayer = 0;
-	barrier.subresourceRange.layerCount     = 1; //layer count的指定会在之后加入
+	barrier.subresourceRange.layerCount     = 1;        //layer count的指定会在之后加入
 
 	VkPipelineStageFlags sourceStage;
 	VkPipelineStageFlags destinationStage;
@@ -163,7 +150,7 @@ void VkImageWrapper::TransitionImageLayout(VkFormat format, VkImageLayout oldLay
 	{
 		barrier.srcAccessMask = 0;
 		barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-	   
+
 		sourceStage      = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
 		destinationStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 	}
@@ -177,11 +164,11 @@ void VkImageWrapper::TransitionImageLayout(VkFormat format, VkImageLayout oldLay
 		sourceStage      = VK_PIPELINE_STAGE_HOST_BIT;
 		destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
 	}
-	//unchecked 
+	//unchecked
 	else if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
 	{
 		barrier.srcAccessMask = 0;
-		barrier.dstAccessMask =  VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+		barrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
 
 		sourceStage      = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
 		destinationStage = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
@@ -189,23 +176,17 @@ void VkImageWrapper::TransitionImageLayout(VkFormat format, VkImageLayout oldLay
 	//checked
 	else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
 	{
+		sourceStage           = VK_PIPELINE_STAGE_TRANSFER_BIT;
+		barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 
-		sourceStage =  VK_PIPELINE_STAGE_TRANSFER_BIT;
-        barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-
-
-
-		destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-       	barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT,
-
-
+		destinationStage      = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+		barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT,
 
 		//TODO:修好这里的队列家族问题
-		//这里有问题的，队列家族index如果不同就根本没法运行，至今原因未知
-		//barrier.srcQueueFamilyIndex = queue_family_indices.transferFamily.value();
-		barrier.srcQueueFamilyIndex = queue_family_indices.graphicsFamily.value();
-		barrier.dstQueueFamilyIndex = queue_family_indices.graphicsFamily.value();
-
+		    //这里有问题的，队列家族index如果不同就根本没法运行，至今原因未知
+		    //barrier.srcQueueFamilyIndex = queue_family_indices.transferFamily.value();
+		    barrier.srcQueueFamilyIndex = queue_family_indices.graphicsFamily.value();
+		barrier.dstQueueFamilyIndex     = queue_family_indices.graphicsFamily.value();
 	}
 	else
 	{
@@ -220,7 +201,11 @@ void VkImageWrapper::TransitionImageLayout(VkFormat format, VkImageLayout oldLay
 	    0, nullptr,
 	    1, &barrier);
 
-	VkCommandManager::EndSingleTimeCommands(command_pool, device, commandBuffer, command_quque);
+	VkCommandManager::EndSingleTimeCommands(command_pool, device_manager.GetLogicalDeviceRef(), commandBuffer, command_quque);
+
+
+
+
 
 
 
@@ -234,7 +219,8 @@ VkFormat &VkImageWrapper::GetImageViewFormat()
 
 //para_initialLayout目前还没有使用，以后可以直接拿来layout transition？
 
-void VkImageWrapper::Init(VkImageType para_image_type, VkFormat para_format, VkExtent3D para_image_extent, uint32_t para_mip_levels, uint32_t para_array_layers, VkSampleCountFlagBits para_samples, VkImageTiling para_tiling, VkBufferUsageFlags para_usage_image, VkSharingMode para_sharing_mode, VkImageLayout para_initialLayout, VkMemoryPropertyFlagBits para_image_mem_property_flag, VkDeviceManager *para_device_manager)
+void VkImageWrapper::Init(VkImageType para_image_type, VkFormat para_format, VkExtent3D para_image_extent, uint32_t para_mip_levels, uint32_t para_array_layers, VkSampleCountFlagBits para_samples, VkImageTiling para_tiling, VkBufferUsageFlags para_usage_image, VkSharingMode para_sharing_mode, VkImageLayout para_initialLayout, VkMemoryPropertyFlagBits para_image_mem_property_flag)
+
 {
 	//VkStructureType          sType;
 	//const void* pNext;
@@ -252,20 +238,20 @@ void VkImageWrapper::Init(VkImageType para_image_type, VkFormat para_format, VkE
 	//const uint32_t*          pQueueFamilyIndices;
 	//VkImageLayout            initialLayout;
 
-	if (para_device_manager == nullptr)
-	{
-		throw std::runtime_error("device_manager is a nullptr ");
-	}
+	//if (para_device_manager == nullptr)
+	//{
+	//	throw std::runtime_error("device_manager is a nullptr ");
+	//}
 
-	device_manager = para_device_manager;
+	//device_manager = para_device_manager;
 
 	VkImageCreateInfo imageInfo{};
 	imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
 	//imageInfo.pNext;
 	//imageInfo.flags
-	imageInfo.imageType     = para_image_type;
-	imageInfo.format        = para_format;
-	image_format            = para_format;
+	imageInfo.imageType = para_image_type;
+	image_format        = para_format;
+	imageInfo.format    = para_format;
 
 	imageInfo.extent.width  = para_image_extent.width;
 	imageInfo.extent.height = para_image_extent.height;
@@ -280,25 +266,31 @@ void VkImageWrapper::Init(VkImageType para_image_type, VkFormat para_format, VkE
 	//imageInfo.pQueueFamilyIndices
 	imageInfo.initialLayout = para_initialLayout;
 
-	if (vkCreateImage(device_manager->GetLogicalDeviceRef(), &imageInfo, nullptr, &image) != VK_SUCCESS)
+	if (vkCreateImage(device_manager.GetLogicalDeviceRef(), &imageInfo, nullptr, &image) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to create image!");
 	}
 
+
+
+
+
 	VkMemoryRequirements memRequirements;
-	vkGetImageMemoryRequirements(device_manager->GetLogicalDeviceRef(), image, &memRequirements);
+	vkGetImageMemoryRequirements(device_manager.GetLogicalDeviceRef(), image, &memRequirements);
 
 	VkMemoryAllocateInfo allocInfo{};
 	allocInfo.sType           = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 	allocInfo.allocationSize  = memRequirements.size;
-	allocInfo.memoryTypeIndex = VkDeviceManager::FindMemoryType(memRequirements.memoryTypeBits, para_image_mem_property_flag, device_manager->GetPhysicalDeviceRef());        //找到可以分配VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT内存类型的index
+	allocInfo.memoryTypeIndex = VkDeviceManager::FindMemoryType(memRequirements.memoryTypeBits, para_image_mem_property_flag, device_manager.GetPhysicalDeviceRef());        //找到可以分配VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT内存类型的index
 
-	if (vkAllocateMemory(device_manager->GetLogicalDeviceRef(), &allocInfo, nullptr, &image_mem) != VK_SUCCESS)
+	if (vkAllocateMemory(device_manager.GetLogicalDeviceRef(), &allocInfo, nullptr, &image_mem) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to allocate image memory!");
 	}
 
-	vkBindImageMemory(device_manager->GetLogicalDeviceRef(), image, image_mem, 0);        //把两者联系起来
+	vkBindImageMemory(device_manager.GetLogicalDeviceRef(), image, image_mem, 0);        //image的内存和image两者联系起来
+
+
 }
 
 VkImageView &VkImageWrapper::GetImageView()

@@ -5,9 +5,8 @@
 #include <string>
 #include <vector>
 
-class VkExtensionManager
+namespace VkExtensionManager
 {
-  public:
 	static std::vector<const char *> GetNeededInstanceExtensions(bool ValidationLayerEnabled);
 	static std::vector<const char *> GetDeviceRequiredExtensions();
 

@@ -19,7 +19,7 @@ class App
 {
 
 public:
-	App() = default;
+	App() ;
 	virtual ~App() = default;
 
 	void Run();
@@ -30,16 +30,15 @@ public:
 	void RenderingPreparation();
 	void MainLoop();
 	void CleanUp();
-	void DestroyInstance();
+
+
 
 
 protected:
 	virtual void InitRenderer() = 0;
-
-
+protected:
+	VkInstanceWrapper instance;
 	VkWindows window;
-	VkInstance instance;
-	VkValidationManager validation_manager;
 	VkDeviceManager device_manager;
 	VkSwapChainManager swap_chain_manager;
 	VkCommandManager    command_manager;
@@ -47,9 +46,6 @@ protected:
 	std::unique_ptr<BaseRenderer> renderer;
 	
 	
-	
-	//std::shared_ptr<VkWindows> window_v1;
-	//std::shared_ptr<VkInstanceWrapper> instance_v1;
 
 
 

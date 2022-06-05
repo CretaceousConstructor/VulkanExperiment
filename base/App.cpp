@@ -1,25 +1,22 @@
 #include "App.h"
 
-//App::App()
-//	:
-//{
-//
-//
-//
-//	InitRenderer();        //多态调用，这个函数会给智能指针一个具体的实例对象
-//
-//
-//
-//
-//
-//
-//}
-//
+App::App() :
+    instance(),
+    window(instance.GetInstanceRef()),
+    device_manager(instance.GetInstanceRef(), window),
+    swap_chain_manager(device_manager,window),
+	command_manager(device_manager,swap_chain_manager.GetSwapImageCount(),1)
+{
+
+
+}
+
+
 void App::Run()
 {
 	Init();
-	RendererSetUp();
-	RenderingPreparation();
+	//RendererSetUp();
+	//RenderingPreparation();
 	MainLoop();
 	CleanUp();
 }
@@ -27,67 +24,61 @@ void App::Run()
 void App::Init()
 {
 	InitRenderer();        //多态调用，这个函数会给智能指针一个具体的实例对象
-
-	window.Init((void *) (renderer.get()));
-
-	VkInitializer::CreateInstance(instance, validation_manager);
-
-	VkValidationManager::SetupDebugMessenger(instance, validation_manager);
-
-	VkInitializer::CreateSurface(instance, window);
-
-	VkInitializer::PickPhysicalDevice(instance, window.GetSurface(), device_manager.GetPhysicalDeviceRef());
-
-	device_manager.CreateLogicalDeviceAndQueues(window.GetSurfaceRef());
-
-	swap_chain_manager.CreateSwapChainAndSwapImages(device_manager.GetPhysicalDeviceRef(), device_manager.GetLogicalDeviceRef(), window.GetSurfaceRef(), window);
 }
 
 void App::RendererSetUp()
 {
 	//renderer sets some references
-	renderer->SetDeviceManager(device_manager);
 
-	renderer->SetSwapChinManager(swap_chain_manager);
-	renderer->SetCommandManager(command_manager);
-	renderer->SetWindow(window);
-	renderer->SetGraphicsCommandPool(
-	    device_manager.CreateCommandPool(VkDeviceManager::CommandPoolType::graphics_command_pool, window.GetSurfaceRef()));
-	renderer->SetTransforCommandPool(
-	    device_manager.CreateCommandPool(VkDeviceManager::CommandPoolType::transfor_command_pool, window.GetSurfaceRef()));
+
+	//renderer->SetDeviceManager(device_manager);
+	//renderer->SetSwapChinManager(swap_chain_manager);
+	//renderer->SetCommandManager(command_manager);
+	//renderer->SetWindow(window);
+	//renderer->SetGraphicsCommandPool(
+	//    device_manager.CreateCommandPool(VkDeviceManager::CommandPoolType::graphics_command_pool));
+	//renderer->SetTransforCommandPool(
+	//    device_manager.CreateCommandPool(VkDeviceManager::CommandPoolType::transfor_command_pool));
+
+
+
+
+
+
 }
 
 void App::RenderingPreparation()
 {
-	renderer->SetUpUserInput();
-	//Init Camera
-	renderer->CreateCamera();
-	//prepare command buffer
-	renderer->InitCommandBuffers();
-	//prepare Models
-	renderer->PrepareModels();
+	//renderer->SetUpUserInput();
+	////Init Camera
+	//renderer->CreateCamera();
+	////prepare command buffer
+	//renderer->InitCommandBuffers();
+	////prepare Models
+	//renderer->PrepareModels();
 
-	//prepare Images
-	renderer->CreateAttachmentImages();
-	renderer->CreateTextureImages();
-	renderer->CreateDepthImages();
-	//prepare Renderpass
-	renderer->CreateRenderPass();
-	//prepare Buffers
-	renderer->CreateUniformBuffer();
-	renderer->CreateFrameBuffers();
-	//prepare Descriptor Sets
-	renderer->CreateDescriptorSetLayout();
-	renderer->CreateDescriptorPool();
-	renderer->CreateDescriptorSets();
-	//prepare Pipeline
-	renderer->CreateGraphicsPipelineLayout();
-	renderer->CreateGraphicsPipeline();
+	////prepare Images
+	//renderer->CreateAttachmentImages();
+	//renderer->CreateTextureImages();
+	//renderer->CreateDepthImages();
+	////prepare Renderpass
+	//renderer->CreateRenderPass();
+	////prepare Buffers
+	//renderer->CreateUniformBuffer();
+	//renderer->CreateFrameBuffers();
+	////prepare Descriptor Sets
+	//renderer->CreateDescriptorSetLayout();
+	//renderer->CreateDescriptorPool();
+	//renderer->CreateDescriptorSets();
+	////prepare Pipeline
+	//renderer->CreateGraphicsPipelineLayout();
+	//renderer->CreateGraphicsPipeline();
 
-	//command buffer recording
-	renderer->CommandBufferRecording();
-	//prepare sync objects
-	renderer->InitSynObjects();
+	////command buffer recording
+	//renderer->CommandBufferRecording();
+	////prepare sync objects
+	//renderer->InitSynObjects();
+
 }
 
 void App::MainLoop()
@@ -120,14 +111,17 @@ void App::CleanUp()
 	renderer->CleanUpRenderPass();
 	renderer->CleanUpImages();
 
-	swap_chain_manager.CleanUp(device_manager.GetLogicalDeviceRef());
-	device_manager.CleanUp();
-	window.CleanUp(instance);
-	validation_manager.CleanUp(instance);
-	DestroyInstance();
+	//swap_chain_manager.CleanUp(device_manager.GetLogicalDeviceRef());
+	//device_manager.CleanUp();
+	//window.CleanUp(instance);
+	//validation_manager.CleanUp(instance);
+	//DestroyInstance();
+
+
+
+
 }
 
-void App::DestroyInstance()
-{
-	vkDestroyInstance(instance, nullptr);
-}
+
+
+

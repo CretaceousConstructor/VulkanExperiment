@@ -39,27 +39,30 @@
     <Filter Include="Header Files\ImGui\VulkanShader">
       <UniqueIdentifier>{b85ef455-2136-47dd-a629-4dbddda85597}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Vk">
+      <UniqueIdentifier>{7ef85353-c567-418a-b501-6554ef5913af}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Camera">
+      <UniqueIdentifier>{af3cd04f-3122-43e5-bd5e-67c06d9d080f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Imgui">
+      <UniqueIdentifier>{fa5ab306-8b45-4cca-984c-a83671bfcc33}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Texture">
+      <UniqueIdentifier>{b3d7b1d1-bb6a-4412-87de-4c59a0f04152}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Texture\ktx">
+      <UniqueIdentifier>{cf9a38cd-dc23-440a-b902-8aedf27f0e82}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\ClassReflection">
+      <UniqueIdentifier>{7ee56ee3-1b49-4bf1-9190-52f67e549e9a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="base\VkUniformBuffer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="base\VkValidationManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="base\VkWindows.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="base\App.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="base\BaseRenderer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="base\Camera.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="base\FirstPersonCamera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="base\KeyBoardInputManager.cpp">
@@ -77,80 +80,128 @@
     <ClCompile Include="base\Transform.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="base\VkCommandManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="base\VkDeviceManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="base\VkExtensionManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="base\VkImageWrapper.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="base\VkInitializer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="base\VkMemoryManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="base\VkBufferWrapper.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="base\VkSwapChainManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="base\GltfModel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="base\VkTexture.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="base\VkBufferWrapper.cpp">
+      <Filter>Source Files\Vk</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\vulkanExample\Vulkan\external\ktx\lib\memstream.c">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="base\VkCommandManager.cpp">
+      <Filter>Source Files\Vk</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\vulkanExample\Vulkan\external\ktx\lib\swap.c">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="base\VkDescriptorManager.cpp">
+      <Filter>Source Files\Vk</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\vulkanExample\Vulkan\external\ktx\lib\texture.c">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="base\VkDeviceManager.cpp">
+      <Filter>Source Files\Vk</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\vulkanExample\Vulkan\external\ktx\lib\checkheader.c">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="base\VkExtensionManager.cpp">
+      <Filter>Source Files\Vk</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\vulkanExample\Vulkan\external\ktx\lib\filestream.c">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="base\VkImageWrapper.cpp">
+      <Filter>Source Files\Vk</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\vulkanExample\Vulkan\external\ktx\lib\hashlist.c">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="base\VkImgui.cpp">
+      <Filter>Source Files\Vk</Filter>
+    </ClCompile>
+    <ClCompile Include="base\VkInitializer.cpp">
+      <Filter>Source Files\Vk</Filter>
     </ClCompile>
     <ClCompile Include="base\VkInstanceWrapper.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Vk</Filter>
+    </ClCompile>
+    <ClCompile Include="base\VkMemoryManager.cpp">
+      <Filter>Source Files\Vk</Filter>
+    </ClCompile>
+    <ClCompile Include="base\VkPipelineWrapper.cpp">
+      <Filter>Source Files\Vk</Filter>
+    </ClCompile>
+    <ClCompile Include="base\VkSwapChainManager.cpp">
+      <Filter>Source Files\Vk</Filter>
+    </ClCompile>
+    <ClCompile Include="base\VkTexture.cpp">
+      <Filter>Source Files\Vk</Filter>
+    </ClCompile>
+    <ClCompile Include="base\VkUniformBuffer.cpp">
+      <Filter>Source Files\Vk</Filter>
+    </ClCompile>
+    <ClCompile Include="base\VkValidationManager.cpp">
+      <Filter>Source Files\Vk</Filter>
+    </ClCompile>
+    <ClCompile Include="base\VkWindows.cpp">
+      <Filter>Source Files\Vk</Filter>
+    </ClCompile>
+    <ClCompile Include="base\Camera.cpp">
+      <Filter>Source Files\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="base\FirstPersonCamera.cpp">
+      <Filter>Source Files\Camera</Filter>
     </ClCompile>
     <ClCompile Include="base\imgui.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Imgui</Filter>
     </ClCompile>
     <ClCompile Include="base\imgui_demo.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Imgui</Filter>
     </ClCompile>
     <ClCompile Include="base\imgui_draw.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="base\imgui_tables.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="base\imgui_widgets.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Imgui</Filter>
     </ClCompile>
     <ClCompile Include="base\imgui_impl_glfw.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Imgui</Filter>
     </ClCompile>
     <ClCompile Include="base\imgui_impl_vulkan.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Imgui</Filter>
     </ClCompile>
-    <ClCompile Include="VkImgui.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="base\imgui_tables.cpp">
+      <Filter>Source Files\Imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="base\imgui_widgets.cpp">
+      <Filter>Source Files\Imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\vulkanExample\Vulkan\external\ktx\lib\checkheader.c">
+      <Filter>Source Files\Texture\ktx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\vulkanExample\Vulkan\external\ktx\lib\filestream.c">
+      <Filter>Source Files\Texture\ktx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\vulkanExample\Vulkan\external\ktx\lib\hashlist.c">
+      <Filter>Source Files\Texture\ktx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\vulkanExample\Vulkan\external\ktx\lib\memstream.c">
+      <Filter>Source Files\Texture\ktx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\vulkanExample\Vulkan\external\ktx\lib\texture.c">
+      <Filter>Source Files\Texture\ktx</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\vulkanExample\Vulkan\external\ktx\lib\swap.c">
+      <Filter>Source Files\Texture\ktx</Filter>
+    </ClCompile>
+    <ClCompile Include="base\VkRenderpassManager.cpp">
+      <Filter>Source Files\Vk</Filter>
+    </ClCompile>
+    <ClCompile Include="base\VkSubpassWrapper.cpp">
+      <Filter>Source Files\Vk</Filter>
+    </ClCompile>
+    <ClCompile Include="base\VkRenderpassWrapper.cpp">
+      <Filter>Source Files\Vk</Filter>
+    </ClCompile>
+    <ClCompile Include="base\VkPipelineBuilder.cpp">
+      <Filter>Source Files\Vk</Filter>
+    </ClCompile>
+    <ClCompile Include="base\VkImageBuilder.cpp">
+      <Filter>Source Files\Vk</Filter>
+    </ClCompile>
+    <ClCompile Include="base\VkDepthImageBuilder.cpp">
+      <Filter>Source Files\Vk</Filter>
+    </ClCompile>
+    <ClCompile Include="base\VkImageDirector.cpp">
+      <Filter>Source Files\Vk</Filter>
+    </ClCompile>
+    <ClCompile Include="base\VkPipelineConcreteBuilder.cpp">
+      <Filter>Source Files\Vk</Filter>
+    </ClCompile>
+    <ClCompile Include="base\VkMetaInfo.cpp">
+      <Filter>Source Files\Vk</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -205,13 +256,7 @@
     <ClInclude Include="base\include\VkValidationManager.h">
       <Filter>Header Files\Vk</Filter>
     </ClInclude>
-    <ClInclude Include="base\include\VkUniformBuffer.h">
-      <Filter>Header Files\Vk</Filter>
-    </ClInclude>
     <ClInclude Include="base\include\VkSwapChainManager.h">
-      <Filter>Header Files\Vk</Filter>
-    </ClInclude>
-    <ClInclude Include="base\include\VkBufferWrapper.h">
       <Filter>Header Files\Vk</Filter>
     </ClInclude>
     <ClInclude Include="base\include\VkMemoryManager.h">
@@ -234,9 +279,6 @@
     </ClInclude>
     <ClInclude Include="base\include\Geometry.h">
       <Filter>Header Files\Model</Filter>
-    </ClInclude>
-    <ClInclude Include="VkImgui.h">
-      <Filter>Header Files\Vk</Filter>
     </ClInclude>
     <ClInclude Include="base\include\imgui_impl_vulkan.h">
       <Filter>Header Files\ImGui</Filter>
@@ -261,6 +303,45 @@
     </ClInclude>
     <ClInclude Include="base\include\imgui_impl_glfw.h">
       <Filter>Header Files\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\VkImgui.h">
+      <Filter>Header Files\Vk</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\VkDescriptorManager.h">
+      <Filter>Header Files\Vk</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\VkUniformBuffer.h">
+      <Filter>Header Files\Vk</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\VkPipelineWrapper.h">
+      <Filter>Header Files\Vk</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\VkRenderpassManager.h">
+      <Filter>Header Files\Vk</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\VkSubpassWrapper.h">
+      <Filter>Header Files\Vk</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\VkRenderpassWrapper.h">
+      <Filter>Header Files\Vk</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\VkPipelineBuilder.h">
+      <Filter>Header Files\Vk</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\VkDepthImageBuilder.h">
+      <Filter>Header Files\Vk</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\VkImageBuilder.h">
+      <Filter>Header Files\Vk</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\VkImageDirector.h">
+      <Filter>Header Files\Vk</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\VkPipelineConcreteBuilder.h">
+      <Filter>Header Files\Vk</Filter>
+    </ClInclude>
+    <ClInclude Include="base\VkMetaInfo.h">
+      <Filter>Header Files\Vk</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

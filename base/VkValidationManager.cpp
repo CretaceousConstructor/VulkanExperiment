@@ -1,12 +1,13 @@
 #include "VkValidationManager.h"
 
-void VkValidationManager::CleanUp(VkInstance &instance)
-{
-	if (ValidationLayersEnabled)
-	{
-		DestroyDebugUtilsMessengerEXT(instance, debug_messenger, nullptr);
-	}
-}
+
+//void VkValidationManager::CleanUp(VkInstance &instance)
+//{
+//	if (ValidationLayersEnabled)
+//	{
+//		DestroyDebugUtilsMessengerEXT(instance, debug_messenger, nullptr);
+//	}
+//}
 
 bool VkValidationManager::CheckIfValidationLayerSupported()
 {
@@ -80,7 +81,7 @@ void VkValidationManager::PopulateDebugMessengerCreateInfo(VkDebugUtilsMessenger
 	createInfo.pfnUserCallback = DebugCallback;
 }
 
-VkResult VkValidationManager::CreateDebugUtilsMessengerEXT(VkInstance &instance, const VkDebugUtilsMessengerCreateInfoEXT *pCreateInfo, const VkAllocationCallbacks *pAllocator, VkDebugUtilsMessengerEXT *pDebugMessenger)
+VkResult VkValidationManager::CreateDebugUtilsMessengerEXT(const VkInstance &instance, const VkDebugUtilsMessengerCreateInfoEXT *pCreateInfo, const VkAllocationCallbacks *pAllocator, VkDebugUtilsMessengerEXT *pDebugMessenger)
 {
 	auto func = (PFN_vkCreateDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
 	if (func != nullptr)
@@ -93,7 +94,7 @@ VkResult VkValidationManager::CreateDebugUtilsMessengerEXT(VkInstance &instance,
 	}
 }
 
-void VkValidationManager::SetupDebugMessenger(VkInstance &instance, VkValidationManager &validationManager)
+void VkValidationManager::SetupDebugMessenger(const VkInstance &instance)
 {
 
 
@@ -104,7 +105,7 @@ void VkValidationManager::SetupDebugMessenger(VkInstance &instance, VkValidation
 	VkDebugUtilsMessengerCreateInfoEXT createInfo{};
 	VkValidationManager::PopulateDebugMessengerCreateInfo(createInfo);
 
-	if (VkValidationManager::CreateDebugUtilsMessengerEXT(instance, &createInfo, nullptr, &validationManager.debug_messenger) != VK_SUCCESS)
+	if (VkValidationManager::CreateDebugUtilsMessengerEXT(instance, &createInfo, nullptr, &VkValidationManager::debug_messenger) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to set up debug messenger!");
 	}

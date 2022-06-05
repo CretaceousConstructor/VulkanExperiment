@@ -5,7 +5,7 @@ class FirstPersonCamera : public Camera
 {
   public:
 	FirstPersonCamera()  = default;
-	~FirstPersonCamera() = default;
+	~FirstPersonCamera() override = default ;
 
 	// ÉèÖÃÉãÏñ»úÎ»ÖÃCamera position
 	//void SetPosition(float x, float y, float z);

@@ -5,6 +5,10 @@
 #include "MouseInputManager.h"
 #include "GltfModel.h"
 #include "VkTexture.h"
+#include "VkDescriptorManager.h"
+#include "VkUniformBuffer.h"
+#include "VkRenderpassManager.h"
+#include "VkDepthImageBuilder.h"
 #include <array>
 #include <chrono>
 #include <glm/glm.hpp>
@@ -14,13 +18,27 @@
 #include <memory>
 #include <random>
 #include <vector>
+#include <bitset>
 
 class KTXTextureRenderer : public BaseRenderer
 {
+
 public: 
-	KTXTextureRenderer() = default;
-	~KTXTextureRenderer() = default;
+	KTXTextureRenderer(
+	    VkWindows &         _window,
+	    VkDeviceManager &   _device_manager,
+	    VkSwapChainManager &_swapchain_manager,
+	    VkCommandManager &  _command_manager
+	)  ;
+	~KTXTextureRenderer();
+
+
+
   public:
+	void InitManager();
+	void InitFactory();
+
+
 	void SetUpUserInput() override;
 	void CreateCamera() override;
 
@@ -37,7 +55,7 @@ public:
 	void CreateDescriptorPool() override;
 	void CreateDescriptorSets() override;
 
-	void CreateGraphicsPipelineLayout() override;
+	//void CreateGraphicsPipelineLayout() override;
 	void CreateGraphicsPipeline() override;
 
 	void InitCommandBuffers() override;
@@ -51,19 +69,32 @@ public:
 
 	void UpdateCamera(float dt) override;
 
-  public:
-	void CleanUpModels() override;
-	void CleanUpDescriptorSetLayoutAndDescriptorPool() override;
-	void CleanUpCommandBuffersAndCommandPool() override;
-	void CleanUpSyncObjects() override;
-	void CleanupFrameBuffers() override;
-	void CleanUpPipelineAndPipelineLayout() override;
-	void CleanUpRenderPass() override;
-	void CleanUpImages() override;
-	void CleanUpUniformBuffers() override;
+	void CompileShaders() override;
+
+
+
+
+
+
+
+
+
+
+ // public:
+	//void CleanUpModels() override;
+	//void CleanUpDescriptorSetLayoutAndDescriptorPool() override;
+	//void CleanUpCommandBuffersAndCommandPool() override;
+	//void CleanUpSyncObjects() override;
+	//void CleanupFrameBuffers() override;
+	//void CleanUpPipelineAndPipelineLayout() override;
+	//void CleanUpRenderPass() override;
+	//void CleanUpImages() override;
+	//void CleanUpUniformBuffers() override;
 
   private:
-	void CreatePipelineSubpass0();
+	void CreateRenderPass0() const;
+	void CreatePipelineRenderPass0Subpass0();
+
 
   private:
 	static constexpr int MAX_FRAMES_IN_FLIGHT = 2;
@@ -109,36 +140,41 @@ public:
 		}
 	};
 
-  private:
-	//RENDER PASS
-	VkRenderPass render_pass;
-	
-	//DESCRIPTOR(layout and pool)
-	VkDescriptorPool      descriptor_pool;
-	VkDescriptorSetLayout descriptor_set_layout_write_subpass0;
-	//DESCRIPTOR SETS
-	std::vector<VkDescriptorSet> descriptor_sets_write_subpass0;        //3¸ö
 
-	//PIPLINE
-	VkPipelineLayout pipeline_layout_subpass0;
-	VkPipeline graphics_pipeline_subpass0;
+
+
+
+
+
+
+
+
+
+
+
+
+  private:
+	//RENDERPASS MAN
+	std::unique_ptr<VkRenderpassManager> render_pass_manager;
+	std::unique_ptr<VkImageBuilder>      depth_image_builder;
 
 	//UNIFORM BUFFER
-	std::vector<VkUniformBuffer> uniform_buffers;
 	Ubo_data ubo{};
-
+	std::vector<std::unique_ptr<VkUniformBuffer>> uniform_buffers;
 	//TEXTURE
-	VkTexture ktx_texure;
-
+	std::unique_ptr<VkTexture> ktx_texure;
 	//ATTACHMENT
-	std::vector<VkImageWrapper> depth_attachment;
+	std::vector<std::shared_ptr<VkImageWrapper>> depth_attachments;
+
 
 	//FRAMEBUFFER
 	std::vector<VkFramebuffer> frame_buffers;
 
 	//COMMAND BUFFERS
-	std::vector<VkCommandBuffer> graphics_command_buffers;        //3
-	VkCommandBuffer              transfer_command_buffer;
+	//std::vector<VkCommandBuffer> graphics_command_buffers;        //3
+	//VkCommandBuffer              transfer_command_buffer;
+
+
 
 	//SYN OBJECTS
 	std::vector<VkSemaphore> image_available_semaphores;
@@ -149,13 +185,16 @@ public:
 	//MODELS
 	std::unique_ptr<VkModel<Vertex>> quad_model;
 
-	//INPUT MANAGER
+	//CAMERA
+	std::unique_ptr<FirstPersonCamera> camera;
 
+	//INPUT MANAGER
 	std::unique_ptr<KeyBoardInputManager> keyboard;
 	std::unique_ptr<MouseInputManager>    mouse;
 
-	//CAMERA
-	std::unique_ptr<FirstPersonCamera> m_pCamera;
+
+
+
 
 
 

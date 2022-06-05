@@ -13,7 +13,7 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <AdditionalIncludeDirectories>$(SolutionDir)external\ktx\include;$(SolutionDir)external\ktx\other_include;$(SolutionDir)external\tinygltf;$(SolutionDir)base\include;$(SolutionDir)external\tinyobjloader;$(SolutionDir)external\glfw-3.3.3.bin.WIN64\include;$(SolutionDir)external\glm;$(SolutionDir)external\vulkan\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <BuildLog>
       <Path>$(Log)$(Configuration)\$(MSBuildProjectName).log</Path>

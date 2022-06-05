@@ -28,8 +28,10 @@
     <ClCompile Include="base\App.cpp" />
     <ClCompile Include="base\BaseRenderer.cpp" />
     <ClCompile Include="base\Camera.cpp" />
+    <ClCompile Include="base\VkDepthImageBuilder.cpp" />
     <ClCompile Include="base\FirstPersonCamera.cpp" />
     <ClCompile Include="base\GltfModel.cpp" />
+    <ClCompile Include="base\VkImageBuilder.cpp" />
     <ClCompile Include="base\imgui.cpp" />
     <ClCompile Include="base\imgui_demo.cpp" />
     <ClCompile Include="base\imgui_draw.cpp" />
@@ -43,19 +45,28 @@
     <ClCompile Include="base\ShaderManager.cpp" />
     <ClCompile Include="base\Transform.cpp" />
     <ClCompile Include="base\VkCommandManager.cpp" />
+    <ClCompile Include="base\VkDescriptorManager.cpp" />
     <ClCompile Include="base\VkDeviceManager.cpp" />
     <ClCompile Include="base\VkExtensionManager.cpp" />
+    <ClCompile Include="base\VkImageDirector.cpp" />
     <ClCompile Include="base\VkImageWrapper.cpp" />
+    <ClCompile Include="base\VkImgui.cpp" />
     <ClCompile Include="base\VkInitializer.cpp" />
     <ClCompile Include="base\VkInstanceWrapper.cpp" />
     <ClCompile Include="base\VkMemoryManager.cpp" />
     <ClCompile Include="base\VkBufferWrapper.cpp" />
+    <ClCompile Include="base\VkMetaInfo.cpp" />
+    <ClCompile Include="base\VkPipelineBuilder.cpp" />
+    <ClCompile Include="base\VkPipelineConcreteBuilder.cpp" />
+    <ClCompile Include="base\VkPipelineWrapper.cpp" />
+    <ClCompile Include="base\VkRenderpassManager.cpp" />
+    <ClCompile Include="base\VkRenderpassWrapper.cpp" />
+    <ClCompile Include="base\VkSubpassWrapper.cpp" />
     <ClCompile Include="base\VkSwapChainManager.cpp" />
     <ClCompile Include="base\VkTexture.cpp" />
     <ClCompile Include="base\VkUniformBuffer.cpp" />
     <ClCompile Include="base\VkValidationManager.cpp" />
     <ClCompile Include="base\VkWindows.cpp" />
-    <ClCompile Include="VkImgui.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="base\include\App.h" />
@@ -80,20 +91,30 @@
     <ClInclude Include="base\include\ShaderManager.h" />
     <ClInclude Include="base\include\Transform.h" />
     <ClInclude Include="base\include\VkCommandManager.h" />
+    <ClInclude Include="base\include\VkDepthImageBuilder.h" />
+    <ClInclude Include="base\include\VkDescriptorManager.h" />
     <ClInclude Include="base\include\VkDeviceManager.h" />
     <ClInclude Include="base\include\VkExtensionManager.h" />
+    <ClInclude Include="base\include\VkImageBuilder.h" />
+    <ClInclude Include="base\include\VkImageDirector.h" />
     <ClInclude Include="base\include\VkImageWrapper.h" />
+    <ClInclude Include="base\include\VkImgui.h" />
     <ClInclude Include="base\include\VkInitializer.h" />
     <ClInclude Include="base\include\VkInstanceWrapper.h" />
     <ClInclude Include="base\include\VkMemoryManager.h" />
-    <ClInclude Include="base\include\VkBufferWrapper.h" />
     <ClInclude Include="base\include\VkModel.h" />
+    <ClInclude Include="base\include\VkPipelineBuilder.h" />
+    <ClInclude Include="base\include\VkPipelineConcreteBuilder.h" />
+    <ClInclude Include="base\include\VkPipelineWrapper.h" />
+    <ClInclude Include="base\include\VkRenderpassManager.h" />
+    <ClInclude Include="base\include\VkRenderpassWrapper.h" />
+    <ClInclude Include="base\include\VkSubpassWrapper.h" />
     <ClInclude Include="base\include\VkSwapChainManager.h" />
     <ClInclude Include="base\include\VkTexture.h" />
     <ClInclude Include="base\include\VkUniformBuffer.h" />
     <ClInclude Include="base\include\VkValidationManager.h" />
     <ClInclude Include="base\include\VkWindows.h" />
-    <ClInclude Include="VkImgui.h" />
+    <ClInclude Include="base\VkMetaInfo.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="base\vulkan\generate_spv.sh" />
@@ -184,7 +205,7 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)external\ktx\include;$(SolutionDir)external\ktx\lib;$(SolutionDir)external\ktx\other_include;$(SolutionDir)external\vulkan\Include;$(SolutionDir)external\tinygltf;$(SolutionDir)external\glm;$(SolutionDir)external\glfw-3.3.3.bin.WIN64\include;$(SolutionDir)base\include;$(SolutionDir)external\tinyobjloader;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -207,7 +228,7 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)external\ktx\include;$(SolutionDir)external\ktx\lib;$(SolutionDir)external\ktx\other_include;$(SolutionDir)external\vulkan\Include;$(SolutionDir)external\tinygltf;$(SolutionDir)external\glm;$(SolutionDir)external\glfw-3.3.3.bin.WIN64\include;$(SolutionDir)base\include;$(SolutionDir)external\tinyobjloader;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -230,7 +251,7 @@
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)external\ktx\include;$(SolutionDir)external\ktx\lib;$(SolutionDir)external\ktx\other_include;$(SolutionDir)external\vulkan\Include;$(SolutionDir)external\tinygltf;$(SolutionDir)external\glm;$(SolutionDir)external\glfw-3.3.3.bin.WIN64\include;$(SolutionDir)base\include;$(SolutionDir)external\tinyobjloader;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -254,7 +275,7 @@
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)external\ktx\include;$(SolutionDir)external\ktx\lib;$(SolutionDir)external\ktx\other_include;$(SolutionDir)external\vulkan\Include;$(SolutionDir)external\tinygltf;$(SolutionDir)external\glm;$(SolutionDir)external\glfw-3.3.3.bin.WIN64\include;$(SolutionDir)base\include;$(SolutionDir)external\tinyobjloader;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

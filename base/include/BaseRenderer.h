@@ -22,12 +22,19 @@
 class BaseRenderer
 {
   public:
-	BaseRenderer()          = default;
+	BaseRenderer(
+	    VkWindows &         _window,
+	    VkDeviceManager &   _device_manager,
+	    VkSwapChainManager &_swapchain_manager,
+	    VkCommandManager &  _command_manager
+	);
 	virtual ~BaseRenderer() = default;
+
+	BaseRenderer() = delete;
 
 	void         SetDeviceManager(VkDeviceManager &para_device_manager);
 	void         SetSwapChinManager(VkSwapChainManager &para_swapchain_manager);
-	void         SetCommandManager(VkCommandManager & _commandman);
+	void         SetCommandManager(VkCommandManager &_commandman);
 	void         SetWindow(VkWindows &para_window);
 	void         SetGraphicsCommandPool(VkCommandPool commandpool);
 	void         SetTransforCommandPool(VkCommandPool commandpool);
@@ -47,6 +54,7 @@ class BaseRenderer
 	virtual void CreateDescriptorSets()      = 0;
 
 	virtual void CreateGraphicsPipelineLayout() = 0;
+	virtual void CompileShaders()              = 0;
 	virtual void CreateGraphicsPipeline()       = 0;
 
 	virtual void InitCommandBuffers()     = 0;
@@ -65,6 +73,9 @@ class BaseRenderer
   public:
 	BaseRenderer *GetThisPtr();
 
+	void RenderingPreparation();
+
+
   public:
 	virtual void CleanUpModels()                               = 0;
 	virtual void CleanUpDescriptorSetLayoutAndDescriptorPool() = 0;
@@ -74,21 +85,15 @@ class BaseRenderer
 	virtual void CleanUpPipelineAndPipelineLayout()            = 0;
 	virtual void CleanUpRenderPass()                           = 0;
 	virtual void CleanUpImages()                               = 0;
-
-	virtual void CleanUpUniformBuffers() = 0;
+	virtual void CleanUpUniformBuffers()                       = 0;
 
   protected:
 	//MANAGERS
-	VkSwapChainManager *swapchain_manager;
-	VkDeviceManager *   device_manager;
-	VkWindows *         window;
-	VkCommandManager *  command_manager;
+	VkSwapChainManager &swapchain_manager;
+	VkDeviceManager &   device_manager;
+	VkCommandManager &  command_manager;
+	VkWindows &         window;
 	//COMMAND POOL
-	VkCommandPool graphics_command_pool;
-	VkCommandPool transfer_command_pool;
-
-
-
-
-
+	//VkCommandPool &graphics_command_pool;
+	//VkCommandPool &transfer_command_pool;
 };

@@ -317,6 +317,9 @@ void MultiSubpassesRenderer::CreateUniformBuffer()
 
 void MultiSubpassesRenderer::CreateDepthImages()
 {
+
+
+
 	VkFormat depthFormat = swapchain_manager->FindDepthFormat(*device_manager);
 	depth_attachment.resize(swapchain_manager->GetSwapImageCount());
 
@@ -802,6 +805,30 @@ void MultiSubpassesRenderer::CreateRenderPass()
 	{
 		throw std::runtime_error("failed to create render pass!");
 	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }
 
 void MultiSubpassesRenderer::CreateGraphicsPipelineLayout()
@@ -837,7 +864,7 @@ void MultiSubpassesRenderer::CreateGraphicsPipelineLayout()
 		pipelineLayoutInfo_subpass1.pushConstantRangeCount = 0;              // Optional
 		pipelineLayoutInfo_subpass1.pPushConstantRanges    = nullptr;        // Optional
 
-		if (vkCreatePipelineLayout(device_manager->GetLogicalDeviceRef(), &pipelineLayoutInfo_subpass1, nullptr, &pipeline_layout_subpass1) != VK_SUCCESS)
+		if (vkCreatePipelineLayout(device_manager.GetLogicalDeviceRef(), &pipelineLayoutInfo_subpass1, nullptr, &pipeline_layout_subpass1) != VK_SUCCESS)
 		{
 			throw std::runtime_error("failed to create pipeline layout!");
 		}
