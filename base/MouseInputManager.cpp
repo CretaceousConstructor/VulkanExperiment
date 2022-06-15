@@ -62,12 +62,12 @@ void MouseInputManager::SetMousePosition(double xpos, double ypos)
 
 
 
-void MouseInputManager::SetupMouseInputs(GLFWwindow* window)
+void MouseInputManager::SetupMouseInputs(const GLFWwindow* window)
 {
 
 
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-	glfwSetCursorPosCallback(window, MousePosCallback);
+	glfwSetInputMode(const_cast<GLFWwindow *>(window), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwSetCursorPosCallback(const_cast<GLFWwindow *>(window), MousePosCallback);
 
 
 }

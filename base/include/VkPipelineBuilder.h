@@ -28,9 +28,9 @@ class VkPipelineBuilder
 	virtual void BuildDynamicStateCI();
 	virtual void BuildDepthStencilStateCI();
 
-	virtual void BuildPipeline(DescMetaInfo pipeline_meta_info,VkRenderpassWrapper& renderpass);
+	virtual void BuildPipeline(DescriptorMetaInfo pipeline_meta_info,VkRenderpassWrapper& renderpass);
 
-	std::shared_ptr<VkPipelineWrapper> GetPipline(DescMetaInfo pipeline_meta_info,VkRenderpassWrapper& renderpass);
+	std::shared_ptr<VkPipelineWrapper> GetPipline(DescriptorMetaInfo pipeline_meta_info,VkRenderpassWrapper& renderpass);
 
   private:
 	VkDeviceManager &   device_manager;

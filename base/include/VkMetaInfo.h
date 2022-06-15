@@ -44,6 +44,8 @@ public:
 
 namespace std
 {
+
+
 	template <>
 	struct hash<DescriptorMetaInfo>
 	{
@@ -54,6 +56,9 @@ namespace std
 				    (hash<glm::uint8_t>()(info.set) << 1);
 		}
 	};
+
+
+
 }    
 
 

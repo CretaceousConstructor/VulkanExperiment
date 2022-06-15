@@ -1,7 +1,7 @@
 #pragma once
 #include "VkDeviceManager.h"
 #include "VkExtensionManager.h"
-#include "VkValidationManager.h"
+#include "VkValidationUtility.h"
 #include "VkWindows.h"
 #include <map>
 

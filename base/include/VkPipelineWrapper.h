@@ -51,6 +51,6 @@ private:
 	std::pair<VkPipeline, VkPipelineLayout> pipeline;
 private:
 
-	 DescMetaInfo pipeline_meta_info;
+	 DescriptorMetaInfo pipeline_meta_info;
 
 };

@@ -247,7 +247,7 @@ void VkPipelineBuilder::BuildDepthStencilStateCI()
 	//pipeline->depth_stencil_CI.back = {}; // Optional
 }
 
-void VkPipelineBuilder::BuildPipeline(DescMetaInfo pipeline_meta_info,VkRenderpassWrapper& renderpass)
+void VkPipelineBuilder::BuildPipeline(DescriptorMetaInfo pipeline_meta_info,VkRenderpassWrapper& renderpass)
 {
 
 
@@ -307,7 +307,7 @@ void VkPipelineBuilder::BuildPipeline(DescMetaInfo pipeline_meta_info,VkRenderpa
 	pipeline_create_CI.basePipelineIndex  = -1;
 	pipeline_create_CI.basePipelineHandle = VK_NULL_HANDLE;
 
-	if (vkCreateGraphicsPipelines(device_manager.GetLogicalDeviceRef(), VK_NULL_HANDLE, 1, &pipeline_create_CI, nullptr, &pipeline->pipeline.first) != VK_SUCCESS)
+	if (vkCreateGraphicsPipelines(device_manager.GetLogicalDevice(), VK_NULL_HANDLE, 1, &pipeline_create_CI, nullptr, &pipeline->pipeline.first) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to create graphics pipeline!");
 	}
@@ -320,7 +320,7 @@ void VkPipelineBuilder::BuildPipeline(DescMetaInfo pipeline_meta_info,VkRenderpa
 
 
 
-std::shared_ptr<VkPipelineWrapper> VkPipelineBuilder::GetPipline(DescMetaInfo pipeline_meta_info,VkRenderpassWrapper& renderpass)
+std::shared_ptr<VkPipelineWrapper> VkPipelineBuilder::GetPipline(DescriptorMetaInfo pipeline_meta_info,VkRenderpassWrapper& renderpass)
 {
 
 

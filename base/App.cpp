@@ -8,84 +8,79 @@ App::App() :
 	command_manager(device_manager,swap_chain_manager.GetSwapImageCount(),1)
 {
 
-
 }
 
 
 void App::Run()
 {
-	Init();
+	InitRenderer();        //多态调用，这个函数会给智能指针一个具体的实例对象
+	renderer->RenderingPreparation();
 	//RendererSetUp();
 	//RenderingPreparation();
 	MainLoop();
-	CleanUp();
+	//CleanUp();
 }
 
 void App::Init()
 {
-	InitRenderer();        //多态调用，这个函数会给智能指针一个具体的实例对象
 }
 
-void App::RendererSetUp()
-{
-	//renderer sets some references
+//void App::RendererSetUp()
+//{
+//	//renderer sets some references
+//
+//
+//	//renderer->SetDeviceManager(device_manager);
+//	//renderer->SetSwapChinManager(swap_chain_manager);
+//	//renderer->SetCommandManager(command_manager);
+//	//renderer->SetWindow(window);
+//	//renderer->SetGraphicsCommandPool(
+//	//    device_manager.CreateCommandPool(VkDeviceManager::CommandPoolType::graphics_command_pool));
+//	//renderer->SetTransforCommandPool(
+//	//    device_manager.CreateCommandPool(VkDeviceManager::CommandPoolType::transfor_command_pool));
+//
+//
+//}
 
+//void App::RenderingPreparation()
+//{
+//	//renderer->SetUpUserInput();
+//	////Init Camera
+//	//renderer->CreateCamera();
+//	////prepare command buffer
+//	//renderer->InitCommandBuffers();
+//	////prepare Models
+//	//renderer->PrepareModels();
+//
+//	////prepare Images
+//	//renderer->CreateAttachmentImages();
+//	//renderer->CreateTextureImages();
+//	//renderer->CreateDepthImages();
+//	////prepare Renderpass
+//	//renderer->CreateRenderPass();
+//	////prepare Buffers
+//	//renderer->CreateUniformBuffer();
+//	//renderer->CreateFrameBuffers();
+//	////prepare Descriptor Sets
+//	//renderer->CreateDescriptorSetLayout();
+//	//renderer->CreateDescriptorPool();
+//	//renderer->CreateDescriptorSets();
+//	////prepare Pipeline
+//	//renderer->CreateGraphicsPipelineLayout();
+//	//renderer->CreateGraphicsPipeline();
+//
+//	////command buffer recording
+//	//renderer->CommandBufferRecording();
+//	////prepare sync objects
+//	//renderer->InitSynObjects();
+//
+//}
 
-	//renderer->SetDeviceManager(device_manager);
-	//renderer->SetSwapChinManager(swap_chain_manager);
-	//renderer->SetCommandManager(command_manager);
-	//renderer->SetWindow(window);
-	//renderer->SetGraphicsCommandPool(
-	//    device_manager.CreateCommandPool(VkDeviceManager::CommandPoolType::graphics_command_pool));
-	//renderer->SetTransforCommandPool(
-	//    device_manager.CreateCommandPool(VkDeviceManager::CommandPoolType::transfor_command_pool));
-
-
-
-
-
-
-}
-
-void App::RenderingPreparation()
-{
-	//renderer->SetUpUserInput();
-	////Init Camera
-	//renderer->CreateCamera();
-	////prepare command buffer
-	//renderer->InitCommandBuffers();
-	////prepare Models
-	//renderer->PrepareModels();
-
-	////prepare Images
-	//renderer->CreateAttachmentImages();
-	//renderer->CreateTextureImages();
-	//renderer->CreateDepthImages();
-	////prepare Renderpass
-	//renderer->CreateRenderPass();
-	////prepare Buffers
-	//renderer->CreateUniformBuffer();
-	//renderer->CreateFrameBuffers();
-	////prepare Descriptor Sets
-	//renderer->CreateDescriptorSetLayout();
-	//renderer->CreateDescriptorPool();
-	//renderer->CreateDescriptorSets();
-	////prepare Pipeline
-	//renderer->CreateGraphicsPipelineLayout();
-	//renderer->CreateGraphicsPipeline();
-
-	////command buffer recording
-	//renderer->CommandBufferRecording();
-	////prepare sync objects
-	//renderer->InitSynObjects();
-
-}
-
-void App::MainLoop()
+void App::MainLoop() const 
 {
 	float time_diff = 0.f;
 
-	while (!glfwWindowShouldClose(window.GetWindowPtr()))
+	while (!glfwWindowShouldClose(const_cast<GLFWwindow*>(window.GetWindowPtr())))
 	{
 		auto tStart = std::chrono::high_resolution_clock::now();
 		renderer->UpdateCamera(time_diff);
@@ -95,32 +90,32 @@ void App::MainLoop()
 
 		glfwPollEvents();
 	}
-	vkDeviceWaitIdle(device_manager.GetLogicalDeviceRef());
+	vkDeviceWaitIdle(device_manager.GetLogicalDevice());
 }
 
-void App::CleanUp()
-{
-	renderer->CleanUpSyncObjects();
-	renderer->CleanUpModels();
-	renderer->CleanUpPipelineAndPipelineLayout();
-	renderer->CleanUpDescriptorSetLayoutAndDescriptorPool();
-	renderer->CleanUpCommandBuffersAndCommandPool();
-	renderer->CleanupFrameBuffers();
-
-	renderer->CleanUpUniformBuffers();
-	renderer->CleanUpRenderPass();
-	renderer->CleanUpImages();
-
-	//swap_chain_manager.CleanUp(device_manager.GetLogicalDeviceRef());
-	//device_manager.CleanUp();
-	//window.CleanUp(instance);
-	//validation_manager.CleanUp(instance);
-	//DestroyInstance();
-
-
-
-
-}
+//void App::CleanUp()
+//{
+//	//renderer->CleanUpSyncObjects();
+//	//renderer->CleanUpModels();
+//	//renderer->CleanUpPipelineAndPipelineLayout();
+//	//renderer->CleanUpDescriptorSetLayoutAndDescriptorPool();
+//	//renderer->CleanUpCommandBuffersAndCommandPool();
+//	//renderer->CleanupFrameBuffers();
+//
+//	//renderer->CleanUpUniformBuffers();
+//	//renderer->CleanUpRenderPass();
+//	//renderer->CleanUpImages();
+//
+//	//swap_chain_manager.CleanUp(device_manager.GetLogicalDeviceRef());
+//	//device_manager.CleanUp();
+//	//window.CleanUp(instance);
+//	//validation_manager.CleanUp(instance);
+//	//DestroyInstance();
+//
+//
+//
+//
+//}
 
 
 

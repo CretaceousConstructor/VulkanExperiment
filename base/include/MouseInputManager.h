@@ -12,7 +12,7 @@ public:
 	void SetMousePosition(double xpos, double ypos);
 
 
-	static  void  SetupMouseInputs(GLFWwindow* window);
+	static  void  SetupMouseInputs(const GLFWwindow* window);
 	static void MousePosCallback(GLFWwindow* window, double xpos, double ypos);
 	float GetPitchDiff() ;
 	float GetYawDiff() ;

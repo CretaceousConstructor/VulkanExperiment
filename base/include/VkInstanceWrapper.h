@@ -2,7 +2,7 @@
 
 #include "EngineMarco.h"
 #include "EngineHeader.h"
-#include "VkValidationManager.h"
+#include "VkValidationUtility.h"
 #include "VkExtensionManager.h"
 #include "VkInitializer.h"
 
@@ -12,10 +12,21 @@ class VkInstanceWrapper
 
 public:
 	VkInstanceWrapper();
-
 	~VkInstanceWrapper();
-	const VkInstance& GetInstanceRef() const;
-	VkInstance GetInstance() const;
+
+
+	VkInstanceWrapper(const VkInstanceWrapper &) = delete;
+	VkInstanceWrapper &operator=(const VkInstanceWrapper &) = delete;
+
+	VkInstanceWrapper(VkInstanceWrapper&&) = delete;
+	VkInstanceWrapper &operator=(VkInstanceWrapper&&) = delete;
+
+
+	[[nodiscard]]VkInstance GetInstanceRef() const;
+	//VkInstance GetInstance() const;
+
+
+
 
 private:
 	void CreateInstance();

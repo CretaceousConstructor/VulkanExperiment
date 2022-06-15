@@ -8,7 +8,13 @@
 namespace VkExtensionManager
 {
 	static std::vector<const char *> GetNeededInstanceExtensions(bool ValidationLayerEnabled);
-	static std::vector<const char *> GetDeviceRequiredExtensions();
+	static std::vector<const char *> GetRequiredExtensionsForAGoodDevice();
+
+
+
+
+
+
 
 	//实例的扩展功能，这些扩展功能分别属于某个 层(layer)
 	////获得extension的数目

@@ -11,12 +11,18 @@ class VkWindows
 	VkWindows(const VkInstance &_ins, uint32_t w = 1280, uint32_t h = 740, std::string winName = "default");
 	~VkWindows();
 
+	VkWindows(const VkWindows &) = delete;
+	VkWindows &operator=(const VkWindows &) = delete;
+
+	VkWindows(VkWindows&&) = delete;
+	VkWindows &operator=(VkWindows&&) = delete;
+
 
   public:
-	VkSurfaceKHR        GetSurface() const;
-	const VkSurfaceKHR &GetSurfaceRef() const;
-	VkSurfaceKHR &      GetSurfaceRef();
-	GLFWwindow *        GetWindowPtr();
+	[[nodiscard]]VkSurfaceKHR GetSurface() const;
+	//const VkSurfaceKHR &GetSurfaceRef() const;
+	//VkSurfaceKHR &      GetSurfaceRef();
+	[[nodiscard]] const GLFWwindow * GetWindowPtr() const;
 
   public:
 	const uint32_t    WIDTH;
@@ -25,15 +31,13 @@ class VkWindows
 
   private:
 	static void FrameBufferResizeCallback(GLFWwindow *window, int width, int height);
-	static void GlfwElrrorCallback(int error, const char *description);
+	static void GlfwErrorCallback(int error, const char *description);
+
   private:
 	void CreateSurface();
 
   private:
 	const VkInstance &instance;
-	VkSurfaceKHR      surface;
 	GLFWwindow *      raw_window_ptr = nullptr;
-
-
-
+	VkSurfaceKHR      surface;
 };

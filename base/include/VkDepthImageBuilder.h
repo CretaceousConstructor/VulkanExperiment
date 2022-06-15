@@ -11,31 +11,40 @@ class VkDepthImageBuilder : public VkImageBuilder
 	    VkWindows &         _window);
 
 
-
-	~VkDepthImageBuilder() override = default;
-
-
 protected:
+
+
 	void BuildImage() override;
 	void BindMemory() override;
-	void TransitionImageLayout() override;
 	void BuildImageView() override;
+	void Assemble() override;
+	void TransitionImageLayout() override;
+	void CreateBundle() override;
 
-protected:
-	[[nodiscard]] std::shared_ptr<VkImageWrapper> GetResult() override;
+
+
+  protected:
+
 
 private:
-	void RestoreToDefaultState();
+	void RestoreToDefaultState() override;
+
+
 
 private:
+	VkImageCreateInfo        default_image_CI{};
+	VkMemoryPropertyFlagBits default_image_mem_prop_flag{};
+	VkExtent3D               default_image_extent{};
+	VkFormat                 default_image_format{};
+	VkImageLayout            default_final_layout{};
+private:
+	std::vector<VkImage> temp_images;
+	std::vector<VkDeviceMemory> temp_images_mem;
+	std::vector<VkImageView> temp_images_view;
 
 
-	VkImageCreateInfo        default_image_info{};
-	VkMemoryPropertyFlagBits image_mem_property_flag{};
-	VkExtent3D               image_extent{};
-	VkFormat                 image_format{};
-	VkImageLayout            final_layout{};
-
+  private:
+	std::vector<std::shared_ptr<VkImageBase>> images;
 
 };
 

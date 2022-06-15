@@ -6,20 +6,26 @@ VkImageWrapper::VkImageWrapper(VkDeviceManager &_device_manager, VkImageType par
 	Init(para_image_type, para_format, para_image_extent, para_mip_levels, para_array_layers, para_samples, para_tiling, para_usage_image, para_sharing_mode, initialLayout, para_image_mem_property_flag);
 }
 
+VkImageWrapper::VkImageWrapper(VkDeviceManager &_device_manager, const VkImage _image,	const VkDeviceMemory   _image_mem ,const VkImageView _image_view,const VkFormat _image_format,const VkFormat _image_view_format) :
+    image(_image),
+	image_format(_image_format),
+    image_view(_image_view),
+	image_view_format(_image_view_format),
+	image_mem(_image_mem),
+    device_manager(_device_manager)
+{
+
+
+}
+
 VkImageWrapper::~VkImageWrapper()
 {
-	vkDestroyImageView(device_manager.GetLogicalDeviceRef(), image_view, nullptr);
-	vkDestroyImage(device_manager.GetLogicalDeviceRef(), image, nullptr);
-	vkFreeMemory(device_manager.GetLogicalDeviceRef(), image_mem, nullptr);
-}
 
-VkImageWrapper::VkImageWrapper(VkDeviceManager &_device_manager)
-	:device_manager(_device_manager)
-{
-
+	vkDestroyImageView(device_manager.GetLogicalDevice(), image_view, nullptr);
+	vkDestroyImage(device_manager.GetLogicalDevice(), image, nullptr);
+	vkFreeMemory(device_manager.GetLogicalDevice(), image_mem, nullptr);
 
 }
-
 
 void VkImageWrapper::InitImageView(VkFormat format, VkImageAspectFlags aspectFlags, uint32_t mip_levels)
 {
@@ -51,15 +57,15 @@ void VkImageWrapper::InitImageView(VkFormat format, VkImageAspectFlags aspectFla
 
 	image_view_format = format;
 
-	if (vkCreateImageView(device_manager.GetLogicalDeviceRef(), &viewInfo, nullptr, &image_view) != VK_SUCCESS)
+	if (vkCreateImageView(device_manager.GetLogicalDevice(), &viewInfo, nullptr, &image_view) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to create texture image view!");
 	}
 }
 
-void VkImageWrapper::CopyBufferToImage(VkBuffer buffer, uint32_t width, uint32_t height, VkCommandPool &command_pool,  VkQueue &command_quque)
+void VkImageWrapper::CopyBufferToImage(VkBuffer buffer, uint32_t width, uint32_t height, const VkCommandPool &command_pool, const VkQueue &command_quque) const
 {
-	VkCommandBuffer   commandBuffer = VkCommandManager::BeginSingleTimeCommands(command_pool, device_manager.GetLogicalDeviceRef());
+	const VkCommandBuffer   commandBuffer = VkCommandManager::BeginSingleTimeCommands(command_pool, device_manager.GetLogicalDevice());
 	VkBufferImageCopy region{};
 	region.bufferOffset      = 0;
 	region.bufferRowLength   = 0;
@@ -83,13 +89,16 @@ void VkImageWrapper::CopyBufferToImage(VkBuffer buffer, uint32_t width, uint32_t
 	    1,
 	    &region);
 
-	VkCommandManager::EndSingleTimeCommands(command_pool, device_manager.GetLogicalDeviceRef(), commandBuffer, command_quque);
+	VkCommandManager::EndSingleTimeCommands(command_pool, device_manager.GetLogicalDevice(), commandBuffer, command_quque);
+
+
+
+
 }
 
-
-void VkImageWrapper::CopyBufferToImage(VkBuffer buffer, const std::vector<VkBufferImageCopy> &bufferCopyRegions,VkCommandPool &command_pool,  VkQueue &command_quque )
+void VkImageWrapper::CopyBufferToImage(VkBuffer buffer, const std::vector<VkBufferImageCopy> &bufferCopyRegions, const VkCommandPool &command_pool, const VkQueue &command_quque)const
 {
-	VkCommandBuffer commandBuffer = VkCommandManager::BeginSingleTimeCommands(command_pool, device_manager.GetLogicalDeviceRef());
+	VkCommandBuffer commandBuffer = VkCommandManager::BeginSingleTimeCommands(command_pool, device_manager.GetLogicalDevice());
 
 	vkCmdCopyBufferToImage(
 	    commandBuffer,
@@ -99,8 +108,7 @@ void VkImageWrapper::CopyBufferToImage(VkBuffer buffer, const std::vector<VkBuff
 	    bufferCopyRegions.size(),
 	    bufferCopyRegions.data());
 
-	VkCommandManager::EndSingleTimeCommands(command_pool, device_manager.GetLogicalDeviceRef(), commandBuffer, command_quque);
-
+	VkCommandManager::EndSingleTimeCommands(command_pool, device_manager.GetLogicalDevice(), commandBuffer, command_quque);
 }
 
 bool VkImageWrapper::HasStencilComponent(VkFormat format)
@@ -108,9 +116,9 @@ bool VkImageWrapper::HasStencilComponent(VkFormat format)
 	return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
 }
 
-void VkImageWrapper::TransitionImageLayout(VkImageLayout oldLayout, VkImageLayout newLayout, VkCommandPool &command_pool,VkQueue &command_quque, VkDeviceManager::QueueFamilyIndices queue_family_indices, uint32_t miplevelcount)
+void VkImageWrapper::TransitionImageLayout(VkImageLayout oldLayout, VkImageLayout newLayout, const VkCommandPool &command_pool, const VkQueue &command_quque, VkDeviceManager::QueueFamilyIndices queue_family_indices, uint32_t miplevelcount)const
 {
-	VkCommandBuffer commandBuffer = VkCommandManager::BeginSingleTimeCommands(command_pool, device_manager.GetLogicalDeviceRef());
+	const VkCommandBuffer commandBuffer = VkCommandManager::BeginSingleTimeCommands(command_pool, device_manager.GetLogicalDevice());
 
 	VkImageMemoryBarrier barrier{};
 	barrier.sType     = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -201,22 +209,24 @@ void VkImageWrapper::TransitionImageLayout(VkImageLayout oldLayout, VkImageLayou
 	    0, nullptr,
 	    1, &barrier);
 
-	VkCommandManager::EndSingleTimeCommands(command_pool, device_manager.GetLogicalDeviceRef(), commandBuffer, command_quque);
-
-
-
-
-
-
-
-
+	VkCommandManager::EndSingleTimeCommands(command_pool, device_manager.GetLogicalDevice(), commandBuffer, command_quque);
 }
 
-VkFormat &VkImageWrapper::GetImageViewFormat()
+VkFormat VkImageWrapper::GetImageViewFormat()
 {
 	return image_view_format;
 }
 
+VkImage VkImageWrapper::GetImage()
+{
+	return image;
+}
+
+VkFormat VkImageWrapper::GetImageFormat()
+{
+	return image_format;
+}
+ 
 //para_initialLayout目前还没有使用，以后可以直接拿来layout transition？
 
 void VkImageWrapper::Init(VkImageType para_image_type, VkFormat para_format, VkExtent3D para_image_extent, uint32_t para_mip_levels, uint32_t para_array_layers, VkSampleCountFlagBits para_samples, VkImageTiling para_tiling, VkBufferUsageFlags para_usage_image, VkSharingMode para_sharing_mode, VkImageLayout para_initialLayout, VkMemoryPropertyFlagBits para_image_mem_property_flag)
@@ -266,39 +276,29 @@ void VkImageWrapper::Init(VkImageType para_image_type, VkFormat para_format, VkE
 	//imageInfo.pQueueFamilyIndices
 	imageInfo.initialLayout = para_initialLayout;
 
-	if (vkCreateImage(device_manager.GetLogicalDeviceRef(), &imageInfo, nullptr, &image) != VK_SUCCESS)
+	if (vkCreateImage(device_manager.GetLogicalDevice(), &imageInfo, nullptr, &image) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to create image!");
 	}
 
-
-
-
-
 	VkMemoryRequirements memRequirements;
-	vkGetImageMemoryRequirements(device_manager.GetLogicalDeviceRef(), image, &memRequirements);
+	vkGetImageMemoryRequirements(device_manager.GetLogicalDevice(), image, &memRequirements);
 
 	VkMemoryAllocateInfo allocInfo{};
 	allocInfo.sType           = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 	allocInfo.allocationSize  = memRequirements.size;
-	allocInfo.memoryTypeIndex = VkDeviceManager::FindMemoryType(memRequirements.memoryTypeBits, para_image_mem_property_flag, device_manager.GetPhysicalDeviceRef());        //找到可以分配VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT内存类型的index
+	allocInfo.memoryTypeIndex = VkDeviceManager::FindMemoryType(memRequirements.memoryTypeBits, para_image_mem_property_flag, device_manager.GetPhysicalDevice());        //找到可以分配VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT内存类型的index
 
-	if (vkAllocateMemory(device_manager.GetLogicalDeviceRef(), &allocInfo, nullptr, &image_mem) != VK_SUCCESS)
+	if (vkAllocateMemory(device_manager.GetLogicalDevice(), &allocInfo, nullptr, &image_mem) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to allocate image memory!");
 	}
 
-	vkBindImageMemory(device_manager.GetLogicalDeviceRef(), image, image_mem, 0);        //image的内存和image两者联系起来
-
-
+	vkBindImageMemory(device_manager.GetLogicalDevice(), image, image_mem, 0);        //image的内存和image两者联系起来
 }
 
-VkImageView &VkImageWrapper::GetImageView()
+VkImageView VkImageWrapper::GetImageView()
 {
 	return image_view;
 }
 
-VkImage &VkImageWrapper::GetImageRef()
-{
-	return image;
-}

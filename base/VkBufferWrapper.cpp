@@ -11,15 +11,15 @@ VkBufferWrapper::~VkBufferWrapper()
 {
 	if (buffer)
 	{
-		vkDestroyBuffer(device_manager.GetLogicalDeviceRef(), buffer, nullptr);
+		vkDestroyBuffer(device_manager.GetLogicalDevice(), buffer, nullptr);
 	}
 	if (buffer_memory)
 	{
-		vkFreeMemory(device_manager.GetLogicalDeviceRef(), buffer_memory, nullptr);
+		vkFreeMemory(device_manager.GetLogicalDevice(), buffer_memory, nullptr);
 	}
 }
 
 void VkBufferWrapper::CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkSharingMode sharingmode)
 {
-	device_manager.CreateBuffer(size, usage, properties, buffer, buffer_memory, sharingmode, window.GetSurfaceRef());
+	device_manager.CreateBufferAndBindToMemo(size, usage, properties, buffer, buffer_memory, sharingmode, window.GetSurface());
 }

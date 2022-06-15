@@ -5,19 +5,19 @@ VkDeviceManager::VkDeviceManager(const VkInstance &_instance, const VkWindows &_
     instance(_instance)
 {
 	//VkInitializer::PickPhysicalDevice(instance, window.GetSurface(), physical_device);
+
 	PickPhysicalDevice();
 	CreateLogicalDeviceAndQueues();
 }
 
 VkDeviceManager::~VkDeviceManager()
 {
-	for(auto& cp : command_pools)
+	for(const auto& cp : command_pools)
 	{
 		vkDestroyCommandPool(device, cp, nullptr);
 	}
-
-
 	vkDestroyDevice(device, nullptr);
+
 }
 
 void VkDeviceManager::PickPhysicalDevice()
@@ -25,7 +25,6 @@ void VkDeviceManager::PickPhysicalDevice()
 	
 	uint32_t deviceCount = 0;
 	vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
-
 	if (deviceCount == 0)
 	{
 		throw std::runtime_error("failed to find GPUs with Vulkan support!");
@@ -33,11 +32,11 @@ void VkDeviceManager::PickPhysicalDevice()
 	std::vector<VkPhysicalDevice> devices(deviceCount);
 	vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
 
-	for (auto &device : devices)
+	for (const auto &d: devices)
 	{
-		if (VkDeviceManager::IsDeviceSuitable(device, window.GetSurfaceRef()))
+		if (VkDeviceManager::IsDeviceSuitable(d, window.GetSurface()))
 		{
-			physical_device = device;
+			physical_device = d;
 			break;
 		}
 	}
@@ -48,6 +47,7 @@ void VkDeviceManager::PickPhysicalDevice()
 	}
 
 	// Use an ordered map to automatically sort candidates by increasing score
+
 	//目前没使用
 	std::multimap<int, VkPhysicalDevice> candidates;
 	for (const auto &device : devices)
@@ -55,12 +55,15 @@ void VkDeviceManager::PickPhysicalDevice()
 		int score = RateDeviceSuitability(device);
 		candidates.insert(std::make_pair(score, device));
 	}
+
+
+
 }
 
 int VkDeviceManager::RateDeviceSuitability(const VkPhysicalDevice& _device)
 {
 	
-VkPhysicalDeviceProperties deviceProperties;        //物理器件的名字类型支持的vulkan版本
+	VkPhysicalDeviceProperties deviceProperties;        //物理器件的名字类型支持的vulkan版本
 	vkGetPhysicalDeviceProperties(_device, &deviceProperties);
 
 	VkPhysicalDeviceFeatures deviceFeatures;        //纹理压缩，64位float，多视口
@@ -86,7 +89,7 @@ VkPhysicalDeviceProperties deviceProperties;        //物理器件的名字类型支持的vu
 	return score;
 }
 
-bool VkDeviceManager::QueueFamilyIndices::isComplete()
+bool VkDeviceManager::QueueFamilyIndices::IsComplete() const
 {
 	return graphicsFamily.has_value() && presentFamily.has_value() && transferFamily.has_value();
 }
@@ -98,8 +101,12 @@ VkDeviceManager::QueueFamilyIndices VkDeviceManager::FindQueueFamilies(const VkP
 	uint32_t queueFamilyCount = 0;
 	vkGetPhysicalDeviceQueueFamilyProperties(_device, &queueFamilyCount, nullptr);
 
+
+	//TODO:VkQueueFamilyProperties含有队列的数目queueCount
 	std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
 	vkGetPhysicalDeviceQueueFamilyProperties(_device, &queueFamilyCount, queueFamilies.data());
+
+
 	//typedef struct VkQueueFamilyProperties {
 	//	VkQueueFlags    queueFlags;
 	//	uint32_t        queueCount;
@@ -141,15 +148,16 @@ VkDeviceManager::QueueFamilyIndices VkDeviceManager::FindQueueFamilies(const VkP
 		}
 
 		if ((queueFamily.queueFlags & VK_QUEUE_TRANSFER_BIT) && !(queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT))
-		{        //这个队列家族至少要支持图形操作
+		{
 			if (!indices.transferFamily.has_value())
 			{
 				indices.transferFamily = i;
 			}
 		}
 
-		if (indices.isComplete())
-		{        //3种都有以后就可以了
+		if (indices.IsComplete())
+		{
+			//3种都有以后就可以了 break了
 			break;
 		}
 
@@ -159,7 +167,7 @@ VkDeviceManager::QueueFamilyIndices VkDeviceManager::FindQueueFamilies(const VkP
 	return indices;
 }
 
-bool VkDeviceManager::IsDeviceSuitable(VkPhysicalDevice &device, const VkSurfaceKHR &surface)
+bool VkDeviceManager::IsDeviceSuitable(const VkPhysicalDevice &device, const VkSurfaceKHR &surface)
 {
 	QueueFamilyIndices indices             = FindQueueFamilies(device, surface);         //
 	bool               extensionsSupported = CheckDeviceExtensionSupport(device);        //主要看看能不能用swapchain
@@ -171,7 +179,7 @@ bool VkDeviceManager::IsDeviceSuitable(VkPhysicalDevice &device, const VkSurface
 	if (extensionsSupported)
 	{
 		SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(device, surface);        //询问的是物理device
-		swapChainAdequate                        = !swapChainSupport.formats.empty() && !swapChainSupport.presentModes.empty();
+		swapChainAdequate                        = !swapChainSupport.formats.empty() && !swapChainSupport.present_modes.empty();
 	}
 	/*typedef struct VkSurfaceCapabilitiesKHR {
 		uint32_t                         minImageCount; 2
@@ -194,10 +202,11 @@ bool VkDeviceManager::IsDeviceSuitable(VkPhysicalDevice &device, const VkSurface
 			VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT = 0x00000010,  //可以用来制作VkImageView，然后作为颜色，可以绑定到frame buffer上
 			VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT = 0x00000080,  //可以用来制作VkImageView，然后可以被shader读取，或者作为frambuffer的附着
 	} VkSurfaceCapabilitiesKHR;*/
-	return indices.isComplete() && extensionsSupported && swapChainAdequate && supportedFeatures.samplerAnisotropy;
+	//记得各向异性采样的功能
+	return indices.IsComplete() && extensionsSupported && swapChainAdequate && supportedFeatures.samplerAnisotropy;
 }
 
-bool VkDeviceManager::CheckDeviceExtensionSupport(VkPhysicalDevice &device)
+bool VkDeviceManager::CheckDeviceExtensionSupport(const VkPhysicalDevice &device)
 {
 	uint32_t extensionCount;
 	//请求 设备扩展功能
@@ -206,7 +215,7 @@ bool VkDeviceManager::CheckDeviceExtensionSupport(VkPhysicalDevice &device)
 	std::vector<VkExtensionProperties> availableExtensions(extensionCount);
 	vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, availableExtensions.data());
 
-	auto deviceRequiredExtensions = VkExtensionManager::GetDeviceRequiredExtensions();
+	auto deviceRequiredExtensions = VkExtensionManager::GetRequiredExtensionsForAGoodDevice();
 
 	std::set<std::string> requiredExtensions(deviceRequiredExtensions.begin(), deviceRequiredExtensions.end());
 
@@ -218,7 +227,12 @@ bool VkDeviceManager::CheckDeviceExtensionSupport(VkPhysicalDevice &device)
 	return requiredExtensions.empty();        //如果是空的，则代表需要的设备扩展功能都有
 }
 
-VkDeviceManager::SwapChainSupportDetails VkDeviceManager::QuerySwapChainSupport(VkPhysicalDevice &device, const VkSurfaceKHR &surface)
+
+
+
+
+//这个函数在swapchainmanager也需要，但是为了防止circular depen，只能重复一份
+VkDeviceManager::SwapChainSupportDetails VkDeviceManager::QuerySwapChainSupport(const VkPhysicalDevice &device, const VkSurfaceKHR &surface)
 {
 	SwapChainSupportDetails details;
 	vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface, &details.capabilities);
@@ -226,10 +240,13 @@ VkDeviceManager::SwapChainSupportDetails VkDeviceManager::QuerySwapChainSupport(
 	//支持的backbuffer格式
 	//colorSpace
 	//VK_COLOR_SPACE_SRGB_NONLINEAR_KHR = 0,
+
 	//format;
 	//VK_FORMAT_B8G8R8A8_UNORM = 44,
 	//VK_FORMAT_B8G8R8A8_SRGB = 50,
-	//VK_FORMAT_A2B10G10R10_UNORM_PACK32 = 64,
+	//VK_FORMAT_A2B10G10R10_UNORM_PACK32 = 64
+
+
 	uint32_t formatCount;
 	vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, nullptr);
 	if (formatCount != 0)
@@ -247,8 +264,8 @@ VkDeviceManager::SwapChainSupportDetails VkDeviceManager::QuerySwapChainSupport(
 	vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &presentModeCount, nullptr);
 	if (presentModeCount != 0)
 	{
-		details.presentModes.resize(presentModeCount);
-		vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &presentModeCount, details.presentModes.data());
+		details.present_modes.resize(presentModeCount);
+		vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &presentModeCount, details.present_modes.data());
 	}
 
 	return details;
@@ -270,7 +287,7 @@ uint32_t VkDeviceManager::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFl
 	throw std::runtime_error("failed to find suitable memory type!");
 }
 
-VkBool32 VkDeviceManager::FormatIsFilterable(VkFormat format, VkImageTiling tiling)
+VkBool32 VkDeviceManager::FormatIsFilterable(VkFormat format, VkImageTiling tiling) const
 {
 	VkFormatProperties formatProps;
 	vkGetPhysicalDeviceFormatProperties(physical_device, format, &formatProps);
@@ -284,9 +301,9 @@ VkBool32 VkDeviceManager::FormatIsFilterable(VkFormat format, VkImageTiling tili
 	return false;
 }
 
-VkCommandPool& VkDeviceManager::CreateCommandPool(CommandPoolType type)
+VkCommandPool VkDeviceManager::CreateCommandPool(CommandPoolType type)
 {
-	QueueFamilyIndices queueFamilyIndices = FindQueueFamilies(physical_device, window.GetSurfaceRef());
+	QueueFamilyIndices queueFamilyIndices = FindQueueFamilies(physical_device, window.GetSurface());
 
 	switch (type)
 	{
@@ -326,18 +343,21 @@ VkCommandPool& VkDeviceManager::CreateCommandPool(CommandPoolType type)
 
 void VkDeviceManager::CreateLogicalDeviceAndQueues()
 {
-	QueueFamilyIndices                   indices = FindQueueFamilies(physical_device, window.GetSurfaceRef());
+	//TODO:这里可以进行优化，因为物理设备已经定了，就直接用类成员调用
+	QueueFamilyIndices                   indices = FindQueueFamilies(physical_device, window.GetSurface());
 	std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
+
 	std::set<uint32_t>                   uniqueQueueFamilies = {indices.graphicsFamily.value(), indices.presentFamily.value(), indices.transferFamily.value()};
 
-	const float queuePriority = 1.0f;
+	constexpr float queuePriority = 1.0f;
+
 	for (uint32_t queueFamily : uniqueQueueFamilies)
 	{
-		//每种队列家族创建一个queue,可以每一种队列家族多创建几个
+		//每种队列家族创建一个queue,每一种队列家族可以多创建几个queue，但是这里我们就创建一个
 		VkDeviceQueueCreateInfo queueCreateInfo{};
 		queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
 
-		//hard code直接全部创建0号家族的
+		//TODO:hard code直接全部创建0号家族的，因为之后出现bug至今不知道怎么修复
 		//queueCreateInfo.queueFamilyIndex = queueFamily;
 		queueCreateInfo.queueFamilyIndex = 0;
 		queueCreateInfo.queueCount       = 1;
@@ -347,7 +367,7 @@ void VkDeviceManager::CreateLogicalDeviceAndQueues()
 
 	VkPhysicalDeviceFeatures deviceFeatures{};        //是否支持纹理压缩，64位float，多视口等
 	vkGetPhysicalDeviceFeatures(physical_device, &deviceFeatures);
-	deviceFeatures.samplerAnisotropy = VK_TRUE;        //前面已经测试过，直接设置成true
+	deviceFeatures.samplerAnisotropy = VK_TRUE;        //前面已经测试过，直接设置成true就行了
 
 	VkDeviceCreateInfo createInfo{};
 	createInfo.sType                = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
@@ -355,7 +375,8 @@ void VkDeviceManager::CreateLogicalDeviceAndQueues()
 	createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
 	createInfo.pEnabledFeatures     = &deviceFeatures;
 
-	auto deviceRequiredExtensions = VkExtensionManager::GetDeviceRequiredExtensions();
+
+	auto deviceRequiredExtensions = VkExtensionManager::GetRequiredExtensionsForAGoodDevice();
 
 	//设备的扩展 至少可以创建交换链
 	createInfo.enabledExtensionCount   = static_cast<uint32_t>(deviceRequiredExtensions.size());
@@ -363,6 +384,7 @@ void VkDeviceManager::CreateLogicalDeviceAndQueues()
 
 	////enabledLayerCount is deprecated and ignored.
 	////ppEnabledLayerNames?is deprecatedand ignored.
+	///TODO:这里是干嘛的？
 	//if (enableValidationLayers) {
 	//	//至少需要 可以用来调试的validation layer
 	//	createInfo.enabledLayerCount = static_cast<uint32_t>(instanceValidationLayerRequiredToUse.size());
@@ -383,33 +405,32 @@ void VkDeviceManager::CreateLogicalDeviceAndQueues()
 	//vkGetDeviceQueue(device, indices.transferFamily.value(), 0, &tranfer_queue);
 	vkGetDeviceQueue(device, indices.graphicsFamily.value(), 0, &tranfer_queue);
 
-
 }
 
-const VkDevice &VkDeviceManager::GetLogicalDeviceRef()const 
+VkDevice VkDeviceManager::GetLogicalDevice()const 
 {
 	return device;
 }
 
-const VkPhysicalDevice &VkDeviceManager::GetPhysicalDeviceRef()const 
+VkPhysicalDevice VkDeviceManager::GetPhysicalDevice()const 
 {
 	return physical_device;
 }
 
-VkQueue &VkDeviceManager::GetGraphicsQueue()
+VkQueue VkDeviceManager::GetGraphicsQueue()const
 {
 	return graphics_queue;
 }
-VkQueue &VkDeviceManager::GetPresentQueue()
+VkQueue VkDeviceManager::GetPresentQueue()const
 {
 	return present_queue;
 }
-VkQueue &VkDeviceManager::GetTransferQueue()
+VkQueue VkDeviceManager::GetTransferQueue()const
 {
 	return tranfer_queue;
 }
 
-VkFormat VkDeviceManager::FindSupportedFormat(const std::vector<VkFormat> &candidates, VkImageTiling tiling, VkFormatFeatureFlags features)
+VkFormat VkDeviceManager::FindSupportedFormat(const std::vector<VkFormat> &candidates, VkImageTiling tiling, VkFormatFeatureFlags features)const
 {
 	//// Provided by VK_VERSION_1_0
 	//typedef struct VkFormatProperties {
@@ -436,7 +457,7 @@ VkFormat VkDeviceManager::FindSupportedFormat(const std::vector<VkFormat> &candi
 	throw std::runtime_error("failed to find supported format!");
 }
 
-void VkDeviceManager::CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer &buffer, VkDeviceMemory &bufferMemory, VkSharingMode sharingmode, VkSurfaceKHR &surface)
+void VkDeviceManager::CreateBufferAndBindToMemo(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer &buffer, VkDeviceMemory &bufferMemory, VkSharingMode sharingmode, const VkSurfaceKHR &surface)const
 {
 	/*typedef struct VkBufferCreateInfo {
 		VkStructureType        sType;
@@ -455,8 +476,8 @@ void VkDeviceManager::CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, 
 	bufferInfo.usage       = usage;
 	bufferInfo.sharingMode = sharingmode;
 
-	QueueFamilyIndices indices            = FindQueueFamilies(physical_device, surface);
-	std::set<uint32_t> queueFamilyIndices = {indices.graphicsFamily.value(), indices.presentFamily.value(), indices.transferFamily.value()};
+	const QueueFamilyIndices indices            = FindQueueFamilies(physical_device, surface);
+	const std::set<uint32_t> queueFamilyIndices = {indices.graphicsFamily.value(), indices.presentFamily.value(), indices.transferFamily.value()};
 
 	std::vector<uint32_t> uniqueQueueFamilyIndices;
 	for (auto index : queueFamilyIndices)
@@ -481,10 +502,16 @@ void VkDeviceManager::CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, 
 	VkMemoryAllocateInfo allocInfo{};
 	allocInfo.sType          = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 	allocInfo.allocationSize = memRequirements.size;
+
+
+
 	//if (size != memRequirements.size)
 	//{
 	//	throw std::runtime_error("memRequirements size differs from size parameter!");
 	//}
+
+
+
 	allocInfo.memoryTypeIndex = FindMemoryType(memRequirements.memoryTypeBits, properties, physical_device);
 
 	if (vkAllocateMemory(device, &allocInfo, nullptr, &bufferMemory) != VK_SUCCESS)
@@ -493,6 +520,8 @@ void VkDeviceManager::CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, 
 	}
 
 	vkBindBufferMemory(device, buffer, bufferMemory, 0);
+
+
 }
 
 void VkDeviceManager::CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size, const VkCommandBuffer &transfer_command_buffer)
