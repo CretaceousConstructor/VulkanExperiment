@@ -26,19 +26,31 @@ class BaseRenderer
 	    VkWindows &         _window,
 	    VkDeviceManager &   _device_manager,
 	    VkSwapChainManager &_swapchain_manager,
-	    VkCommandManager &  _command_manager
-	);
+	    VkCommandManager &  _command_manager);
 	virtual ~BaseRenderer() = default;
 
 	BaseRenderer() = delete;
 
-	void         SetDeviceManager(VkDeviceManager &para_device_manager);
-	void         SetSwapChinManager(VkSwapChainManager &para_swapchain_manager);
-	void         SetCommandManager(VkCommandManager &_commandman);
-	void         SetWindow(VkWindows &para_window);
-	void         SetGraphicsCommandPool(VkCommandPool commandpool);
-	void         SetTransforCommandPool(VkCommandPool commandpool);
+	BaseRenderer(const BaseRenderer &) = delete;
+	BaseRenderer &operator=(const BaseRenderer &) = delete;
+
+	BaseRenderer(BaseRenderer &&) = delete;
+	BaseRenderer &operator=(BaseRenderer &&) = delete;
+
+	//void         SetDeviceManager(VkDeviceManager &para_device_manager);
+	//void         SetSwapChinManager(VkSwapChainManager &para_swapchain_manager);
+	//void         SetCommandManager(VkCommandManager &_commandman);
+	//void         SetWindow(VkWindows &para_window);
+	//void         SetGraphicsCommandPool(VkCommandPool commandpool);
+	//void         SetTransforCommandPool(VkCommandPool commandpool);
+
+  protected:
 	virtual void SetUpUserInput() = 0;
+	virtual void CreateCamera()                             = 0;
+
+
+	virtual void InitCommandBuffers()     = 0;
+
 
 	virtual void CreateAttachmentImages() = 0;
 	virtual void CreateTextureImages()    = 0;
@@ -54,46 +66,40 @@ class BaseRenderer
 	virtual void CreateDescriptorSets()      = 0;
 
 	virtual void CreateGraphicsPipelineLayout() = 0;
-	virtual void CompileShaders()              = 0;
+	virtual void CompileShaders()               = 0;
 	virtual void CreateGraphicsPipeline()       = 0;
 
-	virtual void InitCommandBuffers()     = 0;
 	virtual void PrepareModels()          = 0;
 	virtual void CommandBufferRecording() = 0;
 
-	virtual void InitSynObjects() = 0;
-
-	virtual void DrawFrame()                                = 0;
+	virtual void InitSynObjects()                           = 0;
 	virtual void UpdateUniformBuffer(uint32_t currentImage) = 0;
 
+  public:
 	//========================================
+	virtual void DrawFrame()            = 0;
 	virtual void UpdateCamera(float dt) = 0;
-	virtual void CreateCamera()         = 0;
 
   public:
-	BaseRenderer *GetThisPtr();
+	//BaseRenderer *GetThisPtr();
 
 	void RenderingPreparation();
 
-
   public:
-	virtual void CleanUpModels()                               = 0;
-	virtual void CleanUpDescriptorSetLayoutAndDescriptorPool() = 0;
-	virtual void CleanUpCommandBuffersAndCommandPool()         = 0;
-	virtual void CleanUpSyncObjects()                          = 0;
-	virtual void CleanupFrameBuffers()                         = 0;
-	virtual void CleanUpPipelineAndPipelineLayout()            = 0;
-	virtual void CleanUpRenderPass()                           = 0;
-	virtual void CleanUpImages()                               = 0;
-	virtual void CleanUpUniformBuffers()                       = 0;
+	//virtual void CleanUpModels()                               = 0;
+	//virtual void CleanUpDescriptorSetLayoutAndDescriptorPool() = 0;
+	//virtual void CleanUpCommandBuffersAndCommandPool()         = 0;
+	//virtual void CleanUpSyncObjects()                          = 0;
+	//virtual void CleanupFrameBuffers()                         = 0;
+	//virtual void CleanUpPipelineAndPipelineLayout()            = 0;
+	//virtual void CleanUpRenderPass()                           = 0;
+	//virtual void CleanUpImages()                               = 0;
+	//virtual void CleanUpUniformBuffers()                       = 0;
 
   protected:
 	//MANAGERS
-	VkSwapChainManager &swapchain_manager;
 	VkDeviceManager &   device_manager;
-	VkCommandManager &  command_manager;
 	VkWindows &         window;
-	//COMMAND POOL
-	//VkCommandPool &graphics_command_pool;
-	//VkCommandPool &transfer_command_pool;
+	VkSwapChainManager &swapchain_manager;
+	VkCommandManager &  command_manager;
 };

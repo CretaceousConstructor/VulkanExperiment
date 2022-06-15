@@ -5,25 +5,23 @@
 #include "EngineHeader.h"
 #include "VkDeviceManager.h"
 #include "VkSubpassWrapper.h"
+#include "VkAttachmentInfo.h"
 #include <vector>
 
 class VkRenderpassWrapper
 {
   public:
-	VkRenderpassWrapper(const std::string &_renderpass_name, std::vector<VkAttachmentDescription> _attachments, std::vector<VkSubpassDependency> _dependencies, std::vector<VkSubpassWrapper> _subpasses, VkDeviceManager &device_manager);
+	VkRenderpassWrapper(const std::string &_renderpass_name, std::vector<VkAttachmentInfo> _attachment_infos, std::vector<VkSubpassDependency> _dependencies, 	std::vector<std::shared_ptr<VkSubpassWrapper>>  _subpasses, VkDeviceManager &device_manager);
 
 
-	std::vector<VkAttachmentDescription> attachments;
+	std::vector<VkAttachmentInfo> attachment_infos;
 	std::vector<VkSubpassDependency>     dependencies;
-
-	std::vector<VkSubpassWrapper> subpasses;
-
-
+	std::vector<std::shared_ptr<VkSubpassWrapper>> subpasses;
 
 	VkRenderPass render_pass;
 	std::string  render_pass_name;
 
-
+	std::vector<VkFramebuffer> frame_buffers;
 
 
 };

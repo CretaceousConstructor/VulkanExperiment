@@ -6,33 +6,28 @@ VkCommandManager::VkCommandManager(VkDeviceManager& _device_man,size_t num_of_gr
     transfer_command_pool(device_manager.CreateCommandPool(VkDeviceManager::CommandPoolType::transfor_command_pool))
 {
 
-
-
-
 	transfer_command_buffer.resize(num_of_graphics_command_buffers);
-	for (int i = 0; i < transfer_command_buffer.size(); i++)
+
+	for (size_t i = 0; i < transfer_command_buffer.size(); i++)
 	{
 		
-	VkCommandManager::CreateCommandBuffer(device_manager.GetLogicalDeviceRef(), transfer_command_pool, transfer_command_buffer[i], VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+		VkCommandManager::CreateCommandBuffer(device_manager.GetLogicalDevice(), transfer_command_pool, transfer_command_buffer[i], VK_COMMAND_BUFFER_LEVEL_PRIMARY);
 	}
 
 
 	graphics_command_buffers.resize(num_of_graphics_command_buffers);
 
-	for (int i = 0; i < graphics_command_buffers.size(); i++)
+	for (size_t i = 0; i < graphics_command_buffers.size(); i++)
 	{
-		VkCommandManager::CreateCommandBuffer(device_manager.GetLogicalDeviceRef(), graphics_command_pool, graphics_command_buffers[i], VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+		VkCommandManager::CreateCommandBuffer(device_manager.GetLogicalDevice(), graphics_command_pool, graphics_command_buffers[i], VK_COMMAND_BUFFER_LEVEL_PRIMARY);
 	}
-
 
 
 }
 
 
 
-
-
-VkCommandBuffer VkCommandManager::BeginSingleTimeCommands(VkCommandPool &command_pool, const VkDevice &device)
+VkCommandBuffer VkCommandManager::BeginSingleTimeCommands(const VkCommandPool &command_pool, const VkDevice &device)
 {
 	/*typedef struct VkCommandBufferAllocateInfo {
 		VkStructureType         sType;
@@ -60,8 +55,10 @@ VkCommandBuffer VkCommandManager::BeginSingleTimeCommands(VkCommandPool &command
 	return command_buffer;
 }
 
-void VkCommandManager::EndSingleTimeCommands(VkCommandPool &command_pool, const VkDevice &device, VkCommandBuffer command_buffer, VkQueue &command_quque)
+void VkCommandManager::EndSingleTimeCommands(const VkCommandPool &command_pool, const VkDevice &device, const VkCommandBuffer command_buffer, const VkQueue &command_quque)
 {
+
+	
 	vkEndCommandBuffer(command_buffer);
 	//typedef struct VkSubmitInfo {
 	//	VkStructureType                sType;
@@ -80,14 +77,14 @@ void VkCommandManager::EndSingleTimeCommands(VkCommandPool &command_pool, const 
 	submitInfo.commandBufferCount = 1;
 	submitInfo.pCommandBuffers    = &command_buffer;
 
-	vkQueueSubmit(command_quque, 1, &submitInfo, VK_NULL_HANDLE);
+	vkQueueSubmit(command_quque, 1, &submitInfo, nullptr);
 
 	vkQueueWaitIdle(command_quque);
 
 	vkFreeCommandBuffers(device, command_pool, 1, &command_buffer);
 }
 
-void VkCommandManager::CreateCommandBuffer(const VkDevice &device, VkCommandPool &commandpool, VkCommandBuffer &CommandBuffer, VkCommandBufferLevel level)
+void VkCommandManager::CreateCommandBuffer(const VkDevice &device, const VkCommandPool &commandpool, VkCommandBuffer &CommandBuffer, VkCommandBufferLevel level)
 {
 	VkCommandBufferAllocateInfo BufferAllocInfo{};
 	BufferAllocInfo.sType              = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;

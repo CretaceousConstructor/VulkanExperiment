@@ -3,12 +3,17 @@
 #include "FirstPersonCamera.h"
 #include "KeyBoardInputManager.h"
 #include "MouseInputManager.h"
+#include "VkAttachmentInfo.h"
 #include "GltfModel.h"
 #include "VkTexture.h"
 #include "VkDescriptorManager.h"
 #include "VkUniformBuffer.h"
 #include "VkRenderpassManager.h"
 #include "VkDepthImageBuilder.h"
+#include "VkMetaInfo.h"
+#include "VkSynObjectFactory.h"
+#include "VkUniformBufferFactory.h"
+#include "VkUniformBufferBundle.h"
 #include <array>
 #include <chrono>
 #include <glm/glm.hpp>
@@ -23,24 +28,30 @@
 class KTXTextureRenderer : public BaseRenderer
 {
 
-public: 
-	KTXTextureRenderer(
-	    VkWindows &         _window,
-	    VkDeviceManager &   _device_manager,
-	    VkSwapChainManager &_swapchain_manager,
-	    VkCommandManager &  _command_manager
-	)  ;
-	~KTXTextureRenderer();
+	public: 
+		KTXTextureRenderer(
+			VkWindows &         _window,
+			VkDeviceManager &   _device_manager,
+			VkSwapChainManager &_swapchain_manager,
+			VkCommandManager &  _command_manager
+		);
+	  ~KTXTextureRenderer() override = default;
+
+
+public:
+	void DrawFrame() override;
+	void UpdateCamera(float dt) override;
 
 
 
-  public:
-	void InitManager();
-	void InitFactory();
-
+  private:
 
 	void SetUpUserInput() override;
 	void CreateCamera() override;
+
+	void InitCommandBuffers() override;
+
+
 
 	void CreateAttachmentImages() override;
 	void CreateTextureImages() override;
@@ -55,45 +66,20 @@ public:
 	void CreateDescriptorPool() override;
 	void CreateDescriptorSets() override;
 
-	//void CreateGraphicsPipelineLayout() override;
+	void CreateGraphicsPipelineLayout() override;
+	void CompileShaders() override;
 	void CreateGraphicsPipeline() override;
 
-	void InitCommandBuffers() override;
 	void PrepareModels() override;
 	void CommandBufferRecording() override;
 
 	void InitSynObjects() override;
-
-	void DrawFrame() override;
 	void UpdateUniformBuffer(uint32_t currentImage) override;
 
-	void UpdateCamera(float dt) override;
-
-	void CompileShaders() override;
-
-
-
-
-
-
-
-
-
-
- // public:
-	//void CleanUpModels() override;
-	//void CleanUpDescriptorSetLayoutAndDescriptorPool() override;
-	//void CleanUpCommandBuffersAndCommandPool() override;
-	//void CleanUpSyncObjects() override;
-	//void CleanupFrameBuffers() override;
-	//void CleanUpPipelineAndPipelineLayout() override;
-	//void CleanUpRenderPass() override;
-	//void CleanUpImages() override;
-	//void CleanUpUniformBuffers() override;
 
   private:
 	void CreateRenderPass0() const;
-	void CreatePipelineRenderPass0Subpass0();
+	void CreatePipelineRenderPass0Subpass0() const;
 
 
   private:
@@ -102,13 +88,13 @@ public:
   public:
   private:
 	//UBO DATA
-	struct Ubo_data
+	struct UboData
 	{
 		glm::mat4 projection;
 		glm::mat4 view;
 		glm::vec4 eyepos;
 		alignas(4) float     lodBias = 0.0f;
-	} ubo_vs;
+	};
 
 	//vertex layout
 	struct Vertex
@@ -142,45 +128,33 @@ public:
 
 
 
-
-
-
-
-
-
-
-
-
-
-
   private:
 	//RENDERPASS MAN
 	std::unique_ptr<VkRenderpassManager> render_pass_manager;
+
 	std::unique_ptr<VkImageBuilder>      depth_image_builder;
 
+
+	std::unique_ptr<VkUniformBufferFactory> ubuffer_factory;
+	std::unique_ptr<VkTextureFactory>       texture_factory;
+	std::unique_ptr<VkSynObjectFactory>       syn_obj_factory;
+
+
 	//UNIFORM BUFFER
-	Ubo_data ubo{};
-	std::vector<std::unique_ptr<VkUniformBuffer>> uniform_buffers;
+	UboData ubo{};
+	std::shared_ptr<VkUniformBufferBundle> uniform_buffers;
+
 	//TEXTURE
-	std::unique_ptr<VkTexture> ktx_texure;
+	std::shared_ptr<VkTexture> ktx_texure;
 	//ATTACHMENT
-	std::vector<std::shared_ptr<VkImageWrapper>> depth_attachments;
-
-
-	//FRAMEBUFFER
-	std::vector<VkFramebuffer> frame_buffers;
-
-	//COMMAND BUFFERS
-	//std::vector<VkCommandBuffer> graphics_command_buffers;        //3
-	//VkCommandBuffer              transfer_command_buffer;
-
-
+	std::shared_ptr<VkImagesBundle> depth_attachments;
 
 	//SYN OBJECTS
-	std::vector<VkSemaphore> image_available_semaphores;
-	std::vector<VkSemaphore> render_finished_semaphores;
-	std::vector<VkFence>     frame_fences;
-	std::vector<VkFence>     image_fences;
+	std::shared_ptr<VkSemaphoreBundle> image_available_semaphores;
+	std::shared_ptr<VkSemaphoreBundle> render_finished_semaphores;
+	std::shared_ptr<VkFenceBundle> frame_fences;
+	//-----------------------------------------------------------
+	std::vector<VkFence>           image_fences;
 
 	//MODELS
 	std::unique_ptr<VkModel<Vertex>> quad_model;

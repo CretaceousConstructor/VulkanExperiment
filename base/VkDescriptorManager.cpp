@@ -9,16 +9,16 @@ VkDescriptorManager::~VkDescriptorManager()
 {
 	for (const auto &pool : descriptor_pools)
 	{
-		vkDestroyDescriptorPool(device_manager.GetLogicalDeviceRef(), pool.second.descriptor_pool, nullptr);
+		vkDestroyDescriptorPool(device_manager.GetLogicalDevice(), pool.second.descriptor_pool, nullptr);
 	}
 
 	for (const auto &layout : set_layouts)
 	{
-		vkDestroyDescriptorSetLayout(device_manager.GetLogicalDeviceRef(), layout.second.set_layout, nullptr);
+		vkDestroyDescriptorSetLayout(device_manager.GetLogicalDevice(), layout.second.set_layout, nullptr);
 	}
 }
 
-void VkDescriptorManager::AddDescriptorPool(const DescMetaInfo pool_meta_info, std::vector<std::pair<VkDescriptorType, uint32_t>> info_pairs, uint32_t max_sets)
+void VkDescriptorManager::AddDescriptorPool(const DescriptorMetaInfo pool_meta_info, std::vector<std::pair<VkDescriptorType, uint32_t>> info_pairs, uint32_t max_sets)
 {
 	//由于在创建pool的时候，元信息中的uint8_t set用不到，所以把uint8_t set当作一个subpass中使用的pool的索引
 	if (descriptor_pools.contains(pool_meta_info))
@@ -48,7 +48,7 @@ void VkDescriptorManager::AddDescriptorPool(const DescMetaInfo pool_meta_info, s
 
 	// Max. number of descriptor sets that can be allocated from this pool
 	descriptor_pool_CI.maxSets = static_cast<uint32_t>(max_sets);        //一帧一个set是否浪费？如果只用一个set会不会有同步问题?
-	if (vkCreateDescriptorPool(device_manager.GetLogicalDeviceRef(), &descriptor_pool_CI, nullptr, &result.descriptor_pool) != VK_SUCCESS)
+	if (vkCreateDescriptorPool(device_manager.GetLogicalDevice(), &descriptor_pool_CI, nullptr, &result.descriptor_pool) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to create descriptor pool!");
 	}
@@ -58,7 +58,7 @@ void VkDescriptorManager::AddDescriptorPool(const DescMetaInfo pool_meta_info, s
 
 }
 
-void VkDescriptorManager::AddDescriptorSetLayout(const DescMetaInfo meta_info, std::vector<VkDescriptorSetLayoutBinding> LayoutBindings)
+void VkDescriptorManager::AddDescriptorSetLayout(const DescriptorMetaInfo meta_info, std::vector<VkDescriptorSetLayoutBinding> LayoutBindings)
 {
 	if (set_layouts.contains(meta_info))
 	{
@@ -71,7 +71,7 @@ void VkDescriptorManager::AddDescriptorSetLayout(const DescMetaInfo meta_info, s
 	layout_bindingCI.sType        = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 	layout_bindingCI.bindingCount = (uint32_t) LayoutBindings.size();        //the amount of VkDescriptorSetLayoutBinding
 	layout_bindingCI.pBindings    = LayoutBindings.data();
-	if (vkCreateDescriptorSetLayout(device_manager.GetLogicalDeviceRef(), &layout_bindingCI, nullptr, &temp_layout.set_layout) != VK_SUCCESS)
+	if (vkCreateDescriptorSetLayout(device_manager.GetLogicalDevice(), &layout_bindingCI, nullptr, &temp_layout.set_layout) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to create descriptor set layout!");
 	}
@@ -80,10 +80,12 @@ void VkDescriptorManager::AddDescriptorSetLayout(const DescMetaInfo meta_info, s
 
 }
 
-void VkDescriptorManager::AddDescriptorSetBundle(const DescMetaInfo pool_meta_info, const DescMetaInfo set_layout_meta_info, size_t num_in_flight)
+
+//DescriptorMetaInfo
+void VkDescriptorManager::AddDescriptorSetBundle(const DescriptorMetaInfo pool_meta_info, const DescriptorMetaInfo set_layout_meta_info, size_t num_in_flight)
 {
 	// meta-info processing
-	DescMetaInfo bundle_set_meta_info{set_layout_meta_info};
+	DescriptorMetaInfo bundle_set_meta_info{set_layout_meta_info};
 
 	//test if decriptor_bundle exsits
 	if (descriptor_sets.contains(bundle_set_meta_info))
@@ -104,7 +106,7 @@ void VkDescriptorManager::AddDescriptorSetBundle(const DescMetaInfo pool_meta_in
 		allocInfoWrite.descriptorSetCount = 1;
 		allocInfoWrite.pSetLayouts        = &this->GetSetLayout(set_layout_meta_info);
 
-		if (vkAllocateDescriptorSets(device_manager.GetLogicalDeviceRef(), &allocInfoWrite, &descriptor_set_bundle[i]) != VK_SUCCESS)
+		if (vkAllocateDescriptorSets(device_manager.GetLogicalDevice(), &allocInfoWrite, &descriptor_set_bundle[i]) != VK_SUCCESS)
 		{
 			throw std::runtime_error("failed to allocate descriptor sets!");
 		}
@@ -114,7 +116,7 @@ void VkDescriptorManager::AddDescriptorSetBundle(const DescMetaInfo pool_meta_in
 	descriptor_sets.emplace(bundle_set_meta_info, std::move(descriptor_set_bundle));
 }
 
-void VkDescriptorManager::UpdateDescriptorSet(std::vector<VkWriteDescriptorSet> write_descriptor_sets, const DescMetaInfo set_meta_info, size_t frame_inflight)
+void VkDescriptorManager::UpdateDescriptorSet(std::vector<VkWriteDescriptorSet> write_descriptor_sets, const DescriptorMetaInfo set_meta_info, size_t frame_inflight) const
 {
 	if (!descriptor_sets.contains(set_meta_info))
 	{
@@ -129,10 +131,10 @@ void VkDescriptorManager::UpdateDescriptorSet(std::vector<VkWriteDescriptorSet> 
 		write_set.dstSet = set_bundle[frame_inflight];
 	}
 
-	vkUpdateDescriptorSets(device_manager.GetLogicalDeviceRef(), static_cast<uint32_t>(write_descriptor_sets.size()), write_descriptor_sets.data(), 0, nullptr);
+	vkUpdateDescriptorSets(device_manager.GetLogicalDevice(), static_cast<uint32_t>(write_descriptor_sets.size()), write_descriptor_sets.data(), 0, nullptr);
 }
 
-const VkDescriptorPool &VkDescriptorManager::GetPool(const DescMetaInfo pool_meta_info)
+const VkDescriptorPool &VkDescriptorManager::GetPool(const DescriptorMetaInfo pool_meta_info)
 {
 	if (descriptor_pools.contains(pool_meta_info))
 	{
@@ -141,7 +143,7 @@ const VkDescriptorPool &VkDescriptorManager::GetPool(const DescMetaInfo pool_met
 	return descriptor_pools[pool_meta_info].descriptor_pool;
 }
 
-const VkDescriptorSetLayout &VkDescriptorManager::GetSetLayout(const DescMetaInfo set_layout_meta_info)
+const VkDescriptorSetLayout &VkDescriptorManager::GetSetLayout(const DescriptorMetaInfo set_layout_meta_info)
 {
 	if (set_layouts.contains(set_layout_meta_info))
 	{
@@ -150,7 +152,7 @@ const VkDescriptorSetLayout &VkDescriptorManager::GetSetLayout(const DescMetaInf
 	return set_layouts[set_layout_meta_info].set_layout;
 }
 
-std::vector<VkDescriptorSetLayout> VkDescriptorManager::SearchLayout(const DescMetaInfo set_layout_meta_info)
+std::vector<VkDescriptorSetLayout> VkDescriptorManager::SearchLayout(const DescriptorMetaInfo set_layout_meta_info) const
 {
 	std::vector<VkDescriptorSetLayout> result;
 	for (auto &layout : set_layouts)
@@ -171,4 +173,30 @@ std::vector<VkDescriptorSetLayout> VkDescriptorManager::SearchLayout(const DescM
 	}
 
 	return result;
+}
+
+std::vector<VkDescriptorSetLayout> VkDescriptorManager::SearchLayout(const PipelineMetaInfo set_layout_meta_info) const
+{
+
+
+	std::vector<VkDescriptorSetLayout> result;
+	for (auto &layout : set_layouts)
+	{
+		auto &meta_info = layout.first;
+		if (meta_info.pass == set_layout_meta_info.pass && meta_info.subpass == set_layout_meta_info.subpass)
+		{
+			if (meta_info.set < result.size())
+			{
+				result[meta_info.set] = layout.second.set_layout;
+			}
+			else
+			{
+				result.resize(meta_info.set + 1);
+				result[meta_info.set] = layout.second.set_layout;
+			}
+		}
+	}
+
+	return result;
+
 }

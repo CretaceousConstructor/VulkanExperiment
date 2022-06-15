@@ -1,25 +1,28 @@
 #include "KTXTextureRenderer.h"
 
-
-
 KTXTextureRenderer::KTXTextureRenderer(VkWindows &_window, VkDeviceManager &_device_manager, VkSwapChainManager &_swapchain_manager, VkCommandManager &_command_manager) :
     BaseRenderer(_window, _device_manager, _swapchain_manager, _command_manager)
 {
 
+	render_pass_manager = std::make_unique<VkRenderpassManager>(device_manager, swapchain_manager);
 
-	render_pass_manager        = std::make_unique<VkRenderpassManager>(device_manager, swapchain_manager);
-	depth_image_builder= std::make_unique<VkDepthImageBuilder>(_device_manager, swapchain_manager, _command_manager, _window);
+	depth_image_builder = std::make_unique<VkDepthImageBuilder>(device_manager, swapchain_manager, command_manager, window);
+	ubuffer_factory = std::make_unique<VkUniformBufferFactory>(device_manager, window);
+	tex_factory = std::make_unique<VkTextureFactory>(device_manager, window, command_manager);
+	syn_obj_factory     = std::make_unique<VkSynObjectFactory>(device_manager, window);
 
 
 	RenderingPreparation();
 
 
-
 }
 void KTXTextureRenderer::CreateTextureImages()
 {
-	VkFormat format_of_texture = VK_FORMAT_R8G8B8A8_SRGB;
-	ktx_texure                 = std::make_unique<VkTexture>(device_manager, window, command_manager, std::string("../../data/textures/metalplate01_rgba.ktx"), format_of_texture);
+
+
+
+	constexpr VkFormat format_of_texture = VK_FORMAT_R8G8B8A8_SRGB;
+	ktx_texure     = tex_factory->GetTexture( std::string("../../data/textures/metalplate01_rgba.ktx"), format_of_texture);
 
 	//ktx_texure->InitKTXTexture(, device_manager, window, transfer_command_pool, format_of_texture, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 	//ktx_texure.InitTextureView(format_of_texture, VK_IMAGE_ASPECT_COLOR_BIT);
@@ -27,10 +30,13 @@ void KTXTextureRenderer::CreateTextureImages()
 
 
 
+
 }
 
 void KTXTextureRenderer::PrepareModels()
 {
+
+	//暂时不用改成工厂模式，因为这个模型之后用的不多
 	std::vector<Vertex> vertices =
 	    {
 	        {glm::vec3{1.0f, 1.0f, -5.0f}, glm::vec3{0.0f, 0.0f, 1.0f}, glm::vec2{1.0f, 0.f}},
@@ -43,15 +49,14 @@ void KTXTextureRenderer::PrepareModels()
 	quad_model = std::make_unique<VkModel<Vertex>>(vertices, indices, device_manager, window, command_manager);
 
 
+
 }
 
 void KTXTextureRenderer::CreateDescriptorPool()
 {
 	auto &des_man = render_pass_manager->GetDescriptorManager();
-
 	{
-		const DescMetaInfo pool_meta_info{.pass = 0, .subpass = 0, .set = 0};
-
+		const DescriptorMetaInfo pool_meta_info{.pass = 0, .subpass = 0, .set = 0};
 
 		//CREATE THE GLOBAL DESCRIPTOR POOL
 		std::vector<std::pair<VkDescriptorType, uint32_t>> info_pairs{
@@ -59,10 +64,9 @@ void KTXTextureRenderer::CreateDescriptorPool()
 		    std::pair{VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1},
 		};
 		//TODO:这里的数目是否正确
-		const auto         max_sets = swapchain_manager.GetSwapImageCount();
+		const auto max_sets = swapchain_manager.GetSwapImageCount();
 		des_man.AddDescriptorPool(pool_meta_info, std::move(info_pairs), max_sets);
 	}
-
 
 
 
@@ -71,49 +75,44 @@ void KTXTextureRenderer::CreateDescriptorSetLayout()
 {
 	auto &des_man = render_pass_manager->GetDescriptorManager();
 
-
 	{
 		{
-			
-		const DescMetaInfo set_layout_meta_info{.pass = 0, .subpass = 0, .set = 0};
+			const DescriptorMetaInfo set_layout_meta_info{.pass = 0, .subpass = 0, .set = 0};
 
-		std::vector<VkDescriptorSetLayoutBinding> LayoutBinding;
-		VkDescriptorSetLayoutBinding              LayoutBinding_temp{};
-		// Binding 0 : Vertex shader uniform buffer for passing matrices
-		LayoutBinding_temp.binding            = 0;
-		LayoutBinding_temp.descriptorType     = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		LayoutBinding_temp.descriptorCount    = 1;
-		LayoutBinding_temp.stageFlags         = VK_SHADER_STAGE_VERTEX_BIT;
-		LayoutBinding_temp.pImmutableSamplers = nullptr;        // Optional
-		LayoutBinding.push_back(LayoutBinding_temp);
-		// Binding 1 : Fragment shader image sampler
-		LayoutBinding_temp.binding            = 1;
-		LayoutBinding_temp.descriptorType     = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		LayoutBinding_temp.descriptorCount    = 1;
-		LayoutBinding_temp.stageFlags         = VK_SHADER_STAGE_FRAGMENT_BIT;
-		LayoutBinding_temp.pImmutableSamplers = nullptr;        // Optional
-		LayoutBinding.push_back(LayoutBinding_temp);
+			std::vector<VkDescriptorSetLayoutBinding> LayoutBinding;
+			VkDescriptorSetLayoutBinding              LayoutBinding_temp{};
+			// Binding 0 : Vertex shader uniform buffer for passing matrices
+			LayoutBinding_temp.binding            = 0;
+			LayoutBinding_temp.descriptorType     = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+			LayoutBinding_temp.descriptorCount    = 1;
+			LayoutBinding_temp.stageFlags         = VK_SHADER_STAGE_VERTEX_BIT;
+			LayoutBinding_temp.pImmutableSamplers = nullptr;        // Optional
+			LayoutBinding.push_back(LayoutBinding_temp);
+			// Binding 1 : Fragment shader image sampler
+			LayoutBinding_temp.binding            = 1;
+			LayoutBinding_temp.descriptorType     = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+			LayoutBinding_temp.descriptorCount    = 1;
+			LayoutBinding_temp.stageFlags         = VK_SHADER_STAGE_FRAGMENT_BIT;
+			LayoutBinding_temp.pImmutableSamplers = nullptr;        // Optional
+			LayoutBinding.push_back(LayoutBinding_temp);
 
-		des_man.AddDescriptorSetLayout(set_layout_meta_info, std::move(LayoutBinding));
+			des_man.AddDescriptorSetLayout(set_layout_meta_info, std::move(LayoutBinding));
 		}
 	}
-
-
 }
 
 void KTXTextureRenderer::CreateDescriptorSets()
 {
 	auto &des_man = render_pass_manager->GetDescriptorManager();
-
 	{
 		//这里应该不是image count而是inflight
 		//descriptor_sets_write_subpass0.resize(swapchain_manager->GetSwapImageCount());
-		const DescMetaInfo pool_meta_info{.pass = 0, .subpass = 0, .set = 0};
-		const DescMetaInfo set_layout_meta_info{.pass = 0, .subpass = 0, .set = 0};
-		const DescMetaInfo set_meta_info = set_layout_meta_info;
+		const DescriptorMetaInfo pool_meta_info{.pass = 0, .subpass = 0, .set = 0};
+		const DescriptorMetaInfo set_layout_meta_info{.pass = 0, .subpass = 0, .set = 0};
+		const DescriptorMetaInfo set_meta_info = set_layout_meta_info;
 		des_man.AddDescriptorSetBundle(pool_meta_info, set_layout_meta_info, swapchain_manager.GetSwapImageCount());
-		des_man.UpdateDescriptorSet(uniform_buffers, set_meta_info, 0, 0);
-		des_man.UpdateDescriptorSet(ktx_texure, set_meta_info, 1, 0);
+		des_man.UpdateDescriptorSet(*uniform_buffers, set_meta_info, 0, 0);
+		des_man.UpdateDescriptorSet(*ktx_texure, set_meta_info, 1, 0);
 
 		////subpass0
 		//{
@@ -136,11 +135,12 @@ void KTXTextureRenderer::CreateDescriptorSets()
 	}
 }
 
+void KTXTextureRenderer::CreateGraphicsPipelineLayout()
+{
+}
+
 void KTXTextureRenderer::CreateUniformBuffer()
 {
-
-
-	VkUniformBufferFactory ubuffer_factory{device_manager, window};
 
 	//////CPU SIDE
 	//ubo.projection = m_pCamera->GetProj();
@@ -149,17 +149,29 @@ void KTXTextureRenderer::CreateUniformBuffer()
 
 	//GPU SIDE
 
-	VkDeviceSize bufferSize = sizeof(Ubo_data);
-	uniform_buffers         = ubuffer_factory.GetBufferBundle(bufferSize, swapchain_manager.GetSwapImageCount(), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+	constexpr VkDeviceSize bufferSize = sizeof(Ubo_data);
+
+
+
+uniform_buffers = ubuffer_factory->GetBufferBundle(bufferSize, swapchain_manager.GetSwapImageCount(),VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+
+
+
+
+
 
 	//for (size_t i = 0; i < swapchain_manager.GetSwapImageCount(); i++)
 	//{
 	//	uniform_buffers.emplace_back(std::make_unique<VkUniformBuffer>(device_manager, window, bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, VK_SHARING_MODE_EXCLUSIVE));
 	//}
+
+
+
+
+
+
+
 }
-
-
-
 
 void KTXTextureRenderer::CreateDepthImages()
 {
@@ -180,18 +192,13 @@ void KTXTextureRenderer::CreateDepthImages()
 	//	depth_attachments[i]->InitImageView(depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
 	//}
 
+	depth_attachments = depth_image_builder->GetResult(swapchain_manager.GetSwapImageCount());
 
-
-
-	for (uint32_t i = 0; i < swapchain_manager.GetSwapImageCount(); i++)
-	{
-		depth_attachments.push_back(depth_image_builder->GetResult());
-	}
 
 
 }
 
-void KTXTextureRenderer::CreatePipelineRenderPass0Subpass0()
+void KTXTextureRenderer::CreatePipelineRenderPass0Subpass0() const
 {
 	////										 subpass0
 	///******************************************************************************************************/
@@ -262,7 +269,6 @@ void KTXTextureRenderer::CreatePipelineRenderPass0Subpass0()
 	//rasterizer.depthBiasClamp          = 0.0f;        // Optional
 	//rasterizer.depthBiasSlopeFactor    = 0.0f;        // Optional
 
-
 	//VkPipelineMultisampleStateCreateInfo multisampling{};
 	//multisampling.sType                 = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
 	//multisampling.sampleShadingEnable   = VK_FALSE;
@@ -271,17 +277,6 @@ void KTXTextureRenderer::CreatePipelineRenderPass0Subpass0()
 	//multisampling.pSampleMask           = nullptr;         // Optional
 	//multisampling.alphaToCoverageEnable = VK_FALSE;        // Optional
 	//multisampling.alphaToOneEnable      = VK_FALSE;        // Optional
-
-
-
-
-
-
-
-
-
-
-
 
 	//VkPipelineColorBlendAttachmentState colorBlendAttachment{};
 	//colorBlendAttachment.colorWriteMask      = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
@@ -378,26 +373,14 @@ void KTXTextureRenderer::CreatePipelineRenderPass0Subpass0()
 	//	throw std::runtime_error("failed to create graphics pipeline!");
 	//}
 
-
-
-
-
-
 	const PipelineMetaInfo meta_info{.pass = 0, .subpass = 0};
-	auto& pipeline_builder  =   render_pass_manager->GetPipelineBuilder();
-	render_pass_manager->AddPipeline("first pipeline", meta_info);
-
-
-
-
+	auto &                 pipeline_builder = render_pass_manager->GetPipelineBuilder();
+	render_pass_manager->AddPipeline("PipelinePass0Subpass0", meta_info);
 }
 
 void KTXTextureRenderer::CreateRenderPass()
 {
-
-
 	CreateRenderPass0();
-
 }
 
 //void KTXTextureRenderer::CreateGraphicsPipelineLayout()
@@ -426,31 +409,33 @@ void KTXTextureRenderer::CreateGraphicsPipeline()
 
 void KTXTextureRenderer::CreateFrameBuffers()
 {
-	frame_buffers.resize(swapchain_manager->GetSwapImageCount());
+	//frame_buffers.resize(swapchain_manager.GetSwapImageCount());
 
-	for (size_t i = 0; i < swapchain_manager->GetSwapImageCount(); i++)
-	{
-		std::vector<VkImageView> attachments =
-		    {
-		        swapchain_manager->GetSwapImageViews()[i],
-		        depth_attachment[i].GetImageView()};
+	//for (size_t i = 0; i < swapchain_manager.GetSwapImageCount(); i++)
+	//{
+	//	std::vector<VkImageView> attachments =
+	//	    {
+	//	        swapchain_manager.GetSwapImageViews()[i],
+	//	        depth_attachments[i]->GetImageView()
 
-		auto swap_chain_extent = swapchain_manager->GetSwapChainImageExtent();
+	//	    };
 
-		VkFramebufferCreateInfo framebufferInfo{};
-		framebufferInfo.sType           = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-		framebufferInfo.renderPass      = render_pass;
-		framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
-		framebufferInfo.pAttachments    = attachments.data();
-		framebufferInfo.width           = swap_chain_extent.width;
-		framebufferInfo.height          = swap_chain_extent.height;
-		framebufferInfo.layers          = 1;        //for 3D application
+	//	const auto swap_chain_extent = swapchain_manager.GetSwapChainImageExtent();
 
-		if (vkCreateFramebuffer(device_manager->GetLogicalDeviceRef(), &framebufferInfo, nullptr, &frame_buffers[i]) != VK_SUCCESS)
-		{
-			throw std::runtime_error("failed to create framebuffer!");
-		}
-	}
+	//	VkFramebufferCreateInfo framebufferInfo{};
+	//	framebufferInfo.sType           = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+	//	framebufferInfo.renderPass      = render_pass;
+	//	framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+	//	framebufferInfo.pAttachments    = attachments.data();
+	//	framebufferInfo.width           = swap_chain_extent.width;
+	//	framebufferInfo.height          = swap_chain_extent.height;
+	//	framebufferInfo.layers          = 1;        //for 3D application
+
+	//	if (vkCreateFramebuffer(device_manager.GetLogicalDeviceRef(), &framebufferInfo, nullptr, &frame_buffers[i]) != VK_SUCCESS)
+	//	{
+	//		throw std::runtime_error("failed to create framebuffer!");
+	//	}
+	//}
 }
 
 void KTXTextureRenderer::InitCommandBuffers()
@@ -463,12 +448,20 @@ void KTXTextureRenderer::InitCommandBuffers()
 	//{
 	//	VkCommandManager::CreateCommandBuffer(device_manager->GetLogicalDeviceRef(), graphics_command_pool, graphics_command_buffers[i], VK_COMMAND_BUFFER_LEVEL_PRIMARY);
 	//}
-
-
 }
- 
+
+
+
+
+
+//这一个函数故意暴露很多细节出来，因为封装的意义不大，变化性太强
 void KTXTextureRenderer::CommandBufferRecording()
 {
+
+
+
+	auto & graphics_command_buffers = command_manager.GetGraphicsCommandBuffers();
+
 	for (size_t i = 0; i < graphics_command_buffers.size(); i++)
 	{
 		VkCommandBufferBeginInfo beginInfo{};
@@ -483,11 +476,12 @@ void KTXTextureRenderer::CommandBufferRecording()
 
 		VkRenderPassBeginInfo renderPassInfo{};        //开始信息这是，注意
 		renderPassInfo.sType       = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-		renderPassInfo.renderPass  = render_pass;
-		renderPassInfo.framebuffer = frame_buffers[i];
+		auto &renderpass           = (render_pass_manager->GetRenderpass(0));
+		renderPassInfo.renderPass  = renderpass.render_pass;
+		renderPassInfo.framebuffer = renderpass.frame_buffers[i];
 
 		renderPassInfo.renderArea.offset = {0, 0};
-		renderPassInfo.renderArea.extent = VkExtent2D{swapchain_manager->GetSwapChainImageExtent().width, swapchain_manager->GetSwapChainImageExtent().height};
+		renderPassInfo.renderArea.extent = VkExtent2D{swapchain_manager.GetSwapChainImageExtent().width, swapchain_manager.GetSwapChainImageExtent().height};
 
 		std::array<VkClearValue, 2> clearValues{};
 		clearValues[0].color        = {0.0f, 0.0f, 0.0f, 1.0f};
@@ -514,34 +508,37 @@ void KTXTextureRenderer::CommandBufferRecording()
 
 void KTXTextureRenderer::InitSynObjects()
 {
-	image_available_semaphores.resize(MAX_FRAMES_IN_FLIGHT);
-	render_finished_semaphores.resize(MAX_FRAMES_IN_FLIGHT);
-	frame_fences.resize(MAX_FRAMES_IN_FLIGHT);
-	image_fences.resize(swapchain_manager->GetSwapImageCount(), VK_NULL_HANDLE);        ///???
 
-	//可以通过fence查询vkQueueSubmit的动作是否完成   vkGetFenceStatus非阻塞的查询
-	//											vkWaitForFences阻塞查询，直到其中至少一个，或者所有的fence都处于signaled状态，或者超时（时间限制由参数给出），才会返回。
 
-	VkSemaphoreCreateInfo semaphoreInfo{};
-	semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
-	VkFenceCreateInfo fenceInfo{};
-	fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-	fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+	image_available_semaphores = syn_obj_factory->GetSemaphoreBundle(MAX_FRAMES_IN_FLIGHT);
+	render_finished_semaphores = syn_obj_factory->GetSemaphoreBundle(MAX_FRAMES_IN_FLIGHT);
 
-	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-	{
-		if (vkCreateSemaphore(device_manager->GetLogicalDeviceRef(), &semaphoreInfo, nullptr, &image_available_semaphores[i]) != VK_SUCCESS ||
-		    vkCreateSemaphore(device_manager->GetLogicalDeviceRef(), &semaphoreInfo, nullptr, &render_finished_semaphores[i]) != VK_SUCCESS ||
-		    vkCreateFence(device_manager->GetLogicalDeviceRef(), &fenceInfo, nullptr, &frame_fences[i]) != VK_SUCCESS)
-		{
-			throw std::runtime_error("failed to create synchronization objects for a frame!");
-		}
-	}
-}
+	frame_fences = syn_obj_factory->GetFenceBundle(MAX_FRAMES_IN_FLIGHT,VkSynObjectFactory::Signaled);
+	image_fences.resize(swapchain_manager.GetSwapImageCount());
 
-void KTXTextureRenderer::InitFactory()
-{
+	//image_fences.resize(swapchain_manager.GetSwapImageCount(), nullptr);        ///???
+
+	///可以通过fence查询vkQueueSubmit的动作是否完成   VkGetFenceStatus非阻塞的查询
+	//											 VkWaitForFences阻塞查询，直到其中至少一个，或者所有的fence都处于signaled状态，或者超时（时间限制由参数给出），才会返回。
+
+	//VkSemaphoreCreateInfo semaphoreInfo{};
+	//semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+	//VkFenceCreateInfo fenceInfo{};
+	//fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+	//fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+
+	//for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+	//{
+	//	if (vkCreateSemaphore(device_manager.GetLogicalDevice(), &semaphoreInfo, nullptr, &image_available_semaphores[i]) != VK_SUCCESS ||
+	//	    vkCreateSemaphore(device_manager.GetLogicalDevice(), &semaphoreInfo, nullptr, &render_finished_semaphores[i]) != VK_SUCCESS ||
+	//	    vkCreateFence(device_manager.GetLogicalDevice(), &fenceInfo, nullptr, &frame_fences[i]) != VK_SUCCESS)
+	//	{
+	//		throw std::runtime_error("failed to create synchronization objects for a frame!");
+	//	}
+	//}
+
 
 
 }
@@ -551,28 +548,38 @@ void KTXTextureRenderer::SetUpUserInput()
 	//命令模式优化
 	std::vector<int> tracked_keys = {GLFW_KEY_W, GLFW_KEY_S, GLFW_KEY_A, GLFW_KEY_D, GLFW_KEY_Q, GLFW_KEY_E, GLFW_KEY_Z, GLFW_KEY_C, GLFW_KEY_UP, GLFW_KEY_DOWN};
 
-	keyboard                      = std::make_unique<KeyBoardInputManager>(tracked_keys);
+	keyboard = std::make_unique<KeyBoardInputManager>(tracked_keys);
 	keyboard->SetupKeyInputs(window.GetWindowPtr());
 
 	mouse = std::make_unique<MouseInputManager>(swapchain_manager.GetSwapChainImageExtent());
 	mouse->SetupMouseInputs(window.GetWindowPtr());
-
 }
 
 void KTXTextureRenderer::CreateAttachmentImages()
 {
 }
 
+
+
+//这一个函数故意暴露很多细节出来，因为封装的意义不大，变化性太强
 void KTXTextureRenderer::DrawFrame()
 {
-	////image使用完毕和subpass dependency的关系
+	//TODO:image使用完毕和subpass dependency的关系
 	static size_t currentFrame = 0;
-	////所有fence在初始化时都处于signaled的状态
+	////所有fence    在默认初始化（不指定初始状态）时都处于unsignaled的状态
+	////所有semaphore在默认初始化（不指定初始状态）时都处于unsignaled的状态
+	///
+	///
 	////等待frame
-	vkWaitForFences(device_manager.GetLogicalDeviceRef(), 1, &frame_fences[currentFrame], VK_TRUE, UINT64_MAX);        //vkWaitForFences无限时阻塞CPU，等待fence被signal后 从 unsignaled状态 变成 signaled状态才会停止阻塞。                  To wait for one or more fences to enter the signaled state on the host,
+	vkWaitForFences(device_manager.GetLogicalDevice(), 1, &(frame_fences->GetOne(currentFrame)), VK_TRUE, UINT64_MAX);        //vkWaitForFences无限时阻塞CPU，等待fence被signal后 从 unsignaled状态 变成 signaled状态才会停止阻塞。                  To wait for one or more fences to enter the signaled state on the host,
+
 	uint32_t imageIndex;
 
-	VkResult result = vkAcquireNextImageKHR(device_manager.GetLogicalDeviceRef(), swapchain_manager.GetSwapChain(), UINT64_MAX, image_available_semaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);        //As such, all vkAcquireNextImageKHR function does is let you know which image will be made available to you next. This is the minimum that needs to happen in order for you to be able to use that image (for example, by building command buffers that reference the image in some way). However, that image is not YET available to you.This is why this function requires you to provide a semaphore and/or a fence: so that the process which consumes the image can wait for the image to be made available.得到下一个可以使用的image的index，但是这个image可能还没用完，这里获得的imageIndex对应的image很有可能是在最短的时间内被某一帧使用完毕的那一个，由vulkan实现具体决定
+
+	//获得的下一个image 的index后，可能这个index对应的image还没有被presentation engine使用完毕，所以需要一个image_available_semaphores->GetOne(currentFrame)来   通知这一阵的GPU   已经可以用这个index对应image的渲染了。
+	VkResult result = vkAcquireNextImageKHR(device_manager.GetLogicalDevice(), swapchain_manager.GetSwapChain(), UINT64_MAX, image_available_semaphores->GetOne(currentFrame), nullptr, &imageIndex);        //As such, all vkAcquireNextImageKHR function does is let you know which image will be made available to you next. This is the minimum that needs to happen in order for you to be able to use that image (for example, by building command buffers that reference the image in some way). However, that image is not YET available to you.This is why this function requires you to provide a semaphore and/or a fence: so that the process which consumes the image can wait for the image to be made available.得到下一个可以使用的image的index，但是这个image可能还没用完，这里获得的imageIndex对应的image很有可能是在最短的时间内被某一帧使用完毕的那一个，由vulkan实现具体决定
+
+
 
 	if (result == VK_ERROR_OUT_OF_DATE_KHR)
 	{
@@ -588,35 +595,55 @@ void KTXTextureRenderer::DrawFrame()
 		throw std::runtime_error("failed to acquire swap chain image!");
 	}
 
+
 	UpdateUniformBuffer(imageIndex);
 
-	//images_inflight大小为3在这个例子里，注意它的大小不是2(MAX_FRAMES_IN_FLIGHT)
-	if (image_fences[imageIndex] != VK_NULL_HANDLE)
-	{
-		//	//images_inflight[imageIndex] 不是 nullptr，说明某一帧的GPU资源(和image有关的资源)正在被以imageIndex为下标的image使用，那么我们就要等待。
-		//	//无限等待fence,
 
-		vkWaitForFences(device_manager.GetLogicalDeviceRef(), 1, &image_fences[imageIndex], VK_TRUE, UINT64_MAX);
+
+	//images_fence大小为3在这个例子里，注意它的大小不是2(MAX_FRAMES_IN_FLIGHT)
+	//防止image正在被GPU使用
+	if (image_fences[imageIndex] != nullptr)
+	{
+		//	images_inflight[imageIndex] 不是 nullptr，说明某一帧正在占用GPU资源(和image有关的资源)这些GPU资源正在被以imageIndex为下标的image使用，那么我们就要等待。
+		//TODO:目前的设计是每一个image都有一套资源，但如果 max_frame_in_flight小于swap chain image的话，只需要max_frame_in_flight套资源就可以了，但是如果这么做就需要记录到底是哪一帧在使用images_inflight[imageIndex]关联的资源，从而在下面的WaitForFences语句以后就可以使用空出来的资源
+		//	无限等待fence,
+		vkWaitForFences(device_manager.GetLogicalDevice(), 1, &image_fences[imageIndex], VK_TRUE, UINT64_MAX);
 	}
 
-	image_fences[imageIndex] = frame_fences[currentFrame];        //等待完images毕后，让当前的image被currentFrame所占有(表示currentFrame这一帧的GPU资源正在被index为imageIndex的image占用)，目前inflight_fences[currentFrame]处于signled的状态。
-	////	 inflight_fences[currentFrame]状态改变后，images_inflight[imageIndex]状态也会改变
+	image_fences[imageIndex] = frame_fences->GetOne(currentFrame);        //等待完images毕后，让接下来会被GPU用来填色的image被currentFrame所占有(表示currentFrame这一帧的GPU资源正在被index为imageIndex的image占用)，目前inflight_fences[currentFrame]处于signled的状态。
 
-	VkSubmitInfo submitInfo{};
-	submitInfo.sType                      = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-	VkSemaphore          waitSemaphores[] = {image_available_semaphores[currentFrame]};        //上面是等待imageIndex对应的image把它占用的GPU资源释放出来，这里是因为image还需要presentation，很有可能presentation engine还没有完成，所以需要等待这个semaphore
-	VkPipelineStageFlags waitStages[]     = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
-	submitInfo.waitSemaphoreCount         = 1;
-	submitInfo.pWaitSemaphores            = waitSemaphores;
-	submitInfo.pWaitDstStageMask          = waitStages;
-	submitInfo.commandBufferCount         = 1;
 
-	//	submitInfo.pCommandBuffers = &graphics_command_buffers[imageIndex];        //用的就是swap image[imageIndex]
-	submitInfo.pCommandBuffers = &graphics_command_buffers[imageIndex];
 
-	VkSemaphore signalSemaphores[]  = {render_finished_semaphores[currentFrame]};        //graphics_command_buffers执行完以后会signal这里，随后presentation engine知道渲染完成可以展示了。
-	submitInfo.signalSemaphoreCount = 1;
-	submitInfo.pSignalSemaphores    = signalSemaphores;
+
+	VkSubmitInfo submit_info{};
+	submit_info.sType                      = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	const  VkSemaphore          waitSemaphores[] = {image_available_semaphores->GetOne(currentFrame)};        //上面是等待imageIndex对应的image把它占用的GPU资源释放出来，这里是因为image还需要presentation，很有可能presentation engine还没有完成，所以需要等待这个semaphore
+	constexpr VkPipelineStageFlags waitStages[]     = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+	submit_info.waitSemaphoreCount         = 1;
+	submit_info.pWaitSemaphores            = waitSemaphores;
+	submit_info.pWaitDstStageMask          = waitStages;
+	submit_info.commandBufferCount         = 1;
+
+	//&graphics_command_buffers[imageIndex] 用的frame buffer就是swap image[imageIndex]
+
+
+
+	auto & graphics_command_buffers = command_manager.GetGraphicsCommandBuffers();
+	submit_info.pCommandBuffers = &graphics_command_buffers[imageIndex];
+
+
+
+
+
+
+
+
+
+
+
+	const VkSemaphore signalSemaphores[]  = {render_finished_semaphores->GetOne(currentFrame)};        //graphics_command_buffers执行完以后会signal这里，随后presentation engine知道渲染完成可以展示了。
+	submit_info.signalSemaphoreCount = 1;
+	submit_info.pSignalSemaphores    = signalSemaphores;
 
 	////可以看到这里graphics_command_buffers[imageIndex]使用完以后，inflight_fences_frame[currentFrame]会被signal（读vkQueueSubmit的定义），那么怎么确定这里的graphics_command_buffers[imageIndex]已经被前几帧使用完毕了呢？
 
@@ -709,11 +736,15 @@ void KTXTextureRenderer::DrawFrame()
 	////3.赋值:        images_fences[imageIndex 0（这个下标是从acquireImageindex获取的）]    =    frame_fences[currentFrame 1]赋值
 	////4.渲染:        graphics_command_buffers[imageIndex 0]被使用中
 
+
+
 	////===========================================================================================================================================================
-	//因为上面有images_inflight[imageIndex] = inflight_fences[currentFrame]; 所以这时候images_inflight[imageIndex]和 inflight_fences[currentFrame]会有同样的状态;并且应该同时进入了unsignaled状态
-	vkResetFences(device_manager.GetLogicalDeviceRef(), 1, &frame_fences[currentFrame]);        //To set the state of fences to unsignaled from the host side
-	//vkQueueSubmit:   fence(last parameter is an optional handle to a fence to be signaled once all submitted command buffers have completed execution. If fence is not VK_NULL_HANDLE, it defines a fence signal operation.当command buffer中的命令执行结束以后
-	if (vkQueueSubmit(device_manager.GetGraphicsQueue(), 1, &submitInfo, frame_fences[currentFrame]) != VK_SUCCESS)
+	//因为上面有image_fences[imageIndex] = frame_fences[currentFrame];  所以这时候image_fences[imageIndex]和 frame_fences[currentFrame]会有同样的状态;并且应该同时为unsignaled状态
+
+	//frame_fences[currentFrame]; 这时候image_fences[imageIndex]和 frame_fences[currentFrame]会有同样的状态;并且应该同时为unsignaled状态，那么reset为unsignal状态表示现在我要占用了！
+	 vkResetFences(device_manager.GetLogicalDevice(), 1, &frame_fences->GetOne(currentFrame));        //To set the state of fences to unsignaled from the host side
+	//vkQueueSubmit:   fence(last parameter is an optional handle to a fence to be signaled once all submitted command buffers have completed execution. If fence is not VK_NULL_HANDLE, it defines a fence signal operation.当command buffer中的命令执行结束以后，也就是GPU渲染完毕以后
+	if (vkQueueSubmit(device_manager.GetGraphicsQueue(), 1, &submit_info, frame_fences->GetOne(currentFrame)) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to submit draw command buffer!");
 	}
@@ -723,7 +754,7 @@ void KTXTextureRenderer::DrawFrame()
 	presentInfo.waitSemaphoreCount = 1;
 	presentInfo.pWaitSemaphores    = signalSemaphores;
 
-	VkSwapchainKHR swapChains[] = {swapchain_manager.GetSwapChain()};
+	const VkSwapchainKHR swapChains[] = {swapchain_manager.GetSwapChain()};
 	presentInfo.pSwapchains     = swapChains;
 	presentInfo.swapchainCount  = 1;
 	presentInfo.pImageIndices   = &imageIndex;
@@ -747,22 +778,25 @@ void KTXTextureRenderer::DrawFrame()
 		throw std::runtime_error("failed to present swap chain image!");
 	}
 	currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+
 }
 
 void KTXTextureRenderer::UpdateUniformBuffer(uint32_t currentImage)
 {
-	ubo.projection = m_pCamera->GetProj();
-	ubo.view       = m_pCamera->GetView();
-	ubo.eyepos     = glm::vec4(m_pCamera->GetPosition(), 1.f);
+	ubo.projection = camera->GetProj();
+	ubo.view       = camera->GetView();
+	ubo.eyepos     = glm::vec4(camera->GetPosition(), 1.f);
 
-	void *data;
-	vkMapMemory(device_manager->GetLogicalDeviceRef(), uniform_buffers[currentImage].memory, 0, sizeof(ubo), 0, &data);
-	memcpy(data, &ubo, sizeof(Ubo_data));
-	vkUnmapMemory(device_manager->GetLogicalDeviceRef(), uniform_buffers[currentImage].memory);
+	uniform_buffers->GetOne(currentImage).MapMemory(0,sizeof(ubo),&ubo,sizeof(Ubo_data));
+	//void *data;
+	//vkMapMemory(device_manager.GetLogicalDevice(), uniform_buffers[currentImage]->memory, 0, sizeof(ubo), 0, &data);
+	//memcpy(data, &ubo, sizeof(Ubo_data));
+	//vkUnmapMemory(device_manager.GetLogicalDevice(), uniform_buffers[currentImage]->memory);
 }
 
 void KTXTextureRenderer::UpdateCamera(float dt)
 {
+	//TODO:用命令模式优化
 	if (keyboard->GetIsKeyDown(GLFW_KEY_W))
 	{
 		camera->Walk(dt * -3.f);
@@ -792,52 +826,58 @@ void KTXTextureRenderer::UpdateCamera(float dt)
 	{
 		camera->MoveForward(dt * 3.0f);
 	}
-	//=====================================================================
 
+
+	//=====================================================================
 	camera->Pitch(dt * mouse->GetPitchDiff());
 	camera->RotateY(-dt * mouse->GetYawDiff());
 }
 
 void KTXTextureRenderer::CompileShaders()
 {
-
-	system("..\\..\\data\\shaderbat\\KTXTextureShaderCompile.bat");
-
-
-
+	system("..\..\data\shaderbat\KTXTextureShaderCompile.bat");
+	//system("..\\..\\data\\shaderbat\\KTXTextureShaderCompile.bat");
 }
 
-
-void KTXTextureRenderer::CreateRenderPass0() const 
+void KTXTextureRenderer::CreateRenderPass0() const
 {
 
+
+
 	//swapchain attachment index 0
-	VkAttachmentDescription color_attachment{};
-	color_attachment.format         = swapchain_manager.GetSwapChainImageFormat();
-	color_attachment.samples        = VK_SAMPLE_COUNT_1_BIT;
-	color_attachment.loadOp         = VK_ATTACHMENT_LOAD_OP_CLEAR;
-	color_attachment.storeOp        = VK_ATTACHMENT_STORE_OP_STORE;
-	color_attachment.stencilLoadOp  = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-	color_attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-	color_attachment.initialLayout  = VK_IMAGE_LAYOUT_UNDEFINED;
-	color_attachment.finalLayout    = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+	VkAttachmentInfo color_attachment{swapchain_manager.GetSwapChainImages()};
+	auto &           attachment_dec_color = color_attachment.attachment_description;
+	attachment_dec_color.format           = swapchain_manager.GetSwapChainImageFormat();
+	attachment_dec_color.samples          = VK_SAMPLE_COUNT_1_BIT;
+	attachment_dec_color.loadOp           = VK_ATTACHMENT_LOAD_OP_CLEAR;
+	attachment_dec_color.storeOp          = VK_ATTACHMENT_STORE_OP_STORE;
+	attachment_dec_color.stencilLoadOp    = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+	attachment_dec_color.stencilStoreOp   = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	attachment_dec_color.initialLayout    = VK_IMAGE_LAYOUT_UNDEFINED;
+	attachment_dec_color.finalLayout      = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+	color_attachment.attachment_index     = 0;
 
 	//Depth attachment index 1
-	VkAttachmentDescription depth_attachment{};
-	depth_attachment.format         = swapchain_manager.FindDepthFormat(device_manager);
-	depth_attachment.samples        = VK_SAMPLE_COUNT_1_BIT;
-	depth_attachment.loadOp         = VK_ATTACHMENT_LOAD_OP_CLEAR;
-	depth_attachment.storeOp        = VK_ATTACHMENT_STORE_OP_STORE;
-	depth_attachment.stencilLoadOp  = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-	depth_attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-	depth_attachment.initialLayout  = VK_IMAGE_LAYOUT_UNDEFINED;        //VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL?
-	depth_attachment.finalLayout    = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+	VkAttachmentInfo depth_attachment_temp{depth_attachments->GetImages()};
+	auto &           attachment_dec_depth  = depth_attachment_temp.attachment_description;
+	attachment_dec_depth.format            = swapchain_manager.FindDepthFormat();
+	attachment_dec_depth.samples           = VK_SAMPLE_COUNT_1_BIT;
+	attachment_dec_depth.loadOp            = VK_ATTACHMENT_LOAD_OP_CLEAR;
+	attachment_dec_depth.storeOp           = VK_ATTACHMENT_STORE_OP_STORE;
+	attachment_dec_depth.stencilLoadOp     = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+	attachment_dec_depth.stencilStoreOp    = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	attachment_dec_depth.initialLayout     = VK_IMAGE_LAYOUT_UNDEFINED;        //VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL?
+	attachment_dec_depth.finalLayout       = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+	depth_attachment_temp.attachment_index = 1;
 
-	std::vector<VkAttachmentDescription> attachments = {color_attachment, depth_attachment};
+
+
+	//TODO:COPY CONTROL
+	const std::vector<VkAttachmentInfo> attachments{color_attachment, depth_attachment_temp};
 
 	//-------------------------------------------------------------------------------------
 
-	std::vector<VkSubpassDependency> dependencies{};
+	const std::vector<VkSubpassDependency> dependencies{};
 
 	//dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
 	//dependencies[0].dstSubpass = 0;
@@ -878,16 +918,23 @@ void KTXTextureRenderer::CreateRenderPass0() const
 	//The index of the attachment ref followed is directly referenced from the fragment shader with the
 	//layout(location = 0) out vec4 outColor directive!
 
-	VkSubpassWrapper pass0_subpass0{device_manager,render_pass_manager->GetDescriptorManager(),0,0};
-	pass0_subpass0.color_attachments_ref = std::vector<VkSubpassWrapper::AttachmentRefMetaInfo>{
-	    VkSubpassWrapper::AttachmentRefMetaInfo{
-	        .name{"color_attachment_ref"}, .slot = 0, .layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL},
-	};
-	pass0_subpass0.depth_attachments_ref = std::vector<VkSubpassWrapper::AttachmentRefMetaInfo>{
-	    VkSubpassWrapper::AttachmentRefMetaInfo{
-	        .name{"depth_attachment_ref_for_write"}, .slot = 1, .layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL}};
+	const auto& subpass_factory = render_pass_manager->GetSubPassFactory();
 
-	std::vector<VkSubpassWrapper> subpasses = {pass0_subpass0};
+
+	
+	const std::shared_ptr<VkSubpassWrapper> pass0_subpass0 = subpass_factory.CreateSubpass(0, 0);
+
+	pass0_subpass0->color_attachments_ref = std::vector<VkSubpassWrapper::AttachmentRefMetaInfo>{
+	    VkSubpassWrapper::AttachmentRefMetaInfo{
+	        .name{"color_attachment_ref"}, .slot_to_attch = 0, .layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL},
+	};
+	pass0_subpass0->depth_attachments_ref = std::vector<VkSubpassWrapper::AttachmentRefMetaInfo>{
+	    VkSubpassWrapper::AttachmentRefMetaInfo{
+	        .name{"depth_attachment_ref"}, .slot_to_attch = 1, .layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL}};
+
+	const std::vector<std::shared_ptr<VkSubpassWrapper>> subpasses = {pass0_subpass0};
+
+
 	render_pass_manager->AddRenderPass(std::string("pass0"), 0, attachments, dependencies, subpasses);
 
 
@@ -897,7 +944,9 @@ void KTXTextureRenderer::CreateRenderPass0() const
 void KTXTextureRenderer::CreateCamera()
 {
 	camera = std::make_unique<FirstPersonCamera>();
+
 	camera->SetFrustum(glm::radians(60.f), swapchain_manager.GetSwapChainImageExtent().width / (float) swapchain_manager.GetSwapChainImageExtent().height, 0.1f, 256.f);
+
 	camera->LookAt(glm::vec3(0.f, 0.f, 0.f), glm::vec3(0.f, 0.f, -1.f), glm::vec3(0., 1., 0.));
 
 	//VkViewport       viewport{};
@@ -912,67 +961,5 @@ void KTXTextureRenderer::CreateCamera()
 	//camera->SetViewPort(viewport);
 
 
-
 }
 
-void KTXTextureRenderer::CleanUpModels()
-{
-	quad_model->CleanUp();
-}
-
-void KTXTextureRenderer::CleanUpDescriptorSetLayoutAndDescriptorPool()
-{
-	vkDestroyDescriptorSetLayout(device_manager->GetLogicalDeviceRef(), descriptor_set_layout_write_subpass0, nullptr);
-	vkDestroyDescriptorPool(device_manager->GetLogicalDeviceRef(), descriptor_pool, nullptr);
-}
-
-void KTXTextureRenderer::CleanUpCommandBuffersAndCommandPool()
-{
-	vkFreeCommandBuffers(device_manager->GetLogicalDeviceRef(), graphics_command_pool, static_cast<uint32_t>(graphics_command_buffers.size()), graphics_command_buffers.data());
-	vkFreeCommandBuffers(device_manager->GetLogicalDeviceRef(), transfer_command_pool, 1, &transfer_command_buffer);
-
-	vkDestroyCommandPool(device_manager->GetLogicalDeviceRef(), graphics_command_pool, nullptr);
-	vkDestroyCommandPool(device_manager->GetLogicalDeviceRef(), transfer_command_pool, nullptr);
-}
-
-void KTXTextureRenderer::CleanUpSyncObjects()
-{
-	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-	{
-		vkDestroySemaphore(device_manager->GetLogicalDeviceRef(), render_finished_semaphores[i], nullptr);
-		vkDestroySemaphore(device_manager->GetLogicalDeviceRef(), image_available_semaphores[i], nullptr);
-		vkDestroyFence(device_manager->GetLogicalDeviceRef(), frame_fences[i], nullptr);
-	}
-}
-
-void KTXTextureRenderer::CleanupFrameBuffers()
-{
-	for (auto framebuffer : frame_buffers)
-	{
-		vkDestroyFramebuffer(device_manager->GetLogicalDeviceRef(), framebuffer, nullptr);
-	}
-}
-
-void KTXTextureRenderer::CleanUpPipelineAndPipelineLayout()
-{
-	vkDestroyPipeline(device_manager->GetLogicalDeviceRef(), graphics_pipeline_subpass0, nullptr);
-	vkDestroyPipelineLayout(device_manager->GetLogicalDeviceRef(), pipeline_layout_subpass0, nullptr);
-}
-
-void KTXTextureRenderer::CleanUpRenderPass()
-{
-	vkDestroyRenderPass(device_manager->GetLogicalDeviceRef(), render_pass, nullptr);
-}
-
-void KTXTextureRenderer::CleanUpImages()
-{
-	for (auto &var : depth_attachment)
-	{
-		var.CleanUp();
-	}
-	ktx_texure.CleanUp();
-}
-
-void KTXTextureRenderer::CleanUpUniformBuffers()
-{
-}

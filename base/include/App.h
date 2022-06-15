@@ -7,11 +7,9 @@
 #include "VkInstanceWrapper.h"
 #include "BaseRenderer.h"
 #include "VkCommandManager.h"
-
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/euler_angles.hpp>
-
 #include <memory>
 
 
@@ -22,14 +20,19 @@ public:
 	App() ;
 	virtual ~App() = default;
 
+
+	App(const App &) = delete;
+	App &operator=(const App&) = delete;
+
+	App(App&&) = delete;
+	App &operator=(App&&) = delete;
+
 	void Run();
-	
-	
 	void Init();
-	void RendererSetUp();
-	void RenderingPreparation();
-	void MainLoop();
-	void CleanUp();
+	//void RendererSetUp();
+	//void RenderingPreparation();
+	void MainLoop() const;
+	//void CleanUp();
 
 
 
@@ -42,12 +45,7 @@ protected:
 	VkDeviceManager device_manager;
 	VkSwapChainManager swap_chain_manager;
 	VkCommandManager    command_manager;
-	
 	std::unique_ptr<BaseRenderer> renderer;
-	
-	
-
-
 
 
 };

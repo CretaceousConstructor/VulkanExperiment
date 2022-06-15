@@ -2,66 +2,64 @@
 #include "EngineMarco.h"
 #include "EngineHeader.h"
 #include "VkDeviceManager.h"
-#include "VkWindows.h"
 #include "VkImageWrapper.h"
+#include "VkWindows.h"
+#include <set>
 #include <vector>
 
 class VkSwapChainManager
 {
-public:
+  public:
+	//The surface has a swapchain.
+	VkSwapChainManager(VkDeviceManager &_device_manager, VkWindows &_window);
+	~VkSwapChainManager();
 
- //The surface has a swapchain.
-	VkSwapChainManager(VkDeviceManager &_device_manager,VkWindows& _window);
-	 ~VkSwapChainManager();
-	void CreateSwapChainAndSwapImages();
-	VkFormat GetSwapChainImageFormat() const;
-	VkExtent3D GetSwapChainImageExtent() const;
-	VkFormat FindDepthFormat(VkDeviceManager& device_manager) const;
+	VkSwapChainManager(const VkSwapChainManager &) = delete;
+	VkSwapChainManager &operator=(const VkSwapChainManager &) = delete;
 
-	uint32_t GetSwapImageCount() const;
+	VkSwapChainManager(VkSwapChainManager &&) = delete;
+	VkSwapChainManager &operator=(VkSwapChainManager &&) = delete;
 
-	 std::vector<VkImageView>& GetSwapImageViews();
-	 
-	 VkSwapchainKHR& GetSwapChain();
+	void                     CreateSwapChainAndSwapImages();
+	[[nodiscard]] VkFormat   GetSwapChainImageFormat() const;
+	[[nodiscard]] VkExtent3D GetSwapChainImageExtent() const;
+	[[nodiscard]] VkFormat   FindDepthFormat() const;
 
-	 //void CleanUp(VkDevice& device);
+	[[nodiscard]] uint32_t GetSwapImageCount() const;
+	//std::vector<VkImageView>& GetSwapImageViews();
+
+	[[nodiscard]] VkSwapchainKHR GetSwapChain() const;
+
+	[[nodiscard]] const std::vector<std::shared_ptr<VkImageBase>> &GetSwapChainImages() const;
+
+  private:
+	//void CleanUp(VkDevice& device);
+
+
+	//struct SwapChainSupportDetails {
+	//	VkSurfaceCapabilitiesKHR capabilities;
+	//	std::vector<VkSurfaceFormatKHR> formats;
+	//	std::vector<VkPresentModeKHR> present_modes;
+	//};
+
+	//static SwapChainSupportDetails QuerySwapChainSupport(const VkPhysicalDevice& physical_device, const VkSurfaceKHR& surface);
+
+	static VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats);
+	static VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes);
+	static VkExtent2D       ChooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities, const VkWindows &window);
+
+  private:
+	VkSwapchainKHR                               swap_chain;
 
 
 private:
-	struct SwapChainSupportDetails {
-		VkSurfaceCapabilitiesKHR capabilities;
-		std::vector<VkSurfaceFormatKHR> formats;
-		std::vector<VkPresentModeKHR> present_modes;
-	};
-
-	static SwapChainSupportDetails QuerySwapChainSupport(const VkPhysicalDevice& physical_device, VkSurfaceKHR& surface);
-
-	static VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);
-
-	static VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
-
-
-	static VkExtent2D ChooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities, VkWindows& window);
-
-
-
-
-private:
-
-	VkSwapchainKHR swap_chain;
-	uint32_t image_count;
+	std::vector<std::shared_ptr<VkImageBase>> swap_chain_images;
+	uint32_t   image_count;
 	VkExtent2D swap_chain_extent;
+	VkFormat   swap_chain_image_format;
+	VkFormat   swap_chain_image_view_format;
 
-	VkFormat swap_chain_image_format;
-
-
-
-	std::vector<VkImageWrapper>           swap_chain_imagess;
-
-	std::vector<VkImage> swap_chain_images;  //3
-	std::vector<VkImageView> swap_chain_image_views;  //3
-
-
+	private:
 	VkDeviceManager &device_manager;
 	VkWindows &      window;
 
@@ -69,5 +67,6 @@ private:
 
 
 
-};
 
+
+};
