@@ -585,8 +585,8 @@ void SceneLoadingRenderer::CreateGraphicsPipeline()
 {
 	system("..\\..\\data\\shaderbat\\SceneLoadingCompile.bat");
 
-	ShaderManager vertex_shader(std::string("../../data/shaders/SceneLoading/SceneLoading_vertex_shader.spv"), std::string("main"), VK_SHADER_STAGE_VERTEX_BIT, device_manager->GetLogicalDeviceRef());
-	ShaderManager fragment_shader(std::string("../../data/shaders/SceneLoading/SceneLoading_fragment_shader.spv"), std::string("main"), VK_SHADER_STAGE_FRAGMENT_BIT, device_manager->GetLogicalDeviceRef());
+	ShaderWrapper vertex_shader(std::string("../../data/shaders/SceneLoading/SceneLoading_vertex_shader.spv"), std::string("main"), VK_SHADER_STAGE_VERTEX_BIT, device_manager->GetLogicalDeviceRef());
+	ShaderWrapper fragment_shader(std::string("../../data/shaders/SceneLoading/SceneLoading_fragment_shader.spv"), std::string("main"), VK_SHADER_STAGE_FRAGMENT_BIT, device_manager->GetLogicalDeviceRef());
 
 	std::vector<VkPipelineShaderStageCreateInfo> shader_stages_create_info = {vertex_shader.GetVkPipelineShaderStageCreateInfo(), fragment_shader.GetVkPipelineShaderStageCreateInfo()};
 
@@ -954,8 +954,8 @@ void SceneLoadingRenderer::CleanUpUniformBuffers()
 
 void SceneLoadingRenderer::CreateLightIndicatorPipeline()
 {
-	ShaderManager vertex_shader(std::string("../../data/shaders/SceneLoading/LightIndicator_vertex_shader.spv"), std::string("main"), VK_SHADER_STAGE_VERTEX_BIT, device_manager->GetLogicalDeviceRef());
-	ShaderManager fragment_shader(std::string("../../data/shaders/SceneLoading/LightIndicator_fragment_shader.spv"), std::string("main"), VK_SHADER_STAGE_FRAGMENT_BIT, device_manager->GetLogicalDeviceRef());
+	ShaderWrapper vertex_shader(std::string("../../data/shaders/SceneLoading/LightIndicator_vertex_shader.spv"), std::string("main"), VK_SHADER_STAGE_VERTEX_BIT, device_manager->GetLogicalDeviceRef());
+	ShaderWrapper fragment_shader(std::string("../../data/shaders/SceneLoading/LightIndicator_fragment_shader.spv"), std::string("main"), VK_SHADER_STAGE_FRAGMENT_BIT, device_manager->GetLogicalDeviceRef());
 
 	std::vector<VkPipelineShaderStageCreateInfo> shader_stages_create_info = {vertex_shader.GetVkPipelineShaderStageCreateInfo(), fragment_shader.GetVkPipelineShaderStageCreateInfo()};
 

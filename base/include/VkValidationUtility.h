@@ -5,18 +5,20 @@
 #include <array>
 #include <fstream>
 #include <iostream>
-#include <stdint.h>
+#include <cstdint>
 #include <vector>
 
 namespace VkValidationUtility
 {
 constexpr bool VALIDATION_LAYERS_ENABLED = true;
 
-VkDebugUtilsMessengerEXT debug_messenger;
+inline VkDebugUtilsMessengerEXT debug_messenger;
 
 bool CheckIfRequiredInstanceLayersSupported();
 
-void     PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT &createInfo);
+void     PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT &create_info);
+
+
 VkResult CreateDebugUtilsMessengerEXT(const VkInstance &instance, const VkDebugUtilsMessengerCreateInfoEXT *pCreateInfo, const VkAllocationCallbacks *pAllocator, VkDebugUtilsMessengerEXT *pDebugMessenger);
 
 void SetupDebugMessenger(const VkInstance &instance);

@@ -9,14 +9,26 @@ VkPipelineWrapper::VkPipelineWrapper(VkDeviceManager &_device_manager)
 }
 
 
-void VkPipelineWrapper::AddShaders(std::vector<ShaderManager::ShaderInfo> shader_infos)
+void VkPipelineWrapper::AddShaders(const ShaderWrapper::ShaderInfo& shader_info)
 {
-
-	for (const auto& info: shader_infos)
-	{
-		shaders.emplace_back(device_manager, info.name, info.shader_binding_stage);
-		shader_stages_create_info.push_back(shaders.back().GetVkPipelineShaderStageCreateInfo());
-	}
+	shaders.emplace_back(device_manager, shader_info.name, shader_info.shader_binding_stage);
 		
+}
+
+std::vector<VkPipelineShaderStageCreateInfo> VkPipelineWrapper::GetShaderStageCIVec() const
+{
+	std::vector<VkPipelineShaderStageCreateInfo> result;
+	for (const auto& shader :shaders )
+	{
+		result.push_back(shader.GetVkPipelineShaderStageCreateInfo());
+
+	}
+	return result;
+
+}
+
+VkPipeline VkPipelineWrapper::GetPipeline() const
+{
+	return pipeline;
 }
 

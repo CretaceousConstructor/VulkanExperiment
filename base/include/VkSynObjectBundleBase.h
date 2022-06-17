@@ -5,10 +5,8 @@ class VkSynObjectBundleBase
 {
 
   public:
-	VkSynObjectBundleBase(uint8_t _bundle_size) :
-	    bundle_size(_bundle_size)
-	{
-	}
+	VkSynObjectBundleBase(uint8_t _bundle_size);
+
 
   protected:
 	uint8_t bundle_size;

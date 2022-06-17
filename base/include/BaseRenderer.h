@@ -1,7 +1,7 @@
 #pragma once
 #include "EngineMarco.h"
 #include "EngineHeader.h"
-#include "ShaderManager.h"
+#include "ShaderWrapper.h"
 #include "VkCommandManager.h"
 #include "VkDeviceManager.h"
 #include "VkImageWrapper.h"
@@ -37,20 +37,10 @@ class BaseRenderer
 	BaseRenderer(BaseRenderer &&) = delete;
 	BaseRenderer &operator=(BaseRenderer &&) = delete;
 
-	//void         SetDeviceManager(VkDeviceManager &para_device_manager);
-	//void         SetSwapChinManager(VkSwapChainManager &para_swapchain_manager);
-	//void         SetCommandManager(VkCommandManager &_commandman);
-	//void         SetWindow(VkWindows &para_window);
-	//void         SetGraphicsCommandPool(VkCommandPool commandpool);
-	//void         SetTransforCommandPool(VkCommandPool commandpool);
 
   protected:
 	virtual void SetUpUserInput() = 0;
 	virtual void CreateCamera()                             = 0;
-
-
-	virtual void InitCommandBuffers()     = 0;
-
 
 	virtual void CreateAttachmentImages() = 0;
 	virtual void CreateTextureImages()    = 0;
@@ -59,7 +49,6 @@ class BaseRenderer
 	virtual void CreateRenderPass() = 0;
 
 	virtual void CreateUniformBuffer() = 0;
-	virtual void CreateFrameBuffers()  = 0;
 
 	virtual void CreateDescriptorSetLayout() = 0;
 	virtual void CreateDescriptorPool()      = 0;
@@ -81,20 +70,8 @@ class BaseRenderer
 	virtual void UpdateCamera(float dt) = 0;
 
   public:
-	//BaseRenderer *GetThisPtr();
-
 	void RenderingPreparation();
-
-  public:
-	//virtual void CleanUpModels()                               = 0;
-	//virtual void CleanUpDescriptorSetLayoutAndDescriptorPool() = 0;
-	//virtual void CleanUpCommandBuffersAndCommandPool()         = 0;
-	//virtual void CleanUpSyncObjects()                          = 0;
-	//virtual void CleanupFrameBuffers()                         = 0;
-	//virtual void CleanUpPipelineAndPipelineLayout()            = 0;
-	//virtual void CleanUpRenderPass()                           = 0;
-	//virtual void CleanUpImages()                               = 0;
-	//virtual void CleanUpUniformBuffers()                       = 0;
+	//BaseRenderer *GetThisPtr();
 
   protected:
 	//MANAGERS

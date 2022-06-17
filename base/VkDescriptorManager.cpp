@@ -116,7 +116,7 @@ void VkDescriptorManager::AddDescriptorSetBundle(const DescriptorMetaInfo pool_m
 	descriptor_sets.emplace(bundle_set_meta_info, std::move(descriptor_set_bundle));
 }
 
-void VkDescriptorManager::UpdateDescriptorSet(std::vector<VkWriteDescriptorSet> write_descriptor_sets, const DescriptorMetaInfo set_meta_info, size_t frame_inflight) const
+void VkDescriptorManager::UpdateDescriptorSet(std::vector<VkWriteDescriptorSet> write_descriptor_sets, const DescriptorMetaInfo set_meta_info, size_t frame_inflight) 
 {
 	if (!descriptor_sets.contains(set_meta_info))
 	{
@@ -132,6 +132,13 @@ void VkDescriptorManager::UpdateDescriptorSet(std::vector<VkWriteDescriptorSet> 
 	}
 
 	vkUpdateDescriptorSets(device_manager.GetLogicalDevice(), static_cast<uint32_t>(write_descriptor_sets.size()), write_descriptor_sets.data(), 0, nullptr);
+}
+
+const std::vector<VkDescriptorSet> & VkDescriptorManager::GetDescriptorSetBundle(DescriptorMetaInfo meta_info)
+{
+
+	return descriptor_sets[meta_info];
+
 }
 
 const VkDescriptorPool &VkDescriptorManager::GetPool(const DescriptorMetaInfo pool_meta_info)

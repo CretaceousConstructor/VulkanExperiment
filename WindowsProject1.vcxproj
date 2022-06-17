@@ -30,6 +30,7 @@
     <ClCompile Include="base\Camera.cpp" />
     <ClCompile Include="base\VkFenceBundle.cpp" />
     <ClCompile Include="base\VkImageBase.cpp" />
+    <ClCompile Include="base\VkModelFactory.cpp" />
     <ClCompile Include="base\VkSemaphoreBundle.cpp" />
     <ClCompile Include="base\VkSubpassFactory.cpp" />
     <ClCompile Include="base\VkSynObjectBundleBase.cpp" />
@@ -49,7 +50,7 @@
     <ClCompile Include="base\KeyBoardInputManager.cpp" />
     <ClCompile Include="base\ModelLoader.cpp" />
     <ClCompile Include="base\MouseInputManager.cpp" />
-    <ClCompile Include="base\ShaderManager.cpp" />
+    <ClCompile Include="base\ShaderWrapper.cpp" />
     <ClCompile Include="base\Transform.cpp" />
     <ClCompile Include="base\VkCommandManager.cpp" />
     <ClCompile Include="base\VkDescriptorManager.cpp" />
@@ -58,7 +59,6 @@
     <ClCompile Include="base\VkSwapchainImageWrapper.cpp" />
     <ClCompile Include="base\VkImageWrapper.cpp" />
     <ClCompile Include="base\VkImgui.cpp" />
-    <ClCompile Include="base\VkInitializer.cpp" />
     <ClCompile Include="base\VkInstanceWrapper.cpp" />
     <ClCompile Include="base\VkMemoryManager.cpp" />
     <ClCompile Include="base\VkBufferWrapper.cpp" />
@@ -97,9 +97,10 @@
     <ClInclude Include="base\include\KeyBoardInputManager.h" />
     <ClInclude Include="base\include\ModelLoader.h" />
     <ClInclude Include="base\include\MouseInputManager.h" />
-    <ClInclude Include="base\include\ShaderManager.h" />
+    <ClInclude Include="base\include\ShaderWrapper.h" />
     <ClInclude Include="base\include\VkFenceBundle.h" />
     <ClInclude Include="base\include\VkImageBase.h" />
+    <ClInclude Include="base\include\VkModelFactory.h" />
     <ClInclude Include="base\include\VkSemaphoreBundle.h" />
     <ClInclude Include="base\include\VkSubpassFactory.h" />
     <ClInclude Include="base\include\VkSynObjectBundleBase.h" />
@@ -115,7 +116,6 @@
     <ClInclude Include="base\include\VkSwapChainImageWrapper.h" />
     <ClInclude Include="base\include\VkImageWrapper.h" />
     <ClInclude Include="base\include\VkImgui.h" />
-    <ClInclude Include="base\include\VkInitializer.h" />
     <ClInclude Include="base\include\VkInstanceWrapper.h" />
     <ClInclude Include="base\include\VkMemoryManager.h" />
     <ClInclude Include="base\include\VkMetaInfo.h" />

@@ -10,27 +10,41 @@ class VkPipelineBuilder
 {
   public:
 	VkPipelineBuilder(VkDeviceManager &_device_manager, VkSwapChainManager &_swapchain_manager);
+	~VkPipelineBuilder() = default;
 
-	virtual ~VkPipelineBuilder();
+
+	VkPipelineBuilder() = delete;
+	VkPipelineBuilder(const VkPipelineBuilder &) = delete;
+	VkPipelineBuilder &operator=(const VkPipelineBuilder &) = delete;
+	VkPipelineBuilder(VkPipelineBuilder &&) = delete;
+	VkPipelineBuilder &operator=(VkPipelineBuilder &&) = delete;
+
+
+
+
+
+
+
+
 
 	std::shared_ptr<VkPipelineWrapper> pipeline;
 
   public:
-	virtual void BuildShader();
-	virtual void BuildVertexInputStateCI();
-	virtual void BuildInputAssemblyStateCI();
-	virtual void BuildViewPortStateCI();
+	virtual void BuildShader(const std::vector<ShaderWrapper::ShaderInfo> shader_infos);
+	//virtual void BuildVertexInputStateCI();
+	//virtual void BuildInputAssemblyStateCI();
+	//virtual void BuildViewPortStateCI();
 
-	virtual void BuildRasterizationStateCI();
-	virtual void BuildMultisampleStateCI();
+	//virtual void BuildRasterizationStateCI();
+	//virtual void BuildMultisampleStateCI();
 
-	virtual void BuildColorBlendStateCI();
-	virtual void BuildDynamicStateCI();
-	virtual void BuildDepthStencilStateCI();
+	//virtual void BuildColorBlendStateCI();
+	//virtual void BuildDynamicStateCI();
+	//virtual void BuildDepthStencilStateCI();
 
-	virtual void BuildPipeline(DescriptorMetaInfo pipeline_meta_info,VkRenderpassWrapper& renderpass);
+	void BuildPipeline(PipelineMetaInfo pipeline_meta_info,VkRenderpassWrapper& renderpass);
 
-	std::shared_ptr<VkPipelineWrapper> GetPipline(DescriptorMetaInfo pipeline_meta_info,VkRenderpassWrapper& renderpass);
+	std::shared_ptr<VkPipelineWrapper> GetPipline(PipelineMetaInfo pipeline_meta_info,VkRenderpassWrapper& renderpass,const std::vector<ShaderWrapper::ShaderInfo> shader_infos);
 
   private:
 	VkDeviceManager &   device_manager;
@@ -56,9 +70,6 @@ class VkPipelineBuilder
 	VkPipelineColorBlendStateCreateInfo    color_blend_state_CI{};
 
 	VkGraphicsPipelineCreateInfo pipeline_create_CI{};
-
-	std::vector<ShaderManager>                   shaders;
-	std::vector<VkPipelineShaderStageCreateInfo> shader_stages_CI;
 
 
 

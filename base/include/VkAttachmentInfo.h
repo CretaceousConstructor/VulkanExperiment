@@ -2,7 +2,9 @@
 
 #include "EngineMarco.h"
 #include "EngineHeader.h"
-#include "VkImageWrapper.h"
+#include "VkImageBase.h"
+#include <vector>
+#include <memory>
 
 
 

@@ -78,8 +78,8 @@ public:
 
 
   private:
-	void CreateRenderPass0() const;
-	void CreatePipelineRenderPass0Subpass0() const;
+	void CreateRenderPass0() ;
+	void CreatePipelineRenderPass0Subpass0() ;
 
 
   private:
@@ -130,14 +130,9 @@ public:
 
   private:
 	//RENDERPASS MAN
-	std::unique_ptr<VkRenderpassManager> render_pass_manager;
+	VkRenderpassManager render_pass_manager;
 
 	std::unique_ptr<VkImageBuilder>      depth_image_builder;
-
-
-	std::unique_ptr<VkUniformBufferFactory> ubuffer_factory;
-	std::unique_ptr<VkTextureFactory>       texture_factory;
-	std::unique_ptr<VkSynObjectFactory>       syn_obj_factory;
 
 
 	//UNIFORM BUFFER

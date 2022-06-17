@@ -1,6 +1,6 @@
-#include "ShaderManager.h"
+#include "ShaderWrapper.h"
 
-ShaderManager::ShaderManager(VkDeviceManager &_device_manager, std::string para_shader_file_name, VkShaderStageFlagBits para_shader_binding_stage) :
+ShaderWrapper::ShaderWrapper(VkDeviceManager &_device_manager, std::string para_shader_file_name, VkShaderStageFlagBits para_shader_binding_stage) :
     device_manager(_device_manager),
     shader_file_name(para_shader_file_name),
     shader_binding_stage(para_shader_binding_stage)
@@ -9,8 +9,6 @@ ShaderManager::ShaderManager(VkDeviceManager &_device_manager, std::string para_
 
 	auto vertShaderCode             = ReadFile(shader_file_name);
 	shader_module                   = CreateShaderModule(vertShaderCode);
-
-
 
 	shader_stage_create_info        = VkPipelineShaderStageCreateInfo{};
 	shader_stage_create_info.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -25,21 +23,21 @@ ShaderManager::ShaderManager(VkDeviceManager &_device_manager, std::string para_
 
 
 
-ShaderManager::~ShaderManager()
+ShaderWrapper::~ShaderWrapper()
 {
 
 
-	vkDestroyShaderModule(device_manager.GetLogicalDeviceRef(), shader_module, nullptr);
+	vkDestroyShaderModule(device_manager.GetLogicalDevice(), shader_module, nullptr);
 
 
 }
 
-VkPipelineShaderStageCreateInfo ShaderManager::GetVkPipelineShaderStageCreateInfo() const
+VkPipelineShaderStageCreateInfo ShaderWrapper::GetVkPipelineShaderStageCreateInfo() const
 {
 	return shader_stage_create_info;
 }
 
-std::vector<char> ShaderManager::ReadFile(const std::string &filename)
+std::vector<char> ShaderWrapper::ReadFile(const std::string &filename)
 {
 	std::ifstream file(filename, std::ios::ate | std::ios::binary);
 
@@ -48,7 +46,7 @@ std::vector<char> ShaderManager::ReadFile(const std::string &filename)
 		throw std::runtime_error("failed to open file!");
 	}
 
-	size_t            fileSize = (size_t) file.tellg();
+	const size_t            fileSize = (size_t) file.tellg();
 	std::vector<char> buffer(fileSize);
 
 	file.seekg(0);
@@ -58,7 +56,7 @@ std::vector<char> ShaderManager::ReadFile(const std::string &filename)
 	return buffer;
 }
 
-VkShaderModule ShaderManager::CreateShaderModule(std::vector<char> &code)
+VkShaderModule ShaderWrapper::CreateShaderModule(std::vector<char> &code) const
 {
 	//typedef struct VkShaderModuleCreateInfo {
 	//	VkStructureType              sType;
@@ -76,7 +74,7 @@ VkShaderModule ShaderManager::CreateShaderModule(std::vector<char> &code)
 	//Lucky for us, the data is stored in an std::vector where the default allocator already ensures that the data satisfies the worst case ALIGNMENT requirements.
 
 	VkShaderModule shaderModule;
-	if (vkCreateShaderModule(device_manager.GetLogicalDeviceRef(), &createInfo, nullptr, &shaderModule) != VK_SUCCESS)
+	if (vkCreateShaderModule(device_manager.GetLogicalDevice(), &createInfo, nullptr, &shaderModule) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to create shader module!");
 	}

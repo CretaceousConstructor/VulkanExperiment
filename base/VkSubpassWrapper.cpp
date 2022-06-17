@@ -36,6 +36,12 @@ VkSubpassWrapper::VkSubpassWrapper(VkDeviceManager& _device_manager,VkDescriptor
 //	//vkDestroyPipelineLayout()
 //}
 
+VkPipelineLayout VkSubpassWrapper::GetPipelineLayout()const 
+{
+    return pipeline_layout;
+}
+
+
 VkSubpassDescription &VkSubpassWrapper::GetSubpassDescription()
 {
 	return subpass_description;
@@ -46,14 +52,20 @@ VkPipelineBindPoint &VkSubpassWrapper::GetBindPoint()
 	return bind_point;
 }
 
-uint8_t VkSubpassWrapper::GetSubpassNum()
+uint8_t VkSubpassWrapper::GetSubpassNum() const 
 {
 	return subpass_num;
 }
 
-uint8_t VkSubpassWrapper::GetRenderpassNum()
+uint8_t VkSubpassWrapper::GetRenderpassNum() const 
 {
 	return renderpass_num;
+}
+
+VkPipeline VkSubpassWrapper::GetPipeline() const
+{
+	return pipeline->GetPipeline();
+
 }
 
 void VkSubpassWrapper::SetPipeline(std::shared_ptr<VkPipelineWrapper> _pipeline)
@@ -62,4 +74,23 @@ void VkSubpassWrapper::SetPipeline(std::shared_ptr<VkPipelineWrapper> _pipeline)
 	pipeline = _pipeline;
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

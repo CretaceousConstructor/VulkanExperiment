@@ -9,46 +9,14 @@
 #include "VkUniformBuffer.h"
 #include "VkWindows.h"
 #include "VkMetaInfo.h"
+#include "VkUniformBufferBundle.h"
+
 #include <glm/gtx/hash.hpp>
 #include <unordered_map>
 #include <utility>
 #include <vector>
 #include <xhash>
 
-//class DescMetaInfo
-//{
-//public:
-//	//DescMetaInfo(
-//	//    uint8_t _pass,
-//	//    uint8_t _subpass,
-//	//    uint8_t _set
-//	//);
-//	uint8_t pass;
-//	uint8_t subpass;
-//	uint8_t set;
-//
-//	bool operator==(const DescMetaInfo &other) const
-//	{
-//		return (pass == other.pass && subpass == other.subpass && set == other.set);
-//	}
-//
-//
-//};
-//
-//namespace std
-//{
-//	template <>
-//	struct hash<DescMetaInfo>
-//	{
-//		size_t operator()(const DescMetaInfo  &info) const noexcept
-//		{
-//			return ((hash<glm::uint8_t>()(info.pass) ^
-//					 (hash<glm::uint8_t>()(info.subpass) << 1)) >>
-//					0) ^
-//				   (hash<glm::uint8_t>()(info.set) << 1);
-//		}
-//	};
-//}
 
 class VkDescriptorManager
 {
@@ -69,16 +37,30 @@ class VkDescriptorManager
 	void AddDescriptorSetLayout(const DescriptorMetaInfo set_layout_meta_info, std::vector<VkDescriptorSetLayoutBinding> LayoutBindings);
 	void AddDescriptorSetBundle(const DescriptorMetaInfo pool_meta_info, const DescriptorMetaInfo set_layout_meta_info, size_t num_in_flight);
 
-	void UpdateDescriptorSet(std::vector<VkWriteDescriptorSet> write_descriptor_sets, const DescriptorMetaInfo set_meta_info, size_t frame_inflight) const;
+	void UpdateDescriptorSet(std::vector<VkWriteDescriptorSet> write_descriptor_sets, const DescriptorMetaInfo set_meta_info, size_t frame_inflight) ;
+
+
+
+
+
+
+	const std::vector<VkDescriptorSet>& GetDescriptorSetBundle(DescriptorMetaInfo meta_info);
+
+
 
 	template <class Resource>
 	void UpdateDescriptorSet(Resource &resource, const DescriptorMetaInfo set_meta_info, uint32_t dstbinding, uint32_t dstArrayElement);
+
+
 
 	const VkDescriptorPool &     GetPool(const DescriptorMetaInfo pool_meta_info);
 	const VkDescriptorSetLayout &GetSetLayout(const DescriptorMetaInfo set_layout_meta_info);
 
 	[[nodiscard]] std::vector<VkDescriptorSetLayout> SearchLayout(const DescriptorMetaInfo set_layout_meta_info) const;
 	[[nodiscard]] std::vector<VkDescriptorSetLayout> SearchLayout(const PipelineMetaInfo set_layout_meta_info) const;
+
+
+
 
   private:
 	VkDeviceManager &device_manager;
@@ -105,7 +87,7 @@ class VkDescriptorManager
 };
 
 template <>
-inline void VkDescriptorManager::UpdateDescriptorSet<UniformBufferBundle>(UniformBufferBundle& resource, const DescriptorMetaInfo set_meta_info, uint32_t dstbinding, uint32_t dstArrayElement)
+inline void VkDescriptorManager::UpdateDescriptorSet<VkUniformBufferBundle>(VkUniformBufferBundle& resource, const DescriptorMetaInfo set_meta_info, uint32_t dstbinding, uint32_t dstArrayElement)
 {
 	if (!descriptor_sets.contains(set_meta_info))
 	{

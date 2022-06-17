@@ -60,14 +60,29 @@
     <Filter Include="Header Files\Temp">
       <UniqueIdentifier>{710f8e70-864f-44ac-ab40-480f912dd544}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\Vk\SynObjects">
-      <UniqueIdentifier>{70086fdb-0c78-4653-8953-78c3d7cda2c5}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\Vk\UniformBuffer">
       <UniqueIdentifier>{4ae0b0e4-f918-421a-87f2-cbb2946fae32}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files\Vk\Image">
       <UniqueIdentifier>{5e429a0f-ecd8-49e1-b89e-0dc9a5735d32}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Vk\Manager">
+      <UniqueIdentifier>{1fa29324-aebf-40f4-875c-e4e74000d785}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Vk\MetaInfo">
+      <UniqueIdentifier>{2c63d6e7-3e17-485f-8f57-8bd79d071f9f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Vk\SynObject">
+      <UniqueIdentifier>{70086fdb-0c78-4653-8953-78c3d7cda2c5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Vk\Renderpass">
+      <UniqueIdentifier>{77ebdef1-73e8-4ecf-9a5c-d43d38d375c9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Vk\SynObject\Subpass">
+      <UniqueIdentifier>{03e2b732-def7-44e6-ab0b-db8695c340ad}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Vk\Pipeline">
+      <UniqueIdentifier>{e9637d47-0acd-40dd-9f81-6c7b04b93e07}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -86,7 +101,7 @@
     <ClCompile Include="base\MouseInputManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="base\ShaderManager.cpp">
+    <ClCompile Include="base\ShaderWrapper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="base\Transform.cpp">
@@ -114,9 +129,6 @@
       <Filter>Source Files\Vk</Filter>
     </ClCompile>
     <ClCompile Include="base\VkImgui.cpp">
-      <Filter>Source Files\Vk</Filter>
-    </ClCompile>
-    <ClCompile Include="base\VkInitializer.cpp">
       <Filter>Source Files\Vk</Filter>
     </ClCompile>
     <ClCompile Include="base\VkInstanceWrapper.cpp">
@@ -242,6 +254,9 @@
     <ClCompile Include="base\VkUniformBufferFactory.cpp">
       <Filter>Source Files\Vk</Filter>
     </ClCompile>
+    <ClCompile Include="base\VkModelFactory.cpp">
+      <Filter>Source Files\Vk</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="base\include\App.h">
@@ -277,17 +292,8 @@
     <ClInclude Include="base\include\FirstPersonCamera.h">
       <Filter>Header Files\Camera</Filter>
     </ClInclude>
-    <ClInclude Include="base\include\ShaderManager.h">
+    <ClInclude Include="base\include\ShaderWrapper.h">
       <Filter>Header Files\Shaders</Filter>
-    </ClInclude>
-    <ClInclude Include="base\include\VkCommandManager.h">
-      <Filter>Header Files\Vk</Filter>
-    </ClInclude>
-    <ClInclude Include="base\include\VkDeviceManager.h">
-      <Filter>Header Files\Vk</Filter>
-    </ClInclude>
-    <ClInclude Include="base\include\VkExtensionManager.h">
-      <Filter>Header Files\Vk</Filter>
     </ClInclude>
     <ClInclude Include="base\include\VkWindows.h">
       <Filter>Header Files\Vk</Filter>
@@ -299,9 +305,6 @@
       <Filter>Header Files\Vk</Filter>
     </ClInclude>
     <ClInclude Include="base\include\VkMemoryManager.h">
-      <Filter>Header Files\Vk</Filter>
-    </ClInclude>
-    <ClInclude Include="base\include\VkInitializer.h">
       <Filter>Header Files\Vk</Filter>
     </ClInclude>
     <ClInclude Include="base\include\GltfModel.h">
@@ -343,27 +346,6 @@
     <ClInclude Include="base\include\VkImgui.h">
       <Filter>Header Files\Vk</Filter>
     </ClInclude>
-    <ClInclude Include="base\include\VkDescriptorManager.h">
-      <Filter>Header Files\Vk</Filter>
-    </ClInclude>
-    <ClInclude Include="base\include\VkPipelineWrapper.h">
-      <Filter>Header Files\Vk</Filter>
-    </ClInclude>
-    <ClInclude Include="base\include\VkRenderpassManager.h">
-      <Filter>Header Files\Vk</Filter>
-    </ClInclude>
-    <ClInclude Include="base\include\VkSubpassWrapper.h">
-      <Filter>Header Files\Vk</Filter>
-    </ClInclude>
-    <ClInclude Include="base\include\VkRenderpassWrapper.h">
-      <Filter>Header Files\Vk</Filter>
-    </ClInclude>
-    <ClInclude Include="base\include\VkPipelineBuilder.h">
-      <Filter>Header Files\Vk</Filter>
-    </ClInclude>
-    <ClInclude Include="base\include\VkPipelineConcreteBuilder.h">
-      <Filter>Header Files\Vk</Filter>
-    </ClInclude>
     <ClInclude Include="base\include\VkImageBuilder.h">
       <Filter>Header Files\Vk\Image</Filter>
     </ClInclude>
@@ -376,23 +358,14 @@
     <ClInclude Include="base\include\VkDepthImageBuilder.h">
       <Filter>Header Files\Vk\Image</Filter>
     </ClInclude>
-    <ClInclude Include="base\include\VkAttachmentInfo.h">
-      <Filter>Header Files\Vk</Filter>
-    </ClInclude>
-    <ClInclude Include="base\include\VkMetaInfo.h">
-      <Filter>Header Files\Vk</Filter>
-    </ClInclude>
     <ClInclude Include="base\include\VkImageBase.h">
       <Filter>Header Files\Vk\Image</Filter>
     </ClInclude>
     <ClInclude Include="base\include\VkSynObjectFactory.h">
-      <Filter>Header Files\Vk\SynObjects</Filter>
+      <Filter>Header Files\Vk\SynObject</Filter>
     </ClInclude>
     <ClInclude Include="base\include\VkSynObjectBundleBase.h">
-      <Filter>Header Files\Vk\SynObjects</Filter>
-    </ClInclude>
-    <ClInclude Include="base\include\VkSubpassFactory.h">
-      <Filter>Header Files\Vk</Filter>
+      <Filter>Header Files\Vk\SynObject</Filter>
     </ClInclude>
     <ClInclude Include="base\include\VkUniformBuffer.h">
       <Filter>Header Files\Vk\UniformBuffer</Filter>
@@ -404,10 +377,52 @@
       <Filter>Header Files\Vk\UniformBuffer</Filter>
     </ClInclude>
     <ClInclude Include="base\include\VkFenceBundle.h">
-      <Filter>Header Files\Vk\SynObjects</Filter>
+      <Filter>Header Files\Vk\SynObject</Filter>
     </ClInclude>
     <ClInclude Include="base\include\VkSemaphoreBundle.h">
-      <Filter>Header Files\Vk\SynObjects</Filter>
+      <Filter>Header Files\Vk\SynObject</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\VkModelFactory.h">
+      <Filter>Header Files\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\VkDeviceManager.h">
+      <Filter>Header Files\Vk\Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\VkExtensionManager.h">
+      <Filter>Header Files\Vk\Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\VkDescriptorManager.h">
+      <Filter>Header Files\Vk\Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\VkCommandManager.h">
+      <Filter>Header Files\Vk\Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\VkAttachmentInfo.h">
+      <Filter>Header Files\Vk\MetaInfo</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\VkMetaInfo.h">
+      <Filter>Header Files\Vk\MetaInfo</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\VkRenderpassWrapper.h">
+      <Filter>Header Files\Vk\Renderpass</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\VkRenderpassManager.h">
+      <Filter>Header Files\Vk\Renderpass</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\VkSubpassFactory.h">
+      <Filter>Header Files\Vk\SynObject\Subpass</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\VkSubpassWrapper.h">
+      <Filter>Header Files\Vk\SynObject\Subpass</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\VkPipelineBuilder.h">
+      <Filter>Header Files\Vk\Pipeline</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\VkPipelineConcreteBuilder.h">
+      <Filter>Header Files\Vk\Pipeline</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\VkPipelineWrapper.h">
+      <Filter>Header Files\Vk\Pipeline</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -21,9 +21,9 @@ class VkModel
 
 	VkModel(std::vector<V> &para_vertex, std::vector<uint32_t> &para_indices,VkDeviceManager &para_device_manager, VkWindows &_window,VkCommandManager& _command_manager);
 
-	void DrawInstance(VkCommandBuffer &graphics_command_buffer);
+	void DrawInstance(const VkCommandBuffer &graphics_command_buffer);
 
-	void Draw(VkCommandBuffer &graphics_command_buffer);
+	void Draw(const VkCommandBuffer &graphics_command_buffer);
 
 	Transform &GetTransform();
 
@@ -109,7 +109,7 @@ VkModel<V, InsType>::VkModel(const std::string model_path, VkDeviceManager &para
 
 		VkBuffer       stagingBuffer;
 		VkDeviceMemory stagingBufferMemory;
-		device_manager.CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory, VK_SHARING_MODE_EXCLUSIVE, window.GetSurface());
+		device_manager.CreateBufferAndBindToMemo(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory, VK_SHARING_MODE_EXCLUSIVE, window.GetSurface());
 
 		void *data;
 		vkMapMemory(device_manager.GetLogicalDevice(), stagingBufferMemory, 0, bufferSize, 0, &data);
@@ -117,7 +117,7 @@ VkModel<V, InsType>::VkModel(const std::string model_path, VkDeviceManager &para
 		vkUnmapMemory(device_manager.GetLogicalDevice(), stagingBufferMemory);
 
 		vertices.count = (uint32_t) para_vertex.size();
-		device_manager.CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertices.buffer, vertices.memory, VK_SHARING_MODE_EXCLUSIVE, window.GetSurface());
+		device_manager.CreateBufferAndBindToMemo(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertices.buffer, vertices.memory, VK_SHARING_MODE_EXCLUSIVE, window.GetSurface());
 
 		device_manager.CopyBuffer(stagingBuffer, vertices.buffer, bufferSize, *command_manager.GetTransferCommandBuffers().begin());
 
@@ -131,7 +131,7 @@ VkModel<V, InsType>::VkModel(const std::string model_path, VkDeviceManager &para
 
 		VkBuffer       stagingBuffer;
 		VkDeviceMemory stagingBufferMemory;
-		device_manager.CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory, VK_SHARING_MODE_EXCLUSIVE, window.GetSurface());
+		device_manager.CreateBufferAndBindToMemo(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory, VK_SHARING_MODE_EXCLUSIVE, window.GetSurface());
 
 		void *data;
 		vkMapMemory(device_manager.GetLogicalDevice(), stagingBufferMemory, 0, bufferSize, 0, &data);
@@ -139,7 +139,7 @@ VkModel<V, InsType>::VkModel(const std::string model_path, VkDeviceManager &para
 		vkUnmapMemory(device_manager.GetLogicalDevice(), stagingBufferMemory);
 
 		indices.count = (uint32_t) para_indices.size();
-		device_manager.CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indices.buffer, indices.memory, VK_SHARING_MODE_EXCLUSIVE, window.GetSurface());
+		device_manager.CreateBufferAndBindToMemo(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indices.buffer, indices.memory, VK_SHARING_MODE_EXCLUSIVE, window.GetSurface());
 		//
 		device_manager.CopyBuffer(stagingBuffer, indices.buffer, bufferSize, *command_manager.GetTransferCommandBuffers().begin());
 
@@ -160,7 +160,7 @@ VkModel<V, InsType>::VkModel(std::vector<V> &para_vertex, std::vector<uint32_t> 
 
 		VkBuffer       stagingBuffer;
 		VkDeviceMemory stagingBufferMemory;
-		device_manager.CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory, VK_SHARING_MODE_EXCLUSIVE, window.GetSurface());
+		device_manager.CreateBufferAndBindToMemo(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory, VK_SHARING_MODE_EXCLUSIVE, window.GetSurface());
 
 		void *data;
 
@@ -169,7 +169,7 @@ VkModel<V, InsType>::VkModel(std::vector<V> &para_vertex, std::vector<uint32_t> 
 		vkUnmapMemory(device_manager.GetLogicalDevice(), stagingBufferMemory);
 
 		vertices.count = (uint32_t) para_vertex.size();
-		device_manager.CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertices.buffer, vertices.memory, VK_SHARING_MODE_EXCLUSIVE, window.GetSurface());
+		device_manager.CreateBufferAndBindToMemo(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertices.buffer, vertices.memory, VK_SHARING_MODE_EXCLUSIVE, window.GetSurface());
 
 		device_manager.CopyBuffer(stagingBuffer, vertices.buffer, bufferSize, *command_manager.GetTransferCommandBuffers().begin());
 
@@ -183,7 +183,7 @@ VkModel<V, InsType>::VkModel(std::vector<V> &para_vertex, std::vector<uint32_t> 
 
 		VkBuffer       stagingBuffer;
 		VkDeviceMemory stagingBufferMemory;
-		device_manager.CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory, VK_SHARING_MODE_EXCLUSIVE, window.GetSurface());
+		device_manager.CreateBufferAndBindToMemo(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory, VK_SHARING_MODE_EXCLUSIVE, window.GetSurface());
 
 		void *data;
 		vkMapMemory(device_manager.GetLogicalDevice(), stagingBufferMemory, 0, bufferSize, 0, &data);
@@ -191,7 +191,7 @@ VkModel<V, InsType>::VkModel(std::vector<V> &para_vertex, std::vector<uint32_t> 
 		vkUnmapMemory(device_manager.GetLogicalDevice(), stagingBufferMemory);
 
 		indices.count = (uint32_t) para_indices.size();
-		device_manager.CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indices.buffer, indices.memory, VK_SHARING_MODE_EXCLUSIVE, window.GetSurface());
+		device_manager.CreateBufferAndBindToMemo(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indices.buffer, indices.memory, VK_SHARING_MODE_EXCLUSIVE, window.GetSurface());
 		//
 		device_manager.CopyBuffer(stagingBuffer, indices.buffer, bufferSize, *command_manager.GetTransferCommandBuffers().begin());
 
@@ -214,7 +214,7 @@ VkModel<V, InsType>::VkModel(std::vector<V> &para_vertex, std::vector<InsType> &
 
 		VkBuffer       stagingBuffer;
 		VkDeviceMemory stagingBufferMemory;
-		device_manager.CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory, VK_SHARING_MODE_EXCLUSIVE, window.GetSurface());
+		device_manager.CreateBufferAndBindToMemo(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory, VK_SHARING_MODE_EXCLUSIVE, window.GetSurface());
 
 		void *data;
 		vkMapMemory(device_manager.GetLogicalDevice(), stagingBufferMemory, 0, bufferSize, 0, &data);
@@ -222,7 +222,7 @@ VkModel<V, InsType>::VkModel(std::vector<V> &para_vertex, std::vector<InsType> &
 		vkUnmapMemory(device_manager.GetLogicalDevice(), stagingBufferMemory);
 
 		vertices.count = (uint32_t) para_vertex.size();
-		device_manager.CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertices.buffer, vertices.memory, VK_SHARING_MODE_EXCLUSIVE, window.GetSurface());
+		device_manager.CreateBufferAndBindToMemo(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertices.buffer, vertices.memory, VK_SHARING_MODE_EXCLUSIVE, window.GetSurface());
 
 		device_manager.CopyBuffer(stagingBuffer, vertices.buffer, bufferSize, *command_manager.GetTransferCommandBuffers().begin());
 
@@ -236,7 +236,7 @@ VkModel<V, InsType>::VkModel(std::vector<V> &para_vertex, std::vector<InsType> &
 
 		VkBuffer       stagingBuffer;
 		VkDeviceMemory stagingBufferMemory;
-		device_manager.CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory, VK_SHARING_MODE_EXCLUSIVE, window.GetSurface());
+		device_manager.CreateBufferAndBindToMemo(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory, VK_SHARING_MODE_EXCLUSIVE, window.GetSurface());
 
 		void *data;
 		vkMapMemory(device_manager.GetLogicalDevice(), stagingBufferMemory, 0, bufferSize, 0, &data);
@@ -244,7 +244,7 @@ VkModel<V, InsType>::VkModel(std::vector<V> &para_vertex, std::vector<InsType> &
 		vkUnmapMemory(device_manager.GetLogicalDevice(), stagingBufferMemory);
 
 		indices.count = (uint32_t) para_indices.size();
-		device_manager.CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indices.buffer, indices.memory, VK_SHARING_MODE_EXCLUSIVE, window.GetSurface());
+		device_manager.CreateBufferAndBindToMemo(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indices.buffer, indices.memory, VK_SHARING_MODE_EXCLUSIVE, window.GetSurface());
 		//
 		device_manager.CopyBuffer(stagingBuffer, indices.buffer, bufferSize, *command_manager.GetTransferCommandBuffers().begin());
 
@@ -255,11 +255,14 @@ VkModel<V, InsType>::VkModel(std::vector<V> &para_vertex, std::vector<InsType> &
 	//instance
 
 	{
+
+
+
 		VkDeviceSize bufferSize = sizeof(InsType) * para_instance_data.size();
 
 		VkBuffer       stagingBuffer;
 		VkDeviceMemory stagingBufferMemory;
-		device_manager.CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory, VK_SHARING_MODE_EXCLUSIVE, window.GetSurface());
+		device_manager.CreateBufferAndBindToMemo(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory, VK_SHARING_MODE_EXCLUSIVE, window.GetSurface());
 
 		void *data;
 		vkMapMemory(device_manager.GetLogicalDevice(), stagingBufferMemory, 0, bufferSize, 0, &data);
@@ -267,7 +270,7 @@ VkModel<V, InsType>::VkModel(std::vector<V> &para_vertex, std::vector<InsType> &
 		vkUnmapMemory(device_manager.GetLogicalDevice(), stagingBufferMemory);
 
 		instance_data.instance_count = (uint32_t) para_instance_data.size();
-		device_manager.CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, instance_data.buffer, instance_data.memory, VK_SHARING_MODE_EXCLUSIVE, window.GetSurface());
+		device_manager.CreateBufferAndBindToMemo(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, instance_data.buffer, instance_data.memory, VK_SHARING_MODE_EXCLUSIVE, window.GetSurface());
 
 		device_manager.CopyBuffer(stagingBuffer, instance_data.buffer, bufferSize, *command_manager.GetTransferCommandBuffers().begin());
 		vkDestroyBuffer(device_manager.GetLogicalDevice(), stagingBuffer, nullptr);
@@ -276,10 +279,10 @@ VkModel<V, InsType>::VkModel(std::vector<V> &para_vertex, std::vector<InsType> &
 }
 
 template <class V, class InsType>
-void VkModel<V, InsType>::DrawInstance(VkCommandBuffer &graphics_command_buffer)
+void VkModel<V, InsType>::DrawInstance(const VkCommandBuffer &graphics_command_buffer)
 {
-	const VkDeviceSize offsets[]       = {0, 0};
-	VkBuffer           vertexBuffers[] = {vertices.buffer, instance_data.buffer};
+	constexpr VkDeviceSize offsets[]       = {0, 0};
+	const VkBuffer           vertexBuffers[] = {vertices.buffer, instance_data.buffer};
 	//bind
 	vkCmdBindVertexBuffers(graphics_command_buffer, 0, 2, vertexBuffers, offsets);
 	vkCmdBindIndexBuffer(graphics_command_buffer, indices.buffer, 0, VK_INDEX_TYPE_UINT32);
@@ -289,7 +292,7 @@ void VkModel<V, InsType>::DrawInstance(VkCommandBuffer &graphics_command_buffer)
 }
 
 template <class V, class InsType>
-void VkModel<V, InsType>::Draw(VkCommandBuffer &graphics_command_buffer)
+void VkModel<V, InsType>::Draw(const VkCommandBuffer &graphics_command_buffer)
 {
 	const VkDeviceSize offsets[]       = {0};
 	VkBuffer           vertexBuffers[] = {vertices.buffer};

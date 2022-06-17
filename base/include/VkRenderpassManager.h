@@ -2,14 +2,18 @@
 
 #include "EngineMarco.h"
 #include "EngineHeader.h"
-#include "ShaderManager.h"
-#include "VkDeviceManager.h"
 #include "VkWindows.h"
+#include "ShaderWrapper.h"
+#include "VkDeviceManager.h"
 #include "VkSwapChainManager.h"
 #include "VkDescriptorManager.h"
 #include "VkRenderpassWrapper.h"
 #include "VkPipelineBuilder.h"
 #include "VkAttachmentInfo.h"
+#include "VkSubpassFactory.h"
+#include "VkSynObjectFactory.h"
+#include "VkUniformBufferFactory.h"
+
 #include <unordered_map>
 
 
@@ -18,7 +22,7 @@ class VkRenderpassManager
 {
 
    public:
-	VkRenderpassManager(VkDeviceManager &_device_manager, VkSwapChainManager &_swapchain_manager);
+	VkRenderpassManager(VkDeviceManager &_device_manager, VkSwapChainManager &_swapchain_manager,VkWindows& _window,VkCommandManager &_command_manager);
 	~VkRenderpassManager();
 
 	VkRenderpassManager(const VkRenderpassManager &) = delete;
@@ -30,15 +34,21 @@ class VkRenderpassManager
 
 	void AddRenderPass(const std::string& name, uint8_t slot, std::vector<VkAttachmentInfo> attachments, std::vector<VkSubpassDependency> dependencies, std::vector<std::shared_ptr<VkSubpassWrapper>> subpasses);
 
-	void AddPipeline(const std::string name,PipelineMetaInfo meta_info);
+	void AddPipeline(const std::string name,PipelineMetaInfo meta_info,const std::vector<ShaderWrapper::ShaderInfo> shader_infos);
 
-
+	VkPipeline GetPipeline(PipelineMetaInfo meta_info);
+	VkPipelineLayout GetPipelineLayout(PipelineMetaInfo meta_info);
 
 	VkRenderpassWrapper &GetRenderpass(uint8_t pass);
-
+	const std::vector<VkDescriptorSet>& GetDescriptorSetBundle(DescriptorMetaInfo meta_info);
   public:
 	VkDescriptorManager &GetDescriptorManager();
 	VkSubPassFacotry    &GetSubPassFactory();
+
+	VkUniformBufferFactory    &GetUniformBufferFactory();
+	VkTextureFactory          &GetTextureFactory();
+	VkSynObjectFactory        &GetSynOjectFactory();
+
 public:
 	VkPipelineBuilder   &GetPipelineBuilder();
 
@@ -46,9 +56,17 @@ public:
 
 
   private:
+
+	VkDeviceManager &    device_manager;
+	VkSwapChainManager&  swapchain_manager;
+	VkWindows &window;
+	VkCommandManager&     command_manager;
+
+
+  private:
 	//第一个uint8表示第几个renderpass
-	std::map<uint8_t, VkRenderpassWrapper> render_passes;
-	std::map<uint8_t, std::string>         render_passes_names;
+	std::unordered_map<uint8_t, VkRenderpassWrapper> render_passes;
+	std::unordered_map<uint8_t, std::string>         render_passes_names;
 
   private:
 	//DESCRIPTOR MAN(layouts and pools and sets)
@@ -58,9 +76,10 @@ public:
 
 	VkSubPassFacotry subpass_factory;
 
-  private:
-	VkDeviceManager &    device_manager;
-	VkSwapChainManager&  swapchain_manager;
+	VkUniformBufferFactory ubuffer_factory;
+	VkTextureFactory       texture_factory;
+	VkSynObjectFactory     syn_obj_factory;
+
 
 };
 

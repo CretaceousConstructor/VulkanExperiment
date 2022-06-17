@@ -1,7 +1,7 @@
 #pragma once
 
 
-#include "VkPipelineBase.h"
+#include "ShaderWrapper.h"
 #include "VkDescriptorManager.h"
 
 class VkPipelineWrapper
@@ -10,11 +10,12 @@ public:
 
 	friend class VkPipelineBuilder;
 
-
-
 	VkPipelineWrapper(VkDeviceManager& _device_manager);
-	void AddShaders(std::vector<ShaderManager::ShaderInfo> shader_infos);
+	void AddShaders(const ShaderWrapper::ShaderInfo& shader_infos);
 
+	[[nodiscard]] std::vector<VkPipelineShaderStageCreateInfo> GetShaderStageCIVec() const;
+
+	[[nodiscard]] VkPipeline GetPipeline() const;
 
 
 
@@ -42,15 +43,15 @@ private:
 
 
 
-	std::vector<ShaderManager> shaders;
+	std::vector<ShaderWrapper> shaders;
 	std::vector<VkPipelineShaderStageCreateInfo>     shader_stages_CI;
 
 
 private:
 	VkDeviceManager &                       device_manager;
-	std::pair<VkPipeline, VkPipelineLayout> pipeline;
+	VkPipeline  pipeline;
 private:
 
-	 DescriptorMetaInfo pipeline_meta_info;
+	 PipelineMetaInfo pipeline_meta_info{};
 
 };

@@ -4,7 +4,6 @@
 #include "EngineHeader.h"
 #include "VkValidationUtility.h"
 #include "VkExtensionManager.h"
-#include "VkInitializer.h"
 
 
 class VkInstanceWrapper
