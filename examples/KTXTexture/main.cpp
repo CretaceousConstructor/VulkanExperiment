@@ -6,7 +6,6 @@ int main()
 	KTXTextureApp app_instance{};
 	try
 	{
-
 		app_instance.Run();
 	}
 	catch (const std::exception &e)

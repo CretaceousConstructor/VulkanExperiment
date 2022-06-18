@@ -34,6 +34,10 @@ class VkModel
 
 	~VkModel();
 
+
+
+
+//TODO:这个类的资源管理就是个灾难，请速度重构
   private:
 	struct Vertices
 	{
@@ -367,11 +371,11 @@ template <class V, class InsType>
 {
 
 
-	vertices.CleanUp(&device_manager);
+	//vertices.CleanUp(&device_manager);
 
-	indices.CleanUp(&device_manager);
+	//indices.CleanUp(&device_manager);
 
-	instance_data.CleanUp(&device_manager);
+	//instance_data.CleanUp(&device_manager);
 
 
 
@@ -406,6 +410,7 @@ inline void VkModel<V, InsType>::Indices::CleanUp(VkDeviceManager *para_device_m
 template <class V, class InsType>
 inline void VkModel<V, InsType>::InstancesData::CleanUp(VkDeviceManager *para_device_manager)
 {
+
 	if (buffer)
 	{
 		vkDestroyBuffer(para_device_manager->GetLogicalDevice(), buffer, nullptr);
@@ -414,4 +419,7 @@ inline void VkModel<V, InsType>::InstancesData::CleanUp(VkDeviceManager *para_de
 	{
 		vkFreeMemory(para_device_manager->GetLogicalDevice(), memory, nullptr);
 	}
+
+
+
 }

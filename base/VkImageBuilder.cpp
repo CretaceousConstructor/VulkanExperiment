@@ -12,9 +12,12 @@ std::shared_ptr<VkImagesBundle> VkImageBuilder::GetResult(uint8_t _bundle_size)
 
 	bundle_size = _bundle_size;
 
+	ResetResultPtr();
 
-	RestoreToDefaultState();
-
+	if (!state_been_chaged)
+	{
+		RestoreToDefaultState();
+	}
 
 	BuildImage();
 	BindMemory();
@@ -23,8 +26,7 @@ std::shared_ptr<VkImagesBundle> VkImageBuilder::GetResult(uint8_t _bundle_size)
 	TransitionImageLayout();
 	CreateBundle();
 
-
-	//RestoreToDefaultState();
+	RestoreToDefaultState();
 
 	return result;
 

@@ -38,6 +38,7 @@ class KTXTextureRenderer : public BaseRenderer
 	  ~KTXTextureRenderer() override = default;
 
 
+
 public:
 	void DrawFrame() override;
 	void UpdateCamera(float dt) override;
@@ -49,7 +50,6 @@ public:
 	void SetUpUserInput() override;
 	void CreateCamera() override;
 
-	void InitCommandBuffers() override;
 
 
 
@@ -60,7 +60,6 @@ public:
 	void CreateRenderPass() override;
 
 	void CreateUniformBuffer() override;
-	void CreateFrameBuffers() override;
 
 	void CreateDescriptorSetLayout() override;
 	void CreateDescriptorPool() override;
@@ -152,7 +151,7 @@ public:
 	std::vector<VkFence>           image_fences;
 
 	//MODELS
-	std::unique_ptr<VkModel<Vertex>> quad_model;
+	std::shared_ptr<VkModel<Vertex>> quad_model;
 
 	//CAMERA
 	std::unique_ptr<FirstPersonCamera> camera;

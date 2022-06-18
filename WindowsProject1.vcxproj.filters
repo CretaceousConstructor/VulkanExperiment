@@ -21,9 +21,6 @@
     <Filter Include="Header Files\InputManager">
       <UniqueIdentifier>{7ed93721-316e-48ab-b4ba-2b0e0832c1fd}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\Texture">
-      <UniqueIdentifier>{14e10ad6-753a-4943-b6a2-84e8180379c5}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\Model">
       <UniqueIdentifier>{0259e414-9277-4b81-bdea-a55419c5eb68}</UniqueIdentifier>
     </Filter>
@@ -54,12 +51,6 @@
     <Filter Include="Source Files\Texture\ktx">
       <UniqueIdentifier>{cf9a38cd-dc23-440a-b902-8aedf27f0e82}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\ClassReflection">
-      <UniqueIdentifier>{7ee56ee3-1b49-4bf1-9190-52f67e549e9a}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\Temp">
-      <UniqueIdentifier>{710f8e70-864f-44ac-ab40-480f912dd544}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\Vk\UniformBuffer">
       <UniqueIdentifier>{4ae0b0e4-f918-421a-87f2-cbb2946fae32}</UniqueIdentifier>
     </Filter>
@@ -78,11 +69,17 @@
     <Filter Include="Header Files\Vk\Renderpass">
       <UniqueIdentifier>{77ebdef1-73e8-4ecf-9a5c-d43d38d375c9}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\Vk\SynObject\Subpass">
-      <UniqueIdentifier>{03e2b732-def7-44e6-ab0b-db8695c340ad}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\Vk\Pipeline">
       <UniqueIdentifier>{e9637d47-0acd-40dd-9f81-6c7b04b93e07}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Vk\Renderpass\Subpass">
+      <UniqueIdentifier>{03e2b732-def7-44e6-ab0b-db8695c340ad}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Vk\Texture">
+      <UniqueIdentifier>{14e10ad6-753a-4943-b6a2-84e8180379c5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\ClassReflection">
+      <UniqueIdentifier>{7ee56ee3-1b49-4bf1-9190-52f67e549e9a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -257,6 +254,12 @@
     <ClCompile Include="base\VkModelFactory.cpp">
       <Filter>Source Files\Vk</Filter>
     </ClCompile>
+    <ClCompile Include="base\VkImagesBundle.cpp">
+      <Filter>Source Files\Vk</Filter>
+    </ClCompile>
+    <ClCompile Include="base\VkTextureFactory.cpp">
+      <Filter>Source Files\Vk</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="base\include\App.h">
@@ -301,9 +304,6 @@
     <ClInclude Include="base\include\VkValidationUtility.h">
       <Filter>Header Files\Vk</Filter>
     </ClInclude>
-    <ClInclude Include="base\include\VkSwapChainManager.h">
-      <Filter>Header Files\Vk</Filter>
-    </ClInclude>
     <ClInclude Include="base\include\VkMemoryManager.h">
       <Filter>Header Files\Vk</Filter>
     </ClInclude>
@@ -311,7 +311,7 @@
       <Filter>Header Files\Model</Filter>
     </ClInclude>
     <ClInclude Include="base\include\VkTexture.h">
-      <Filter>Header Files\Texture</Filter>
+      <Filter>Header Files\Vk\Texture</Filter>
     </ClInclude>
     <ClInclude Include="base\include\VkInstanceWrapper.h">
       <Filter>Header Files\Vk</Filter>
@@ -410,10 +410,10 @@
       <Filter>Header Files\Vk\Renderpass</Filter>
     </ClInclude>
     <ClInclude Include="base\include\VkSubpassFactory.h">
-      <Filter>Header Files\Vk\SynObject\Subpass</Filter>
+      <Filter>Header Files\Vk\Renderpass\Subpass</Filter>
     </ClInclude>
     <ClInclude Include="base\include\VkSubpassWrapper.h">
-      <Filter>Header Files\Vk\SynObject\Subpass</Filter>
+      <Filter>Header Files\Vk\Renderpass\Subpass</Filter>
     </ClInclude>
     <ClInclude Include="base\include\VkPipelineBuilder.h">
       <Filter>Header Files\Vk\Pipeline</Filter>
@@ -423,6 +423,15 @@
     </ClInclude>
     <ClInclude Include="base\include\VkPipelineWrapper.h">
       <Filter>Header Files\Vk\Pipeline</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\VkSwapChainManager.h">
+      <Filter>Header Files\Vk\Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\VkImagesBundle.h">
+      <Filter>Header Files\Vk\Image</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\VkTextureFactory.h">
+      <Filter>Header Files\Vk\Texture</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

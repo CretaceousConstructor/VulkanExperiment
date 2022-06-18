@@ -11,10 +11,23 @@ public:
 	friend class VkPipelineBuilder;
 
 	VkPipelineWrapper(VkDeviceManager& _device_manager);
+
+	~VkPipelineWrapper();
+
+	VkPipelineWrapper() = delete;
+
+	VkPipelineWrapper(const VkPipelineWrapper &) = delete;
+	VkPipelineWrapper &operator=(const VkPipelineWrapper &) = delete;
+
+	VkPipelineWrapper(VkPipelineWrapper &&) = delete;
+	VkPipelineWrapper &operator=(VkPipelineWrapper &&) = delete;
+
+
+
+
 	void AddShaders(const ShaderWrapper::ShaderInfo& shader_infos);
 
 	[[nodiscard]] std::vector<VkPipelineShaderStageCreateInfo> GetShaderStageCIVec() const;
-
 	[[nodiscard]] VkPipeline GetPipeline() const;
 
 

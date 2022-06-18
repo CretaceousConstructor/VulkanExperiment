@@ -12,10 +12,11 @@
 #include "VkAttachmentInfo.h"
 #include "VkSubpassFactory.h"
 #include "VkSynObjectFactory.h"
+#include "VkTextureFactory.h"
 #include "VkUniformBufferFactory.h"
 
 #include <unordered_map>
-
+#include <map>
 
 
 class VkRenderpassManager
@@ -23,7 +24,7 @@ class VkRenderpassManager
 
    public:
 	VkRenderpassManager(VkDeviceManager &_device_manager, VkSwapChainManager &_swapchain_manager,VkWindows& _window,VkCommandManager &_command_manager);
-	~VkRenderpassManager();
+	 ~VkRenderpassManager() = default;
 
 	VkRenderpassManager(const VkRenderpassManager &) = delete;
 	VkRenderpassManager &operator=(const VkRenderpassManager &) = delete;
@@ -36,8 +37,8 @@ class VkRenderpassManager
 
 	void AddPipeline(const std::string name,PipelineMetaInfo meta_info,const std::vector<ShaderWrapper::ShaderInfo> shader_infos);
 
-	VkPipeline GetPipeline(PipelineMetaInfo meta_info);
-	VkPipelineLayout GetPipelineLayout(PipelineMetaInfo meta_info);
+	[[nodiscard]] VkPipeline       GetPipeline(PipelineMetaInfo meta_info) const;
+	[[nodiscard]] VkPipelineLayout GetPipelineLayout(PipelineMetaInfo meta_info) const;
 
 	VkRenderpassWrapper &GetRenderpass(uint8_t pass);
 	const std::vector<VkDescriptorSet>& GetDescriptorSetBundle(DescriptorMetaInfo meta_info);

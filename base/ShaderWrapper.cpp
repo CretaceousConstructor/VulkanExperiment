@@ -6,30 +6,36 @@ ShaderWrapper::ShaderWrapper(VkDeviceManager &_device_manager, std::string para_
     shader_binding_stage(para_shader_binding_stage)
 
 {
-
-	auto vertShaderCode             = ReadFile(shader_file_name);
-	shader_module                   = CreateShaderModule(vertShaderCode);
+	auto vertShaderCode = ReadFile(shader_file_name);
+	shader_module       = CreateShaderModule(vertShaderCode);
 
 	shader_stage_create_info        = VkPipelineShaderStageCreateInfo{};
 	shader_stage_create_info.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 	shader_stage_create_info.stage  = shader_binding_stage;
 	shader_stage_create_info.module = shader_module;
 	shader_stage_create_info.pName  = shader_enter_point.c_str();
-
-
-
 }
-
-
-
 
 ShaderWrapper::~ShaderWrapper()
 {
-
-
 	vkDestroyShaderModule(device_manager.GetLogicalDevice(), shader_module, nullptr);
+}
+
+ShaderWrapper::ShaderWrapper(ShaderWrapper &&rhs) :
+    shader_file_name{std::move(rhs.shader_file_name)},
+    shader_enter_point{std::move(rhs.shader_enter_point)},
+    shader_binding_stage{rhs.shader_binding_stage},
+    shader_module{rhs.shader_module},
+    shader_stage_create_info{rhs.shader_stage_create_info},
+    device_manager{rhs.device_manager}
+{
 
 
+
+    shader_stage_create_info.pName = shader_enter_point.c_str();
+
+
+	rhs.shader_module = nullptr;
 }
 
 VkPipelineShaderStageCreateInfo ShaderWrapper::GetVkPipelineShaderStageCreateInfo() const
@@ -46,7 +52,7 @@ std::vector<char> ShaderWrapper::ReadFile(const std::string &filename)
 		throw std::runtime_error("failed to open file!");
 	}
 
-	const size_t            fileSize = (size_t) file.tellg();
+	const size_t      fileSize = (size_t) file.tellg();
 	std::vector<char> buffer(fileSize);
 
 	file.seekg(0);

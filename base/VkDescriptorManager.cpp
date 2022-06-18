@@ -69,8 +69,8 @@ void VkDescriptorManager::AddDescriptorSetLayout(const DescriptorMetaInfo meta_i
 
 	VkDescriptorSetLayoutCreateInfo layout_bindingCI{};
 	layout_bindingCI.sType        = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-	layout_bindingCI.bindingCount = (uint32_t) LayoutBindings.size();        //the amount of VkDescriptorSetLayoutBinding
-	layout_bindingCI.pBindings    = LayoutBindings.data();
+	layout_bindingCI.bindingCount = (uint32_t) temp_layout.LayoutBindings.size();        //the amount of VkDescriptorSetLayoutBinding
+	layout_bindingCI.pBindings    = temp_layout.LayoutBindings.data();
 	if (vkCreateDescriptorSetLayout(device_manager.GetLogicalDevice(), &layout_bindingCI, nullptr, &temp_layout.set_layout) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to create descriptor set layout!");
@@ -136,6 +136,10 @@ void VkDescriptorManager::UpdateDescriptorSet(std::vector<VkWriteDescriptorSet> 
 
 const std::vector<VkDescriptorSet> & VkDescriptorManager::GetDescriptorSetBundle(DescriptorMetaInfo meta_info)
 {
+	if (!descriptor_sets.contains(meta_info))
+	{
+		throw std::runtime_error("non-existent pool!");
+	}
 
 	return descriptor_sets[meta_info];
 
@@ -143,7 +147,7 @@ const std::vector<VkDescriptorSet> & VkDescriptorManager::GetDescriptorSetBundle
 
 const VkDescriptorPool &VkDescriptorManager::GetPool(const DescriptorMetaInfo pool_meta_info)
 {
-	if (descriptor_pools.contains(pool_meta_info))
+	if (!descriptor_pools.contains(pool_meta_info))
 	{
 		throw std::runtime_error("non-existent pool!");
 	}
@@ -152,7 +156,7 @@ const VkDescriptorPool &VkDescriptorManager::GetPool(const DescriptorMetaInfo po
 
 const VkDescriptorSetLayout &VkDescriptorManager::GetSetLayout(const DescriptorMetaInfo set_layout_meta_info)
 {
-	if (set_layouts.contains(set_layout_meta_info))
+	if (!set_layouts.contains(set_layout_meta_info))
 	{
 		throw std::runtime_error("non-existent set layout!");
 	}

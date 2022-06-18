@@ -2,9 +2,11 @@
 #include "EngineMarco.h"
 #include "EngineHeader.h"
 #include "VkWindows.h"
+#include "VkExtensionManager.h"
 #include <optional>
-#include <vector>
-#include <set>
+#include <list>
+#include<set>
+#include <map>
 class VkDeviceManager
 {
   public:
@@ -16,6 +18,11 @@ class VkDeviceManager
 
 	VkDeviceManager(VkDeviceManager &&) = delete;
 	VkDeviceManager &operator=(VkDeviceManager &&) = delete;
+
+
+
+
+
 
   public:
 	struct SwapChainSupportDetails
@@ -46,7 +53,7 @@ class VkDeviceManager
 
   public:
 	[[nodiscard]]VkBool32       FormatIsFilterable(VkFormat format, VkImageTiling tiling) const;
-	VkCommandPool CreateCommandPool(CommandPoolType type);
+	const VkCommandPool& CreateCommandPool(CommandPoolType type);
 	void           CreateLogicalDeviceAndQueues();
 
 	[[nodiscard]]VkFormat FindSupportedFormat(const std::vector<VkFormat> &candidates, VkImageTiling tiling, VkFormatFeatureFlags features) const;
@@ -65,6 +72,13 @@ class VkDeviceManager
 	void       PickPhysicalDevice();
 	static int RateDeviceSuitability(const VkPhysicalDevice &_device);
 
+
+	std::list<VkCommandPool> command_pools;
+
+  private:
+	const VkWindows & window;
+	const VkInstance &instance;
+
   private:
 	VkPhysicalDevice physical_device{nullptr};        //Ö¸ÏòÏÔ¿¨µÄ¾ä±ú
 	VkDevice         device{nullptr};
@@ -73,9 +87,4 @@ class VkDeviceManager
 	VkQueue present_queue{nullptr};         //used to present images
 	VkQueue tranfer_queue{nullptr};         //used for tranfer buffer
 
-	std::vector<VkCommandPool> command_pools;
-
-  private:
-	const VkWindows & window;
-	const VkInstance &instance;
 };

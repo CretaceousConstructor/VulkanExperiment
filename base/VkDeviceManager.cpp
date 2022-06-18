@@ -301,9 +301,9 @@ VkBool32 VkDeviceManager::FormatIsFilterable(VkFormat format, VkImageTiling tili
 	return false;
 }
 
-VkCommandPool VkDeviceManager::CreateCommandPool(CommandPoolType type)
+const VkCommandPool& VkDeviceManager::CreateCommandPool(CommandPoolType type)
 {
-	QueueFamilyIndices queueFamilyIndices = FindQueueFamilies(physical_device, window.GetSurface());
+	const QueueFamilyIndices queueFamilyIndices = FindQueueFamilies(physical_device, window.GetSurface());
 
 	switch (type)
 	{

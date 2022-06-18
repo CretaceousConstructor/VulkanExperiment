@@ -6,6 +6,7 @@ std::vector<const char *> VkExtensionManager::GetNeededInstanceExtensions(bool V
 	uint32_t glfwExtensionCount = 0;
 	//给出所有GLFW需要的 vulkan instance extensions
 	const char **             glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+
 	std::vector<const char *> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
 
 	//validation需要的extension
@@ -24,5 +25,7 @@ std::vector<const char *> VkExtensionManager::GetRequiredExtensionsForAGoodDevic
 	return std::vector<const char *>{
 	    VK_KHR_SWAPCHAIN_EXTENSION_NAME,
 	    VK_KHR_MAINTENANCE1_EXTENSION_NAME,
-	    VK_KHR_SHADER_NON_SEMANTIC_INFO_EXTENSION_NAME};
+	    VK_KHR_SHADER_NON_SEMANTIC_INFO_EXTENSION_NAME
+
+	};
 }

@@ -8,10 +8,16 @@ KTXTextureRenderer::KTXTextureRenderer(VkWindows &_window, VkDeviceManager &_dev
 	depth_image_builder = std::make_unique<VkDepthImageBuilder>(device_manager, swapchain_manager, command_manager, window);
 
 
-	RenderingPreparation();
-
-
 }
+
+
+
+
+
+
+
+
+
 void KTXTextureRenderer::CreateTextureImages()
 {
 
@@ -42,7 +48,7 @@ void KTXTextureRenderer::PrepareModels()
 	// Setup indices
 	std::vector<uint32_t> indices = {0, 1, 2, 2, 3, 0};
 
-	quad_model = std::make_unique<VkModel<Vertex>>(vertices, indices, device_manager, window, command_manager);
+	quad_model = std::make_shared<VkModel<Vertex>>(vertices, indices, device_manager, window, command_manager);
 
 
 
@@ -208,21 +214,21 @@ void KTXTextureRenderer::CreatePipelineRenderPass0Subpass0()
 	//std::vector<VkPipelineShaderStageCreateInfo> shader_stages_create_info = {vertex_shader_subpass0.GetVkPipelineShaderStageCreateInfo(), fragment_shader_subpass0.GetVkPipelineShaderStageCreateInfo()};
 
 	////TODO:需要更多的abstraction
-	//VkVertexInputBindingDescription bindingDescription0{};
-	//bindingDescription0.binding   = 0;
-	//bindingDescription0.stride    = sizeof(Vertex);
-	//bindingDescription0.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+	VkVertexInputBindingDescription bindingDescription0{};
+	bindingDescription0.binding   = 0;
+	bindingDescription0.stride    = sizeof(Vertex);
+	bindingDescription0.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
-	//std::vector<VkVertexInputBindingDescription> VIBDS = {bindingDescription0};
+	std::vector<VkVertexInputBindingDescription> VIBDS = {bindingDescription0};
 
-	//auto attributeDescriptions = Vertex::GetAttributeDescriptions();
+	auto attributeDescriptions = Vertex::GetAttributeDescriptions();
 
-	//VkPipelineVertexInputStateCreateInfo vertex_input_info{};
-	//vertex_input_info.sType                           = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-	//vertex_input_info.vertexBindingDescriptionCount   = (uint32_t) VIBDS.size();
-	//vertex_input_info.pVertexBindingDescriptions      = VIBDS.data();        // Optional
-	//vertex_input_info.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
-	//vertex_input_info.pVertexAttributeDescriptions    = attributeDescriptions.data();        // Optional
+	VkPipelineVertexInputStateCreateInfo vertex_input_info{};
+	vertex_input_info.sType                           = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+	vertex_input_info.vertexBindingDescriptionCount   = (uint32_t) VIBDS.size();
+	vertex_input_info.pVertexBindingDescriptions      = VIBDS.data();        // Optional
+	vertex_input_info.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+	vertex_input_info.pVertexAttributeDescriptions    = attributeDescriptions.data();        // Optional
 
 	//VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
 	//inputAssembly.sType                  = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -818,8 +824,13 @@ void KTXTextureRenderer::UpdateCamera(float dt)
 
 void KTXTextureRenderer::CompileShaders()
 {
-	system("..\..\data\shaderbat\KTXTextureShaderCompile.bat");
-	//system("..\\..\\data\\shaderbat\\KTXTextureShaderCompile.bat");
+
+
+
+	system("..\\..\\data\\shaderbat\\KTXTextureShaderCompile.bat");
+
+
+
 }
 
 void KTXTextureRenderer::CreateRenderPass0() 

@@ -22,7 +22,7 @@ class ShaderWrapper
 	ShaderWrapper(const ShaderWrapper &) = delete;
 	ShaderWrapper &operator=(const ShaderWrapper &) = delete;
 
-	ShaderWrapper(ShaderWrapper &&) = delete;
+	ShaderWrapper(ShaderWrapper &&rhs);
 	ShaderWrapper &operator=(ShaderWrapper &&) = delete;
 
 

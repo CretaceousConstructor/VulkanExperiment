@@ -1,9 +1,9 @@
 #pragma once
 #include "VkImageBuilder.h"
-
+#include "VkImageWrapper.h"
 class VkDepthImageBuilder : public VkImageBuilder
 {
-  public:
+public:
 	VkDepthImageBuilder(
 	    VkDeviceManager &   _device_manager,
 	    VkSwapChainManager &_swapchain_manager,
@@ -11,19 +11,18 @@ class VkDepthImageBuilder : public VkImageBuilder
 	    VkWindows &         _window);
 
 
+
+
 protected:
 
 
+	void ResetResultPtr() override;
 	void BuildImage() override;
 	void BindMemory() override;
 	void BuildImageView() override;
 	void Assemble() override;
 	void TransitionImageLayout() override;
 	void CreateBundle() override;
-
-
-
-  protected:
 
 
 private:

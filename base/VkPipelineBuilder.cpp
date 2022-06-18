@@ -5,17 +5,16 @@ VkPipelineBuilder::VkPipelineBuilder(VkDeviceManager &_device_manager, VkSwapCha
     swapchain_manager(_swapchain_manager)
 
 {
-
 }
 
-
+void VkPipelineBuilder::ResetResultPtr()
+{
+	pipeline.reset();
+	pipeline = std::make_shared<VkPipelineWrapper>(device_manager);
+}
 
 void VkPipelineBuilder::RestoreToDefaultState()
 {
-
-	pipeline.reset();
-	pipeline = std::make_shared<VkPipelineWrapper>(device_manager);
-
 	//INIT DEFAULT STATE
 	input_assembly_state_CI.sType                  = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
 	input_assembly_state_CI.topology               = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
@@ -48,9 +47,8 @@ void VkPipelineBuilder::RestoreToDefaultState()
 	viewport_state_CI.viewportCount = view_port_scissor_pair.first.size();
 	viewport_state_CI.pViewports    = view_port_scissor_pair.first.data();
 
-	viewport_state_CI.scissorCount  = view_port_scissor_pair.second.size();
+	viewport_state_CI.scissorCount = view_port_scissor_pair.second.size();
 	viewport_state_CI.pScissors    = view_port_scissor_pair.second.data();
-
 
 	rasterization_state_CI.sType                   = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
 	rasterization_state_CI.depthClampEnable        = VK_FALSE;
@@ -67,7 +65,6 @@ void VkPipelineBuilder::RestoreToDefaultState()
 	rasterization_state_CI.depthBiasClamp          = 0.0f;        // Optional
 	rasterization_state_CI.depthBiasSlopeFactor    = 0.0f;        // Optional
 
-
 	multisample_state_CI.sType                 = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
 	multisample_state_CI.sampleShadingEnable   = VK_FALSE;
 	multisample_state_CI.rasterizationSamples  = VK_SAMPLE_COUNT_1_BIT;
@@ -75,10 +72,6 @@ void VkPipelineBuilder::RestoreToDefaultState()
 	multisample_state_CI.pSampleMask           = nullptr;         // Optional
 	multisample_state_CI.alphaToCoverageEnable = VK_FALSE;        // Optional
 	multisample_state_CI.alphaToOneEnable      = VK_FALSE;        // Optional
-
-
-
-
 
 	VkPipelineColorBlendAttachmentState temp_color_blend_attachment{};
 	temp_color_blend_attachment.colorWriteMask      = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
@@ -102,13 +95,9 @@ void VkPipelineBuilder::RestoreToDefaultState()
 	color_blend_state_CI.blendConstants[2] = 0.0f;        // Optional
 	color_blend_state_CI.blendConstants[3] = 0.0f;        // Optional
 
-
-
 	dynamic_state_CI.sType             = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
 	dynamic_state_CI.dynamicStateCount = 0;
 	dynamic_state_CI.pDynamicStates    = nullptr;
-
-
 
 	depth_stencil_CI.sType                 = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
 	depth_stencil_CI.depthTestEnable       = VK_TRUE;
@@ -121,17 +110,13 @@ void VkPipelineBuilder::RestoreToDefaultState()
 	depth_stencil_CI.stencilTestEnable     = VK_FALSE;
 	//depth_stencil_CI.front = {}; // Optional
 	//depth_stencil_CI.back = {}; // Optional
-
-
 }
 
-void VkPipelineBuilder::BuildShader(const std::vector<ShaderWrapper::ShaderInfo> shader_infos)
+void VkPipelineBuilder::BuildShader(const std::vector<ShaderWrapper::ShaderInfo> shader_infos) const
 {
-
-	for (const auto& shader_info : shader_infos)
+	for (const auto &shader_info : shader_infos)
 	{
 		pipeline->AddShaders(shader_info);
-
 	}
 }
 
@@ -247,12 +232,8 @@ void VkPipelineBuilder::BuildShader(const std::vector<ShaderWrapper::ShaderInfo>
 //	//pipeline->depth_stencil_CI.back = {}; // Optional
 //}
 
-void VkPipelineBuilder::BuildPipeline(PipelineMetaInfo pipeline_meta_info,VkRenderpassWrapper& renderpass)
+void VkPipelineBuilder::BuildPipeline(PipelineMetaInfo pipeline_meta_info, VkRenderpassWrapper &renderpass)
 {
-
-
-
-
 	const auto shader_stages_CI{pipeline->GetShaderStageCIVec()};
 
 	pipeline_create_CI.sType      = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
@@ -269,10 +250,7 @@ void VkPipelineBuilder::BuildPipeline(PipelineMetaInfo pipeline_meta_info,VkRend
 	pipeline_create_CI.pColorBlendState = &color_blend_state_CI;
 	pipeline_create_CI.pDynamicState    = nullptr;        // Optional
 
-
-	const auto layout = 	renderpass.subpasses[pipeline_meta_info.subpass]->GetPipelineLayout();
-
-
+	const auto layout = renderpass.subpasses[pipeline_meta_info.subpass]->GetPipelineLayout();
 
 	pipeline_create_CI.layout = layout;
 
@@ -280,51 +258,29 @@ void VkPipelineBuilder::BuildPipeline(PipelineMetaInfo pipeline_meta_info,VkRend
 	pipeline_create_CI.subpass    = pipeline_meta_info.subpass;        // index
 
 	pipeline_create_CI.basePipelineIndex  = -1;
-	pipeline_create_CI.basePipelineHandle = nullptr;.first
+	pipeline_create_CI.basePipelineHandle = nullptr;
 
 	if (vkCreateGraphicsPipelines(device_manager.GetLogicalDevice(), nullptr, 1, &pipeline_create_CI, nullptr, &pipeline->pipeline) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to create graphics pipeline!");
 	}
 	pipeline->pipeline_meta_info = pipeline_meta_info;
-
-
-
 }
 
-
-
-
-std::shared_ptr<VkPipelineWrapper> VkPipelineBuilder::GetPipline(PipelineMetaInfo pipeline_meta_info,VkRenderpassWrapper& renderpass,const std::vector<ShaderWrapper::ShaderInfo> shader_infos)
+std::shared_ptr<VkPipelineWrapper> VkPipelineBuilder::GetPipline(PipelineMetaInfo pipeline_meta_info, VkRenderpassWrapper &renderpass, const std::vector<ShaderWrapper::ShaderInfo> shader_infos)
 {
+	ResetResultPtr();
+
+	if (!state_has_changed)
+	{
+		RestoreToDefaultState();
+	}
+	BuildShader(shader_infos);
+	BuildPipeline(pipeline_meta_info, renderpass);
 
 
 	RestoreToDefaultState();
 
 
-	 BuildShader(shader_infos);
-	 //BuildVertexInputStateCI();
-	 //BuildInputAssemblyStateCI();
-	 //BuildViewPortStateCI();
-
-	 //BuildRasterizationStateCI();
-	 //BuildMultisampleStateCI();
-
-	 //BuildColorBlendStateCI();
-	 //BuildDynamicStateCI();
-	 //BuildDepthStencilStateCI();
-
-	BuildPipeline(pipeline_meta_info,renderpass);
-
 	return pipeline;
-
-
 }
-
-
-
-
-
-
-
-

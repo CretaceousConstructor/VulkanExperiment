@@ -3,6 +3,8 @@
 VkInstanceWrapper::VkInstanceWrapper() :
     instance(nullptr)
 {
+
+	InitWindowBackendSystem();
 	CreateInstance();
 	VkValidationUtility::SetupDebugMessenger(instance);
 
@@ -23,6 +25,13 @@ VkInstanceWrapper::~VkInstanceWrapper()
 VkInstance VkInstanceWrapper::GetInstanceRef() const
 {
 	return instance;
+}
+
+void VkInstanceWrapper::InitWindowBackendSystem() 
+{
+	glfwSetErrorCallback(GlfwErrorCallback);
+	glfwInit();                                                                                     //glfw初始化
+
 }
 
 //VkInstance VkInstanceWrapper::GetInstance() const
@@ -62,38 +71,39 @@ void VkInstanceWrapper::CreateInstance()
 		//之后的vkcreateinstance会用这里的值
 
 	//获得 实例 会用到的 扩展(extensions)
-	auto extensions                    = VkExtensionManager::GetNeededInstanceExtensions(VkValidationUtility::VALIDATION_LAYERS_ENABLED);
+	const auto extensions                    = VkExtensionManager::GetNeededInstanceExtensions(VkValidationUtility::VALIDATION_LAYERS_ENABLED);
 
+	
 	createInfo.enabledExtensionCount   = static_cast<uint32_t>(extensions.size());
 	createInfo.ppEnabledExtensionNames = extensions.data();
 
 	//*********************************************************************
-	VkValidationFeaturesEXT validation_feature_ext = {};
-	validation_feature_ext.sType                   = VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT;
-	validation_feature_ext.pNext                   = nullptr;
+	//VkValidationFeaturesEXT validation_feature_ext = {};
+	//validation_feature_ext.sType                   = VK_STRUCTURE_TYPE_VALIDATION_FEATURES_EXT;
+	//validation_feature_ext.pNext                   = nullptr;
 
-	validation_feature_ext.enabledValidationFeatureCount = static_cast<uint32_t>(VkValidationUtility::enabled_features.size());
-	validation_feature_ext.pEnabledValidationFeatures    = VkValidationUtility::enabled_features.data();
+	//validation_feature_ext.enabledValidationFeatureCount = static_cast<uint32_t>(VkValidationUtility::enabled_features.size());
+	//validation_feature_ext.pEnabledValidationFeatures    = VkValidationUtility::enabled_features.data();
 
-	validation_feature_ext.disabledValidationFeatureCount = static_cast<uint32_t>(VkValidationUtility::disabled_features.size());
-	validation_feature_ext.pDisabledValidationFeatures    = VkValidationUtility::disabled_features.data();
-	createInfo.pNext                                    = static_cast<const void *>(&validation_feature_ext);
+	//validation_feature_ext.disabledValidationFeatureCount = static_cast<uint32_t>(VkValidationUtility::disabled_features.size());
+	//validation_feature_ext.pDisabledValidationFeatures    = VkValidationUtility::disabled_features.data();
+	//createInfo.pNext                                    = static_cast<const void *>(&validation_feature_ext);
 
-	VkDebugUtilsMessengerCreateInfoEXT debug_create_info;
-	if (VkValidationUtility::VALIDATION_LAYERS_ENABLED)
-	{
-		//获得 实例 会用到的 层(layer)，并且打开
-		createInfo.enabledLayerCount   = static_cast<uint32_t>(VkValidationUtility::required_validation_instance_layers.size());
-		createInfo.ppEnabledLayerNames = VkValidationUtility::required_validation_instance_layers.data();
+	//VkDebugUtilsMessengerCreateInfoEXT debug_create_info;
+	//if (VkValidationUtility::VALIDATION_LAYERS_ENABLED)
+	//{
+	//	//获得 实例 会用到的 层(layer)，并且打开
+	//	createInfo.enabledLayerCount   = static_cast<uint32_t>(VkValidationUtility::required_validation_instance_layers.size());
+	//	createInfo.ppEnabledLayerNames = VkValidationUtility::required_validation_instance_layers.data();
 
-		//VkValidationUtility::populateDebugMessengerCreateInfo(debugCreateInfo);//这一步真的需要吗？注释了好像也没问题？
-		//validationFeatureExt.pNext = (VkDebugUtilsMessengerCreateInfoEXT *) &debugCreateInfo;        //这样赋值pNext就可以输出vkCreateInstance和vkDestroyInstance这两个函数可能会生成的debuginfo了
-	}
-	else
-	{
-		createInfo.enabledLayerCount = 0;
-		createInfo.pNext             = nullptr;
-	}
+	//	//VkValidationUtility::populateDebugMessengerCreateInfo(debugCreateInfo);//这一步真的需要吗？注释了好像也没问题？
+	//	//validationFeatureExt.pNext = (VkDebugUtilsMessengerCreateInfoEXT *) &debugCreateInfo;        //这样赋值pNext就可以输出vkCreateInstance和vkDestroyInstance这两个函数可能会生成的debuginfo了
+	//}
+	//else
+	//{
+	//	createInfo.enabledLayerCount = 0;
+	//	createInfo.pNext             = nullptr;
+	//}
 
 	//*********************************************************************
 
@@ -106,4 +116,9 @@ void VkInstanceWrapper::CreateInstance()
 
 
 
+}
+
+void VkInstanceWrapper::GlfwErrorCallback(int error, const char *description)
+{
+	fprintf(stderr, "GLFW ERROR %d: %s\n", error, description);
 }

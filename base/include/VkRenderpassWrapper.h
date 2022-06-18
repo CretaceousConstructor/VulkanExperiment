@@ -11,7 +11,24 @@
 class VkRenderpassWrapper
 {
   public:
-	VkRenderpassWrapper(const std::string &_renderpass_name, std::vector<VkAttachmentInfo> _attachment_infos, std::vector<VkSubpassDependency> _dependencies, 	std::vector<std::shared_ptr<VkSubpassWrapper>>  _subpasses, VkDeviceManager &device_manager);
+	VkRenderpassWrapper(const std::string &_renderpass_name, std::vector<VkAttachmentInfo> _attachment_infos, std::vector<VkSubpassDependency> _dependencies, 	std::vector<std::shared_ptr<VkSubpassWrapper>>  _subpasses, VkDeviceManager &_device_manager);
+
+	~VkRenderpassWrapper();
+
+
+
+	VkRenderpassWrapper() = delete;
+
+	VkRenderpassWrapper(const VkRenderpassWrapper &) = delete;
+	VkRenderpassWrapper &operator=(const VkRenderpassWrapper &) = delete;
+
+	VkRenderpassWrapper(VkRenderpassWrapper &&) = delete;
+	VkRenderpassWrapper &operator=(VkRenderpassWrapper &&) = delete;
+
+
+
+
+
 
 
 	std::vector<VkAttachmentInfo> attachment_infos;
@@ -23,5 +40,6 @@ class VkRenderpassWrapper
 
 	std::vector<VkFramebuffer> frame_buffers;
 
-
+private:
+	VkDeviceManager &                              device_manager;
 };

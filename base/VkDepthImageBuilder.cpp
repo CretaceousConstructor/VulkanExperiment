@@ -5,10 +5,17 @@ VkDepthImageBuilder::VkDepthImageBuilder(VkDeviceManager &_device_manager, VkSwa
 {
 }
 
+void VkDepthImageBuilder::ResetResultPtr()
+{
+
+	result.reset();
+
+}
+
 void VkDepthImageBuilder::RestoreToDefaultState()
 {
 	//INIT DEFAULT STATE FOR DEPTH BUILDER
-	result.reset();
+
 	temp_images.clear();
 	temp_images_mem.clear();
 	temp_images_view.clear();
@@ -42,9 +49,6 @@ void VkDepthImageBuilder::RestoreToDefaultState()
 
 	default_image_mem_prop_flag = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
 	default_final_layout            = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-
-
-
 
 }
 
@@ -163,10 +167,6 @@ void VkDepthImageBuilder::TransitionImageLayout()
 
 	for (const auto& imag: images)
 	{
-
-
-		std::dynamic_pointer_cast<VkImageWrapper>(imag);
-
 
 		std::dynamic_pointer_cast<VkImageWrapper>(imag)->TransitionImageLayout(VK_IMAGE_LAYOUT_UNDEFINED, default_final_layout, command_manager.graphics_command_pool, device_manager.GetGraphicsQueue(), queue_family_index);
 	}

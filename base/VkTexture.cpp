@@ -68,7 +68,7 @@ void VkTexture::InitTexture(std::string image_path, VkFormat format_of_texture, 
 
 	VkBuffer       stagingBuffer;        //host visible memory
 	VkDeviceMemory stagingBufferMemory;
-	device_manager.CreateBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory, VK_SHARING_MODE_EXCLUSIVE, window.GetSurface());
+	device_manager.CreateBufferAndBindToMemo(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory, VK_SHARING_MODE_EXCLUSIVE, window.GetSurface());
 
 	void *data;
 	vkMapMemory(device_manager.GetLogicalDevice(), stagingBufferMemory, 0, imageSize, (VkMemoryMapFlags) 0, &data);
@@ -113,7 +113,7 @@ void VkTexture::InitTexture(const void *buffer, VkDeviceSize bufferSize, uint32_
 
 	VkBuffer       stagingBuffer;        //host visible memory
 	VkDeviceMemory stagingBufferMemory;
-	device_manager.CreateBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory, VK_SHARING_MODE_EXCLUSIVE,window.GetSurface());
+	device_manager.CreateBufferAndBindToMemo(bufferSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory, VK_SHARING_MODE_EXCLUSIVE,window.GetSurface());
 
 	void *data;
 	vkMapMemory(device_manager.GetLogicalDevice(), stagingBufferMemory, 0, bufferSize, (VkMemoryMapFlags) 0, &data);
@@ -338,22 +338,23 @@ VkWriteDescriptorSet VkTexture::GetWriteDescriptorSetInfo(uint32_t dstbinding, u
 
 
 
-VkImage &VkTexture::GetTextureImage()
+VkImage VkTexture::GetTextureImage()const
 {
-	return texture_image->GetImageRef();
+
+	return texture_image->GetImage();
 }
 
-VkImageView &VkTexture::GetTextureImageView()
+VkImageView VkTexture::GetTextureImageView()const
 {
 	return texture_image->GetImageView();
 }
 
-VkSampler &VkTexture::GetTextureSampler()
+VkSampler VkTexture::GetTextureSampler()const
 {
 	return texture_sampler;
 }
 
-VkImageLayout VkTexture::GetImageLayout()
+VkImageLayout VkTexture::GetImageLayout()const
 {
 	return imageLayout;
 }

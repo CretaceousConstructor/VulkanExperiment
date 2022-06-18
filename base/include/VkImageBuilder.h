@@ -4,6 +4,7 @@
 #include "VkCommandManager.h"
 #include "VkDeviceManager.h"
 #include "VkSwapChainManager.h"
+#include "VkImagesBundle.h"
 
 class VkImageBuilder
 {
@@ -14,9 +15,23 @@ class VkImageBuilder
 	               VkWindows &         _window);
 	virtual ~VkImageBuilder() = default;
 
+	VkImageBuilder() = delete;
+
+	VkImageBuilder(const VkImageBuilder &) = delete;
+	VkImageBuilder &operator=(const VkImageBuilder &) = delete;
+
+	VkImageBuilder(VkImageBuilder &&) = delete;
+	VkImageBuilder &operator=(VkImageBuilder &&) = delete;
+
+
+
 	std::shared_ptr<VkImagesBundle> GetResult(uint8_t bundle_size);
 
   protected:
+
+	
+
+	virtual void ResetResultPtr()        = 0;
 	virtual void RestoreToDefaultState() = 0;
 
 	virtual void BuildImage()            = 0;
@@ -35,6 +50,7 @@ class VkImageBuilder
   protected:
 	std::shared_ptr<VkImagesBundle> result;
 	uint8_t                         bundle_size{0};
-
+protected:
+	bool state_been_chaged = false;
 
 };

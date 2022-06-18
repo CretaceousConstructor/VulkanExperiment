@@ -1,5 +1,4 @@
 #pragma once
-#include "VkInitializer.h"
 #include "VkDeviceManager.h"
 #include "VkExtensionManager.h"
 #include "VkSwapChainManager.h"
@@ -45,6 +44,7 @@ protected:
 	VkDeviceManager device_manager;
 	VkSwapChainManager swap_chain_manager;
 	VkCommandManager    command_manager;
+
 	std::unique_ptr<BaseRenderer> renderer;
 
 

@@ -28,7 +28,16 @@ public:
 
 
 private:
+
+
 	void CreateInstance();
+
+
+
+private:
+
+static	void InitWindowBackendSystem() ;
+	static void GlfwErrorCallback(int error, const char *description);
 
   private:
 	VkInstance instance;

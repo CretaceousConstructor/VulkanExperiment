@@ -31,7 +31,6 @@ class VkWindows
 
   private:
 	static void FrameBufferResizeCallback(GLFWwindow *window, int width, int height);
-	static void GlfwErrorCallback(int error, const char *description);
 
   private:
 	void CreateSurface();

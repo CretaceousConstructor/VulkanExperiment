@@ -9,16 +9,32 @@
 
 class VkImageWrapper :public VkImageBase
 {
-friend class VkDepthImageBuilder;
 
   public:
 	VkImageWrapper(VkDeviceManager &_device_manager, VkImageType para_image_type, VkFormat para_format, VkExtent3D para_image_extent, uint32_t para_mip_levels, uint32_t para_array_layers, VkSampleCountFlagBits para_samples, VkImageTiling para_tiling, VkBufferUsageFlags para_usage_image, VkSharingMode para_sharing_mode, VkImageLayout initialLayout, VkMemoryPropertyFlagBits para_image_mem_property_flag);
+
+
 
 	VkImageWrapper(VkDeviceManager &_device_manager, const VkImage _image, const VkDeviceMemory _image_mem, const VkImageView _image_view, const VkFormat _image_format, const VkFormat _image_view_format);
 
 	//VkImageWrapper(VkDeviceManager &_device_manager);
 
 	~VkImageWrapper() override;
+
+	VkImageWrapper() = delete;
+
+	VkImageWrapper(const VkImageWrapper &) = delete;
+	VkImageWrapper &operator=(const VkImageWrapper &) = delete;
+
+	VkImageWrapper(VkImageWrapper &&) = delete;
+	VkImageWrapper &operator=(VkImageWrapper &&) = delete;
+
+
+
+
+
+
+
 
   private:
 	void Init(VkImageType para_image_type, VkFormat para_format, VkExtent3D para_image_extent, uint32_t para_mip_levels, uint32_t para_array_layers, VkSampleCountFlagBits para_samples, VkImageTiling para_tiling, VkBufferUsageFlags para_usage_image, VkSharingMode para_sharing_mode, VkImageLayout initialLayout, VkMemoryPropertyFlagBits para_image_mem_property_flag);
@@ -61,27 +77,6 @@ private:
 	VkDeviceManager &device_manager;
 };
 
-class VkImagesBundle
-{
-  public:
-  public:
-	VkImagesBundle() = delete;
-	VkImagesBundle(std::vector<std::shared_ptr<VkImageBase>> &&_images, uint8_t bundle_size) :
-	    bundle_count(bundle_size),
-	    images(std::move(_images))
-	{}
-
-	[[nodiscard]] const std::vector<std::shared_ptr<VkImageBase>> &GetImages() const
-	{
-		return images;
-	}
-
-  private:
-	uint8_t                                      bundle_count;
-	std::vector<std::shared_ptr<VkImageBase>> images;
-
-
-};
 
 
 

@@ -2,7 +2,7 @@
 #include "EngineMarco.h"
 #include "EngineHeader.h"
 #include "VkDeviceManager.h"
-#include "VkImageWrapper.h"
+#include "VkSwapChainImageWrapper.h"
 #include "VkWindows.h"
 #include <set>
 #include <vector>
