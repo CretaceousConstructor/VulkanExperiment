@@ -1,26 +1,37 @@
 #pragma once
 
 #include "BaseRenderer.h"
+#include "FirstPersonCamera.h"
 #include "GltfModel.h"
 #include "KeyBoardInputManager.h"
 #include "MouseInputManager.h"
-#include "FirstPersonCamera.h"
-
-#include <array>
-#include <chrono>
+#include "VkTexture.h"
+#include "VkDescriptorManager.h"
+#include "VkRenderpassManager.h"
+#include "VkDepthImageBuilder.h"
+#include "VkSynObjectFactory.h"
+#include "VkUniformBufferBundle.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/hash.hpp>
-#include <iostream>
 #include <memory>
-#include <random>
 #include <vector>
+
+
+
 
 class MultiSubpassesRenderer : public BaseRenderer
 {
   public:
-	MultiSubpassesRenderer() = default;
-	~MultiSubpassesRenderer() = default;
+	MultiSubpassesRenderer(
+			VkWindows &         _window,
+			VkDeviceManager &   _device_manager,
+			VkSwapChainManager &_swapchain_manager,
+			VkCommandManager &  _command_manager
+		);
+
+
+	~MultiSubpassesRenderer() override = default;
 
   public:
 	void SetUpUserInput() override;
@@ -33,7 +44,6 @@ class MultiSubpassesRenderer : public BaseRenderer
 	void CreateRenderPass() override;
 
 	void CreateUniformBuffer() override;
-	void CreateFrameBuffers() override;
 
 	void CreateDescriptorSetLayout() override;
 	void CreateDescriptorPool() override;
@@ -42,7 +52,6 @@ class MultiSubpassesRenderer : public BaseRenderer
 	void CreateGraphicsPipelineLayout() override;
 	void CreateGraphicsPipeline() override;
 
-	void InitCommandBuffers() override;
 	void PrepareModels() override;
 	void CommandBufferRecording() override;
 
@@ -53,20 +62,10 @@ class MultiSubpassesRenderer : public BaseRenderer
 
 	void UpdateCamera(float dt) override;
 
-  public:
-	void CleanUpModels() override;
-	void CleanUpDescriptorSetLayoutAndDescriptorPool() override;
-	void CleanUpCommandBuffersAndCommandPool() override;
-	void CleanUpSyncObjects() override;
-	void CleanupFrameBuffers() override;
-	void CleanUpPipelineAndPipelineLayout() override;
-	void CleanUpRenderPass() override;
-	void CleanUpImages() override;
-	void CleanUpUniformBuffers() override;
 
   private:
-	void CreatePipelineSubpass0();
-	void CreatePipelineSubpass1();
+	void CreatePipePass0Subpass0();
+	void CreatePipePass0Subpass1();
 
   private:
 	static constexpr int MAX_FRAMES_IN_FLIGHT = 2;
@@ -114,8 +113,11 @@ class MultiSubpassesRenderer : public BaseRenderer
 	} uboGS;
 
   private:
-	//RENDER PASS
-	VkRenderPass render_pass;
+	//RENDERPASS MAN
+	VkRenderpassManager render_pass_manager;
+
+
+	std::unique_ptr<VkImageBuilder>      depth_image_builder;
 
 	//DESCRIPTOR
 	VkDescriptorPool      descriptor_pool;
@@ -145,8 +147,8 @@ class MultiSubpassesRenderer : public BaseRenderer
 	UniformBufferOjectGS ubo_gs{};
 
 	//TEXTURE
-	VkTexture human_face;
-	VkTexture viking_room;
+
+
 
 	//ATTACHMENT
 	std::vector<VkImageWrapper> all_color_attachment;
@@ -167,7 +169,7 @@ class MultiSubpassesRenderer : public BaseRenderer
 	std::vector<VkFence>     images_fences;
 
 	//MODELS
-	std::unique_ptr<GltfModel> test_model;
+	std::shared_ptr<GltfModel> test_model;
 
 	//INPUT MANAGER
 	std::unique_ptr<KeyBoardInputManager> keyboard;

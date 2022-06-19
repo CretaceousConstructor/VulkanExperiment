@@ -1,15 +1,30 @@
 #include "VkExtensionManager.h"
 
-std::vector<const char *> VkExtensionManager::GetNeededInstanceExtensions(bool ValidationLayerEnabled)
+std::vector<const char *> VkExtensionManager::GetNeededGlobalInstanceExtensions(bool ValidationLayerEnabled)
 {
 	//GLFW需要的instance extension
 	uint32_t glfwExtensionCount = 0;
 	//给出所有GLFW需要的 vulkan instance extensions
 	const char **             glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
-
 	std::vector<const char *> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
 
-	//validation需要的extension
+
+	//TODO:下面被注释的函数用来检查global extensions是否被支持，但是懒得写。
+	//实例的扩展功能，这些扩展功能分别属于某个 层(layer)
+	////获得extension的数目
+	//uint32_t extensionCount = 0;
+	//vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
+	////获得extension的细节
+	//std::vector<VkExtensionProperties> extensions1(extensionCount);
+	//vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, extensions1.data());
+	//std::cout << "available extensions:\n";
+	////输出extension的细节
+	//for (const auto& extension : extensions1) {
+	//	std::cout << '\t' << extension.extensionName << '\n';
+	//}
+
+
+	//validation layer需要的extension
 	if (ValidationLayerEnabled)
 	{
 		//如果启动了validation层面，那么就需要加入VK_EXT_DEBUG_UTILS_EXTENSION_NAME。这里的注释写得不清楚

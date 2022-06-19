@@ -21,7 +21,12 @@ std::shared_ptr<VkUniformBufferBundle> VkUniformBufferFactory::GetBufferBundle(V
 
 	return result;
 
+
+
+
 }
+
+
 
 void VkUniformBufferFactory::SetSharingMode(VkSharingMode _sharing_mode)
 {

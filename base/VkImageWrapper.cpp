@@ -65,7 +65,7 @@ void VkImageWrapper::InitImageView(VkFormat format, VkImageAspectFlags aspectFla
 
 void VkImageWrapper::CopyBufferToImage(VkBuffer buffer, uint32_t width, uint32_t height, const VkCommandPool &command_pool, const VkQueue &command_quque) const
 {
-	const VkCommandBuffer   commandBuffer = VkCommandManager::BeginSingleTimeCommands(command_pool, device_manager.GetLogicalDevice());
+	const VkCommandBuffer commandBuffer = VkCommandManager::BeginSingleTimeCommands(command_pool, device_manager.GetLogicalDevice());
 	VkBufferImageCopy region{};
 	region.bufferOffset      = 0;
 	region.bufferRowLength   = 0;
@@ -98,7 +98,7 @@ void VkImageWrapper::CopyBufferToImage(VkBuffer buffer, uint32_t width, uint32_t
 
 void VkImageWrapper::CopyBufferToImage(VkBuffer buffer, const std::vector<VkBufferImageCopy> &bufferCopyRegions, const VkCommandPool &command_pool, const VkQueue &command_quque)const
 {
-	VkCommandBuffer commandBuffer = VkCommandManager::BeginSingleTimeCommands(command_pool, device_manager.GetLogicalDevice());
+	const VkCommandBuffer commandBuffer = VkCommandManager::BeginSingleTimeCommands(command_pool, device_manager.GetLogicalDevice());
 
 	vkCmdCopyBufferToImage(
 	    commandBuffer,
@@ -119,6 +119,7 @@ bool VkImageWrapper::HasStencilComponent(VkFormat format)
 void VkImageWrapper::TransitionImageLayout(VkImageLayout oldLayout, VkImageLayout newLayout, const VkCommandPool &command_pool, const VkQueue &command_quque, VkDeviceManager::QueueFamilyIndices queue_family_indices, uint32_t miplevelcount)const
 {
 	const VkCommandBuffer commandBuffer = VkCommandManager::BeginSingleTimeCommands(command_pool, device_manager.GetLogicalDevice());
+
 
 	VkImageMemoryBarrier barrier{};
 	barrier.sType     = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -187,13 +188,15 @@ void VkImageWrapper::TransitionImageLayout(VkImageLayout oldLayout, VkImageLayou
 		sourceStage           = VK_PIPELINE_STAGE_TRANSFER_BIT;
 		barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 
-		destinationStage      = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-		barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT,
 
-		//TODO:修好这里的队列家族问题
+		//在德国人给的同步例子中，下面这两行不存在，如果去掉可以运行吗
+		destinationStage      = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+		barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+		//TODO:修好这里的队列家族问题:阅读spec中 Queue Family Ownership Transfer的章节，这里需要两个barriers，记得修
 		    //这里有问题的，队列家族index如果不同就根本没法运行，至今原因未知
 		    //barrier.srcQueueFamilyIndex = queue_family_indices.transferFamily.value();
-		    barrier.srcQueueFamilyIndex = queue_family_indices.graphicsFamily.value();
+		barrier.srcQueueFamilyIndex = queue_family_indices.transferFamily.value();
 		barrier.dstQueueFamilyIndex     = queue_family_indices.graphicsFamily.value();
 	}
 	else

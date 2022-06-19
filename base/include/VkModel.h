@@ -395,7 +395,7 @@ void VkModel<V, InsType>::Vertices::CleanUp(VkDeviceManager *para_device_manager
 }
 
 template <class V, class InsType>
-inline void VkModel<V, InsType>::Indices::CleanUp(VkDeviceManager *para_device_manager)
+void VkModel<V, InsType>::Indices::CleanUp(VkDeviceManager *para_device_manager)
 {
 	if (buffer)
 	{
@@ -408,7 +408,7 @@ inline void VkModel<V, InsType>::Indices::CleanUp(VkDeviceManager *para_device_m
 }
 
 template <class V, class InsType>
-inline void VkModel<V, InsType>::InstancesData::CleanUp(VkDeviceManager *para_device_manager)
+void VkModel<V, InsType>::InstancesData::CleanUp(VkDeviceManager *para_device_manager)
 {
 
 	if (buffer)

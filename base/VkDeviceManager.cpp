@@ -325,8 +325,8 @@ const VkCommandPool& VkDeviceManager::CreateCommandPool(CommandPoolType type)
 			VkCommandPool           transforCommandPool;
 			VkCommandPoolCreateInfo transforPoolInfo{};
 			transforPoolInfo.sType            = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-			transforPoolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
-			//transforPoolInfo.queueFamilyIndex = queueFamilyIndices.transferFamily.value();
+			transforPoolInfo.queueFamilyIndex = queueFamilyIndices.transferFamily.value();
+			//transforPoolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
 			transforPoolInfo.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;        // 仅仅用于短暂的使用 并且可以复用 DON'T KNOW
 
 			if (vkCreateCommandPool(device, &transforPoolInfo, nullptr, &transforCommandPool) != VK_SUCCESS)
@@ -358,8 +358,8 @@ void VkDeviceManager::CreateLogicalDeviceAndQueues()
 		queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
 
 		//TODO:hard code直接全部创建0号家族的，因为之后出现bug至今不知道怎么修复
-		//queueCreateInfo.queueFamilyIndex = queueFamily;
-		queueCreateInfo.queueFamilyIndex = 0;
+		//queueCreateInfo.queueFamilyIndex = 0;
+		queueCreateInfo.queueFamilyIndex = queueFamily;
 		queueCreateInfo.queueCount       = 1;
 		queueCreateInfo.pQueuePriorities = &queuePriority;
 		queueCreateInfos.push_back(queueCreateInfo);
@@ -367,43 +367,36 @@ void VkDeviceManager::CreateLogicalDeviceAndQueues()
 
 	VkPhysicalDeviceFeatures deviceFeatures{};        //是否支持纹理压缩，64位float，多视口等
 	vkGetPhysicalDeviceFeatures(physical_device, &deviceFeatures);
-	deviceFeatures.samplerAnisotropy = VK_TRUE;        //前面已经测试过，直接设置成true就行了
+	deviceFeatures.samplerAnisotropy = VK_TRUE;       //前面已经测试过，直接设置成true就行了
 
-	VkDeviceCreateInfo createInfo{};
-	createInfo.sType                = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-	createInfo.pQueueCreateInfos    = queueCreateInfos.data();
-	createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
-	createInfo.pEnabledFeatures     = &deviceFeatures;
+	VkDeviceCreateInfo device_create_info{};
+	device_create_info.sType                = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+	device_create_info.pQueueCreateInfos    = queueCreateInfos.data();
+	device_create_info.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
+	device_create_info.pEnabledFeatures     = &deviceFeatures;
 
 
 	auto deviceRequiredExtensions = VkExtensionManager::GetRequiredExtensionsForAGoodDevice();
 
 	//设备的扩展 至少可以创建交换链
-	createInfo.enabledExtensionCount   = static_cast<uint32_t>(deviceRequiredExtensions.size());
-	createInfo.ppEnabledExtensionNames = deviceRequiredExtensions.data();
+	device_create_info.enabledExtensionCount   = static_cast<uint32_t>(deviceRequiredExtensions.size());
+	device_create_info.ppEnabledExtensionNames = deviceRequiredExtensions.data();
 
-	////enabledLayerCount is deprecated and ignored.
-	////ppEnabledLayerNames?is deprecatedand ignored.
-	///TODO:这里是干嘛的？
-	//if (enableValidationLayers) {
-	//	//至少需要 可以用来调试的validation layer
-	//	createInfo.enabledLayerCount = static_cast<uint32_t>(instanceValidationLayerRequiredToUse.size());
-	//	createInfo.ppEnabledLayerNames = instanceValidationLayerRequiredToUse.data();
-	//}
-	//else {
-	//	createInfo.enabledLayerCount = 0;
-	//}
+	//createInfo.enabledLayerCount is deprecated and ignored.
+	//createInfo.ppEnabledLayerNames?is deprecatedand ignored.
 
-	if (vkCreateDevice(physical_device, &createInfo, nullptr, &device) != VK_SUCCESS)
+	if (vkCreateDevice(physical_device, &device_create_info, nullptr, &device) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to create logical device!");
 	}
 
+
+
 	//TODO:这里为什么只能用0号家族的队列？
 	vkGetDeviceQueue(device, indices.graphicsFamily.value(), 0, &graphics_queue);
 	vkGetDeviceQueue(device, indices.presentFamily.value(), 0, &present_queue);
-	//vkGetDeviceQueue(device, indices.transferFamily.value(), 0, &tranfer_queue);
-	vkGetDeviceQueue(device, indices.graphicsFamily.value(), 0, &tranfer_queue);
+	vkGetDeviceQueue(device, indices.transferFamily.value(), 0, &tranfer_queue);
+	//vkGetDeviceQueue(device, indices.graphicsFamily.value(), 0, &tranfer_queue);
 
 }
 

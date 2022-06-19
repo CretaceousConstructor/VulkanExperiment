@@ -1,8 +1,14 @@
 #include "Multisubpass.h"
-//MultiSubpassesRenderer::MultiSubpassesRenderer() :
-//    camera(nullptr) {
-//}
 
+	MultiSubpassesRenderer::MultiSubpassesRenderer(VkWindows &_window, VkDeviceManager &_device_manager, VkSwapChainManager &_swapchain_manager, VkCommandManager &_command_manager):
+		BaseRenderer(_window, _device_manager, _swapchain_manager, _command_manager),
+		render_pass_manager(device_manager, swapchain_manager,window,command_manager)
+{
+
+	depth_image_builder = std::make_unique<VkDepthImageBuilder>(device_manager, swapchain_manager, command_manager, window);
+
+
+}
 void MultiSubpassesRenderer::PrepareModels()
 {
 	//========================================================================================================================
@@ -1039,6 +1045,7 @@ void MultiSubpassesRenderer::CreateTextureImages()
 	viking_room.InitTextureView(VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
 	viking_room.InitSampler();
 }
+
 
 void MultiSubpassesRenderer::SetUpUserInput()
 {

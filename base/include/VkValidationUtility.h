@@ -10,7 +10,8 @@
 
 namespace VkValidationUtility
 {
-constexpr bool VALIDATION_LAYERS_ENABLED = true;
+//let vulkan configurator take charge
+constexpr bool VALIDATION_LAYERS_ENABLED = false;
 
 inline VkDebugUtilsMessengerEXT debug_messenger;
 
@@ -23,6 +24,11 @@ VkResult CreateDebugUtilsMessengerEXT(const VkInstance &instance, const VkDebugU
 
 void SetupDebugMessenger(const VkInstance &instance);
 void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger, const VkAllocationCallbacks *pAllocator);
+
+
+
+
+
 //这些是我们想要拿来调试用到的validationFeatures,
 const std::vector<VkValidationFeatureEnableEXT> enabled_features{
     VK_VALIDATION_FEATURE_ENABLE_DEBUG_PRINTF_EXT,

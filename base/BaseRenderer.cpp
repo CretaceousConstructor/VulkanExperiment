@@ -14,7 +14,6 @@ BaseRenderer::BaseRenderer(VkWindows &_window, VkDeviceManager &_device_manager,
 void BaseRenderer::RenderingPreparation()
 {
 
-	//TODO:做成模板方法
 	this->SetUpUserInput();
 	//Init Camera
 	this->CreateCamera();
@@ -48,6 +47,8 @@ void BaseRenderer::RenderingPreparation()
 	this->CommandBufferRecording();
 	//prepare sync objects
 	this->InitSynObjects();
+
+
 
 }
 

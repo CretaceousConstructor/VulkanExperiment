@@ -2,8 +2,8 @@
 
 App::App() :
     instance(),
-    window(instance.GetInstanceRef()),
-    device_manager(instance.GetInstanceRef(), window),
+    window(instance.GetInstance()),
+    device_manager(instance.GetInstance(), window),
     swap_chain_manager(device_manager,window),
 	command_manager(device_manager,swap_chain_manager.GetSwapImageCount(),1)
 {

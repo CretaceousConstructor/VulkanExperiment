@@ -260,6 +260,12 @@
     <ClCompile Include="base\VkTextureFactory.cpp">
       <Filter>Source Files\Vk</Filter>
     </ClCompile>
+    <ClCompile Include="base\VkSpace.cpp">
+      <Filter>Source Files\Vk</Filter>
+    </ClCompile>
+    <ClCompile Include="base\VkGraphicsComponent.cpp">
+      <Filter>Source Files\Vk</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="base\include\App.h">
@@ -432,6 +438,12 @@
     </ClInclude>
     <ClInclude Include="base\include\VkTextureFactory.h">
       <Filter>Header Files\Vk\Texture</Filter>
+    </ClInclude>
+    <ClInclude Include="base\VkSpace.h">
+      <Filter>Header Files\Vk</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\VkGraphicsComponent.h">
+      <Filter>Header Files\Vk</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

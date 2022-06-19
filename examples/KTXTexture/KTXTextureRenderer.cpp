@@ -158,7 +158,6 @@ void KTXTextureRenderer::CreateUniformBuffer()
 
 	constexpr VkDeviceSize bufferSize = sizeof(UboData);
 
-
 	uniform_buffers = ubuffer_factory.GetBufferBundle(bufferSize, swapchain_manager.GetSwapImageCount(),VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
 
@@ -213,22 +212,22 @@ void KTXTextureRenderer::CreatePipelineRenderPass0Subpass0()
 
 	//std::vector<VkPipelineShaderStageCreateInfo> shader_stages_create_info = {vertex_shader_subpass0.GetVkPipelineShaderStageCreateInfo(), fragment_shader_subpass0.GetVkPipelineShaderStageCreateInfo()};
 
-	////TODO:需要更多的abstraction
-	VkVertexInputBindingDescription bindingDescription0{};
-	bindingDescription0.binding   = 0;
-	bindingDescription0.stride    = sizeof(Vertex);
-	bindingDescription0.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+	//////TODO:需要更多的abstraction
+	//VkVertexInputBindingDescription bindingDescription0{};
+	//bindingDescription0.binding   = 0;
+	//bindingDescription0.stride    = sizeof(Vertex);
+	//bindingDescription0.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
-	std::vector<VkVertexInputBindingDescription> VIBDS = {bindingDescription0};
+	//const std::vector<VkVertexInputBindingDescription> VIBDS = {bindingDescription0};
 
-	auto attributeDescriptions = Vertex::GetAttributeDescriptions();
+	//const auto attributeDescriptions = Vertex::GetAttributeDescriptions();
 
-	VkPipelineVertexInputStateCreateInfo vertex_input_info{};
-	vertex_input_info.sType                           = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-	vertex_input_info.vertexBindingDescriptionCount   = (uint32_t) VIBDS.size();
-	vertex_input_info.pVertexBindingDescriptions      = VIBDS.data();        // Optional
-	vertex_input_info.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
-	vertex_input_info.pVertexAttributeDescriptions    = attributeDescriptions.data();        // Optional
+	//VkPipelineVertexInputStateCreateInfo vertex_input_info{};
+	//vertex_input_info.sType                           = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+	//vertex_input_info.vertexBindingDescriptionCount   = (uint32_t) VIBDS.size();
+	//vertex_input_info.pVertexBindingDescriptions      = VIBDS.data();        // Optional
+	//vertex_input_info.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+	//vertex_input_info.pVertexAttributeDescriptions    = attributeDescriptions.data();        // Optional
 
 	//VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
 	//inputAssembly.sType                  = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -393,6 +392,7 @@ void KTXTextureRenderer::CreatePipelineRenderPass0Subpass0()
 
 	const PipelineMetaInfo meta_info{.pass = 0, .subpass = 0};
 	auto &                 pipeline_builder = render_pass_manager.GetPipelineBuilder();
+
 	render_pass_manager.AddPipeline("PipelinePass0Subpass0", meta_info,shader_infos);
 
 
@@ -772,11 +772,14 @@ void KTXTextureRenderer::DrawFrame()
 
 void KTXTextureRenderer::UpdateUniformBuffer(uint32_t currentImage)
 {
+
+
 	ubo.projection = camera->GetProj();
 	ubo.view       = camera->GetView();
 	ubo.eyepos     = glm::vec4(camera->GetPosition(), 1.f);
 
 	uniform_buffers->GetOne(currentImage).MapMemory(0,sizeof(ubo),&ubo,sizeof(UboData));
+
 	//void *data;
 	//vkMapMemory(device_manager.GetLogicalDevice(), uniform_buffers[currentImage]->memory, 0, sizeof(ubo), 0, &data);
 	//memcpy(data, &ubo, sizeof(Ubo_data));

@@ -30,12 +30,6 @@ class VkImageWrapper :public VkImageBase
 	VkImageWrapper &operator=(VkImageWrapper &&) = delete;
 
 
-
-
-
-
-
-
   private:
 	void Init(VkImageType para_image_type, VkFormat para_format, VkExtent3D para_image_extent, uint32_t para_mip_levels, uint32_t para_array_layers, VkSampleCountFlagBits para_samples, VkImageTiling para_tiling, VkBufferUsageFlags para_usage_image, VkSharingMode para_sharing_mode, VkImageLayout initialLayout, VkMemoryPropertyFlagBits para_image_mem_property_flag);
 

@@ -19,7 +19,6 @@ VkWindows::~VkWindows()
 {
 	vkDestroySurfaceKHR(instance, surface, nullptr);
 	glfwDestroyWindow(raw_window_ptr);
-	glfwTerminate();
 }
 
 void VkWindows::FrameBufferResizeCallback(GLFWwindow *window, int width, int height)

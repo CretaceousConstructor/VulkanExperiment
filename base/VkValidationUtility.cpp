@@ -8,6 +8,8 @@
 //CHECKED
 bool VkValidationUtility::CheckIfRequiredInstanceLayersSupported()
 {
+
+	//之前的版本有device（某个gpu） layer和instance（整个程序）layer的区别，不过已经不再这么区分，全部都用instance layer
 	//遍历所有可用的LAYER
 	//*************************************************************
 	uint32_t layerCount;
@@ -32,7 +34,6 @@ bool VkValidationUtility::CheckIfRequiredInstanceLayersSupported()
 		VK_LAYER_LUNARG_screenshot
 	*/
 	//*************************************************************
-
 
 	//遍历需要用到的INSTANCE LAYER，看看需要的用到的在不在可用列表中。只要有一个不能用就返回false
 	//*************************************************************
@@ -75,7 +76,7 @@ bool VkValidationUtility::CheckIfRequiredInstanceLayersSupported()
 
 VkResult VkValidationUtility::CreateDebugUtilsMessengerEXT(const VkInstance &instance, const VkDebugUtilsMessengerCreateInfoEXT *pCreateInfo, const VkAllocationCallbacks *pAllocator, VkDebugUtilsMessengerEXT *pDebugMessenger)
 {
-	auto func = (PFN_vkCreateDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
+	const auto func = (PFN_vkCreateDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
 	if (func != nullptr)
 	{
 		return func(instance, pCreateInfo, pAllocator, pDebugMessenger);
@@ -88,10 +89,13 @@ VkResult VkValidationUtility::CreateDebugUtilsMessengerEXT(const VkInstance &ins
 
 void VkValidationUtility::SetupDebugMessenger(const VkInstance &instance)
 {
-	if (!VkValidationUtility::VALIDATION_LAYERS_ENABLED)
+
+
+	if constexpr(!VkValidationUtility::VALIDATION_LAYERS_ENABLED)
 	{
 		return;
 	}
+
 	VkDebugUtilsMessengerCreateInfoEXT create_info{};
 
 	VkValidationUtility::PopulateDebugMessengerCreateInfo(create_info);
@@ -99,6 +103,7 @@ void VkValidationUtility::SetupDebugMessenger(const VkInstance &instance)
 	{
 		throw std::runtime_error("failed to set up debug messenger!");
 	}
+
 
 
 }
@@ -109,7 +114,8 @@ void VkValidationUtility::SetupDebugMessenger(const VkInstance &instance)
 
 void VkValidationUtility::DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT para_debugMessenger, const VkAllocationCallbacks *pAllocator)
 {
-	PFN_vkDestroyDebugUtilsMessengerEXT func = (PFN_vkDestroyDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
+	const auto func = reinterpret_cast<PFN_vkDestroyDebugUtilsMessengerEXT>(vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT"));
+
 	if (func != nullptr)
 	{
 		func(instance, para_debugMessenger, pAllocator);
@@ -177,9 +183,8 @@ VKAPI_ATTR VkBool32 VKAPI_CALL VkValidationUtility::DebugCallback(VkDebugUtilsMe
 	//}
 	//else
 
-	std::cout << "validation layer: " << std::endl
-	          << "--------------------------------------------------------------------------------" << std::endl;
-	const auto sizeline = 140;
+	std::cout << "validation layer: " << std::endl << "--------------------------------------------------------------------------------" << std::endl;
+	constexpr auto sizeline = 140;
 	for (int i = 0; i < message.length(); i += sizeline)
 	{
 		std::cout << message.substr(i, sizeline) << std::endl;
@@ -187,5 +192,6 @@ VKAPI_ATTR VkBool32 VKAPI_CALL VkValidationUtility::DebugCallback(VkDebugUtilsMe
 	std::cout << "--------------------------------------------------------------------------------" << std::endl
 	          << std::endl;
 
+	//也可以返回True，具体含义查文档吧
 	return VK_FALSE;
 }

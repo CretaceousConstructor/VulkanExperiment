@@ -93,9 +93,6 @@ void VkCommandManager::CreateCommandBuffer(const VkDevice &device, const VkComma
 	BufferAllocInfo.commandBufferCount = 1;
 	vkAllocateCommandBuffers(device, &BufferAllocInfo, &CommandBuffer);
 
-
-
-
 }
 
 const std::vector<VkCommandBuffer> & VkCommandManager::GetGraphicsCommandBuffers() const

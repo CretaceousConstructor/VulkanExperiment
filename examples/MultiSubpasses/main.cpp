@@ -14,7 +14,7 @@
 int main() {
 
 
-	MultiSubPassesApp app_instance;
+	MultiSubPassesApp app_instance{};
 	try {
 		app_instance.Run();
 	}
@@ -22,6 +22,7 @@ int main() {
 		std::cerr << e.what() << std::endl;
 		return EXIT_FAILURE;
 	}
+
 
 	return EXIT_SUCCESS;
 

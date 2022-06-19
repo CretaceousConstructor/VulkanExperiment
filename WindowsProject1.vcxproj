@@ -29,10 +29,12 @@
     <ClCompile Include="base\BaseRenderer.cpp" />
     <ClCompile Include="base\Camera.cpp" />
     <ClCompile Include="base\VkFenceBundle.cpp" />
+    <ClCompile Include="base\VkGraphicsComponent.cpp" />
     <ClCompile Include="base\VkImageBase.cpp" />
     <ClCompile Include="base\VkImagesBundle.cpp" />
     <ClCompile Include="base\VkModelFactory.cpp" />
     <ClCompile Include="base\VkSemaphoreBundle.cpp" />
+    <ClCompile Include="base\VkSpace.cpp" />
     <ClCompile Include="base\VkSubpassFactory.cpp" />
     <ClCompile Include="base\VkSynObjectBundleBase.cpp" />
     <ClCompile Include="base\VkSynObjectFactory.cpp" />
@@ -101,6 +103,7 @@
     <ClInclude Include="base\include\MouseInputManager.h" />
     <ClInclude Include="base\include\ShaderWrapper.h" />
     <ClInclude Include="base\include\VkFenceBundle.h" />
+    <ClInclude Include="base\include\VkGraphicsComponent.h" />
     <ClInclude Include="base\include\VkImageBase.h" />
     <ClInclude Include="base\include\VkImagesBundle.h" />
     <ClInclude Include="base\include\VkModelFactory.h" />
@@ -137,6 +140,7 @@
     <ClInclude Include="base\include\VkUniformBufferFactory.h" />
     <ClInclude Include="base\include\VkValidationUtility.h" />
     <ClInclude Include="base\include\VkWindows.h" />
+    <ClInclude Include="base\VkSpace.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="base\vulkan\generate_spv.sh" />

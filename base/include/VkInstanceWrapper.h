@@ -21,7 +21,7 @@ public:
 	VkInstanceWrapper &operator=(VkInstanceWrapper&&) = delete;
 
 
-	[[nodiscard]]VkInstance GetInstanceRef() const;
+	[[nodiscard]]VkInstance GetInstance() const;
 	//VkInstance GetInstance() const;
 
 
@@ -36,7 +36,8 @@ private:
 
 private:
 
-static	void InitWindowBackendSystem() ;
+	static	void InitWindowBackendSystem() ;
+  static void ShutDownWindowBackendSystem();
 	static void GlfwErrorCallback(int error, const char *description);
 
   private:

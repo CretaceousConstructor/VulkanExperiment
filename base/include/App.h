@@ -25,19 +25,16 @@ public:
 
 	App(App&&) = delete;
 	App &operator=(App&&) = delete;
-
+public:
 	void Run();
 	void Init();
-	//void RendererSetUp();
-	//void RenderingPreparation();
 	void MainLoop() const;
-	//void CleanUp();
-
 
 
 
 protected:
 	virtual void InitRenderer() = 0;
+
 protected:
 	VkInstanceWrapper instance;
 	VkWindows window;

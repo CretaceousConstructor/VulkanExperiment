@@ -3,27 +3,17 @@
 #include "FirstPersonCamera.h"
 #include "KeyBoardInputManager.h"
 #include "MouseInputManager.h"
-#include "VkAttachmentInfo.h"
-#include "GltfModel.h"
 #include "VkTexture.h"
 #include "VkDescriptorManager.h"
-#include "VkUniformBuffer.h"
 #include "VkRenderpassManager.h"
 #include "VkDepthImageBuilder.h"
-#include "VkMetaInfo.h"
 #include "VkSynObjectFactory.h"
-#include "VkUniformBufferFactory.h"
 #include "VkUniformBufferBundle.h"
-#include <array>
-#include <chrono>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/hash.hpp>
-#include <iostream>
 #include <memory>
-#include <random>
 #include <vector>
-#include <bitset>
 
 class KTXTextureRenderer : public BaseRenderer
 {
