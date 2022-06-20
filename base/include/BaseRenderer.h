@@ -4,7 +4,7 @@
 #include "ShaderWrapper.h"
 #include "VkCommandManager.h"
 #include "VkDeviceManager.h"
-#include "VkImageWrapper.h"
+#include "VkGeneralPurposeImage.h"
 #include "VkModel.h"
 #include "VkSwapChainManager.h"
 #include "VkTexture.h"

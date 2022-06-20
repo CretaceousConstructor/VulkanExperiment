@@ -1,10 +1,16 @@
 #include "VkCommandManager.h"
 
-VkCommandManager::VkCommandManager(VkDeviceManager& _device_man,size_t num_of_graphics_command_buffers,size_t num_of_transfer_command_buffer) :
-    device_manager(_device_man),
+VkCommandManager::VkCommandManager(VkGraphicsComponent& _gfx,size_t num_of_graphics_command_buffers,size_t num_of_transfer_command_buffer) :
+    gfx(_gfx),
+	//TODO:这里有设计缺陷，device不应该负责commandpool创建
+    device_manager(gfx.Device()),
     graphics_command_pool(device_manager.CreateCommandPool(VkDeviceManager::CommandPoolType::graphics_command_pool)),
     transfer_command_pool(device_manager.CreateCommandPool(VkDeviceManager::CommandPoolType::transfor_command_pool))
 {
+
+
+
+
 
 	transfer_command_buffer.resize(num_of_graphics_command_buffers);
 

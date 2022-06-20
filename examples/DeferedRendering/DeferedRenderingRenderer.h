@@ -138,15 +138,15 @@ class DeferedRenderingRenderer : public BaseRenderer
 
 	//ATTACHMENTS
 	//offscreen pass attachments
-	std::vector<VkImageWrapper> depth_attachment_offscreen;
-	std::vector<VkImageWrapper> position_attachment_offscreen;
-	std::vector<VkImageWrapper> normal_attachment_offscreen;
-	std::vector<VkImageWrapper> albedo_attachment_offscreen;
+	std::vector<VkGeneralPurposeImage> depth_attachment_offscreen;
+	std::vector<VkGeneralPurposeImage> position_attachment_offscreen;
+	std::vector<VkGeneralPurposeImage> normal_attachment_offscreen;
+	std::vector<VkGeneralPurposeImage> albedo_attachment_offscreen;
 	//sampler
 	VkSampler gmap_sampler;
 
 	//composition pass attachments
-	std::vector<VkImageWrapper> depth_attachment_compositon;
+	std::vector<VkGeneralPurposeImage> depth_attachment_compositon;
 
 
 

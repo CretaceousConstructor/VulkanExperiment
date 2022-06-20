@@ -5,7 +5,7 @@
 		render_pass_manager(device_manager, swapchain_manager,window,command_manager)
 {
 
-	depth_image_builder = std::make_unique<VkDepthImageBuilder>(device_manager, swapchain_manager, command_manager, window);
+	depth_image_builder = std::make_unique<VkDepthImageFactory>(device_manager, swapchain_manager, command_manager, window);
 
 
 }
@@ -21,7 +21,7 @@ void MultiSubpassesRenderer::CreateDescriptorPool()
 	std::array<VkDescriptorPoolSize, 3> poolSizes{};
 
 	poolSizes[0].type            = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	poolSizes[0].descriptorCount = 6;        // 6        uniform_buffers  uniform_buffers_gs 两个，共3帧。2*3 = 6
+	poolSizes[0].descriptorCount = 6;        // 6        buffers  uniform_buffers_gs 两个，共3帧。2*3 = 6
 
 	poolSizes[1].type            = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;        //根据模型使用的材质数目决定
 	poolSizes[1].descriptorCount = test_model->images.size();

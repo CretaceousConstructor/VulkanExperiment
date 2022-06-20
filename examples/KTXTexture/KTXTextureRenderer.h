@@ -6,7 +6,7 @@
 #include "VkTexture.h"
 #include "VkDescriptorManager.h"
 #include "VkRenderpassManager.h"
-#include "VkDepthImageBuilder.h"
+#include "VkDepthImageFactory.h"
 #include "VkSynObjectFactory.h"
 #include "VkUniformBufferBundle.h"
 #include <glm/glm.hpp>
@@ -121,7 +121,7 @@ public:
 	//RENDERPASS MAN
 	VkRenderpassManager render_pass_manager;
 
-	std::unique_ptr<VkImageBuilder>      depth_image_builder;
+	std::unique_ptr<VkImageFactory>      depth_image_builder;
 
 
 	//UNIFORM BUFFER
@@ -131,7 +131,7 @@ public:
 	//TEXTURE
 	std::shared_ptr<VkTexture> ktx_texure;
 	//ATTACHMENT
-	std::shared_ptr<VkImagesBundle> depth_attachments;
+	std::shared_ptr<VkImageBundle> depth_attachments;
 
 	//SYN OBJECTS
 	std::shared_ptr<VkSemaphoreBundle> image_available_semaphores;

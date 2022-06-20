@@ -1,40 +1,34 @@
 #pragma once
-#include "VkUniformBufferBundle.h"
-
- class VkUniformBufferFactory
+#include "VkBufferBundle.h"
+#include "VkBufferFactory.h"
+#include "VkGraphicsComponent.h"
+class VkUniformBufferFactory : public VkBufferFactory
 {
   public:
-	VkUniformBufferFactory(VkDeviceManager &_device_manager, VkWindows & _window)
-		:
-		device_manager(_device_manager),
-		window(_window)
-	{
-		GetToInitalState();
-	}
+	VkUniformBufferFactory(VkGraphicsComponent &_gfx);
+	~VkUniformBufferFactory() override = default;
 
-	~VkUniformBufferFactory() = default;
 	VkUniformBufferFactory(const VkUniformBufferFactory &) = delete;
 	VkUniformBufferFactory &operator=(const VkUniformBufferFactory &) = delete;
-	VkUniformBufferFactory(VkUniformBufferFactory&&) = delete;
-	VkUniformBufferFactory &operator=(VkUniformBufferFactory&&) = delete;
+	VkUniformBufferFactory(VkUniformBufferFactory &&)                 = delete;
+	VkUniformBufferFactory &operator=(VkUniformBufferFactory &&) = delete;
 
 
-	[[nodiscard]] std::shared_ptr<VkUniformBufferBundle> GetBufferBundle(VkDeviceSize buffer_size, uint32_t bundle_size,  VkMemoryPropertyFlags properties) ;
+	//[[nodiscard]] VkBufferBundle ProduceBufferBundle(VkDeviceSize buffer_size, uint32_t bundle_size, VkMemoryPropertyFlags properties) override;
 
 
+  protected:
+	void BuildBuffer() override;
+	void BuildMemory() override;
+	void BindBufferToMemo() override;
+	void Assemble() override;
+	void RestoreToDefaultState() override;
 
-
-	void GetToInitalState();
-
-public:
+  public:
 	void SetSharingMode(VkSharingMode _sharing_mode);
+
+ 
   private:
-	VkSharingMode sharing_mode{VK_SHARING_MODE_EXCLUSIVE};
-
-private:
-	VkDeviceManager & device_manager;
-	VkWindows &			window;
-
-
-
+	//the following are states required to be restored
+	VkSharingMode default_sharing_mode{VK_SHARING_MODE_EXCLUSIVE};
 };

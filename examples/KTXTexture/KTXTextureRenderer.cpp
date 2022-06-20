@@ -5,7 +5,7 @@ KTXTextureRenderer::KTXTextureRenderer(VkWindows &_window, VkDeviceManager &_dev
 	render_pass_manager(device_manager, swapchain_manager,window,command_manager)
 {
 
-	depth_image_builder = std::make_unique<VkDepthImageBuilder>(device_manager, swapchain_manager, command_manager, window);
+	depth_image_builder = std::make_unique<VkDepthImageFactory>(device_manager, swapchain_manager, command_manager, window);
 
 
 }
@@ -125,7 +125,7 @@ void KTXTextureRenderer::CreateDescriptorSets()
 		//		/*
 		//			Set 0,Binding 0: VS matrices Uniform buffer,amount = 1
 		//		*/
-		//		writeDescriptorSets.emplace_back(uniform_buffers[frame_inflight]->GetWriteDescriptorSetInfo(0, 0));
+		//		writeDescriptorSets.emplace_back(buffers[frame_inflight]->GetWriteDescriptorSetInfo(0, 0));
 		//		/*
 		//			Set 0,Binding 1: FS texture image and sampler,amount = 1
 		//		*/
@@ -167,7 +167,7 @@ void KTXTextureRenderer::CreateUniformBuffer()
 
 	//for (size_t i = 0; i < swapchain_manager.GetSwapImageCount(); i++)
 	//{
-	//	uniform_buffers.emplace_back(std::make_unique<VkUniformBuffer>(device_manager, window, bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, VK_SHARING_MODE_EXCLUSIVE));
+	//	buffers.emplace_back(std::make_unique<VkUniformBuffer>(device_manager, window, bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, VK_SHARING_MODE_EXCLUSIVE));
 	//}
 
 
@@ -189,7 +189,7 @@ void KTXTextureRenderer::CreateDepthImages()
 	//for (uint32_t i = 0; i < swapchain_manager.GetSwapImageCount(); i++)
 	//{
 	//	depth_attachments.emplace_back(
-	//	    std::make_unique<VkImageWrapper>(
+	//	    std::make_unique<VkGeneralPurposeImage>(
 	//	        device_manager, VK_IMAGE_TYPE_2D, depthFormat, swapchain_manager.GetSwapChainImageExtent(), 1, 1, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT, VK_SHARING_MODE_EXCLUSIVE, VK_IMAGE_LAYOUT_UNDEFINED, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT));
 
 	//	depth_attachments[i]->TransitionImageLayout(VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, command_manager.graphics_command_pool, device_manager.GetGraphicsQueue(), queue_family_index);
@@ -781,9 +781,9 @@ void KTXTextureRenderer::UpdateUniformBuffer(uint32_t currentImage)
 	uniform_buffers->GetOne(currentImage).MapMemory(0,sizeof(ubo),&ubo,sizeof(UboData));
 
 	//void *data;
-	//vkMapMemory(device_manager.GetLogicalDevice(), uniform_buffers[currentImage]->memory, 0, sizeof(ubo), 0, &data);
+	//vkMapMemory(device_manager.GetLogicalDevice(), buffers[currentImage]->memory, 0, sizeof(ubo), 0, &data);
 	//memcpy(data, &ubo, sizeof(Ubo_data));
-	//vkUnmapMemory(device_manager.GetLogicalDevice(), uniform_buffers[currentImage]->memory);
+	//vkUnmapMemory(device_manager.GetLogicalDevice(), buffers[currentImage]->memory);
 }
 
 void KTXTextureRenderer::UpdateCamera(float dt)
@@ -855,7 +855,7 @@ void KTXTextureRenderer::CreateRenderPass0()
 	color_attachment.attachment_index     = 0;
 
 	//Depth attachment index 1
-	VkAttachmentInfo depth_attachment_temp{depth_attachments->GetImages()};
+	VkAttachmentInfo depth_attachment_temp{depth_attachments->GetImagesArray()};
 	auto &           attachment_dec_depth  = depth_attachment_temp.attachment_description;
 	attachment_dec_depth.format            = swapchain_manager.FindDepthFormat();
 	attachment_dec_depth.samples           = VK_SAMPLE_COUNT_1_BIT;

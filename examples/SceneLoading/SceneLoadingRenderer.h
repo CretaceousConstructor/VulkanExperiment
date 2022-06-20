@@ -132,7 +132,7 @@ class SceneLoadingRenderer : public BaseRenderer
 	std::vector<VkDescriptorSet> descriptor_sets_for_matrices;
 
 	//ATTACHMENTS
-	std::vector<VkImageWrapper> depth_attachment;
+	std::vector<VkGeneralPurposeImage> depth_attachment;
 
 	//FRAMEBUFFER
 	std::vector<VkFramebuffer> frame_buffers;

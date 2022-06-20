@@ -2,7 +2,7 @@
 #include "EngineMarco.h"
 #include "EngineHeader.h"
 #include "VkDeviceManager.h"
-#include "VkSwapChainImageWrapper.h"
+#include "VkImageBase.h"
 #include "VkWindows.h"
 #include <set>
 #include <vector>
@@ -53,6 +53,8 @@ class VkSwapChainManager
 
 
 private:
+
+	//TODO:这里管理swap image的职责不应该交给这个类
 	std::vector<std::shared_ptr<VkImageBase>> swap_chain_images;
 	uint32_t   image_count;
 	VkExtent2D swap_chain_extent;

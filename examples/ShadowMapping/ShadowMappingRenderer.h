@@ -136,8 +136,8 @@ class ShadowMappingRenderer : public BaseRenderer
 	std::vector<VkDescriptorSet> scene_descriptor_sets;
 
 	//ATTACHMENTS
-	std::vector<VkImageWrapper> depth_attachment_off_screen;
-	std::vector<VkImageWrapper> depth_attachment_scene;
+	std::vector<VkGeneralPurposeImage> depth_attachment_off_screen;
+	std::vector<VkGeneralPurposeImage> depth_attachment_scene;
 
 	//TEXTURE
 	VkTexture ktx_texure;

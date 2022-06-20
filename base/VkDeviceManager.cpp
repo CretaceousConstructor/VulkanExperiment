@@ -87,6 +87,7 @@ int VkDeviceManager::RateDeviceSuitability(const VkPhysicalDevice& _device)
 	}
 
 	return score;
+
 }
 
 bool VkDeviceManager::QueueFamilyIndices::IsComplete() const

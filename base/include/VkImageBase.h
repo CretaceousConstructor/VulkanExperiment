@@ -1,19 +1,33 @@
 #pragma once
 
-#include "EngineMarco.h"
-#include "EngineHeader.h"
-
-
+#include "VkGraphicsComponent.h"
 
 class VkImageBase
 {
   public:
-	virtual ~VkImageBase() = default;
+	VkImageBase(VkGraphicsComponent &_gfx   , const VkImage _image, const VkFormat _image_format,  const VkImageView _image_view,const VkFormat _image_view_format);
+	virtual ~VkImageBase() = 0;
 
-	virtual VkImage      GetImage() = 0;
-	virtual VkFormat     GetImageFormat()= 0;
+	VkImageBase(const VkImageBase &) = delete;
+	VkImageBase &operator=(const VkImageBase &) = delete;
 
-	virtual VkImageView GetImageView()= 0;
-	virtual VkFormat    GetImageViewFormat()= 0;
+	VkImageBase(VkImageBase &&) = delete;
+	VkImageBase &operator=(VkImageBase &&) = delete;
 
+	[[nodiscard]]VkImage  GetImage()const;
+	[[nodiscard]]VkFormat GetImageFormat()const;
+
+	[[nodiscard]]VkImageView GetImageView()const;
+	[[nodiscard]]VkFormat    GetImageViewFormat()const;
+
+  protected:
+	VkGraphicsComponent &  gfx;
+	const VkDeviceManager &device_manager;
+
+  protected:
+	VkImage  image{};
+	VkFormat image_format{};
+
+	VkImageView image_view{};
+	VkFormat    image_view_format{};
 };

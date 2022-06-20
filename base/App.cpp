@@ -5,7 +5,8 @@ App::App() :
     window(instance.GetInstance()),
     device_manager(instance.GetInstance(), window),
     swap_chain_manager(device_manager,window),
-	command_manager(device_manager,swap_chain_manager.GetSwapImageCount(),1)
+	command_manager(device_manager,swap_chain_manager.GetSwapImageCount(),1),
+    gfx(device_manager,swap_chain_manager,window,command_manager)
 {
 
 }
@@ -15,66 +16,9 @@ void App::Run()
 {
 	InitRenderer();        //多态调用，这个函数会给智能指针一个具体的实例对象
 	renderer->RenderingPreparation();
-	//RendererSetUp();
-	//RenderingPreparation();
 	MainLoop();
-	//CleanUp();
 }
 
-void App::Init()
-{
-}
-
-//void App::RendererSetUp()
-//{
-//	//renderer sets some references
-//
-//
-//	//renderer->SetDeviceManager(device_manager);
-//	//renderer->SetSwapChinManager(swap_chain_manager);
-//	//renderer->SetCommandManager(command_manager);
-//	//renderer->SetWindow(window);
-//	//renderer->SetGraphicsCommandPool(
-//	//    device_manager.CreateCommandPool(VkDeviceManager::CommandPoolType::graphics_command_pool));
-//	//renderer->SetTransforCommandPool(
-//	//    device_manager.CreateCommandPool(VkDeviceManager::CommandPoolType::transfor_command_pool));
-//
-//
-//}
-
-//void App::RenderingPreparation()
-//{
-//	//renderer->SetUpUserInput();
-//	////Init Camera
-//	//renderer->CreateCamera();
-//	////prepare command buffer
-//	//renderer->InitCommandBuffers();
-//	////prepare Models
-//	//renderer->PrepareModels();
-//
-//	////prepare Images
-//	//renderer->CreateAttachmentImages();
-//	//renderer->CreateTextureImages();
-//	//renderer->CreateDepthImages();
-//	////prepare Renderpass
-//	//renderer->CreateRenderPass();
-//	////prepare Buffers
-//	//renderer->CreateUniformBuffer();
-//	//renderer->CreateFrameBuffers();
-//	////prepare Descriptor Sets
-//	//renderer->CreateDescriptorSetLayout();
-//	//renderer->CreateDescriptorPool();
-//	//renderer->CreateDescriptorSets();
-//	////prepare Pipeline
-//	//renderer->CreateGraphicsPipelineLayout();
-//	//renderer->CreateGraphicsPipeline();
-//
-//	////command buffer recording
-//	//renderer->CommandBufferRecording();
-//	////prepare sync objects
-//	//renderer->InitSynObjects();
-//
-//}
 
 void App::MainLoop() const 
 {
@@ -92,31 +36,4 @@ void App::MainLoop() const
 	}
 	vkDeviceWaitIdle(device_manager.GetLogicalDevice());
 }
-
-//void App::CleanUp()
-//{
-//	//renderer->CleanUpSyncObjects();
-//	//renderer->CleanUpModels();
-//	//renderer->CleanUpPipelineAndPipelineLayout();
-//	//renderer->CleanUpDescriptorSetLayoutAndDescriptorPool();
-//	//renderer->CleanUpCommandBuffersAndCommandPool();
-//	//renderer->CleanupFrameBuffers();
-//
-//	//renderer->CleanUpUniformBuffers();
-//	//renderer->CleanUpRenderPass();
-//	//renderer->CleanUpImages();
-//
-//	//swap_chain_manager.CleanUp(device_manager.GetLogicalDeviceRef());
-//	//device_manager.CleanUp();
-//	//window.CleanUp(instance);
-//	//validation_manager.CleanUp(instance);
-//	//DestroyInstance();
-//
-//
-//
-//
-//}
-
-
-
 

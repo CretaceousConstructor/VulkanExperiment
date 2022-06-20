@@ -8,7 +8,7 @@
 #include "VkTexture.h"
 #include "VkDescriptorManager.h"
 #include "VkRenderpassManager.h"
-#include "VkDepthImageBuilder.h"
+#include "VkDepthImageFactory.h"
 #include "VkSynObjectFactory.h"
 #include "VkUniformBufferBundle.h"
 #include <glm/glm.hpp>
@@ -117,7 +117,7 @@ class MultiSubpassesRenderer : public BaseRenderer
 	VkRenderpassManager render_pass_manager;
 
 
-	std::unique_ptr<VkImageBuilder>      depth_image_builder;
+	std::unique_ptr<VkImageFactory>      depth_image_builder;
 
 	//DESCRIPTOR
 	VkDescriptorPool      descriptor_pool;
@@ -151,8 +151,8 @@ class MultiSubpassesRenderer : public BaseRenderer
 
 
 	//ATTACHMENT
-	std::vector<VkImageWrapper> all_color_attachment;
-	std::vector<VkImageWrapper> depth_attachment;
+	std::vector<VkGeneralPurposeImage> all_color_attachment;
+	std::vector<VkGeneralPurposeImage> depth_attachment;
 
 	//FRAMEBUFFER
 	std::vector<VkFramebuffer> frame_buffers;

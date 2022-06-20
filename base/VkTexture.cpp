@@ -4,15 +4,10 @@
 
 #include "VkTexture.h"
 
-VkTexture::VkTexture(VkDeviceManager &_device_manager, VkWindows &_window, VkCommandManager &_command_manager, const std::string& image_path, VkFormat format_of_texture, VkImageLayout para_imageLayout) :
-    device_manager(_device_manager),
-    window(_window),
-    command_manager(_command_manager),imageLayout(para_imageLayout)
+VkTexture::VkTexture(VkGraphicsComponent &_gfx, const std::string &image_path, VkFormat format_of_texture, VkImageLayout para_imageLayout) :
+    gfx(_gfx)
 {
-
-	//如果是KTX形式就用KTXinit
-
-	if (true)
+		if (true)
 	{
 		InitKTXTexture(image_path, format_of_texture, para_imageLayout);
 	}
@@ -22,12 +17,11 @@ VkTexture::VkTexture(VkDeviceManager &_device_manager, VkWindows &_window, VkCom
 	}
 	InitTextureView(format_of_texture, VK_IMAGE_ASPECT_COLOR_BIT);
 	InitSampler();
-
 }
 
 VkTexture::~VkTexture()
 {
-	vkDestroySampler(device_manager.GetLogicalDevice(), texture_sampler, nullptr);
+	vkDestroySampler(gfx.DeviceMan().GetLogicalDevice(), texture_sampler, nullptr);
 }
 
 
@@ -68,7 +62,10 @@ void VkTexture::InitTexture(std::string image_path, VkFormat format_of_texture, 
 
 	VkBuffer       stagingBuffer;        //host visible memory
 	VkDeviceMemory stagingBufferMemory;
-	device_manager.CreateBufferAndBindToMemo(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory, VK_SHARING_MODE_EXCLUSIVE, window.GetSurface());
+
+
+
+	gfx.DeviceMan().CreateBufferAndBindToMemo(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory, VK_SHARING_MODE_EXCLUSIVE, window.GetSurface());
 
 	void *data;
 	vkMapMemory(device_manager.GetLogicalDevice(), stagingBufferMemory, 0, imageSize, (VkMemoryMapFlags) 0, &data);
@@ -85,7 +82,7 @@ void VkTexture::InitTexture(std::string image_path, VkFormat format_of_texture, 
 	VkDeviceManager::QueueFamilyIndices queue_family_index = VkDeviceManager::FindQueueFamilies(device_manager.GetPhysicalDevice(), window.GetSurface());
 
 	texture_image =
-	    std::make_unique<VkImageWrapper>(device_manager, VK_IMAGE_TYPE_2D, format_of_texture, image_extent, 1, 1, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_SHARING_MODE_EXCLUSIVE, VK_IMAGE_LAYOUT_UNDEFINED, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+	    std::make_unique<VkGeneralPurposeImage>(device_manager, VK_IMAGE_TYPE_2D, format_of_texture, image_extent, 1, 1, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_SHARING_MODE_EXCLUSIVE, VK_IMAGE_LAYOUT_UNDEFINED, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
 
 
@@ -127,7 +124,7 @@ void VkTexture::InitTexture(const void *buffer, VkDeviceSize bufferSize, uint32_
 
 	VkDeviceManager::QueueFamilyIndices queue_family_index = device_manager.FindQueueFamilies(device_manager.GetPhysicalDevice(), window.GetSurface());
 
-	texture_image=std::make_unique<VkImageWrapper>( device_manager,VK_IMAGE_TYPE_2D, format_of_underlying_image, image_extent, 1, 1, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_SHARING_MODE_EXCLUSIVE, VK_IMAGE_LAYOUT_UNDEFINED, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+	texture_image=std::make_unique<VkGeneralPurposeImage>( device_manager,VK_IMAGE_TYPE_2D, format_of_underlying_image, image_extent, 1, 1, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_SHARING_MODE_EXCLUSIVE, VK_IMAGE_LAYOUT_UNDEFINED, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
 
 
@@ -234,7 +231,7 @@ void VkTexture::InitKTXTexture(std::string image_path, VkFormat format_of_underl
 
 		VkDeviceManager::QueueFamilyIndices queue_family_index = device_manager.FindQueueFamilies(device_manager.GetPhysicalDevice(), window.GetSurface());
 
-		texture_image=std::make_unique<VkImageWrapper>(device_manager,VK_IMAGE_TYPE_2D, format, image_extent, mip_levels, 1, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_SHARING_MODE_EXCLUSIVE, VK_IMAGE_LAYOUT_UNDEFINED, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT );
+		texture_image=std::make_unique<VkGeneralPurposeImage>(device_manager,VK_IMAGE_TYPE_2D, format, image_extent, mip_levels, 1, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_SHARING_MODE_EXCLUSIVE, VK_IMAGE_LAYOUT_UNDEFINED, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT );
 
 
 

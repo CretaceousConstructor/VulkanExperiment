@@ -2,8 +2,9 @@
 
 #include "EngineMarco.h"
 #include "EngineHeader.h"
+#include "VkGraphicsComponent.h"
 #include "VkCommandManager.h"
-#include "VkImageWrapper.h"
+#include "VkGeneralPurposeImage.h"
 #include "VkWindows.h"
 #include <iostream>
 #include <ktx.h>
@@ -17,7 +18,7 @@ class VkTexture
 {
   public:
 	VkTexture(VkDeviceManager &_device_manager, VkWindows &_window, VkCommandManager &_command_manager, const std::string& image_path, VkFormat format_of_texture, VkImageLayout para_imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-
+	VkTexture(VkGraphicsComponent &_gfx, const std::string &image_path, VkFormat format_of_texture, VkImageLayout para_imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
 	~VkTexture();
 
@@ -48,13 +49,13 @@ public:
 	[[nodiscard]]	VkSampler            GetTextureSampler()const;
 	[[nodiscard]]	VkImageLayout         GetImageLayout()const;
 
-	 private:
-	VkDeviceManager & device_manager;
-	VkWindows &       window;
-	VkCommandManager &command_manager;
+ private:
+
+
+	VkGraphicsComponent & gfx;
 
 	std::string                     tex_name;
-	std::unique_ptr<VkImageWrapper> texture_image;
+	std::unique_ptr<VkGeneralPurposeImage> texture_image;
 	VkDescriptorImageInfo           imageInfo{};
 
 
