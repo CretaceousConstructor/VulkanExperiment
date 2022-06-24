@@ -23,12 +23,24 @@ std::shared_ptr<VkBufferBase> VkBufferFactory::ProduceBuffer(VkDeviceSize buffer
 	return result;
 }
 
-VkBufferBundle VkBufferFactory::ProduceBufferBundle(VkDeviceSize buffer_size, uint32_t bundle_size, VkMemoryPropertyFlags properties)
+VkBufferBundle VkBufferFactory::ProduceBufferBundle(VkDeviceSize buffer_size, uint32_t bundle_size, VkMemoryPropertyFlags memory_properties)
 {
 	std::vector<std::shared_ptr<VkBufferBase>> result_bundle;
 	for (size_t i = 0; i < bundle_size; i++)
 	{
-		result_bundle.push_back(ProduceBuffer(buffer_size, properties));
+		result_bundle.push_back(ProduceBuffer(buffer_size, memory_properties));
 	}
 	return {std::move(result_bundle), bundle_size};
 }
+
+
+std::shared_ptr<VkBufferBundle> VkBufferFactory::ProduceBufferBundlePtr(VkDeviceSize buffer_size, uint32_t bundle_size, VkMemoryPropertyFlags memory_properties)
+{
+	std::vector<std::shared_ptr<VkBufferBase>> result_bundle;
+	for (size_t i = 0; i < bundle_size; i++)
+	{
+		result_bundle.push_back(ProduceBuffer(buffer_size, memory_properties));
+	}
+	return std::make_shared<VkBufferBundle>(std::move(result_bundle), bundle_size);
+}
+

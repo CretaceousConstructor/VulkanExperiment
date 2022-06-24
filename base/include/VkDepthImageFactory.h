@@ -29,9 +29,9 @@ private:
 	VkFormat                 default_image_format{};
 	VkImageLayout            default_final_layout{};
 private:
-	VkImage temp_images{};
-	VkDeviceMemory temp_images_mem{};
-	VkImageView temp_images_view{};
+	VkImage temp_image{};
+	VkDeviceMemory temp_image_mem{};
+	VkImageView temp_image_view{};
 
 };
 

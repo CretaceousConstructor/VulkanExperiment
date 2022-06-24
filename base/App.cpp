@@ -9,6 +9,8 @@ App::App() :
     gfx(device_manager,swap_chain_manager,window,command_manager)
 {
 
+
+
 }
 
 

@@ -48,5 +48,21 @@ VkImageBundle VkImageFactory::ProduceImageBundle(uint32_t bundle_size)
 
 }
 
+std::shared_ptr<VkImageBundle> VkImageFactory::ProduceImageBundlePtr(uint32_t bundle_size)
+{
+
+
+	std::vector<std::shared_ptr<VkImageBase>> result_bundle;
+	for (size_t i = 0; i < bundle_size; i++)
+	{
+		result_bundle.push_back(ProduceImage( ));
+	}
+
+
+	return std::make_shared<VkImageBundle>(std::move(result_bundle), bundle_size);
+
+
+}
+
 
 

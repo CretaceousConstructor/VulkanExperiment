@@ -18,6 +18,9 @@ class VkBufferBase
 
 	VkWriteDescriptorSet GetWriteDescriptorSetInfo(uint32_t dstbinding, uint32_t dstArrayElement);
 
+	void MapMemory(VkDeviceSize mapped_region_starting_offset, VkDeviceSize mapped_region_size, void const *outside_data_to_be_mapped, size_t outside_data_size, VkMemoryMapFlags flgs = 0) const;
+
+
   protected:
 	VkGraphicsComponent &gfx;
 	const VkDeviceManager& device_manager;

@@ -5,6 +5,13 @@
 namespace Vk
 {
 
+	enum SyncObjCreateOption
+	{
+		Signaled,
+		Unsignaled,
+	};
+
+
 }
 
 

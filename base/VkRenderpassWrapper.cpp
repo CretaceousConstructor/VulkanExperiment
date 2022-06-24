@@ -1,11 +1,13 @@
 #include "VkRenderpassWrapper.h"
 
-VkRenderpassWrapper::VkRenderpassWrapper(const std::string &_renderpass_name, std::vector<VkAttachmentInfo> _attachment_infos, std::vector<VkSubpassDependency> _dependencies, std::vector<std::shared_ptr<VkSubpassWrapper>> _subpasses, VkDeviceManager &_device_manager) :
-    device_manager(_device_manager),
+VkRenderpassWrapper::VkRenderpassWrapper(std::string _renderpass_name, std::vector<VkAttachmentInfo> _attachment_infos, std::vector<VkSubpassDependency> _dependencies, 	std::vector<std::shared_ptr<VkSubpassWrapper>>  _subpasses, VkGraphicsComponent& _gfx) :
     attachment_infos(std::move(_attachment_infos)),
     dependencies(std::move(_dependencies)),
     subpasses(std::move(_subpasses)),
-    render_pass_name(_renderpass_name)
+    render_pass_name(std::move(_renderpass_name)),
+    gfx(_gfx),
+    device_manager(gfx.DeviceMan()),
+	swapchain_manager(gfx.SwapchainMan())
 {
 	std::vector<VkAttachmentDescription> attachments;
 	for (const auto &attach : attachment_infos)
@@ -87,19 +89,50 @@ VkRenderpassWrapper::VkRenderpassWrapper(const std::string &_renderpass_name, st
 	}
 
 
-
-
-
 	renderPassInfo.subpassCount = static_cast<uint32_t>(all_subpass_des.size());
 	renderPassInfo.pSubpasses   = all_subpass_des.data();
-
-
 
 
 	if (vkCreateRenderPass(device_manager.GetLogicalDevice(), &renderPassInfo, nullptr, &render_pass) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to create render pass!");
 	}
+
+
+
+
+
+	//frame buffers
+	for (size_t i = 0; i < swapchain_manager.GetSwapImageCount(); i++)
+	{
+		std::vector<VkImageView> attachments_view;
+		//attachments_view.resize(current_renderpass.attachment_infos.size());
+
+		for (const auto& attachment : attachment_infos)
+		{
+			const auto &attachment_image = attachment.GetImages();
+			
+			attachments_view.push_back(attachment_image[i]->GetImageView());
+		}
+
+
+		const auto swap_chain_extent = swapchain_manager.GetSwapChainImageExtent();
+
+		VkFramebufferCreateInfo framebufferInfo{};
+		framebufferInfo.sType           = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+		framebufferInfo.renderPass      = render_pass;
+		framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments_view.size());
+		framebufferInfo.pAttachments    = attachments_view.data();
+		framebufferInfo.width           = swap_chain_extent.width;
+		framebufferInfo.height          = swap_chain_extent.height;
+		framebufferInfo.layers          = 1;        //for 3D application
+
+		if (vkCreateFramebuffer(device_manager.GetLogicalDevice(), &framebufferInfo, nullptr, &frame_buffers[i]) != VK_SUCCESS)
+		{
+			throw std::runtime_error("failed to create framebuffer!");
+		}
+	}
+
 }
 
 VkRenderpassWrapper::~VkRenderpassWrapper()
@@ -113,6 +146,14 @@ VkRenderpassWrapper::~VkRenderpassWrapper()
 	}
 	vkDestroyRenderPass(device_manager.GetLogicalDevice(), render_pass, nullptr);
 
+}
 
+const std::vector<VkFramebuffer> & VkRenderpassWrapper::GetFrameBuffers()const
+{
+	return frame_buffers;
+}
 
+VkRenderPass                     VkRenderpassWrapper::GetRenderpass() const
+{
+	return render_pass;
 }

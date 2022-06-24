@@ -1,13 +1,14 @@
 #pragma once
 
-#include "VkGraphicsComponent.h"
+#include "VkDeviceManager.h"
+
 
 class VkCommandManager
 {
   public:
 
 
-	VkCommandManager(VkGraphicsComponent& _gfx,size_t num_of_graphics_command_buffers,size_t num_of_transfer_command_buffer);
+	VkCommandManager(VkDeviceManager& _device_manager,size_t num_of_graphics_command_buffers,size_t num_of_transfer_command_buffer);
 	~VkCommandManager() = default;
 	VkCommandManager()  = delete;
 
@@ -27,17 +28,19 @@ class VkCommandManager
 	static void            CreateCommandBuffer(const VkDevice &device, const VkCommandPool &commandpool, VkCommandBuffer &CommandBuffer, VkCommandBufferLevel level);
 
 
-private:
-	VkGraphicsComponent &gfx;
-	VkDeviceManager &device_manager;
-
-
 	//COMMAND POOL
 	const VkCommandPool& graphics_command_pool;
 	const VkCommandPool& transfer_command_pool;
 
+
+
+
 	[[nodiscard]]	const std::vector<VkCommandBuffer> &GetGraphicsCommandBuffers() const;
 	[[nodiscard]]	const std::vector<VkCommandBuffer> &GetTransferCommandBuffers() const;
+
+
+private:
+	VkDeviceManager &device_manager;
 
 private:
 	//COMMAND BUFFERS

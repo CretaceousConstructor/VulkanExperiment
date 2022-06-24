@@ -650,8 +650,8 @@ void DeferedRenderingRenderer::CreateGraphicsPipeline()
 
 	// Final fullscreen composition pass pipeline
 	{
-		ShaderWrapper vertex_shader(std::string("../../data/shaders//.spv"), std::string("main"), VK_SHADER_STAGE_VERTEX_BIT, device_manager->GetLogicalDeviceRef());
-		ShaderWrapper fragment_shader(std::string("../../data/shaders//.spv"), std::string("main"), VK_SHADER_STAGE_FRAGMENT_BIT, device_manager->GetLogicalDeviceRef());
+		VkShaderManager vertex_shader(std::string("../../data/shaders//.spv"), std::string("main"), VK_SHADER_STAGE_VERTEX_BIT, device_manager->GetLogicalDeviceRef());
+		VkShaderManager fragment_shader(std::string("../../data/shaders//.spv"), std::string("main"), VK_SHADER_STAGE_FRAGMENT_BIT, device_manager->GetLogicalDeviceRef());
 		shader_stages_create_info.clear();
 		shader_stages_create_info.push_back(vertex_shader.GetVkPipelineShaderStageCreateInfo());
 		shader_stages_create_info.push_back(fragment_shader.GetVkPipelineShaderStageCreateInfo());
@@ -694,8 +694,8 @@ void DeferedRenderingRenderer::CreateGraphicsPipeline()
 
 		rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
 
-		ShaderWrapper vertex_shader(std::string("../../data/shaders//.spv"), std::string("main"), VK_SHADER_STAGE_VERTEX_BIT, device_manager->GetLogicalDeviceRef());
-		ShaderWrapper fragment_shader(std::string("../../data/shaders//.spv"), std::string("main"), VK_SHADER_STAGE_FRAGMENT_BIT, device_manager->GetLogicalDeviceRef());
+		VkShaderManager vertex_shader(std::string("../../data/shaders//.spv"), std::string("main"), VK_SHADER_STAGE_VERTEX_BIT, device_manager->GetLogicalDeviceRef());
+		VkShaderManager fragment_shader(std::string("../../data/shaders//.spv"), std::string("main"), VK_SHADER_STAGE_FRAGMENT_BIT, device_manager->GetLogicalDeviceRef());
 		shader_stages_create_info.clear();
 		shader_stages_create_info.push_back(vertex_shader.GetVkPipelineShaderStageCreateInfo());
 		shader_stages_create_info.push_back(fragment_shader.GetVkPipelineShaderStageCreateInfo());

@@ -1,6 +1,6 @@
-#include "VkExtensionManager.h"
+#include "VkExtensionUtility.h"
 
-std::vector<const char *> VkExtensionManager::GetNeededGlobalInstanceExtensions(bool ValidationLayerEnabled)
+std::vector<const char *> VkExtensionUtility::GetNeededGlobalInstanceExtensions(bool ValidationLayerEnabled)
 {
 	//GLFWÐèÒªµÄinstance extension
 	uint32_t glfwExtensionCount = 0;
@@ -35,7 +35,7 @@ std::vector<const char *> VkExtensionManager::GetNeededGlobalInstanceExtensions(
 	return extensions;
 }
 
-std::vector<const char *> VkExtensionManager::GetRequiredExtensionsForAGoodDevice()
+std::vector<const char *> VkExtensionUtility::GetRequiredExtensionsForAGoodDevice()
 {
 	return std::vector<const char *>{
 	    VK_KHR_SWAPCHAIN_EXTENSION_NAME,

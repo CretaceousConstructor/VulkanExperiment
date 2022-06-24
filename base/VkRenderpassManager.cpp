@@ -1,18 +1,20 @@
 #include "VkRenderpassManager.h"
 
-VkRenderpassManager::VkRenderpassManager(VkDeviceManager &_device_manager, VkSwapChainManager &_swapchain_manager,VkWindows &_window,VkCommandManager& _command_manager) :
-    device_manager(_device_manager),
-    swapchain_manager(_swapchain_manager),
-	window(_window),
-	command_manager(_command_manager),
-	descriptor_manager(_device_manager),
-	pipeline_builder(_device_manager,swapchain_manager),
-	subpass_factory(descriptor_manager,device_manager),
+VkRenderpassManager::VkRenderpassManager(VkGraphicsComponent& _gfx) :
+    gfx(_gfx),
+    device_manager(gfx.DeviceMan()),
+	swapchain_manager(gfx.SwapchainMan()),
+	window(gfx.Window()),
+	command_manager(gfx.CommandMan()),
 
-	ubuffer_factory (device_manager, window),
-	texture_factory (device_manager, window, command_manager),
-	syn_obj_factory (device_manager, window)
-
+	descriptor_manager(gfx),
+	pipeline_manager(gfx),
+	subpass_factory(gfx),
+	ubuffer_factory (gfx),
+    tex_image_factory(gfx),
+    depth_image_factory(gfx),
+	syn_obj_factory (gfx),
+	texture_factory (gfx,tex_image_factory)
 {
 
 
@@ -20,6 +22,80 @@ VkRenderpassManager::VkRenderpassManager(VkDeviceManager &_device_manager, VkSwa
 
 }
 
+
+
+void VkRenderpassManager::AddRenderPass(
+	const std::string &name, uint32_t slot, const std::vector<VkAttachmentInfo>& attachments, 
+	const std::vector<VkSubpassDependency>& dependencies, const std::vector<std::shared_ptr<VkSubpassWrapper>>& subpasses
+)
+{
+	if (render_passes.contains(slot))
+	{
+		throw std::runtime_error("render pass already exists!");
+	}
+
+	render_passes_names[slot] = name;
+
+
+	render_passes.try_emplace(slot, name, attachments, dependencies, subpasses, device_manager);
+
+
+
+}
+
+
+
+
+void VkRenderpassManager::AddPipelineLayout(const PipelineLayoutMetaInfo& pipe_layout_info)
+{
+	const auto des_set_layouts= descriptor_manager.SearchLayout(pipe_layout_info.descriptor_layout_ids_vec);
+	pipeline_manager.AddPipelineLayout(pipe_layout_info,des_set_layouts);
+
+}
+
+
+
+void VkRenderpassManager::AddPipeline(const VkPipelineParameterPack& para_pack,const PipelineMetaInfo& meta_info)
+{
+	if (!render_passes.contains(meta_info.pass))
+	{
+		throw std::runtime_error("no renderpass is associated with pipeline");
+	}
+	const auto &render_pass_for_pipeline = render_passes.at(meta_info.pass);
+	//const auto &subpass_for_pipeline = render_pass_for_pipeline.subpasses[meta_info.subpass];
+
+	pipeline_manager.AddPipeline(para_pack, render_pass_for_pipeline.GetRenderpass(), meta_info);
+
+	////这里的pipeline_builder可以利用多态进行运行时切换。
+	//const auto pipline = pipeline_builder.GetPipline(meta_info,render_pass_for_pipeline,shader_infos);
+	////这里也可以运行时切换pipeline
+	//subpass_for_pipeline->SetPipeline(pipline);
+
+}
+
+VkPipeline VkRenderpassManager::GetPipeline(const PipelineMetaInfo& meta_info) const
+{
+	return pipeline_manager.GetPipeline(meta_info);
+
+}
+
+VkPipelineLayout VkRenderpassManager::GetPipelineLayout(const PipelineLayoutMetaInfo& meta_info)  const
+{
+
+
+	return pipeline_manager.GetPipelineLayout(meta_info);
+
+}
+
+VkRenderpassWrapper &VkRenderpassManager::GetRenderpass(uint8_t pass)
+{
+	return render_passes.at(pass);
+}
+
+const std::vector<VkDescriptorSet>& VkRenderpassManager::GetDescriptorSetBundle(DescriptorSetMetaInfo meta_info)const
+{
+	return descriptor_manager.GetDescriptorSetBundle(meta_info);
+}
 
 
 
@@ -31,125 +107,10 @@ VkDescriptorManager &VkRenderpassManager::GetDescriptorManager()
 	return descriptor_manager;
 }
 
-
-	//render_passes.emplace(slot, name, std::move(attachments), std::move(dependencies), std::move(subpasses), device_manager);
-
-void VkRenderpassManager::AddRenderPass(const std::string &name, uint8_t slot, std::vector<VkAttachmentInfo> attachments, std::vector<VkSubpassDependency> dependencies, std::vector<std::shared_ptr<VkSubpassWrapper>> subpasses)
-{
-	if (render_passes.contains(slot))
-	{
-		throw std::runtime_error("render pass already exists!");
-	}
-
-	render_passes_names[slot] = name;
-
-	//pipeline layout and descriptor layout will be automatically added to subpass
-
-	render_passes.try_emplace(slot, name, std::move(attachments), std::move(dependencies), std::move(subpasses), device_manager);
-
-
-	//frame buffers
-	auto &current_renderpass = render_passes.at(slot);
-
-	current_renderpass.frame_buffers.resize(swapchain_manager.GetSwapImageCount());
-
-	for (size_t i = 0; i < swapchain_manager.GetSwapImageCount(); i++)
-	{
-		std::vector<VkImageView> attachments_view;
-		//attachments_view.resize(current_renderpass.attachment_infos.size());
-
-		for (const auto& attachment : current_renderpass.attachment_infos)
-		{
-			const auto &attachment_image = attachment.GetImages();
-			
-			attachments_view.push_back(attachment_image[i]->GetImageView());
-		}
-
-
-		const auto swap_chain_extent = swapchain_manager.GetSwapChainImageExtent();
-
-		VkFramebufferCreateInfo framebufferInfo{};
-		framebufferInfo.sType           = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-		framebufferInfo.renderPass      = render_passes.at(slot).render_pass;
-		framebufferInfo.attachmentCount = static_cast<uint32_t>(attachments_view.size());
-		framebufferInfo.pAttachments    = attachments_view.data();
-		framebufferInfo.width           = swap_chain_extent.width;
-		framebufferInfo.height          = swap_chain_extent.height;
-		framebufferInfo.layers          = 1;        //for 3D application
-
-		if (vkCreateFramebuffer(device_manager.GetLogicalDevice(), &framebufferInfo, nullptr, &current_renderpass.frame_buffers[i]) != VK_SUCCESS)
-		{
-			throw std::runtime_error("failed to create framebuffer!");
-		}
-	}
-
-
-}
-
-void VkRenderpassManager::AddPipeline(const std::string name,PipelineMetaInfo meta_info,const std::vector<ShaderWrapper::ShaderInfo> shader_infos)
-{
-	if (!render_passes.contains(meta_info.pass))
-	{
-		throw std::runtime_error("no renderpass associated with pipeline");
-	}
-
-
-	auto &render_pass_for_pipeline = render_passes.at(meta_info.pass);
-
-	const auto &subpass_for_pipeline = render_pass_for_pipeline.subpasses[meta_info.subpass];
-
-
-
-	//这里的pipeline_builder可以利用多态进行运行时切换。
-	const auto pipline = pipeline_builder.GetPipline(meta_info,render_pass_for_pipeline,shader_infos);
-
-
-	//这里也可以运行时切换pipeline
-	subpass_for_pipeline->SetPipeline(pipline);
-
-
-
-}
-
-VkPipeline VkRenderpassManager::GetPipeline(PipelineMetaInfo meta_info) const
+VkPipelineManager & VkRenderpassManager::GetPipelineManager()
 {
 
-	const auto &render_pass_for_pipeline = render_passes.at(meta_info.pass);
-
-	const auto &subpass_for_pipeline = render_pass_for_pipeline.subpasses[meta_info.subpass];
-
-
-	return subpass_for_pipeline->GetPipeline();
-
-}
-
-VkPipelineLayout VkRenderpassManager::GetPipelineLayout(PipelineMetaInfo meta_info)  const
-{
-
-
-	const auto &render_pass_for_pipeline = render_passes.at(meta_info.pass);
-	const auto &subpass_for_pipeline = render_pass_for_pipeline.subpasses[meta_info.subpass];
-	return subpass_for_pipeline->GetPipelineLayout();
-
-}
-
-VkRenderpassWrapper &VkRenderpassManager::GetRenderpass(uint8_t pass)
-{
-
-	return render_passes.at(pass);
-}
-
-const std::vector<VkDescriptorSet>& VkRenderpassManager::GetDescriptorSetBundle(DescriptorMetaInfo meta_info)
-{
-
-	return descriptor_manager.GetDescriptorSetBundle(meta_info);
-
-}
-
-
-VkPipelineBuilder & VkRenderpassManager::GetPipelineBuilder()
-{
-	return pipeline_builder;
+	return pipeline_manager;
 }
 
 VkSubPassFacotry & VkRenderpassManager::GetSubPassFactory()
@@ -164,8 +125,6 @@ VkUniformBufferFactory & VkRenderpassManager::GetUniformBufferFactory()
 
 VkTextureFactory & VkRenderpassManager::GetTextureFactory()
 {
-
-
 	return texture_factory;
 }
 
@@ -173,4 +132,5 @@ VkSynObjectFactory & VkRenderpassManager::GetSynOjectFactory()
 {
 	return syn_obj_factory;
 }
+
 

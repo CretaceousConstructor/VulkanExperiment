@@ -1,46 +1,16 @@
 #include "VkSubpassWrapper.h"
 
 
-VkSubpassWrapper::VkSubpassWrapper(VkDeviceManager& _device_manager,VkDescriptorManager &_descriptor_manager,uint8_t _renderpass_num, uint8_t _subpass_num, VkPipelineBindPoint _bind_point  ) :
+VkSubpassWrapper::VkSubpassWrapper( uint8_t _renderpass_num, uint8_t _subpass_num, VkPipelineBindPoint _bind_point) :
+	//gfx(_gfx),
+	//device_manager(gfx.DeviceMan()),
     renderpass_num(_renderpass_num),
     subpass_num(_subpass_num),
-    bind_point(_bind_point),
-	descriptor_manager(_descriptor_manager),
-	device_manager(_device_manager)
+    bind_point(_bind_point)
 {
-
-		const PipelineMetaInfo meta_info
-		{
-			.pass    = renderpass_num,
-			.subpass = subpass_num
-		};
-
-		auto set_layouts= descriptor_manager.SearchLayout(meta_info);
-		VkPipelineLayoutCreateInfo         pipeline_layout_CI{};
-		pipeline_layout_CI.sType          = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-		pipeline_layout_CI.setLayoutCount = (uint32_t)set_layouts.size();
-
-		pipeline_layout_CI.pSetLayouts    =  set_layouts.data();
-		//TODO: testing multiple push constants and how to access it
-		if (vkCreatePipelineLayout(device_manager.GetLogicalDevice(), &pipeline_layout_CI, nullptr, &pipeline_layout) != VK_SUCCESS)
-		{
-			throw std::runtime_error("failed to create pipeline layout!");
-		}
-
 
 
 }
-
-//VkSubpassWrapper::~VkSubpassWrapper()
-//{
-//	//vkDestroyPipelineLayout()
-//}
-
-VkPipelineLayout VkSubpassWrapper::GetPipelineLayout()const 
-{
-    return pipeline_layout;
-}
-
 
 VkSubpassDescription &VkSubpassWrapper::GetSubpassDescription()
 {
@@ -52,28 +22,17 @@ VkPipelineBindPoint &VkSubpassWrapper::GetBindPoint()
 	return bind_point;
 }
 
-uint8_t VkSubpassWrapper::GetSubpassNum() const 
+uint32_t VkSubpassWrapper::GetSubpassNum() const 
 {
 	return subpass_num;
 }
 
-uint8_t VkSubpassWrapper::GetRenderpassNum() const 
+uint32_t VkSubpassWrapper::GetRenderpassNum() const 
 {
 	return renderpass_num;
 }
 
-VkPipeline VkSubpassWrapper::GetPipeline() const
-{
-	return pipeline->GetPipeline();
 
-}
-
-void VkSubpassWrapper::SetPipeline(std::shared_ptr<VkPipelineWrapper> _pipeline)
-{
-
-	pipeline = _pipeline;
-
-}
 
 
 

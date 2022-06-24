@@ -216,7 +216,7 @@ bool VkDeviceManager::CheckDeviceExtensionSupport(const VkPhysicalDevice &device
 	std::vector<VkExtensionProperties> availableExtensions(extensionCount);
 	vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, availableExtensions.data());
 
-	auto deviceRequiredExtensions = VkExtensionManager::GetRequiredExtensionsForAGoodDevice();
+	auto deviceRequiredExtensions = VkExtensionUtility::GetRequiredExtensionsForAGoodDevice();
 
 	std::set<std::string> requiredExtensions(deviceRequiredExtensions.begin(), deviceRequiredExtensions.end());
 
@@ -377,7 +377,7 @@ void VkDeviceManager::CreateLogicalDeviceAndQueues()
 	device_create_info.pEnabledFeatures     = &deviceFeatures;
 
 
-	auto deviceRequiredExtensions = VkExtensionManager::GetRequiredExtensionsForAGoodDevice();
+	auto deviceRequiredExtensions = VkExtensionUtility::GetRequiredExtensionsForAGoodDevice();
 
 	//设备的扩展 至少可以创建交换链
 	device_create_info.enabledExtensionCount   = static_cast<uint32_t>(deviceRequiredExtensions.size());
@@ -433,7 +433,7 @@ VkFormat VkDeviceManager::FindSupportedFormat(const std::vector<VkFormat> &candi
 	//	VkFormatFeatureFlags    bufferFeatures;
 	//} VkFormatProperties;
 
-	for (VkFormat format : candidates)
+	for (const VkFormat format : candidates)
 	{
 		VkFormatProperties props;
 		vkGetPhysicalDeviceFormatProperties(physical_device, format, &props);

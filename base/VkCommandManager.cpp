@@ -1,14 +1,10 @@
 #include "VkCommandManager.h"
 
-VkCommandManager::VkCommandManager(VkGraphicsComponent& _gfx,size_t num_of_graphics_command_buffers,size_t num_of_transfer_command_buffer) :
-    gfx(_gfx),
-	//TODO:这里有设计缺陷，device不应该负责commandpool创建
-    device_manager(gfx.Device()),
+VkCommandManager::VkCommandManager(VkDeviceManager& _device_manager,size_t num_of_graphics_command_buffers,size_t num_of_transfer_command_buffer) :
+    device_manager(_device_manager),
     graphics_command_pool(device_manager.CreateCommandPool(VkDeviceManager::CommandPoolType::graphics_command_pool)),
     transfer_command_pool(device_manager.CreateCommandPool(VkDeviceManager::CommandPoolType::transfor_command_pool))
 {
-
-
 
 
 
@@ -64,7 +60,8 @@ VkCommandBuffer VkCommandManager::BeginSingleTimeCommands(const VkCommandPool &c
 void VkCommandManager::EndSingleTimeCommands(const VkCommandPool &command_pool, const VkDevice &device, const VkCommandBuffer command_buffer, const VkQueue &command_quque)
 {
 
-	
+
+
 	vkEndCommandBuffer(command_buffer);
 	//typedef struct VkSubmitInfo {
 	//	VkStructureType                sType;

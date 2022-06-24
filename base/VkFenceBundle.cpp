@@ -1,13 +1,13 @@
 #include "VkFenceBundle.h"
 
-VkFenceBundle::VkFenceBundle(VkDeviceManager &_device_manager, uint8_t _bundle_size, bool signaled) :
+VkFenceBundle::VkFenceBundle(const VkDeviceManager &_device_manager, uint32_t _bundle_size, Vk::SyncObjCreateOption option) :
     VkSynObjectBundleBase(_bundle_size),
     device_manager(_device_manager)
 {
 	VkFenceCreateInfo fence_CI{};
 	fence_CI.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 
-	if (signaled)
+	if (option | Vk::SyncObjCreateOption::Signaled)
 	{
 		fence_CI.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 	}

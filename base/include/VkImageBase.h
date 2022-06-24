@@ -30,4 +30,6 @@ class VkImageBase
 
 	VkImageView image_view{};
 	VkFormat    image_view_format{};
+
+
 };

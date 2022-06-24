@@ -2,23 +2,27 @@
 #include "EngineMarco.h"
 #include "EngineHeader.h"
 #include "VkDeviceManager.h"
-#include "VkImageBase.h"
 #include "VkWindows.h"
+#include <iostream>
 #include <set>
 #include <vector>
 
-class VkSwapChainManager
+
+class VkImageBase;
+class VkSwapchainImage;
+
+class VkSwapchainManager
 {
   public:
 	//The surface has a swapchain.
-	VkSwapChainManager(VkDeviceManager &_device_manager, VkWindows &_window);
-	~VkSwapChainManager();
+	VkSwapchainManager(VkDeviceManager &_device_manager, VkWindows &_window);
+	~VkSwapchainManager();
 
-	VkSwapChainManager(const VkSwapChainManager &) = delete;
-	VkSwapChainManager &operator=(const VkSwapChainManager &) = delete;
+	VkSwapchainManager(const VkSwapchainManager &) = delete;
+	VkSwapchainManager &operator=(const VkSwapchainManager &) = delete;
 
-	VkSwapChainManager(VkSwapChainManager &&) = delete;
-	VkSwapChainManager &operator=(VkSwapChainManager &&) = delete;
+	VkSwapchainManager(VkSwapchainManager &&) = delete;
+	VkSwapchainManager &operator=(VkSwapchainManager &&) = delete;
 
 	void                     CreateSwapChainAndSwapImages();
 	[[nodiscard]] VkFormat   GetSwapChainImageFormat() const;
@@ -30,11 +34,9 @@ class VkSwapChainManager
 
 	[[nodiscard]] VkSwapchainKHR GetSwapChain() const;
 
-	[[nodiscard]] const std::vector<std::shared_ptr<VkImageBase>> &GetSwapChainImages() const;
+	[[nodiscard]] const std::vector<std::shared_ptr<VkImageBase>>& GetSwapChainImages() const;
 
   private:
-	//void CleanUp(VkDevice& device);
-
 
 	//struct SwapChainSupportDetails {
 	//	VkSurfaceCapabilitiesKHR capabilities;
@@ -42,7 +44,6 @@ class VkSwapChainManager
 	//	std::vector<VkPresentModeKHR> present_modes;
 	//};
 
-	//static SwapChainSupportDetails QuerySwapChainSupport(const VkPhysicalDevice& physical_device, const VkSurfaceKHR& surface);
 
 	static VkSurfaceFormatKHR ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats);
 	static VkPresentModeKHR ChooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes);
@@ -53,9 +54,9 @@ class VkSwapChainManager
 
 
 private:
-
-	//TODO:这里管理swap image的职责不应该交给这个类
+	//这里用image bundle是不是好一点
 	std::vector<std::shared_ptr<VkImageBase>> swap_chain_images;
+
 	uint32_t   image_count;
 	VkExtent2D swap_chain_extent;
 	VkFormat   swap_chain_image_format;

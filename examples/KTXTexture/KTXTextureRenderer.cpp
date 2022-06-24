@@ -1,12 +1,11 @@
 #include "KTXTextureRenderer.h"
 
-KTXTextureRenderer::KTXTextureRenderer(VkWindows &_window, VkDeviceManager &_device_manager, VkSwapChainManager &_swapchain_manager, VkCommandManager &_command_manager) :
-    BaseRenderer(_window, _device_manager, _swapchain_manager, _command_manager),
-	render_pass_manager(device_manager, swapchain_manager,window,command_manager)
+KTXTextureRenderer::KTXTextureRenderer(VkGraphicsComponent& gfx_) :
+    BaseRenderer(gfx_),
+	render_pass_manager(gfx)
 {
 
-	depth_image_builder = std::make_unique<VkDepthImageFactory>(device_manager, swapchain_manager, command_manager, window);
-
+	depth_image_builder = std::make_unique<VkDepthImageFactory>(gfx);
 
 }
 
@@ -20,7 +19,6 @@ KTXTextureRenderer::KTXTextureRenderer(VkWindows &_window, VkDeviceManager &_dev
 
 void KTXTextureRenderer::CreateTextureImages()
 {
-
 	auto &texture_factory{render_pass_manager.GetTextureFactory()};
 	
 	constexpr VkFormat format_of_texture = VK_FORMAT_R8G8B8A8_SRGB;
@@ -48,7 +46,7 @@ void KTXTextureRenderer::PrepareModels()
 	// Setup indices
 	std::vector<uint32_t> indices = {0, 1, 2, 2, 3, 0};
 
-	quad_model = std::make_shared<VkModel<Vertex>>(vertices, indices, device_manager, window, command_manager);
+	//quad_model = std::make_shared<VkModel<Vertex>>(vertices, indices, device_manager, window, command_manager);
 
 
 
@@ -58,32 +56,24 @@ void KTXTextureRenderer::CreateDescriptorPool()
 {
 	auto &des_man = render_pass_manager.GetDescriptorManager();
 	{
-		const DescriptorMetaInfo pool_meta_info{.pass = 0, .subpass = 0, .set = 0};
-
-		//CREATE THE GLOBAL DESCRIPTOR POOL
 		std::vector<std::pair<VkDescriptorType, uint32_t>> info_pairs{
 		    std::pair{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 3},
 		    std::pair{VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1},
 		};
 		//TODO:这里的数目是否正确
 		const auto max_sets = swapchain_manager.GetSwapImageCount();
-		des_man.AddDescriptorPool(pool_meta_info, std::move(info_pairs), max_sets);
+		des_man.AddDescriptorPool(pool_main_thread, std::move(info_pairs), max_sets);
 	}
-
-
 
 }
 void KTXTextureRenderer::CreateDescriptorSetLayout()
 {
 	auto &des_man = render_pass_manager.GetDescriptorManager();
-
 	{
 		{
-			const DescriptorMetaInfo set_layout_meta_info{.pass = 0, .subpass = 0, .set = 0};
-
 			std::vector<VkDescriptorSetLayoutBinding> LayoutBinding;
-			VkDescriptorSetLayoutBinding              LayoutBinding_temp{};
 			// Binding 0 : Vertex shader uniform buffer for passing matrices
+			VkDescriptorSetLayoutBinding              LayoutBinding_temp{};
 			LayoutBinding_temp.binding            = 0;
 			LayoutBinding_temp.descriptorType     = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 			LayoutBinding_temp.descriptorCount    = 1;
@@ -98,47 +88,30 @@ void KTXTextureRenderer::CreateDescriptorSetLayout()
 			LayoutBinding_temp.pImmutableSamplers = nullptr;        // Optional
 			LayoutBinding.push_back(LayoutBinding_temp);
 
-			des_man.AddDescriptorSetLayout(set_layout_meta_info, std::move(LayoutBinding));
+			des_man.AddDescriptorSetLayout(des_set_layout_0, std::move(LayoutBinding));
 		}
 	}
+
+
+
 }
 
 void KTXTextureRenderer::CreateDescriptorSets()
 {
 	auto &des_man = render_pass_manager.GetDescriptorManager();
 	{
-		//这里应该不是image count而是inflight
-		//descriptor_sets_write_subpass0.resize(swapchain_manager->GetSwapImageCount());
-		const DescriptorMetaInfo pool_meta_info{.pass = 0, .subpass = 0, .set = 0};
-		const DescriptorMetaInfo set_layout_meta_info{.pass = 0, .subpass = 0, .set = 0};
-		const DescriptorMetaInfo set_meta_info = set_layout_meta_info;
-		des_man.AddDescriptorSetBundle(pool_meta_info, set_layout_meta_info, swapchain_manager.GetSwapImageCount());
-		des_man.UpdateDescriptorSet(*uniform_buffers, set_meta_info, 0, 0);
-		des_man.UpdateDescriptorSet(*ktx_texure, set_meta_info, 1, 0);
-
-		////subpass0
-		//{
-		//	for (size_t frame_inflight = 0; frame_inflight < swapchain_manager.GetSwapImageCount(); frame_inflight++)
-		//	{
-		//		std::vector<VkWriteDescriptorSet> writeDescriptorSets;
-		//		//SET INFOS
-		//		/*
-		//			Set 0,Binding 0: VS matrices Uniform buffer,amount = 1
-		//		*/
-		//		writeDescriptorSets.emplace_back(buffers[frame_inflight]->GetWriteDescriptorSetInfo(0, 0));
-		//		/*
-		//			Set 0,Binding 1: FS texture image and sampler,amount = 1
-		//		*/
-		//		writeDescriptorSets.emplace_back(ktx_texure->GetWriteDescriptorSetInfo(1, 0));
-
-		//		descriptor_manager->UpdateDescriptorSet(std::move(writeDescriptorSets), set_layout_meta_info, frame_inflight);
-		//	}
-		//};
+		des_man.AddDescriptorSetBundle(des_set0, swapchain_manager.GetSwapImageCount());
+		des_man.UpdateDescriptorSet(*uniform_buffers, des_set0, 0, 0);
+		des_man.UpdateDescriptorSet(*ktx_texure, des_set0, 1, 0);
 	}
 }
 
 void KTXTextureRenderer::CreateGraphicsPipelineLayout()
 {
+	{
+		render_pass_manager.AddPipelineLayout(layout_0_0);
+
+	}
 }
 
 void KTXTextureRenderer::CreateUniformBuffer()
@@ -157,23 +130,7 @@ void KTXTextureRenderer::CreateUniformBuffer()
 	//GPU SIDE
 
 	constexpr VkDeviceSize bufferSize = sizeof(UboData);
-
-	uniform_buffers = ubuffer_factory.GetBufferBundle(bufferSize, swapchain_manager.GetSwapImageCount(),VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
-
-
-
-
-
-
-	//for (size_t i = 0; i < swapchain_manager.GetSwapImageCount(); i++)
-	//{
-	//	buffers.emplace_back(std::make_unique<VkUniformBuffer>(device_manager, window, bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, VK_SHARING_MODE_EXCLUSIVE));
-	//}
-
-
-
-
-
+	uniform_buffers = ubuffer_factory.ProduceBufferBundlePtr(bufferSize, swapchain_manager.GetSwapImageCount(),VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 
 
 }
@@ -197,7 +154,7 @@ void KTXTextureRenderer::CreateDepthImages()
 	//	depth_attachments[i]->InitImageView(depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
 	//}
 
-	depth_attachments = depth_image_builder->GetResult(swapchain_manager.GetSwapImageCount());
+	depth_attachments = depth_image_builder->ProduceImageBundlePtr(swapchain_manager.GetSwapImageCount());
 
 
 
@@ -207,8 +164,8 @@ void KTXTextureRenderer::CreatePipelineRenderPass0Subpass0()
 {
 	////										 subpass0
 	///******************************************************************************************************/
-	//ShaderWrapper vertex_shader_subpass0(device_manager, std::string("../../data/shaders/KTXTexture/KTXTexture_vertex_shader.spv"), VK_SHADER_STAGE_VERTEX_BIT);
-	//ShaderWrapper fragment_shader_subpass0(device_manager, std::string("../../data/shaders/KTXTexture/KTXTexture_fragment_shader.spv"), VK_SHADER_STAGE_FRAGMENT_BIT);
+	//VkShaderManager vertex_shader_subpass0(device_manager, std::string("../../data/shaders/KTXTexture/KTXTexture_vertex_shader.spv"), VK_SHADER_STAGE_VERTEX_BIT);
+	//VkShaderManager fragment_shader_subpass0(device_manager, std::string("../../data/shaders/KTXTexture/KTXTexture_fragment_shader.spv"), VK_SHADER_STAGE_FRAGMENT_BIT);
 
 	//std::vector<VkPipelineShaderStageCreateInfo> shader_stages_create_info = {vertex_shader_subpass0.GetVkPipelineShaderStageCreateInfo(), fragment_shader_subpass0.GetVkPipelineShaderStageCreateInfo()};
 
@@ -378,22 +335,25 @@ void KTXTextureRenderer::CreatePipelineRenderPass0Subpass0()
 	//	throw std::runtime_error("failed to create graphics pipeline!");
 	//}
 
-	//ShaderWrapper vertex_shader_subpass0(device_manager, std::string("../../data/shaders/KTXTexture/KTXTexture_vertex_shader.spv"), VK_SHADER_STAGE_VERTEX_BIT);
-	//ShaderWrapper fragment_shader_subpass0(device_manager, std::string("../../data/shaders/KTXTexture/KTXTexture_fragment_shader.spv"), VK_SHADER_STAGE_FRAGMENT_BIT);
+	//VkShaderManager vertex_shader_subpass0(device_manager, std::string("../../data/shaders/KTXTexture/KTXTexture_vertex_shader.spv"), VK_SHADER_STAGE_VERTEX_BIT);
+	//VkShaderManager fragment_shader_subpass0(device_manager, std::string("../../data/shaders/KTXTexture/KTXTexture_fragment_shader.spv"), VK_SHADER_STAGE_FRAGMENT_BIT);
 
 
 
-	const std::vector<ShaderWrapper::ShaderInfo> shader_infos
+
+
+
+
+	VkPipelineParameterPack para_pack{gfx};
+	const std::vector<ShaderMetaInfo> shader_infos
 	{
-	    {.name{std::string("../../data/shaders/KTXTexture/KTXTexture_vertex_shader.spv")}, .shader_binding_stage{VK_SHADER_STAGE_VERTEX_BIT}},
-	    {.name{std::string("../../data/shaders/KTXTexture/KTXTexture_fragment_shader.spv")}, .shader_binding_stage{VK_SHADER_STAGE_FRAGMENT_BIT}}
+		{.name{"vs"},.shader_path{"../../data/shaders/KTXTexture/KTXTexture_vertex_shader.spv"}, .shader_binding_stage{VK_SHADER_STAGE_VERTEX_BIT}},
+	    {.name{"ps"},.shader_path{std::string("../../data/shaders/KTXTexture/KTXTexture_fragment_shader.spv")}, .shader_binding_stage{VK_SHADER_STAGE_FRAGMENT_BIT}}
 
 	};
-
-	const PipelineMetaInfo meta_info{.pass = 0, .subpass = 0};
-	auto &                 pipeline_builder = render_pass_manager.GetPipelineBuilder();
-
-	render_pass_manager.AddPipeline("PipelinePass0Subpass0", meta_info,shader_infos);
+	para_pack.shader_infos = shader_infos;
+	//const PipelineMetaInfo meta_info{.pass = 0, .subpass = 0};
+	render_pass_manager.AddPipeline(para_pack, pipe_0_0);
 
 
 
@@ -406,21 +366,9 @@ void KTXTextureRenderer::CreateRenderPass()
 
 //void KTXTextureRenderer::CreateGraphicsPipelineLayout()
 //{
-//	{
-//		descriptor_manager->GetSetLayout("Pass0-Subpass0-Set0-Layout");
-//		std::vector<VkDescriptorSetLayout> setLayouts = {descriptor_set_layout_write_subpass0};
-//		VkPipelineLayoutCreateInfo         pipelineLayoutInfo_subpass0{};
-//		pipelineLayoutInfo_subpass0.sType          = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-//		pipelineLayoutInfo_subpass0.setLayoutCount = (uint32_t) setLayouts.size();
-//		pipelineLayoutInfo_subpass0.pSetLayouts    = setLayouts.data();
 //
-//		//TODO: testing multiple push constants and how to access it
 //
-//		if (vkCreatePipelineLayout(device_manager->GetLogicalDeviceRef(), &pipelineLayoutInfo_subpass0, nullptr, &pipeline_layout_subpass0) != VK_SUCCESS)
-//		{
-//			throw std::runtime_error("failed to create pipeline layout!");
-//		}
-//	}
+//
 //}
 
 void KTXTextureRenderer::CreateGraphicsPipeline()
@@ -437,8 +385,6 @@ void KTXTextureRenderer::CreateGraphicsPipeline()
 void KTXTextureRenderer::CommandBufferRecording()
 {
 
-
-
 	const auto & graphics_command_buffers = command_manager.GetGraphicsCommandBuffers();
 
 	for (size_t i = 0; i < graphics_command_buffers.size(); i++)
@@ -447,17 +393,22 @@ void KTXTextureRenderer::CommandBufferRecording()
 		beginInfo.sType            = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 		beginInfo.flags            = 0;              // Optional
 		beginInfo.pInheritanceInfo = nullptr;        // Optional
-
 		if (vkBeginCommandBuffer(graphics_command_buffers[i], &beginInfo) != VK_SUCCESS)
 		{
 			throw std::runtime_error("failed to begin recording command buffer!");
 		}
 
+
+
+
+
 		VkRenderPassBeginInfo renderPassInfo{};        //开始信息这是，注意
 		renderPassInfo.sType       = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-		auto &renderpass           = (render_pass_manager.GetRenderpass(0));
-		renderPassInfo.renderPass  = renderpass.render_pass;
-		renderPassInfo.framebuffer = renderpass.frame_buffers[i];
+
+		auto &renderpass           = (render_pass_manager.GetRenderpass(renderpass0));
+
+		renderPassInfo.renderPass  = renderpass.GetRenderpass();
+		renderPassInfo.framebuffer = renderpass.GetFrameBuffers()[i];
 
 		renderPassInfo.renderArea.offset = {0, 0};
 		renderPassInfo.renderArea.extent = VkExtent2D{swapchain_manager.GetSwapChainImageExtent().width, swapchain_manager.GetSwapChainImageExtent().height};
@@ -472,15 +423,16 @@ void KTXTextureRenderer::CommandBufferRecording()
 		vkCmdBeginRenderPass(graphics_command_buffers[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);        //
 
 
-		const PipelineMetaInfo pip_info {.pass = 0, .subpass = 0};
-		const DescriptorMetaInfo desc_info{.pass = 0, .subpass = 0,.set = 0 };
-		const auto p0s0_layout = 	render_pass_manager.GetPipelineLayout(pip_info);
-		const auto p0s0_pipe = render_pass_manager.GetPipeline(pip_info);
-		const auto& p0s0t0_desc_layout = render_pass_manager.GetDescriptorSetBundle(desc_info);
+
+
+
+		const auto p0s0_layout = 	render_pass_manager.GetPipelineLayout(layout_0_0);
+		const auto p0s0_pipe = render_pass_manager.GetPipeline(pipe_0_0);
+		const auto& p0s0t0_desc= render_pass_manager.GetDescriptorSetBundle(des_set0);
 
 
 		vkCmdBindPipeline(graphics_command_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, p0s0_pipe);
-		vkCmdBindDescriptorSets(graphics_command_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, p0s0_layout, 0, 1, &p0s0t0_desc_layout[i], 0, nullptr);
+		vkCmdBindDescriptorSets(graphics_command_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, p0s0_layout, 0, 1, &p0s0t0_desc[i], 0, nullptr);
 
 		quad_model->Draw(graphics_command_buffers[i]);
 
@@ -502,8 +454,7 @@ void KTXTextureRenderer::InitSynObjects()
 
 	image_available_semaphores = syn_obj_factory.GetSemaphoreBundle(MAX_FRAMES_IN_FLIGHT);
 	render_finished_semaphores = syn_obj_factory.GetSemaphoreBundle(MAX_FRAMES_IN_FLIGHT);
-
-	frame_fences = syn_obj_factory.GetFenceBundle(MAX_FRAMES_IN_FLIGHT,VkSynObjectFactory::Signaled);
+	frame_fences = syn_obj_factory.GetFenceBundle(MAX_FRAMES_IN_FLIGHT,Vk::SyncObjCreateOption::Signaled);
 	image_fences.resize(swapchain_manager.GetSwapImageCount());
 
 	//image_fences.resize(swapchain_manager.GetSwapImageCount(), nullptr);        ///???
@@ -780,6 +731,10 @@ void KTXTextureRenderer::UpdateUniformBuffer(uint32_t currentImage)
 
 	uniform_buffers->GetOne(currentImage).MapMemory(0,sizeof(ubo),&ubo,sizeof(UboData));
 
+
+
+
+
 	//void *data;
 	//vkMapMemory(device_manager.GetLogicalDevice(), buffers[currentImage]->memory, 0, sizeof(ubo), 0, &data);
 	//memcpy(data, &ubo, sizeof(Ubo_data));
@@ -868,12 +823,10 @@ void KTXTextureRenderer::CreateRenderPass0()
 	depth_attachment_temp.attachment_index = 1;
 
 
-
 	//TODO:COPY CONTROL
 	const std::vector<VkAttachmentInfo> attachments{color_attachment, depth_attachment_temp};
 
 	//-------------------------------------------------------------------------------------
-
 	const std::vector<VkSubpassDependency> dependencies{};
 
 	//dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
@@ -917,8 +870,6 @@ void KTXTextureRenderer::CreateRenderPass0()
 
 	const auto& subpass_factory = render_pass_manager.GetSubPassFactory();
 
-
-	
 	const std::shared_ptr<VkSubpassWrapper> pass0_subpass0 = subpass_factory.CreateSubpass(0, 0);
 
 	pass0_subpass0->color_attachments_ref = std::vector<VkSubpassWrapper::AttachmentRefMetaInfo>{

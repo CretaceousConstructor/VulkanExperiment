@@ -1,11 +1,14 @@
 #include "Multisubpass.h"
 
-	MultiSubpassesRenderer::MultiSubpassesRenderer(VkWindows &_window, VkDeviceManager &_device_manager, VkSwapChainManager &_swapchain_manager, VkCommandManager &_command_manager):
-		BaseRenderer(_window, _device_manager, _swapchain_manager, _command_manager),
-		render_pass_manager(device_manager, swapchain_manager,window,command_manager)
+	MultiSubpassesRenderer::MultiSubpassesRenderer(VkGraphicsComponent& gfx_):
+		BaseRenderer(gfx_),
+		render_pass_manager(gfx)
 {
 
-	depth_image_builder = std::make_unique<VkDepthImageFactory>(device_manager, swapchain_manager, command_manager, window);
+
+	depth_image_builder = std::make_unique<VkDepthImageFactory>(gfx);
+
+
 
 
 }
@@ -347,12 +350,12 @@ void MultiSubpassesRenderer::CreatePipelineSubpass0()
 	/******************************************************************************************************/
 	/******************************************************************************************************/
 	/******************************************************************************************************/
-	ShaderWrapper vertex_shader_subpass0(std::string("../../data/shaders/multisubpasses/multisubpass_vertex_shader_subpass0.spv"), std::string("main"), VK_SHADER_STAGE_VERTEX_BIT, device_manager->GetLogicalDeviceRef());
-	ShaderWrapper fragment_shader_subpass0(std::string("../../data/shaders/multisubpasses/multisubpass_fragment_shader_subpass0.spv"), std::string("main"), VK_SHADER_STAGE_FRAGMENT_BIT, device_manager->GetLogicalDeviceRef());
+	VkShaderManager vertex_shader_subpass0(std::string("../../data/shaders/multisubpasses/multisubpass_vertex_shader_subpass0.spv"), std::string("main"), VK_SHADER_STAGE_VERTEX_BIT, device_manager->GetLogicalDeviceRef());
+	VkShaderManager fragment_shader_subpass0(std::string("../../data/shaders/multisubpasses/multisubpass_fragment_shader_subpass0.spv"), std::string("main"), VK_SHADER_STAGE_FRAGMENT_BIT, device_manager->GetLogicalDeviceRef());
 
-	ShaderWrapper vertex_shader_subpass0_normal(std::string("../../data/shaders/multisubpasses/multisubpass_vertex_shader_subpass0_normal.spv"), std::string("main"), VK_SHADER_STAGE_VERTEX_BIT, device_manager->GetLogicalDeviceRef());
-	ShaderWrapper geometry_shader_subpass0_normal(std::string("../../data/shaders/multisubpasses/multisubpass_geometry_shader_subpass0_normal.spv"), std::string("main"), VK_SHADER_STAGE_GEOMETRY_BIT, device_manager->GetLogicalDeviceRef());
-	ShaderWrapper fragment_shader_subpass0_normal(std::string("../../data/shaders/multisubpasses/multisubpass_fragment_shader_subpass0_normal.spv"), std::string("main"), VK_SHADER_STAGE_FRAGMENT_BIT, device_manager->GetLogicalDeviceRef());
+	VkShaderManager vertex_shader_subpass0_normal(std::string("../../data/shaders/multisubpasses/multisubpass_vertex_shader_subpass0_normal.spv"), std::string("main"), VK_SHADER_STAGE_VERTEX_BIT, device_manager->GetLogicalDeviceRef());
+	VkShaderManager geometry_shader_subpass0_normal(std::string("../../data/shaders/multisubpasses/multisubpass_geometry_shader_subpass0_normal.spv"), std::string("main"), VK_SHADER_STAGE_GEOMETRY_BIT, device_manager->GetLogicalDeviceRef());
+	VkShaderManager fragment_shader_subpass0_normal(std::string("../../data/shaders/multisubpasses/multisubpass_fragment_shader_subpass0_normal.spv"), std::string("main"), VK_SHADER_STAGE_FRAGMENT_BIT, device_manager->GetLogicalDeviceRef());
 
 	std::vector<VkPipelineShaderStageCreateInfo> shader_stages_create_info =
 	    {vertex_shader_subpass0_normal.GetVkPipelineShaderStageCreateInfo(), geometry_shader_subpass0_normal.GetVkPipelineShaderStageCreateInfo(), fragment_shader_subpass0_normal.GetVkPipelineShaderStageCreateInfo()};
@@ -563,8 +566,8 @@ void MultiSubpassesRenderer::CreatePipelineSubpass0()
 void MultiSubpassesRenderer::CreatePipelineSubpass1()
 {
 	/******************************************************************************************************/
-	ShaderWrapper vertex_shader_subpass1(std::string("..//..//data//shaders//multisubpasses//multisubpass_vertex_shader_subpass1.spv"), std::string("main"), VK_SHADER_STAGE_VERTEX_BIT, device_manager->GetLogicalDeviceRef());
-	ShaderWrapper fragment_shader_subpass1(std::string("..//..//data//shaders//multisubpasses//multisubpass_fragment_shader_subpass1.spv"), std::string("main"), VK_SHADER_STAGE_FRAGMENT_BIT, device_manager->GetLogicalDeviceRef());
+	VkShaderManager vertex_shader_subpass1(std::string("..//..//data//shaders//multisubpasses//multisubpass_vertex_shader_subpass1.spv"), std::string("main"), VK_SHADER_STAGE_VERTEX_BIT, device_manager->GetLogicalDeviceRef());
+	VkShaderManager fragment_shader_subpass1(std::string("..//..//data//shaders//multisubpasses//multisubpass_fragment_shader_subpass1.spv"), std::string("main"), VK_SHADER_STAGE_FRAGMENT_BIT, device_manager->GetLogicalDeviceRef());
 
 	std::vector<VkPipelineShaderStageCreateInfo> shader_stages_create_info = {vertex_shader_subpass1.GetVkPipelineShaderStageCreateInfo(), fragment_shader_subpass1.GetVkPipelineShaderStageCreateInfo()};
 

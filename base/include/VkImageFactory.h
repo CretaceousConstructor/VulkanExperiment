@@ -23,7 +23,7 @@ class VkImageFactory
 
 	//VkBufferBundle is copyable without risks of memory leak
 	virtual VkImageBundle ProduceImageBundle(uint32_t bundle_size);
-
+	virtual std::shared_ptr<VkImageBundle> ProduceImageBundlePtr(uint32_t bundle_size);
 
 
 
@@ -41,8 +41,9 @@ class VkImageFactory
 
   protected:
 	VkGraphicsComponent &     gfx;
+
 	const VkDeviceManager &   device_manager;
-	const VkSwapChainManager &swapchain_manager;
+	const VkSwapchainManager &swapchain_manager;
 	const VkCommandManager &  command_manager;
 	const VkWindows &         window;
 

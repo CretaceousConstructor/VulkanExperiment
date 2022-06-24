@@ -15,9 +15,10 @@ class VkBufferFactory
 	VkBufferFactory(VkBufferFactory &&)                 = delete;
 	VkBufferFactory &operator=(VkBufferFactory &&) = delete;
 
-	[[nodiscard]]virtual std::shared_ptr<VkBufferBase> ProduceBuffer(VkDeviceSize buffer_size, VkMemoryPropertyFlags properties);
+	[[nodiscard]]virtual std::shared_ptr<VkBufferBase> ProduceBuffer(VkDeviceSize buffer_size, VkMemoryPropertyFlags memory_properties);
 	//VkBufferBundle is copyable without risks of memory leak
 	[[nodiscard]]virtual VkBufferBundle                   ProduceBufferBundle(VkDeviceSize buffer_size, uint32_t bundle_size, VkMemoryPropertyFlags properties);
+	[[nodiscard]]virtual std::shared_ptr<VkBufferBundle>  ProduceBufferBundlePtr(VkDeviceSize buffer_size, uint32_t bundle_size, VkMemoryPropertyFlags properties);
 
   protected:
 	virtual void BuildBuffer()          = 0;
@@ -36,7 +37,7 @@ class VkBufferFactory
 	const VkWindows &      window;
 
   protected:
-	//those are temp variables used when contructing buffer.when the call of ProduceBuffer function finishes,those vars are not valid anymore
+	//those are temp variables used when contructing buffer.when a call of ProduceBuffer function finishes,those vars are not valid anymore
 	VkBuffer              temp_buffer{};
 	VkDeviceMemory        temp_buffer_memory{};
 	VkDeviceSize          temp_buffer_size{};

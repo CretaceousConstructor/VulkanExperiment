@@ -905,8 +905,8 @@ void ShadowMappingRenderer::CreatePipelineShadowPass()
 {
 	//										shadow pass
 	/******************************************************************************************************/
-	ShaderWrapper vertex_shader_shadow_pass(std::string("..\\..\\data\\shaders\\shadowmapping\\shadow_mapping_vertex_shader_shadow_pass.spv"), std::string("main"), VK_SHADER_STAGE_VERTEX_BIT, device_manager->GetLogicalDeviceRef());
-	ShaderWrapper fragment_shader_shadow_pass(std::string("..\\..\\data\\shaders\\shadowmapping\\shadow_mapping_fragment_shader_shadow_pass.spv"), std::string("main"), VK_SHADER_STAGE_FRAGMENT_BIT, device_manager->GetLogicalDeviceRef());
+	VkShaderManager vertex_shader_shadow_pass(std::string("..\\..\\data\\shaders\\shadowmapping\\shadow_mapping_vertex_shader_shadow_pass.spv"), std::string("main"), VK_SHADER_STAGE_VERTEX_BIT, device_manager->GetLogicalDeviceRef());
+	VkShaderManager fragment_shader_shadow_pass(std::string("..\\..\\data\\shaders\\shadowmapping\\shadow_mapping_fragment_shader_shadow_pass.spv"), std::string("main"), VK_SHADER_STAGE_FRAGMENT_BIT, device_manager->GetLogicalDeviceRef());
 
 	std::vector<VkPipelineShaderStageCreateInfo> shader_stages_create_info =
 	    {vertex_shader_shadow_pass.GetVkPipelineShaderStageCreateInfo(), fragment_shader_shadow_pass.GetVkPipelineShaderStageCreateInfo()};
@@ -1103,8 +1103,8 @@ void ShadowMappingRenderer::CreatePipelineShadowPass()
 
 void ShadowMappingRenderer::CreatePipelineScenePass()
 {
-	ShaderWrapper vertex_shader_scene_pass(std::string("..\\..\\data\\shaders\\shadowmapping\\shadow_mapping_vertex_shader_scene_pass.spv"), std::string("main"), VK_SHADER_STAGE_VERTEX_BIT, device_manager->GetLogicalDeviceRef());
-	ShaderWrapper fragment_shader_scene_pass(std::string("..\\..\\data\\shaders\\shadowmapping\\shadow_mapping_fragment_shader_scene_pass.spv"), std::string("main"), VK_SHADER_STAGE_FRAGMENT_BIT, device_manager->GetLogicalDeviceRef());
+	VkShaderManager vertex_shader_scene_pass(std::string("..\\..\\data\\shaders\\shadowmapping\\shadow_mapping_vertex_shader_scene_pass.spv"), std::string("main"), VK_SHADER_STAGE_VERTEX_BIT, device_manager->GetLogicalDeviceRef());
+	VkShaderManager fragment_shader_scene_pass(std::string("..\\..\\data\\shaders\\shadowmapping\\shadow_mapping_fragment_shader_scene_pass.spv"), std::string("main"), VK_SHADER_STAGE_FRAGMENT_BIT, device_manager->GetLogicalDeviceRef());
 
 	std::vector<VkPipelineShaderStageCreateInfo> shader_stages_create_info =
 	    {vertex_shader_scene_pass.GetVkPipelineShaderStageCreateInfo(), fragment_shader_scene_pass.GetVkPipelineShaderStageCreateInfo()};

@@ -4,7 +4,7 @@
 class VkBufferBundle
 {
   public:
-	VkBufferBundle() = delete;
+	VkBufferBundle() = default;
 	VkBufferBundle(std::vector<std::shared_ptr<VkBufferBase>> uniform_buffers, uint32_t bundle_size);
 	~VkBufferBundle() = default;
 
@@ -16,14 +16,15 @@ class VkBufferBundle
 
 
 	[[nodiscard]] uint32_t GetBundleCount() const;
-	const VkBufferBase &operator[](uint32_t index) const;
-	[[nodiscard]] const VkBufferBase &GetOne(uint32_t index) const;
+	VkBufferBase &   operator[](uint32_t index) const;
+	[[nodiscard]] VkBufferBase & GetOne(uint32_t index) const;
+
 	[[nodiscard]] const std::vector<std::shared_ptr<VkBufferBase>> &GetUniformBuffersArray() const;
 
 
 private:
 	uint32_t bundle_count{};
-	const std::vector<std::shared_ptr<VkBufferBase>> buffers;
+	std::vector<std::shared_ptr<VkBufferBase>> buffers;
 
 
 

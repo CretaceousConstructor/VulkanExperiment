@@ -1,15 +1,10 @@
 #pragma once
-#include "EngineMarco.h"
-#include "EngineHeader.h"
-#include "ShaderWrapper.h"
-#include "VkCommandManager.h"
-#include "VkDeviceManager.h"
-#include "VkGeneralPurposeImage.h"
+
+#include "VkGraphicsComponent.h"
 #include "VkModel.h"
-#include "VkSwapChainManager.h"
+#include "VkSwapchainManager.h"
 #include "VkTexture.h"
 #include "VkUniformBuffer.h"
-#include "VkWindows.h"
 #include <array>
 #include <chrono>
 #include <glm/glm.hpp>
@@ -23,10 +18,8 @@ class BaseRenderer
 {
   public:
 	BaseRenderer(
-	    VkWindows &         _window,
-	    VkDeviceManager &   _device_manager,
-	    VkSwapChainManager &_swapchain_manager,
-	    VkCommandManager &  _command_manager);
+	    VkGraphicsComponent &gfx_);
+
 	virtual ~BaseRenderer() = default;
 
 	BaseRenderer() = delete;
@@ -74,9 +67,10 @@ class BaseRenderer
 	//BaseRenderer *GetThisPtr();
 
   protected:
+	VkGraphicsComponent &gfx;
 	//MANAGERS
-	VkDeviceManager &   device_manager;
-	VkWindows &         window;
-	VkSwapChainManager &swapchain_manager;
-	VkCommandManager &  command_manager;
+	const VkDeviceManager &   device_manager;
+	const VkWindows &         window;
+	const VkSwapchainManager &swapchain_manager;
+	const VkCommandManager &  command_manager;
 };

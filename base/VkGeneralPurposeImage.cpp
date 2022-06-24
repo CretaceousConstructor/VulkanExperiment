@@ -15,6 +15,8 @@
 
 VkGeneralPurposeImage::VkGeneralPurposeImage(VkGraphicsComponent& _gfx, VkImage _image,	const VkDeviceMemory   _image_mem ,const VkImageView _image_view,const VkFormat _image_format,const VkFormat _image_view_format) :
 	VkImageBase(_gfx,_image,_image_format,_image_view,_image_view_format),
+	command_manager(gfx.CommandMan()),
+	window(gfx.Window()),
  	image_mem(_image_mem)
 {
 
@@ -58,12 +60,48 @@ void VkGeneralPurposeImage::CopyBufferToImage(VkBuffer buffer, uint32_t width, u
 	VkCommandManager::EndSingleTimeCommands(command_pool, device_manager.GetLogicalDevice(), commandBuffer, command_quque);
 
 
-
-
 }
 
 void VkGeneralPurposeImage::CopyBufferToImage(VkBuffer buffer, const std::vector<VkBufferImageCopy> &bufferCopyRegions, const VkCommandPool &command_pool, const VkQueue &command_quque)const
 {
+	const VkCommandBuffer commandBuffer = VkCommandManager::BeginSingleTimeCommands(command_pool, device_manager.GetLogicalDevice());
+
+	vkCmdCopyBufferToImage(
+	    commandBuffer,
+	    buffer,
+	    image,
+	    VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+	    bufferCopyRegions.size(),
+	    bufferCopyRegions.data());
+
+	VkCommandManager::EndSingleTimeCommands(command_pool, device_manager.GetLogicalDevice(), commandBuffer, command_quque);
+}
+
+void VkGeneralPurposeImage::CopyBufferToImage(VkBuffer buffer, const std::vector<VkBufferImageCopy> &bufferCopyRegions, VkDeviceManager::CommandPoolType command_type)const
+{
+
+	VkCommandPool command_pool;
+	VkQueue       command_quque;
+
+
+	if (command_type == VkDeviceManager::CommandPoolType::graphics_command_pool)
+	{
+		command_quque =  device_manager.GetGraphicsQueue();
+		command_pool = command_manager.graphics_command_pool;
+	}
+
+	else if (command_type == VkDeviceManager::CommandPoolType::transfor_command_pool)
+	{
+		command_quque =  device_manager.GetTransferQueue();
+		command_pool = command_manager.transfer_command_pool;
+	}
+	else
+	{
+		
+	}
+
+
+
 	const VkCommandBuffer commandBuffer = VkCommandManager::BeginSingleTimeCommands(command_pool, device_manager.GetLogicalDevice());
 
 	vkCmdCopyBufferToImage(
@@ -82,8 +120,143 @@ bool VkGeneralPurposeImage::HasStencilComponent(VkFormat format)
 	return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
 }
 
+
+
+
+
+void VkGeneralPurposeImage::TransitionImageLayout(VkImageLayout oldLayout, VkImageLayout newLayout, const VkDeviceManager::CommandPoolType command_type , uint32_t mip_count, uint32_t layer_count)const
+{
+
+	VkCommandPool command_pool;
+	VkQueue       command_quque;
+
+	const VkDeviceManager::QueueFamilyIndices queue_family_indices = VkDeviceManager::FindQueueFamilies(device_manager.GetPhysicalDevice(), window.GetSurface());
+
+	if (command_type == VkDeviceManager::CommandPoolType::graphics_command_pool)
+	{
+		command_quque =  device_manager.GetGraphicsQueue();
+		command_pool = command_manager.graphics_command_pool;
+	}
+
+	else if (command_type == VkDeviceManager::CommandPoolType::transfor_command_pool)
+	{
+		command_quque =  device_manager.GetTransferQueue();
+		command_pool = command_manager.transfer_command_pool;
+	}
+	else
+	{
+		
+	}
+
+
+
+	const VkCommandBuffer commandBuffer = VkCommandManager::BeginSingleTimeCommands(command_pool, device_manager.GetLogicalDevice());
+
+
+	VkImageMemoryBarrier barrier{};
+	barrier.sType     = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+	barrier.oldLayout = oldLayout;
+	barrier.newLayout = newLayout;
+
+	barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+
+	barrier.image                       = image;
+	barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+
+	if (newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
+	{
+		barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+
+		if (HasStencilComponent(image_format))
+		{
+			barrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+		}
+	}
+	else
+	{
+		barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	}
+
+	barrier.subresourceRange.baseMipLevel   = 0;
+	barrier.subresourceRange.levelCount     = mip_count;
+	barrier.subresourceRange.baseArrayLayer = 0;
+	barrier.subresourceRange.layerCount     = layer_count;        //layer count的指定会在之后加入
+
+	VkPipelineStageFlags sourceStage;
+	VkPipelineStageFlags destinationStage;
+
+	//unchecked
+	if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+	{
+		barrier.srcAccessMask = 0;
+		barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+
+		sourceStage      = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+		destinationStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	}
+
+	//checked
+	else if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
+	{
+		barrier.srcAccessMask = 0;
+		barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+		//VK_PIPELINE_STAGE_HOST_BIT
+		sourceStage      = VK_PIPELINE_STAGE_HOST_BIT;
+		destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+	}
+	//unchecked
+	else if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
+	{
+		barrier.srcAccessMask = 0;
+		barrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+
+		sourceStage      = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+		destinationStage = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+	}
+	//checked
+	else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+	{
+		sourceStage           = VK_PIPELINE_STAGE_TRANSFER_BIT;
+		barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+
+
+		//在德国人给的同步例子中，下面这两行不存在，如果去掉可以运行吗
+		destinationStage      = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+		barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+		//TODO:修好这里的队列家族问题:阅读spec中 Queue Family Ownership Transfer的章节，这里需要两个barriers，记得修
+		    //这里有问题的，队列家族index如果不同就根本没法运行，至今原因未知
+		    //barrier.srcQueueFamilyIndex = queue_family_indices.transferFamily.value();
+		barrier.srcQueueFamilyIndex = queue_family_indices.transferFamily.value();
+		barrier.dstQueueFamilyIndex     = queue_family_indices.graphicsFamily.value();
+	}
+	else
+	{
+		throw std::invalid_argument("unsupported layout transition!");
+	}
+
+	vkCmdPipelineBarrier(
+	    commandBuffer,
+	    sourceStage, destinationStage,
+	    0,
+	    0, nullptr,
+	    0, nullptr,
+	    1, &barrier);
+
+	VkCommandManager::EndSingleTimeCommands(command_pool, device_manager.GetLogicalDevice(), commandBuffer, command_quque);
+
+
+
+}
 void VkGeneralPurposeImage::TransitionImageLayout(VkImageLayout oldLayout, VkImageLayout newLayout, const VkCommandPool &command_pool, const VkQueue &command_quque, VkDeviceManager::QueueFamilyIndices queue_family_indices, uint32_t miplevelcount)const
 {
+
+
+
+
+
+
 	const VkCommandBuffer commandBuffer = VkCommandManager::BeginSingleTimeCommands(command_pool, device_manager.GetLogicalDevice());
 
 
@@ -179,9 +352,61 @@ void VkGeneralPurposeImage::TransitionImageLayout(VkImageLayout oldLayout, VkIma
 	    1, &barrier);
 
 	VkCommandManager::EndSingleTimeCommands(command_pool, device_manager.GetLogicalDevice(), commandBuffer, command_quque);
+
+
 }
 
- 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 //para_initialLayout目前还没有使用，以后可以直接拿来layout transition？
 
 //void VkGeneralPurposeImage::Init(VkImageType para_image_type, VkFormat para_format, VkExtent3D para_image_extent, uint32_t para_mip_levels, uint32_t para_array_layers, VkSampleCountFlagBits para_samples, VkImageTiling para_tiling, VkBufferUsageFlags para_usage_image, VkSharingMode para_sharing_mode, VkImageLayout para_initialLayout, VkMemoryPropertyFlagBits para_image_mem_property_flag)

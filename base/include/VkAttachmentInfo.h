@@ -16,10 +16,8 @@ class VkAttachmentInfo
 public:
 	VkAttachmentInfo(const std::vector<std::shared_ptr<VkImageBase>> &_attachment_images);
 
-
 	VkAttachmentDescription attachment_description{};
-	uint8_t                 attachment_index{0};
-
+	uint32_t                 attachment_index{};
 	[[nodiscard]] const std::vector<std::shared_ptr<VkImageBase>> &GetImages()const;
 
 

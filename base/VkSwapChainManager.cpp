@@ -1,24 +1,28 @@
-#include "VkSwapChainManager.h"
+#include "VkSwapchainManager.h"
 
-VkSwapChainManager::VkSwapChainManager(VkDeviceManager &_device_manager, VkWindows &_window) :
+VkSwapchainManager::VkSwapchainManager(VkDeviceManager &_device_manager, VkWindows &_window) :
     device_manager(_device_manager),
     window(_window)
 {
 	CreateSwapChainAndSwapImages();
 }
 
-VkSwapChainManager::~VkSwapChainManager()
+VkSwapchainManager::~VkSwapchainManager()
 {
-	//for (auto imageView : swap_chain_image_views)
-	//{
-	//	vkDestroyImageView(device_manager.GetLogicalDeviceRef(), imageView, nullptr);
-	//}
 
+	for (auto& img : swap_chain_images)
+	{
+		if (img.use_count() != 1)
+		{
+			std::cout << "resources leak!";
+		}
+		img.reset();
+	}
 	vkDestroySwapchainKHR(device_manager.GetLogicalDevice(), swap_chain, nullptr);
 
 }
 
-void VkSwapChainManager::CreateSwapChainAndSwapImages()
+void VkSwapchainManager::CreateSwapChainAndSwapImages()
 {
 	VkDeviceManager::SwapChainSupportDetails swapChainSupport = VkDeviceManager::QuerySwapChainSupport(device_manager.GetPhysicalDevice(), window.GetSurface());
 	////支持的backbuffer格式
@@ -160,9 +164,7 @@ void VkSwapChainManager::CreateSwapChainAndSwapImages()
 			throw std::runtime_error("failed to create image views!");
 		}
 
-		swap_chain_images.emplace_back(std::make_shared<VkSwapChainImageWrapper>(device_manager,temp_swap_chain_images[i], swap_chain_image_views[i], 	swap_chain_image_format,swap_chain_image_view_format));
-
-
+		swap_chain_images.emplace_back(device_manager,temp_swap_chain_images[i], swap_chain_image_views[i], 	swap_chain_image_format,swap_chain_image_view_format);
 
 	}
 
@@ -171,44 +173,8 @@ void VkSwapChainManager::CreateSwapChainAndSwapImages()
 
 }
 
-//VkSwapChainManager::SwapChainSupportDetails VkSwapChainManager::QuerySwapChainSupport(const VkPhysicalDevice &physical_device, const VkSurfaceKHR &surface)
-//{
-//	SwapChainSupportDetails details;
-//	vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physical_device, surface, &details.capabilities);
-//
-//	//支持的backbuffer格式
-//	//colorSpace
-//	//VK_COLOR_SPACE_SRGB_NONLINEAR_KHR = 0,
-//	//format;
-//	//VK_FORMAT_B8G8R8A8_UNORM = 44,
-//	//VK_FORMAT_B8G8R8A8_SRGB = 50,
-//	//VK_FORMAT_A2B10G10R10_UNORM_PACK32 = 64,
-//
-//	uint32_t formatCount;
-//	vkGetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface, &formatCount, nullptr);
-//	if (formatCount != 0)
-//	{
-//		details.formats.resize(formatCount);
-//		vkGetPhysicalDeviceSurfaceFormatsKHR(physical_device, surface, &formatCount, details.formats.data());
-//	}
-//
-//	//可能的展示的模式
-//	//VK_PRESENT_MODE_FIFO_KHR = 2,
-//	//VK_PRESENT_MODE_FIFO_RELAXED_KHR = 3,
-//	//VK_PRESENT_MODE_MAILBOX_KHR = 1,
-//	//VK_PRESENT_MODE_IMMEDIATE_KHR = 0,
-//	uint32_t presentModeCount;
-//	vkGetPhysicalDeviceSurfacePresentModesKHR(physical_device, surface, &presentModeCount, nullptr);
-//	if (presentModeCount != 0)
-//	{
-//		details.present_modes.resize(presentModeCount);
-//		vkGetPhysicalDeviceSurfacePresentModesKHR(physical_device, surface, &presentModeCount, details.present_modes.data());
-//	}
-//
-//	return details;
-//}
 
-VkSurfaceFormatKHR VkSwapChainManager::ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats)
+VkSurfaceFormatKHR VkSwapchainManager::ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats)
 {
 	//if the SRGB color space is supported or not ： VK_COLOR_SPACE_SRGB_NONLINEAR_KHR
 	for (const auto &availableFormat : availableFormats)
@@ -222,7 +188,7 @@ VkSurfaceFormatKHR VkSwapChainManager::ChooseSwapSurfaceFormat(const std::vector
 	return availableFormats[0];
 }
 
-VkPresentModeKHR VkSwapChainManager::ChooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes)
+VkPresentModeKHR VkSwapchainManager::ChooseSwapPresentMode(const std::vector<VkPresentModeKHR> &availablePresentModes)
 {
 	for (const auto &availablePresentMode : availablePresentModes)
 	{
@@ -235,7 +201,7 @@ VkPresentModeKHR VkSwapChainManager::ChooseSwapPresentMode(const std::vector<VkP
 	return VK_PRESENT_MODE_FIFO_KHR;
 }
 
-VkExtent2D VkSwapChainManager::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities, const VkWindows &window)
+VkExtent2D VkSwapchainManager::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR &capabilities, const VkWindows &window)
 {
 	if (capabilities.currentExtent.width != UINT32_MAX)
 	{
@@ -257,12 +223,12 @@ VkExtent2D VkSwapChainManager::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR &
 	}
 }
 
-VkFormat VkSwapChainManager::GetSwapChainImageFormat() const
+VkFormat VkSwapchainManager::GetSwapChainImageFormat() const
 {
 	return swap_chain_image_format;
 }
 
-VkExtent3D VkSwapChainManager::GetSwapChainImageExtent() const
+VkExtent3D VkSwapchainManager::GetSwapChainImageExtent() const
 {
 	VkExtent3D result;
 	result.width  = swap_chain_extent.width;
@@ -271,7 +237,7 @@ VkExtent3D VkSwapChainManager::GetSwapChainImageExtent() const
 	return result;
 }
 
-VkFormat VkSwapChainManager::FindDepthFormat() const
+VkFormat VkSwapchainManager::FindDepthFormat() const
 {
 	return device_manager.FindSupportedFormat(
 	    {VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT},
@@ -279,28 +245,24 @@ VkFormat VkSwapChainManager::FindDepthFormat() const
 	    VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
 }
 
-uint32_t VkSwapChainManager::GetSwapImageCount() const
+uint32_t VkSwapchainManager::GetSwapImageCount() const
 {
 	return image_count;
 }
 
-//std::vector<VkImageView> &VkSwapChainManager::GetSwapImageViews()
+//std::vector<VkImageView> &VkSwapchainManager::GetSwapImageViews()
 //{
-//
-//
 //	return swap_chain_image_views;
 //}
 
-VkSwapchainKHR VkSwapChainManager::GetSwapChain() const
+VkSwapchainKHR VkSwapchainManager::GetSwapChain() const
 {
 	return swap_chain;
 }
 
-const std::vector<std::shared_ptr<VkImageBase>>& VkSwapChainManager::GetSwapChainImages() const
+const std::vector<std::shared_ptr<VkImageBase>>& VkSwapchainManager::GetSwapChainImages() const
 {
-	
 	return swap_chain_images;
-
 
 }
 

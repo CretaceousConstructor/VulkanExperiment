@@ -2,6 +2,7 @@
 
 void MultiSubPassesApp::InitRenderer()
 {
-	renderer = std::make_unique<MultiSubpassesRenderer>();
+	renderer = std::make_unique<MultiSubpassesRenderer>(gfx);
+
 
 }

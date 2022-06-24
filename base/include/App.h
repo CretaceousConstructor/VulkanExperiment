@@ -27,7 +27,7 @@ class App
 	VkInstanceWrapper  instance;
 	VkWindows          window;
 	VkDeviceManager    device_manager;
-	VkSwapChainManager swap_chain_manager;
+	VkSwapchainManager swap_chain_manager;
 	VkCommandManager   command_manager;
 
 	VkGraphicsComponent gfx;

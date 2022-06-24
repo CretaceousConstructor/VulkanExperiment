@@ -3,6 +3,8 @@
 VkDepthImageFactory::VkDepthImageFactory(VkGraphicsComponent &_gfx) :
     VkImageFactory(_gfx)
 {
+
+	RestoreToDefaultState();
 }
 
 void VkDepthImageFactory::RestoreToDefaultState()
@@ -13,6 +15,7 @@ void VkDepthImageFactory::RestoreToDefaultState()
 	//imageInfo.flags
 	default_image_CI.imageType = VK_IMAGE_TYPE_2D;
 
+	///////////////////////////////////////////////////////////////////////////////////////////
 	default_image_format = swapchain_manager.FindDepthFormat();
 	default_image_extent = swapchain_manager.GetSwapChainImageExtent();
 
@@ -41,7 +44,7 @@ void VkDepthImageFactory::BuildImage()
 	temp_image_CI.format = default_image_format;
 	temp_image_CI.extent = default_image_extent;
 
-	if (vkCreateImage(device_manager.GetLogicalDevice(), &temp_image_CI, nullptr, &temp_images) != VK_SUCCESS)
+	if (vkCreateImage(device_manager.GetLogicalDevice(), &temp_image_CI, nullptr, &temp_image) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to create image!");
 	}
@@ -50,19 +53,19 @@ void VkDepthImageFactory::BuildImage()
 void VkDepthImageFactory::CreateAndBindMemory()
 {
 	VkMemoryRequirements memRequirements;
-	vkGetImageMemoryRequirements(device_manager.GetLogicalDevice(), temp_images, &memRequirements);
+	vkGetImageMemoryRequirements(device_manager.GetLogicalDevice(), temp_image, &memRequirements);
 
 	VkMemoryAllocateInfo allocInfo{};
 	allocInfo.sType           = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 	allocInfo.allocationSize  = memRequirements.size;
 	allocInfo.memoryTypeIndex = VkDeviceManager::FindMemoryType(memRequirements.memoryTypeBits, default_image_mem_prop_flag, device_manager.GetPhysicalDevice());        //找到可以分配VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT内存类型的index		 VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT
 
-	if (vkAllocateMemory(device_manager.GetLogicalDevice(), &allocInfo, nullptr, &temp_images_mem) != VK_SUCCESS)
+	if (vkAllocateMemory(device_manager.GetLogicalDevice(), &allocInfo, nullptr, &temp_image_mem) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to allocate image memory!");
 	}
 
-	vkBindImageMemory(device_manager.GetLogicalDevice(), temp_images, temp_images_mem, 0);        //image的内存和image两者联系起来
+	vkBindImageMemory(device_manager.GetLogicalDevice(), temp_image, temp_image_mem, 0);        //image的内存和image两者联系起来
 }
 
 void VkDepthImageFactory::BuildImageView()
@@ -81,7 +84,7 @@ void VkDepthImageFactory::BuildImageView()
 	image_view_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 	//viewInfo.pNext
 	//viewInfo.flags
-	image_view_create_info.image      = temp_images;
+	image_view_create_info.image      = temp_image;
 	image_view_create_info.viewType   = VK_IMAGE_VIEW_TYPE_2D;
 	image_view_create_info.format     = default_image_format;
 	image_view_create_info.components = {VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_G, VK_COMPONENT_SWIZZLE_B, VK_COMPONENT_SWIZZLE_A};
@@ -92,7 +95,7 @@ void VkDepthImageFactory::BuildImageView()
 	image_view_create_info.subresourceRange.baseArrayLayer = 0;
 	image_view_create_info.subresourceRange.layerCount     = 1;        //之后会加入指定layercount的功能
 
-	if (vkCreateImageView(device_manager.GetLogicalDevice(), &image_view_create_info, nullptr, &temp_images_view) != VK_SUCCESS)
+	if (vkCreateImageView(device_manager.GetLogicalDevice(), &image_view_create_info, nullptr, &temp_image_view) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to create texture image view!");
 	}
@@ -102,7 +105,7 @@ void VkDepthImageFactory::BuildImageView()
 void VkDepthImageFactory::Assemble()
 {
 
-	result = std::make_shared<VkGeneralPurposeImage>(gfx, temp_images, temp_images_mem, temp_images_view,default_image_format,default_image_format);
+	result = std::make_shared<VkGeneralPurposeImage>(gfx, temp_image, temp_image_mem, temp_image_view,default_image_format,default_image_format);
 
 
 }

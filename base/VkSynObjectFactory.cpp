@@ -2,25 +2,23 @@
 
 #include "VkSynObjectFactory.h"
 
-	VkSynObjectFactory::VkSynObjectFactory(VkDeviceManager &_device_manager, VkWindows &_window)
+VkSynObjectFactory::VkSynObjectFactory(VkGraphicsComponent & _gfx)
 	:
-	    device_manager(_device_manager),
-	    window(_window)
-	{
-		GetToInitalState();
-	}
-
-std::shared_ptr<VkSemaphoreBundle> VkSynObjectFactory::GetSemaphoreBundle(uint8_t _bundle_size, bool signaled) const
+    gfx(_gfx),
+	device_manager(gfx.DeviceMan()),
+	window(gfx.Window())
 {
-	auto result = std::make_shared<VkSemaphoreBundle>(device_manager, _bundle_size, signaled);
+}
+
+std::shared_ptr<VkSemaphoreBundle> VkSynObjectFactory::GetSemaphoreBundle(uint32_t _bundle_size, Vk::SyncObjCreateOption option ) const
+{
+	auto result = std::make_shared<VkSemaphoreBundle>(device_manager, _bundle_size, option);
 	return result;
 }
 
-std::shared_ptr<VkFenceBundle> VkSynObjectFactory::GetFenceBundle(uint8_t _bundle_size, bool signaled) const
+std::shared_ptr<VkFenceBundle> VkSynObjectFactory::GetFenceBundle(uint32_t _bundle_size,  Vk::SyncObjCreateOption option ) const
 {
-	auto result = std::make_shared<VkFenceBundle>(device_manager, _bundle_size, signaled);
+	auto result = std::make_shared<VkFenceBundle>(device_manager, _bundle_size, option);
 	return result;
 }
 
-void VkSynObjectFactory::GetToInitalState()
-{}

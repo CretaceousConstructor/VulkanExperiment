@@ -82,7 +82,7 @@ void VkInstanceWrapper::CreateInstance()
 		//之后的vkcreateinstance会用这里的值
 
 	//获得 实例 会用到的 全局扩展(extensions。这里没有检查设备扩展，之后才会检查)
-	const auto extensions                    = VkExtensionManager::GetNeededGlobalInstanceExtensions(VkValidationUtility::VALIDATION_LAYERS_ENABLED);
+	const auto extensions                    = VkExtensionUtility::GetNeededGlobalInstanceExtensions(VkValidationUtility::VALIDATION_LAYERS_ENABLED);
 
 	
 	createInfo.enabledExtensionCount   = static_cast<uint32_t>(extensions.size());

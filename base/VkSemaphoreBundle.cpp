@@ -1,17 +1,17 @@
 #include "VkSemaphoreBundle.h"
 
-VkSemaphoreBundle::VkSemaphoreBundle(VkDeviceManager &_device_manager, uint8_t _bundle_size, bool signaled) :
+VkSemaphoreBundle::VkSemaphoreBundle(const VkDeviceManager &_device_manager, uint32_t _bundle_size,  Vk::SyncObjCreateOption option) :
     VkSynObjectBundleBase(_bundle_size),
     device_manager(_device_manager)
 {
 	VkSemaphoreCreateInfo semaphore_CI{};
 	semaphore_CI.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
-	//if (signaled)
-	//{
-	//
-	//	semaphore_CI.flags = VK_SEMAPHORE_CREATE_SIGNALED_BIT;
-	//}
+	if (option | Vk::SyncObjCreateOption::Signaled)
+	{
+	
+		semaphore_CI.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+	}
 
 	syn_objects_bundle.resize(bundle_size);
 	for (auto &semaphore : syn_objects_bundle)
@@ -23,12 +23,12 @@ VkSemaphoreBundle::VkSemaphoreBundle(VkDeviceManager &_device_manager, uint8_t _
 	}
 }
 
-VkSemaphore VkSemaphoreBundle::operator[](uint8_t num) const
+VkSemaphore VkSemaphoreBundle::operator[](uint32_t num) const
 {
 	return syn_objects_bundle[num];
 }
 
-const VkSemaphore &VkSemaphoreBundle::GetOne(uint8_t num) const
+const VkSemaphore &VkSemaphoreBundle::GetOne(uint32_t num) const
 {
 	return syn_objects_bundle[num];
 }

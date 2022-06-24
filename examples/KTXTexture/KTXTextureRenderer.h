@@ -3,12 +3,11 @@
 #include "FirstPersonCamera.h"
 #include "KeyBoardInputManager.h"
 #include "MouseInputManager.h"
-#include "VkTexture.h"
+#include "VkDepthImageFactory.h"
 #include "VkDescriptorManager.h"
 #include "VkRenderpassManager.h"
-#include "VkDepthImageFactory.h"
 #include "VkSynObjectFactory.h"
-#include "VkUniformBufferBundle.h"
+#include "VkTexture.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/hash.hpp>
@@ -17,31 +16,25 @@
 
 class KTXTextureRenderer : public BaseRenderer
 {
+  public:
+	KTXTextureRenderer(VkGraphicsComponent &gfx_);
+	~KTXTextureRenderer() override = default;
 
-	public: 
-		KTXTextureRenderer(
-			VkWindows &         _window,
-			VkDeviceManager &   _device_manager,
-			VkSwapChainManager &_swapchain_manager,
-			VkCommandManager &  _command_manager
-		);
-	  ~KTXTextureRenderer() override = default;
+	KTXTextureRenderer() = delete;
 
+	KTXTextureRenderer(const KTXTextureRenderer &) = delete;
+	KTXTextureRenderer &operator=(const KTXTextureRenderer &) = delete;
 
+	KTXTextureRenderer(KTXTextureRenderer &&) = delete;
+	KTXTextureRenderer &operator=(KTXTextureRenderer &&) = delete;
 
-public:
+  public:
 	void DrawFrame() override;
 	void UpdateCamera(float dt) override;
 
-
-
   private:
-
 	void SetUpUserInput() override;
 	void CreateCamera() override;
-
-
-
 
 	void CreateAttachmentImages() override;
 	void CreateTextureImages() override;
@@ -65,11 +58,9 @@ public:
 	void InitSynObjects() override;
 	void UpdateUniformBuffer(uint32_t currentImage) override;
 
-
   private:
-	void CreateRenderPass0() ;
-	void CreatePipelineRenderPass0Subpass0() ;
-
+	void CreateRenderPass0();
+	void CreatePipelineRenderPass0Subpass0();
 
   private:
 	static constexpr int MAX_FRAMES_IN_FLIGHT = 2;
@@ -82,15 +73,15 @@ public:
 		glm::mat4 projection;
 		glm::mat4 view;
 		glm::vec4 eyepos;
-		alignas(4) float     lodBias = 0.0f;
+		alignas(4) float lodBias = 0.0f;
 	};
 
 	//vertex layout
 	struct Vertex
 	{
-		glm::vec3                                                 pos;
-		glm::vec3                                                 normal;
-		glm::vec2                                                 uv;
+		glm::vec3                                             pos;
+		glm::vec3                                             normal;
+		glm::vec2                                             uv;
 		static std::vector<VkVertexInputAttributeDescription> GetAttributeDescriptions()
 		{
 			std::vector<VkVertexInputAttributeDescription> attributeDescriptions{};
@@ -115,41 +106,52 @@ public:
 		}
 	};
 
-
-
   private:
 	//RENDERPASS MAN
-	VkRenderpassManager render_pass_manager;
-
-	std::unique_ptr<VkImageFactory>      depth_image_builder;
-
+	VkRenderpassManager             render_pass_manager;
+	std::unique_ptr<VkImageFactory> depth_image_builder;
 
 	//UNIFORM BUFFER
-	UboData ubo{};
-	std::shared_ptr<VkUniformBufferBundle> uniform_buffers;
+	UboData                         ubo{};
+	std::shared_ptr<VkBufferBundle> uniform_buffers;
 
 	//TEXTURE
 	std::shared_ptr<VkTexture> ktx_texure;
+
 	//ATTACHMENT
 	std::shared_ptr<VkImageBundle> depth_attachments;
 
 	//SYN OBJECTS
 	std::shared_ptr<VkSemaphoreBundle> image_available_semaphores;
 	std::shared_ptr<VkSemaphoreBundle> render_finished_semaphores;
-	std::shared_ptr<VkFenceBundle> frame_fences;
+	std::shared_ptr<VkFenceBundle>     frame_fences;
 	//-----------------------------------------------------------
-	std::vector<VkFence>           image_fences;
-
+	std::vector<VkFence> image_fences;
 	//MODELS
 	std::shared_ptr<VkModel<Vertex>> quad_model;
 
 	//CAMERA
 	std::unique_ptr<FirstPersonCamera> camera;
-
 	//INPUT MANAGER
 	std::unique_ptr<KeyBoardInputManager> keyboard;
 	std::unique_ptr<MouseInputManager>    mouse;
 
+  private:
+	/////////////////////////////////////////RENDERING METAINFO
+	///
+	///Global resources
+	inline static constexpr DescriptorPoolMetaInfo      pool_main_thread{.thread_id = 0};
+	///Renderpass 0
+	inline static constexpr uint32_t                    renderpass0 = 0;
+
+
+	inline static constexpr DescriptorSetLayoutMetaInfo des_set_layout_0{.id = 0};
+	inline static constexpr DescriptorSetMetaInfo       des_set0{.pool = pool_main_thread, .layout = des_set_layout_0,.id = 0};
+	inline static const PipelineLayoutMetaInfo          layout_0_0{
+        .descriptor_layout_ids_vec{des_set_layout_0},
+        .id = 0
+	};
+	inline static const PipelineMetaInfo pipe_0_0{.pass = renderpass0, .subpass = 0, .pipelayout_id = layout_0_0};
 
 
 

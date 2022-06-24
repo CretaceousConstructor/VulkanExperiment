@@ -1,11 +1,12 @@
 #include "BaseRenderer.h"
 
-BaseRenderer::BaseRenderer(VkWindows &_window, VkDeviceManager &_device_manager, VkSwapChainManager &_swapchain_manager, VkCommandManager &_command_manager)
+BaseRenderer::BaseRenderer(VkGraphicsComponent& gfx_)
     :
-    device_manager(_device_manager),
-    window(_window),
-    swapchain_manager(_swapchain_manager),
-    command_manager(_command_manager)
+    gfx(gfx_),
+    device_manager(gfx.DeviceMan()),
+    window(gfx.Window()),
+    swapchain_manager(gfx.SwapchainMan()),
+    command_manager(gfx.CommandMan())
 {
 
 

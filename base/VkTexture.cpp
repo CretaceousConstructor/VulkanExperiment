@@ -4,19 +4,35 @@
 
 #include "VkTexture.h"
 
-VkTexture::VkTexture(VkGraphicsComponent &_gfx, const std::string &image_path, VkFormat format_of_texture, VkImageLayout para_imageLayout) :
-    gfx(_gfx)
+//VkTexture::VkTexture(VkGraphicsComponent &_gfx, const std::string &image_path, VkImageLayout para_imageLayout) :
+//    gfx(_gfx),
+//    device_manager(gfx.DeviceMan()),
+//    window(gfx.Window())
+//{
+//	if (true)
+//	{
+//		InitKTXTexture(image_path, format_of_texture, para_imageLayout);
+//	}
+//	else
+//	{
+//		InitTexture(image_path, format_of_texture, para_imageLayout);
+//	}
+//	InitSampler();
+//}
+
+
+
+VkTexture::VkTexture(VkGraphicsComponent &gfx_, std::string image_path, std::shared_ptr<VkGeneralPurposeImage> image_, VkSampler texture_sampler_,VkImageLayout imageLayout_) :
+    gfx(gfx_),
+	device_manager(gfx.DeviceMan()),
+    tex_name(std::move(image_path)),
+    texture_image(image_),
+    texture_sampler(texture_sampler_),
+    image_layout(imageLayout_)
+
 {
-		if (true)
-	{
-		InitKTXTexture(image_path, format_of_texture, para_imageLayout);
-	}
-	else
-	{
-		InitTexture(image_path, format_of_texture, para_imageLayout);
-	}
-	InitTextureView(format_of_texture, VK_IMAGE_ASPECT_COLOR_BIT);
-	InitSampler();
+
+
 }
 
 VkTexture::~VkTexture()
@@ -24,21 +40,20 @@ VkTexture::~VkTexture()
 	vkDestroySampler(gfx.DeviceMan().GetLogicalDevice(), texture_sampler, nullptr);
 }
 
-
-
-
-void VkTexture::InitTexture(std::string image_path, VkFormat format_of_texture, VkImageLayout para_imageLayout)
+/*
+void VkTexture::InitTexture(const std::string& image_path, VkFormat format_of_texture, VkImageLayout para_imageLayout)
 {
-	//imageLayout = para_imageLayout;
-	tex_name    = image_path.substr(image_path.find_last_of("\\/") + 1, image_path.length());
 
 
 
+
+
+
+	tex_name  = image_path.substr(image_path.find_last_of("\\/") + 1, image_path.length());
 
 	// VK_FORMAT_B8G8R8A8_SRGB
 	// VK_FORMAT_R8G8B8A8_UNORM;
 	int texWidth, texHeight, texChannels;
-
 	stbi_uc *pixels = stbi_load(image_path.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
 
 	////交换BR的顺序，使之成为RGB形式。
@@ -52,17 +67,15 @@ void VkTexture::InitTexture(std::string image_path, VkFormat format_of_texture, 
 	//		}
 	//	}
 	//}
-
-	VkDeviceSize imageSize = texWidth * texHeight * 4;
+	const VkDeviceSize imageSize = texWidth * texHeight * 4;
 
 	if (!pixels)
 	{
 		throw std::runtime_error("failed to load texture image!");
 	}
-
+	//TODO: buffer创建简化
 	VkBuffer       stagingBuffer;        //host visible memory
 	VkDeviceMemory stagingBufferMemory;
-
 
 
 	gfx.DeviceMan().CreateBufferAndBindToMemo(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory, VK_SHARING_MODE_EXCLUSIVE, window.GetSurface());
@@ -71,8 +84,9 @@ void VkTexture::InitTexture(std::string image_path, VkFormat format_of_texture, 
 	vkMapMemory(device_manager.GetLogicalDevice(), stagingBufferMemory, 0, imageSize, (VkMemoryMapFlags) 0, &data);
 	memcpy(data, pixels, static_cast<size_t>(imageSize));
 	vkUnmapMemory(device_manager.GetLogicalDevice(), stagingBufferMemory);
-
 	stbi_image_free(pixels);
+	//TODO: buffer创建简化
+
 
 	VkExtent3D image_extent;
 	image_extent.width  = texWidth;
@@ -145,17 +159,16 @@ void VkTexture::InitTexture(const void *buffer, VkDeviceSize bufferSize, uint32_
 
 }
 
-void VkTexture::InitKTXTexture(std::string image_path, VkFormat format_of_underlying_image, VkImageLayout para_imageLayout)
+void VkTexture::InitKTXTexture(const std::string& image_path, VkFormat format_of_underlying_image, VkImageLayout para_imageLayout)
 {
-	//imageLayout    = para_imageLayout;
 
-	// We use the Khronos texture format (https://www.khronos.org/opengles/sdk/tools/KTX/file_format_spec/)
 
-	std::string filename = image_path;
+	const std::string filename = image_path;
 	VkFormat    format   = format_of_underlying_image;
+
+
 	ktxResult   result;
 	ktxTexture *ktxTexture;
-
 	result = ktxTexture_CreateFromNamedFile(filename.c_str(), KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, &ktxTexture);
 	assert(result == KTX_SUCCESS);
 
@@ -171,8 +184,7 @@ void VkTexture::InitKTXTexture(std::string image_path, VkFormat format_of_underl
 	ktx_uint8_t *ktxTextureData = ktxTexture_GetData(ktxTexture);
 	ktx_size_t   ktxTextureSize = ktxTexture_GetSize(ktxTexture);
 
-	// We prefer using staging to copy the texture data to a device local optimal image
-	// Only use linear tiling if forced
+
 	// 如果要强行使用linear tiling，则 如果形式参数format_of_texure支持VK_FORMAT_FEATURE_SAMPLED_IMAGE_BIT，就不使用staging buffer，否则使用staging buffer
 	bool forceLinearTiling = false;
 
@@ -305,19 +317,17 @@ void VkTexture::InitSampler()
 	}
 }
 
-void VkTexture::InitSampler(VkSamplerCreateInfo &samplerCI)
+void VkTexture::InitSampler(const VkSamplerCreateInfo& sampler_CI)
 {
-	if (vkCreateSampler(device_manager.GetLogicalDevice(), &samplerCI, nullptr, &texture_sampler) != VK_SUCCESS)
+	if (vkCreateSampler(device_manager.GetLogicalDevice(), &sampler_CI, nullptr, &texture_sampler) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to create texture sampler!");
 	}
-}
+}*/
 
 VkWriteDescriptorSet VkTexture::GetWriteDescriptorSetInfo(uint32_t dstbinding, uint32_t dstArrayElement)
 {
-
-
-	imageInfo.imageLayout = imageLayout;
+	imageInfo.imageLayout = image_layout;
 	imageInfo.imageView   = GetTextureImageView();
 	imageInfo.sampler     = GetTextureSampler();
 
@@ -330,28 +340,24 @@ VkWriteDescriptorSet VkTexture::GetWriteDescriptorSetInfo(uint32_t dstbinding, u
 	temp_writeDescriptorSet.dstArrayElement = dstArrayElement;
 
 	return temp_writeDescriptorSet;
-
 }
 
-
-
-VkImage VkTexture::GetTextureImage()const
+VkImage VkTexture::GetTextureImage() const
 {
-
 	return texture_image->GetImage();
 }
 
-VkImageView VkTexture::GetTextureImageView()const
+VkImageView VkTexture::GetTextureImageView() const
 {
 	return texture_image->GetImageView();
 }
 
-VkSampler VkTexture::GetTextureSampler()const
+VkSampler VkTexture::GetTextureSampler() const
 {
 	return texture_sampler;
 }
 
-VkImageLayout VkTexture::GetImageLayout()const
+VkImageLayout VkTexture::GetImageLayout() const
 {
-	return imageLayout;
+	return image_layout;
 }

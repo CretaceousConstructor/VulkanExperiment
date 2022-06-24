@@ -1,7 +1,7 @@
 #include "VkDescriptorManager.h"
 
-VkDescriptorManager::VkDescriptorManager(VkDeviceManager &_device_manager) :
-    device_manager(_device_manager)
+VkDescriptorManager::VkDescriptorManager(VkGraphicsComponent &_gfx) :
+    gfx(_gfx),device_manager(gfx.DeviceMan())
 {
 }
 
@@ -18,15 +18,13 @@ VkDescriptorManager::~VkDescriptorManager()
 	}
 }
 
-void VkDescriptorManager::AddDescriptorPool(const DescriptorMetaInfo pool_meta_info, std::vector<std::pair<VkDescriptorType, uint32_t>> info_pairs, uint32_t max_sets)
+void VkDescriptorManager::AddDescriptorPool(const DescriptorPoolMetaInfo pool_meta_info, std::vector<std::pair<VkDescriptorType, uint32_t>> info_pairs, uint32_t max_sets)
 {
-	//由于在创建pool的时候，元信息中的uint8_t set用不到，所以把uint8_t set当作一个subpass中使用的pool的索引
 	if (descriptor_pools.contains(pool_meta_info))
 	{
 		throw std::runtime_error("pool already exists!");
 	}
 
-	// Create the global descriptor pool
 	Pool result{};
 	result.info     = std::move(info_pairs);
 	result.max_sets = max_sets;
@@ -44,10 +42,9 @@ void VkDescriptorManager::AddDescriptorPool(const DescriptorMetaInfo pool_meta_i
 	descriptor_pool_CI.poolSizeCount              = static_cast<uint32_t>(poolSizes.size());
 	descriptor_pool_CI.pPoolSizes                 = poolSizes.data();
 
+	//max number of descriptor sets that can be allocated from this pool
+	descriptor_pool_CI.maxSets = static_cast<uint32_t>(max_sets);
 
-
-	// Max. number of descriptor sets that can be allocated from this pool
-	descriptor_pool_CI.maxSets = static_cast<uint32_t>(max_sets);        //一帧一个set是否浪费？如果只用一个set会不会有同步问题?
 	if (vkCreateDescriptorPool(device_manager.GetLogicalDevice(), &descriptor_pool_CI, nullptr, &result.descriptor_pool) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to create descriptor pool!");
@@ -58,9 +55,20 @@ void VkDescriptorManager::AddDescriptorPool(const DescriptorMetaInfo pool_meta_i
 
 }
 
-void VkDescriptorManager::AddDescriptorSetLayout(const DescriptorMetaInfo meta_info, std::vector<VkDescriptorSetLayoutBinding> LayoutBindings)
+const VkDescriptorPool& VkDescriptorManager::GetPool(const DescriptorPoolMetaInfo   pool_meta_info) const
 {
-	if (set_layouts.contains(meta_info))
+	//if (!descriptor_pools.contains(pool_meta_info))
+	//{
+	//	throw std::runtime_error("non-existent pool!");
+	//}
+	return descriptor_pools.at(pool_meta_info).descriptor_pool;
+}
+
+
+
+void VkDescriptorManager::AddDescriptorSetLayout(const DescriptorSetLayoutMetaInfo set_layout_meta_info, std::vector<VkDescriptorSetLayoutBinding> LayoutBindings)
+{
+	if (set_layouts.contains(set_layout_meta_info))
 	{
 		throw std::runtime_error("set layout already exists!");
 	}
@@ -69,23 +77,38 @@ void VkDescriptorManager::AddDescriptorSetLayout(const DescriptorMetaInfo meta_i
 
 	VkDescriptorSetLayoutCreateInfo layout_bindingCI{};
 	layout_bindingCI.sType        = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-	layout_bindingCI.bindingCount = (uint32_t) temp_layout.LayoutBindings.size();        //the amount of VkDescriptorSetLayoutBinding
+	layout_bindingCI.bindingCount = temp_layout.LayoutBindings.size();        //the amount of VkDescriptorSetLayoutBinding
 	layout_bindingCI.pBindings    = temp_layout.LayoutBindings.data();
 	if (vkCreateDescriptorSetLayout(device_manager.GetLogicalDevice(), &layout_bindingCI, nullptr, &temp_layout.set_layout) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to create descriptor set layout!");
 	}
 
-	set_layouts.emplace(meta_info, std::move(temp_layout));
+	set_layouts.emplace(set_layout_meta_info, std::move(temp_layout));
+
+
 
 }
 
+const VkDescriptorSetLayout& VkDescriptorManager::GetSetLayout(const DescriptorSetLayoutMetaInfo set_layout_meta_info)  const
+{
+	//if (!set_layouts.contains(set_layout_meta_info))
+	//{
+	//	throw std::runtime_error("non-existent set layout!");
+	//}
+	return set_layouts.at(set_layout_meta_info).set_layout;
+}
 
-//DescriptorMetaInfo
-void VkDescriptorManager::AddDescriptorSetBundle(const DescriptorMetaInfo pool_meta_info, const DescriptorMetaInfo set_layout_meta_info, size_t num_in_flight)
+
+
+
+
+
+//DescriptorSetMetaInfo
+void VkDescriptorManager::AddDescriptorSetBundle(const DescriptorSetMetaInfo bundle_set_meta_info, size_t num_of_bundle)
 {
 	// meta-info processing
-	DescriptorMetaInfo bundle_set_meta_info{set_layout_meta_info};
+
 
 	//test if decriptor_bundle exsits
 	if (descriptor_sets.contains(bundle_set_meta_info))
@@ -95,16 +118,16 @@ void VkDescriptorManager::AddDescriptorSetBundle(const DescriptorMetaInfo pool_m
 
 	//descriptor allocation:allocate a bundle of(of size  num_in_flight)the sets(every frame needs a non-conflicting set)
 	std::vector<VkDescriptorSet> descriptor_set_bundle;
-	descriptor_set_bundle.resize(num_in_flight);
+	descriptor_set_bundle.resize(num_of_bundle);
 
-	for (size_t i = 0; i < num_in_flight; i++)
+	for (size_t i = 0; i < num_of_bundle; i++)
 	{
 		//ALLOCATE DESCRIPTOR SETS
 		VkDescriptorSetAllocateInfo allocInfoWrite{};
 		allocInfoWrite.sType              = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-		allocInfoWrite.descriptorPool     = this->GetPool(pool_meta_info);
+		allocInfoWrite.descriptorPool     = this->GetPool(bundle_set_meta_info.pool);
 		allocInfoWrite.descriptorSetCount = 1;
-		allocInfoWrite.pSetLayouts        = &this->GetSetLayout(set_layout_meta_info);
+		allocInfoWrite.pSetLayouts        = &this->GetSetLayout(bundle_set_meta_info.layout);
 
 		if (vkAllocateDescriptorSets(device_manager.GetLogicalDevice(), &allocInfoWrite, &descriptor_set_bundle[i]) != VK_SUCCESS)
 		{
@@ -114,9 +137,11 @@ void VkDescriptorManager::AddDescriptorSetBundle(const DescriptorMetaInfo pool_m
 
 	//adding to map
 	descriptor_sets.emplace(bundle_set_meta_info, std::move(descriptor_set_bundle));
+
+
 }
 
-void VkDescriptorManager::UpdateDescriptorSet(std::vector<VkWriteDescriptorSet> write_descriptor_sets, const DescriptorMetaInfo set_meta_info, size_t frame_inflight) 
+void VkDescriptorManager::UpdateDescriptorSet(std::vector<VkWriteDescriptorSet> write_descriptor_sets, const DescriptorSetMetaInfo set_meta_info, size_t frame_inflight) 
 {
 	if (!descriptor_sets.contains(set_meta_info))
 	{
@@ -134,80 +159,64 @@ void VkDescriptorManager::UpdateDescriptorSet(std::vector<VkWriteDescriptorSet> 
 	vkUpdateDescriptorSets(device_manager.GetLogicalDevice(), static_cast<uint32_t>(write_descriptor_sets.size()), write_descriptor_sets.data(), 0, nullptr);
 }
 
-const std::vector<VkDescriptorSet> & VkDescriptorManager::GetDescriptorSetBundle(DescriptorMetaInfo meta_info)
+const std::vector<VkDescriptorSet> & VkDescriptorManager::GetDescriptorSetBundle(DescriptorSetMetaInfo meta_info)const
 {
-	if (!descriptor_sets.contains(meta_info))
-	{
-		throw std::runtime_error("non-existent pool!");
-	}
+	//if (!descriptor_sets.contains(meta_info))
+	//{
+	//	throw std::runtime_error("non-existent pool!");
+	//}
 
-	return descriptor_sets[meta_info];
+	return descriptor_sets.at(meta_info);
 
 }
 
-const VkDescriptorPool &VkDescriptorManager::GetPool(const DescriptorMetaInfo pool_meta_info)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//std::vector<VkDescriptorSetLayout> VkDescriptorManager::SearchLayout(const DescriptorSetMetaInfo set_layout_meta_info) const
+//{
+//	std::vector<VkDescriptorSetLayout> result;
+//	for (auto &layout : set_layouts)
+//	{
+//		auto &meta_info = layout.first;
+//		if (meta_info.pass == set_layout_meta_info.pass && meta_info.subpass == set_layout_meta_info.subpass)
+//		{
+//			if (meta_info.set < result.size())
+//			{
+//				result[meta_info.set] = layout.second.set_layout;
+//			}
+//			else
+//			{
+//				result.resize(meta_info.set + 1);
+//				result[meta_info.set] = layout.second.set_layout;
+//			}
+//		}
+//	}
+//
+//	return result;
+//}
+
+std::vector<VkDescriptorSetLayout> VkDescriptorManager::SearchLayout(const std::vector<DescriptorSetLayoutMetaInfo>& set_layout_meta_info) const
 {
-	if (!descriptor_pools.contains(pool_meta_info))
-	{
-		throw std::runtime_error("non-existent pool!");
-	}
-	return descriptor_pools[pool_meta_info].descriptor_pool;
-}
-
-const VkDescriptorSetLayout &VkDescriptorManager::GetSetLayout(const DescriptorMetaInfo set_layout_meta_info)
-{
-	if (!set_layouts.contains(set_layout_meta_info))
-	{
-		throw std::runtime_error("non-existent set layout!");
-	}
-	return set_layouts[set_layout_meta_info].set_layout;
-}
-
-std::vector<VkDescriptorSetLayout> VkDescriptorManager::SearchLayout(const DescriptorMetaInfo set_layout_meta_info) const
-{
-	std::vector<VkDescriptorSetLayout> result;
-	for (auto &layout : set_layouts)
-	{
-		auto &meta_info = layout.first;
-		if (meta_info.pass == set_layout_meta_info.pass && meta_info.subpass == set_layout_meta_info.subpass)
-		{
-			if (meta_info.set < result.size())
-			{
-				result[meta_info.set] = layout.second.set_layout;
-			}
-			else
-			{
-				result.resize(meta_info.set + 1);
-				result[meta_info.set] = layout.second.set_layout;
-			}
-		}
-	}
-
-	return result;
-}
-
-std::vector<VkDescriptorSetLayout> VkDescriptorManager::SearchLayout(const PipelineMetaInfo set_layout_meta_info) const
-{
-
 
 	std::vector<VkDescriptorSetLayout> result;
-	for (auto &layout : set_layouts)
+	for (auto &layout : set_layout_meta_info)
 	{
-		auto &meta_info = layout.first;
-		if (meta_info.pass == set_layout_meta_info.pass && meta_info.subpass == set_layout_meta_info.subpass)
-		{
-			if (meta_info.set < result.size())
-			{
-				result[meta_info.set] = layout.second.set_layout;
-			}
-			else
-			{
-				result.resize(meta_info.set + 1);
-				result[meta_info.set] = layout.second.set_layout;
-			}
-		}
+		result.push_back(set_layouts.at(layout).set_layout);
 	}
-
 	return result;
 
 }

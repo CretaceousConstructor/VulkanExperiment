@@ -26,7 +26,6 @@ void main()
 
 	vec4 color = texture(samplerColorMap, inUV) * vec4(inColor, 1.0);
 	
-	
 	if (ALPHA_MASK) {
 		if (color.a < ALPHA_MASK_CUTOFF) {
 			discard;

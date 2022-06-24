@@ -1,29 +1,20 @@
 #pragma once
-
-#include "EngineMarco.h"
-#include "EngineHeader.h"
-#include "ModelLoader.h"
-#include "VkCommandManager.h"
-#include "VkDeviceManager.h"
+#include "VkGraphicsComponent.h"
 #include "VkTexture.h"
-#include "VkUniformBuffer.h"
-#include "VkWindows.h"
+#include "VkBufferBundle.h" 
 #include "VkMetaInfo.h"
-#include "VkUniformBufferBundle.h"
-
-#include <glm/gtx/hash.hpp>
 #include <unordered_map>
-#include <utility>
 #include <vector>
-#include <xhash>
+
+
+
 
 
 class VkDescriptorManager
 {
   public:
-  public:
-	//TODO:VkDescriptorSet不用进行调用destroy类API，但是如何回收回到pool中，这个功能暂时不进行实现，
-	VkDescriptorManager(VkDeviceManager &_device_manager);
+	//TODO:VkDescriptorSet不用进行调用destroy类API，但可以用vkFree回收到pool中，这个功能暂时不进行实现，
+	VkDescriptorManager(VkGraphicsComponent &_gfx);
 
 	VkDescriptorManager(const VkDescriptorManager &) = delete;
 	VkDescriptorManager &operator=(const VkDescriptorManager &) = delete;
@@ -33,68 +24,71 @@ class VkDescriptorManager
 
 	~VkDescriptorManager();
 
-	void AddDescriptorPool(		const DescriptorMetaInfo pool_meta_info, std::vector<std::pair<VkDescriptorType, uint32_t>> info_pairs, uint32_t max_sets);
-	void AddDescriptorSetLayout(const DescriptorMetaInfo set_layout_meta_info, std::vector<VkDescriptorSetLayoutBinding> LayoutBindings);
-	void AddDescriptorSetBundle(const DescriptorMetaInfo pool_meta_info, const DescriptorMetaInfo set_layout_meta_info, size_t num_in_flight);
-
-	void UpdateDescriptorSet(std::vector<VkWriteDescriptorSet> write_descriptor_sets, const DescriptorMetaInfo set_meta_info, size_t frame_inflight) ;
 
 
 
 
+	void AddDescriptorPool(const DescriptorPoolMetaInfo pool_meta_info, std::vector<std::pair<VkDescriptorType, uint32_t>> info_pairs, uint32_t max_sets);
+	[[nodiscard]] const VkDescriptorPool& GetPool(const DescriptorPoolMetaInfo pool_meta_info) const;
+	void AddDescriptorSetLayout(const DescriptorSetLayoutMetaInfo set_layout_meta_info, std::vector<VkDescriptorSetLayoutBinding> LayoutBindings);
+	[[nodiscard]]const VkDescriptorSetLayout& GetSetLayout(const DescriptorSetLayoutMetaInfo set_layout_meta_info) const;
+	void AddDescriptorSetBundle(const DescriptorSetMetaInfo bundle_set_meta_info, size_t num_of_bundle);
+	const std::vector<VkDescriptorSet> &      GetDescriptorSetBundle(DescriptorSetMetaInfo meta_info) const;
 
-
-	const std::vector<VkDescriptorSet>& GetDescriptorSetBundle(DescriptorMetaInfo meta_info);
-
-
-
+	void UpdateDescriptorSet(std::vector<VkWriteDescriptorSet> write_descriptor_sets, const DescriptorSetMetaInfo set_meta_info, size_t frame_inflight) ;
 	template <class Resource>
-	void UpdateDescriptorSet(Resource &resource, const DescriptorMetaInfo set_meta_info, uint32_t dstbinding, uint32_t dstArrayElement);
+	void UpdateDescriptorSet(Resource &resource, const DescriptorSetMetaInfo set_meta_info, uint32_t dstbinding, uint32_t dstArrayElement);
 
 
 
-	const VkDescriptorPool &     GetPool(const DescriptorMetaInfo pool_meta_info);
-	const VkDescriptorSetLayout &GetSetLayout(const DescriptorMetaInfo set_layout_meta_info);
 
-	[[nodiscard]] std::vector<VkDescriptorSetLayout> SearchLayout(const DescriptorMetaInfo set_layout_meta_info) const;
+
+	//TODO:
+	[[nodiscard]] std::vector<VkDescriptorSetLayout> SearchLayout(const std::vector<DescriptorSetLayoutMetaInfo>& set_layout_meta_info) const;
 	[[nodiscard]] std::vector<VkDescriptorSetLayout> SearchLayout(const PipelineMetaInfo set_layout_meta_info) const;
 
 
 
 
   private:
-	VkDeviceManager &device_manager;
+	VkGraphicsComponent &gfx;
+	const VkDeviceManager &device_manager;
 
   private:
 	class Pool
 	{
 	  public:
 		std::vector<std::pair<VkDescriptorType, uint32_t>> info;
-		uint32_t                                           max_sets;
-		VkDescriptorPool                                   descriptor_pool;
+		uint32_t                                           max_sets{};
+		VkDescriptorPool                                   descriptor_pool{};
 	};
 	class SetLayOut
 	{
 	  public:
 		std::vector<VkDescriptorSetLayoutBinding> LayoutBindings;
-		VkDescriptorSetLayout                     set_layout;
+		VkDescriptorSetLayout                     set_layout{};
 	};
 
+
+
   private:
-	std::unordered_map<DescriptorMetaInfo, Pool>                         descriptor_pools;
-	std::unordered_map<DescriptorMetaInfo, SetLayOut>                    set_layouts;
-	std::unordered_map<DescriptorMetaInfo, std::vector<VkDescriptorSet>> descriptor_sets;
+	std::unordered_map<DescriptorSetLayoutMetaInfo, SetLayOut>                  set_layouts;
+	std::unordered_map<DescriptorPoolMetaInfo, Pool>                         descriptor_pools;
+	std::unordered_map<DescriptorSetMetaInfo, std::vector<VkDescriptorSet>> descriptor_sets;
+
+
+
 };
 
 template <>
-inline void VkDescriptorManager::UpdateDescriptorSet<VkUniformBufferBundle>(VkUniformBufferBundle& resource, const DescriptorMetaInfo set_meta_info, uint32_t dstbinding, uint32_t dstArrayElement)
+inline void VkDescriptorManager::UpdateDescriptorSet<VkBufferBundle>(VkBufferBundle& resource, const DescriptorSetMetaInfo set_meta_info, uint32_t dstbinding, uint32_t dstArrayElement)
 {
 	if (!descriptor_sets.contains(set_meta_info))
 	{
 		throw std::runtime_error("descriptor set doesn't exist!");
 	}
 	const auto &set_bundle = descriptor_sets[set_meta_info];
-	for (uint8_t frame_inflight = 0; frame_inflight < set_bundle.size(); frame_inflight++)
+	for (uint32_t frame_inflight = 0; frame_inflight < set_bundle.size(); frame_inflight++)
 	{
 
 		auto write_set   = resource[frame_inflight].GetWriteDescriptorSetInfo(dstbinding, dstArrayElement);
@@ -106,19 +100,43 @@ inline void VkDescriptorManager::UpdateDescriptorSet<VkUniformBufferBundle>(VkUn
 }
 
 template <>
-inline void VkDescriptorManager::UpdateDescriptorSet<VkTexture>(VkTexture &resource, const DescriptorMetaInfo set_meta_info, uint32_t dstbinding, uint32_t dstArrayElement)
+inline void VkDescriptorManager::UpdateDescriptorSet<VkTexture>(VkTexture &resource, const DescriptorSetMetaInfo set_meta_info, uint32_t dstbinding, uint32_t dstArrayElement)
 {
 	if (!descriptor_sets.contains(set_meta_info))
 	{
 		throw std::runtime_error("descriptor set doesn't exist!");
 	}
 	const auto &set_bundle = descriptor_sets[set_meta_info];
+
+
 	for (size_t frame_inflight = 0; frame_inflight < set_bundle.size(); frame_inflight++)
 	{
 		auto write_set   = resource.GetWriteDescriptorSetInfo(dstbinding, dstArrayElement);
 		write_set.dstSet = set_bundle[frame_inflight];
 		vkUpdateDescriptorSets(device_manager.GetLogicalDevice(), static_cast<uint32_t>(1), &write_set, 0, nullptr);
 	}
+
+
+
+
+		////subpass0
+		//{
+		//	for (size_t frame_inflight = 0; frame_inflight < swapchain_manager.GetSwapImageCount(); frame_inflight++)
+		//	{
+		//		std::vector<VkWriteDescriptorSet> writeDescriptorSets;
+		//		//SET INFOS
+		//		/*
+		//			Set 0,Binding 0: VS matrices Uniform buffer,amount = 1
+		//		*/
+		//		writeDescriptorSets.emplace_back(buffers[frame_inflight]->GetWriteDescriptorSetInfo(0, 0));
+		//		/*
+		//			Set 0,Binding 1: FS texture image and sampler,amount = 1
+		//		*/
+		//		writeDescriptorSets.emplace_back(ktx_texure->GetWriteDescriptorSetInfo(1, 0));
+
+		//		descriptor_manager->UpdateDescriptorSet(std::move(writeDescriptorSets), set_layout_meta_info, frame_inflight);
+		//	}
+		//};
 
 
 }

@@ -1,9 +1,6 @@
 #pragma once
 
-
-#include "EngineMarco.h"
-#include "EngineHeader.h"
-#include "VkDeviceManager.h"
+#include "VkGraphicsComponent.h"
 #include "VkSubpassWrapper.h"
 #include "VkAttachmentInfo.h"
 #include <vector>
@@ -11,14 +8,12 @@
 class VkRenderpassWrapper
 {
   public:
-	VkRenderpassWrapper(const std::string &_renderpass_name, std::vector<VkAttachmentInfo> _attachment_infos, std::vector<VkSubpassDependency> _dependencies, 	std::vector<std::shared_ptr<VkSubpassWrapper>>  _subpasses, VkDeviceManager &_device_manager);
+	VkRenderpassWrapper(std::string _renderpass_name, std::vector<VkAttachmentInfo> _attachment_infos, std::vector<VkSubpassDependency> _dependencies, 	std::vector<std::shared_ptr<VkSubpassWrapper>>  _subpasses, VkGraphicsComponent& _gfx);
 
 	~VkRenderpassWrapper();
 
 
-
 	VkRenderpassWrapper() = delete;
-
 	VkRenderpassWrapper(const VkRenderpassWrapper &) = delete;
 	VkRenderpassWrapper &operator=(const VkRenderpassWrapper &) = delete;
 
@@ -27,19 +22,20 @@ class VkRenderpassWrapper
 
 
 
+	[[nodiscard]] const std::vector<VkFramebuffer>& GetFrameBuffers() const;
+	[[nodiscard]] VkRenderPass GetRenderpass() const;
 
+	const std::vector<VkAttachmentInfo> attachment_infos;
+	const std::vector<VkSubpassDependency>     dependencies;
+	const std::vector<std::shared_ptr<VkSubpassWrapper>> subpasses;
 
-
-
-	std::vector<VkAttachmentInfo> attachment_infos;
-	std::vector<VkSubpassDependency>     dependencies;
-	std::vector<std::shared_ptr<VkSubpassWrapper>> subpasses;
-
-	VkRenderPass render_pass;
-	std::string  render_pass_name;
-
-	std::vector<VkFramebuffer> frame_buffers;
-
+	const std::string  render_pass_name;
 private:
-	VkDeviceManager &                              device_manager;
+	VkGraphicsComponent &gfx;
+	const VkDeviceManager & device_manager;
+	const VkSwapchainManager &swapchain_manager;
+
+  private:
+	VkRenderPass render_pass{};
+	std::vector<VkFramebuffer> frame_buffers;
 };

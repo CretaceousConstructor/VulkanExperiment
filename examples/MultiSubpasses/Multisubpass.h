@@ -10,7 +10,6 @@
 #include "VkRenderpassManager.h"
 #include "VkDepthImageFactory.h"
 #include "VkSynObjectFactory.h"
-#include "VkUniformBufferBundle.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/hash.hpp>
@@ -23,15 +22,19 @@
 class MultiSubpassesRenderer : public BaseRenderer
 {
   public:
-	MultiSubpassesRenderer(
-			VkWindows &         _window,
-			VkDeviceManager &   _device_manager,
-			VkSwapChainManager &_swapchain_manager,
-			VkCommandManager &  _command_manager
+	MultiSubpassesRenderer(VkGraphicsComponent& gfx_
 		);
-
-
 	~MultiSubpassesRenderer() override = default;
+
+
+	MultiSubpassesRenderer() = delete;
+
+	MultiSubpassesRenderer(const MultiSubpassesRenderer &) = delete;
+	MultiSubpassesRenderer &operator=(const MultiSubpassesRenderer &) = delete;
+
+	MultiSubpassesRenderer(MultiSubpassesRenderer &&) = delete;
+	MultiSubpassesRenderer &operator=(MultiSubpassesRenderer &&) = delete;
+
 
   public:
 	void SetUpUserInput() override;
@@ -117,6 +120,7 @@ class MultiSubpassesRenderer : public BaseRenderer
 	VkRenderpassManager render_pass_manager;
 
 
+	//BUILDER
 	std::unique_ptr<VkImageFactory>      depth_image_builder;
 
 	//DESCRIPTOR

@@ -1,6 +1,6 @@
 #pragma once
-#include "EngineMarco.h"
-#include "EngineHeader.h"
+
+#include "VkGraphicsComponent.h"
 #include "VkDescriptorManager.h"
 #include "VkPipelineWrapper.h"
 #include <vector>
@@ -8,22 +8,21 @@
 class VkSubpassWrapper
 {
   public:
-	VkSubpassWrapper(VkDeviceManager &_device_manager, VkDescriptorManager &_descriptor_manager, uint8_t _renderpass_num, uint8_t _subpass_num, VkPipelineBindPoint _bind_point = VK_PIPELINE_BIND_POINT_GRAPHICS);
+	VkSubpassWrapper( uint8_t _renderpass_num, uint8_t _subpass_num, VkPipelineBindPoint _bind_point);
 
 	class AttachmentRefMetaInfo
 	{
 	  public:
-		::std::string name;
+		std::string name;
 		uint8_t       slot_to_attch;
 		VkImageLayout layout;
 	};
 
-	VkSubpassDescription &GetSubpassDescription();
+	VkSubpassDescription& GetSubpassDescription();
 	VkPipelineBindPoint & GetBindPoint();
-	[[nodiscard]]uint8_t               GetSubpassNum() const;
-	[[nodiscard]]uint8_t               GetRenderpassNum() const;
+	[[nodiscard]]uint32_t GetSubpassNum() const;
+	[[nodiscard]]uint32_t GetRenderpassNum() const;
 
-	void SetPipeline(std::shared_ptr<VkPipelineWrapper> _pipeline);
 
 	std::vector<AttachmentRefMetaInfo> input_attachments_ref;
 	std::vector<AttachmentRefMetaInfo> color_attachments_ref;
@@ -31,21 +30,17 @@ class VkSubpassWrapper
 	std::vector<AttachmentRefMetaInfo> depth_attachments_ref;
 	std::vector<AttachmentRefMetaInfo> preserve_attachments_ref;
 
-  public:
-	[[nodiscard]] VkPipeline GetPipeline() const;
-	[[nodiscard]] VkPipelineLayout GetPipelineLayout() const;
 
   private:
-	VkDescriptorManager &descriptor_manager;
-	VkDeviceManager &    device_manager;
+	//VkGraphicsComponent &gfx;
+	//const VkDeviceManager &    device_manager;
 
   private:
-	uint8_t renderpass_num;
-	uint8_t subpass_num;
+	uint32_t renderpass_num{};
+	uint32_t subpass_num{};
 
-	VkPipelineBindPoint  bind_point;
-	VkSubpassDescription subpass_description;
+	VkPipelineBindPoint  bind_point{};
+	VkSubpassDescription subpass_description{};
 
-	VkPipelineLayout                   pipeline_layout;
-	std::shared_ptr<VkPipelineWrapper> pipeline;
+
 };

@@ -1,15 +1,12 @@
 #pragma once
 
-#include "EngineMarco.h"
-#include "EngineHeader.h"
+#include <glm/fwd.hpp>
 
 class VkSynObjectBundleBase
 {
-
   public:
-	VkSynObjectBundleBase(uint8_t _bundle_size);
-
+	VkSynObjectBundleBase(glm::uint32_t _bundle_size);
 
   protected:
-	uint8_t bundle_size;
+	uint32_t bundle_size;
 };

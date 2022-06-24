@@ -1,12 +1,9 @@
 #include "VkBufferBase.h"
 
-VkBufferBase::VkBufferBase(VkGraphicsComponent &_gfx, const VkBuffer _buffer, const VkDeviceMemory _buffer_memory,VkDeviceSize _size):
-	gfx(_gfx),device_manager(gfx.DeviceMan()),buffer(_buffer),buffer_memory(_buffer_memory),size_of_buffer(_size),mapped(nullptr)
+VkBufferBase::VkBufferBase(VkGraphicsComponent &_gfx, const VkBuffer _buffer, const VkDeviceMemory _buffer_memory, VkDeviceSize _size) :
+    gfx(_gfx), device_manager(gfx.DeviceMan()), buffer(_buffer), buffer_memory(_buffer_memory), size_of_buffer(_size) 
 {
-
 }
-
-
 
 VkBufferBase::~VkBufferBase()
 {
@@ -16,7 +13,6 @@ VkBufferBase::~VkBufferBase()
 
 VkWriteDescriptorSet VkBufferBase::GetWriteDescriptorSetInfo(uint32_t dstbinding, uint32_t dstArrayElement)
 {
-	
 	buffer_des_info_write.buffer = buffer;
 	buffer_des_info_write.offset = 0;
 	buffer_des_info_write.range  = size_of_buffer;
@@ -30,9 +26,12 @@ VkWriteDescriptorSet VkBufferBase::GetWriteDescriptorSetInfo(uint32_t dstbinding
 	temp_writeDescriptorSet.dstArrayElement = dstArrayElement;
 
 	return temp_writeDescriptorSet;
-
 }
 
-
-
-
+void VkBufferBase::MapMemory(VkDeviceSize mapped_region_starting_offset, VkDeviceSize mapped_region_size, void const *outside_data_to_be_mapped, size_t outside_data_size, VkMemoryMapFlags flgs) const
+{
+	void *data;
+	vkMapMemory(device_manager.GetLogicalDevice(), buffer_memory, mapped_region_starting_offset, mapped_region_size, flgs, &data);
+	memcpy(data, outside_data_to_be_mapped, outside_data_size);
+	vkUnmapMemory(device_manager.GetLogicalDevice(), buffer_memory);
+}
