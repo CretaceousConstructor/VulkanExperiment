@@ -10,14 +10,6 @@ VkSwapchainManager::VkSwapchainManager(VkDeviceManager &_device_manager, VkWindo
 VkSwapchainManager::~VkSwapchainManager()
 {
 
-	for (auto& img : swap_chain_images)
-	{
-		if (img.use_count() != 1)
-		{
-			std::cout << "resources leak!";
-		}
-		img.reset();
-	}
 	vkDestroySwapchainKHR(device_manager.GetLogicalDevice(), swap_chain, nullptr);
 
 }
@@ -114,59 +106,58 @@ void VkSwapchainManager::CreateSwapChainAndSwapImages()
 	swap_chain_extent       = extent;
 
 
-	std::vector<VkImage> temp_swap_chain_images;  //3
-	std::vector<VkImageView> swap_chain_image_views;  //3
+	//std::vector<VkImageView> temp_swap_chain_image_views;  //3
 
 
 	vkGetSwapchainImagesKHR(device_manager.GetLogicalDevice(), swap_chain, &image_count, nullptr);
-	temp_swap_chain_images.resize(image_count);
-	vkGetSwapchainImagesKHR(device_manager.GetLogicalDevice(), swap_chain, &image_count, temp_swap_chain_images.data());
-	swap_chain_image_views.resize(temp_swap_chain_images.size());
+	raw_swap_chain_images.resize(image_count);
+	vkGetSwapchainImagesKHR(device_manager.GetLogicalDevice(), swap_chain, &image_count, raw_swap_chain_images.data());
 
-	for (size_t i = 0; i < temp_swap_chain_images.size(); i++)
-	{
-		//typedef struct VkImageViewCreateInfo {
-		//	VkStructureType            sType;
-		//	const void* pNext;
-		//	VkImageViewCreateFlags     flags;
-		//	VkImage                    image;
-		//	VkImageViewType            viewType;
-		//	VkFormat                   format;
-		//	VkComponentMapping         components;
-		//	VkImageSubresourceRange    subresourceRange;
-		//} VkImageViewCreateInfo;
 
-		VkImageViewCreateInfo createInfo{};
-		createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-		//createInfo.pNext;
-		//createInfo.flags;
-		createInfo.image    = temp_swap_chain_images[i];
-		createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
-		// 1D textures, 2D textures, 3D textures and cube maps.
-		//VK_IMAGE_VIEW_TYPE_1D_ARRAY = 4,
-		//VK_IMAGE_VIEW_TYPE_2D_ARRAY = 5,
-		//VK_IMAGE_VIEW_TYPE_CUBE_ARRAY = 6,
-		createInfo.format = swap_chain_image_format;
+	//swap_chain_image_views.resize(raw_swap_chain_images.size());
 
-		createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
-		createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
-		createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
-		createInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+	//for (size_t i = 0; i < raw_swap_chain_images.size(); i++)
+	//{
+	//	//typedef struct VkImageViewCreateInfo {
+	//	//	VkStructureType            sType;
+	//	//	const void* pNext;
+	//	//	VkImageViewCreateFlags     flags;
+	//	//	VkImage                    image;
+	//	//	VkImageViewType            viewType;
+	//	//	VkFormat                   format;
+	//	//	VkComponentMapping         components;
+	//	//	VkImageSubresourceRange    subresourceRange;
+	//	//} VkImageViewCreateInfo;
 
-		createInfo.subresourceRange.aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT;        // specifies the color aspect.
-		createInfo.subresourceRange.baseMipLevel   = 0;
-		createInfo.subresourceRange.levelCount     = 1;
-		createInfo.subresourceRange.baseArrayLayer = 0;
-		createInfo.subresourceRange.layerCount     = 1;
+	//	VkImageViewCreateInfo createInfo{};
+	//	createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+	//	//createInfo.pNext;
+	//	//createInfo.flags;
+	//	createInfo.image    = raw_swap_chain_images[i];
+	//	createInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
+	//	// 1D textures, 2D textures, 3D textures and cube maps.
+	//	//VK_IMAGE_VIEW_TYPE_1D_ARRAY = 4,
+	//	//VK_IMAGE_VIEW_TYPE_2D_ARRAY = 5,
+	//	//VK_IMAGE_VIEW_TYPE_CUBE_ARRAY = 6,
+	//	createInfo.format = swap_chain_image_format;
 
-		if (vkCreateImageView(device_manager.GetLogicalDevice(), &createInfo, nullptr, &swap_chain_image_views[i]) != VK_SUCCESS)
-		{
-			throw std::runtime_error("failed to create image views!");
-		}
+	//	createInfo.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+	//	createInfo.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+	//	createInfo.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+	//	createInfo.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
 
-		swap_chain_images.emplace_back(device_manager,temp_swap_chain_images[i], swap_chain_image_views[i], 	swap_chain_image_format,swap_chain_image_view_format);
+	//	createInfo.subresourceRange.aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT;        // specifies the color aspect.
+	//	createInfo.subresourceRange.baseMipLevel   = 0;
+	//	createInfo.subresourceRange.levelCount     = 1;
+	//	createInfo.subresourceRange.baseArrayLayer = 0;
+	//	createInfo.subresourceRange.layerCount     = 1;
 
-	}
+	//	if (vkCreateImageView(device_manager.GetLogicalDevice(), &createInfo, nullptr, &swap_chain_image_views[i]) != VK_SUCCESS)
+	//	{
+	//		throw std::runtime_error("failed to create image views!");
+	//	}
+
+	//}
 
 
 
@@ -228,6 +219,12 @@ VkFormat VkSwapchainManager::GetSwapChainImageFormat() const
 	return swap_chain_image_format;
 }
 
+VkFormat VkSwapchainManager::GetSwapChainImageViewFormat() const
+{
+
+	return swap_chain_image_view_format;
+}
+
 VkExtent3D VkSwapchainManager::GetSwapChainImageExtent() const
 {
 	VkExtent3D result;
@@ -260,21 +257,22 @@ VkSwapchainKHR VkSwapchainManager::GetSwapChain() const
 	return swap_chain;
 }
 
-const std::vector<std::shared_ptr<VkImageBase>>& VkSwapchainManager::GetSwapChainImages() const
-{
-	return swap_chain_images;
+//const std::vector<std::shared_ptr<VkImageBase>>& VkSwapchainManager::GetSwapChainImages() const
+//{
+//	return swap_chain_images;
+//}
 
+std::vector<VkImage>  VkSwapchainManager::GetSwapChainImages() const
+{
+
+	return raw_swap_chain_images;
+	
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
+//std::vector<VkImageView> VkSwapchainManager::GetSwapChainImageViews() const
+//{
+//
+//	return swap_chain_image_views;
+//
+//}
+//

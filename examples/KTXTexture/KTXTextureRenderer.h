@@ -3,11 +3,14 @@
 #include "FirstPersonCamera.h"
 #include "KeyBoardInputManager.h"
 #include "MouseInputManager.h"
-#include "VkDepthImageFactory.h"
 #include "VkDescriptorManager.h"
 #include "VkRenderpassManager.h"
 #include "VkSynObjectFactory.h"
+#include "RenderingMetaInfo.h"
+#include "VkRenderpassBase.h"
 #include "VkTexture.h"
+#include "Renderpass0.h"
+#include  "VkRenderpassBase.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/hash.hpp>
@@ -38,124 +41,66 @@ class KTXTextureRenderer : public BaseRenderer
 
 	void CreateAttachmentImages() override;
 	void CreateTextureImages() override;
-	void CreateDepthImages() override;
+	//void CreateDepthImages() override;
 
-	void CreateRenderPass() override;
+	//void CreateRenderPass() override;
 
 	void CreateUniformBuffer() override;
 
-	void CreateDescriptorSetLayout() override;
+	//void CreateDescriptorSetLayout() override;
 	void CreateDescriptorPool() override;
-	void CreateDescriptorSets() override;
+	//void CreateDescriptorSets() override;
 
-	void CreateGraphicsPipelineLayout() override;
-	void CompileShaders() override;
-	void CreateGraphicsPipeline() override;
+	//void CreateGraphicsPipelineLayout() override;
+	//void CompileShaders() override;
+	//void CreateGraphicsPipeline() override;
 
 	void PrepareModels() override;
-	void CommandBufferRecording() override;
+
+
+	void RenderpassInit() override;
+
+
 
 	void InitSynObjects() override;
+
+	void CommandBufferRecording() override;
+
+
 	void UpdateUniformBuffer(uint32_t currentImage) override;
 
+
+
   private:
-	void CreateRenderPass0();
-	void CreatePipelineRenderPass0Subpass0();
+
+	void CreateDepthImages();
+	void CreateSwapchainImages();
+
 
   private:
 	static constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 
-  public:
-  private:
-	//UBO DATA
-	struct UboData
-	{
-		glm::mat4 projection;
-		glm::mat4 view;
-		glm::vec4 eyepos;
-		alignas(4) float lodBias = 0.0f;
-	};
 
-	//vertex layout
-	struct Vertex
-	{
-		glm::vec3                                             pos;
-		glm::vec3                                             normal;
-		glm::vec2                                             uv;
-		static std::vector<VkVertexInputAttributeDescription> GetAttributeDescriptions()
-		{
-			std::vector<VkVertexInputAttributeDescription> attributeDescriptions{};
-			attributeDescriptions.resize(3);
-
-			attributeDescriptions[0].binding  = 0;
-			attributeDescriptions[0].location = 0;
-			attributeDescriptions[0].format   = VK_FORMAT_R32G32B32_SFLOAT;
-			attributeDescriptions[0].offset   = offsetof(Vertex, pos);
-
-			attributeDescriptions[1].binding  = 0;
-			attributeDescriptions[1].location = 1;
-			attributeDescriptions[1].format   = VK_FORMAT_R32G32B32_SFLOAT;
-			attributeDescriptions[1].offset   = offsetof(Vertex, normal);
-
-			attributeDescriptions[2].binding  = 0;
-			attributeDescriptions[2].location = 2;
-			attributeDescriptions[2].format   = VK_FORMAT_R32G32_SFLOAT;
-			attributeDescriptions[2].offset   = offsetof(Vertex, uv);
-
-			return attributeDescriptions;
-		}
-	};
-
-  private:
+private:
 	//RENDERPASS MAN
-	VkRenderpassManager             render_pass_manager;
-	std::unique_ptr<VkImageFactory> depth_image_builder;
+	VkRenderpassManager               render_pass_manager;
+	KtxRenderer::RenderpassCommonResources common_resources;
 
-	//UNIFORM BUFFER
-	UboData                         ubo{};
-	std::shared_ptr<VkBufferBundle> uniform_buffers;
-
-	//TEXTURE
-	std::shared_ptr<VkTexture> ktx_texure;
-
-	//ATTACHMENT
-	std::shared_ptr<VkImageBundle> depth_attachments;
-
+	//RENDERPASS
+	std::vector<std::shared_ptr<VkRenderpassBase>> renderpasses;
+		
 	//SYN OBJECTS
 	std::shared_ptr<VkSemaphoreBundle> image_available_semaphores;
 	std::shared_ptr<VkSemaphoreBundle> render_finished_semaphores;
 	std::shared_ptr<VkFenceBundle>     frame_fences;
 	//-----------------------------------------------------------
 	std::vector<VkFence> image_fences;
-	//MODELS
-	std::shared_ptr<VkModel<Vertex>> quad_model;
 
 	//CAMERA
 	std::unique_ptr<FirstPersonCamera> camera;
 	//INPUT MANAGER
 	std::unique_ptr<KeyBoardInputManager> keyboard;
 	std::unique_ptr<MouseInputManager>    mouse;
-
-  private:
-	/////////////////////////////////////////RENDERING METAINFO
-	///
-	///Global resources
-	inline static constexpr DescriptorPoolMetaInfo      pool_main_thread{.thread_id = 0};
-	///Renderpass 0
-	inline static constexpr uint32_t                    renderpass0 = 0;
-
-
-	inline static constexpr DescriptorSetLayoutMetaInfo des_set_layout_0{.id = 0};
-	inline static constexpr DescriptorSetMetaInfo       des_set0{.pool = pool_main_thread, .layout = des_set_layout_0,.id = 0};
-	inline static const PipelineLayoutMetaInfo          layout_0_0{
-        .descriptor_layout_ids_vec{des_set_layout_0},
-        .id = 0
-	};
-	inline static const PipelineMetaInfo pipe_0_0{.pass = renderpass0, .subpass = 0, .pipelayout_id = layout_0_0};
-
-
-
-
 
 
 };

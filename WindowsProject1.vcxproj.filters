@@ -96,6 +96,21 @@
     <Filter Include="Header Files\VkCore\Buffer\StagingBuffer">
       <UniqueIdentifier>{a2d860f7-7a16-47a3-a43e-9532c11ad5f3}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\VkCore\Graphics">
+      <UniqueIdentifier>{0036ff2e-7b97-4a3b-a3ff-6bbb27fb9e21}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\VkCore\ManagerBundle">
+      <UniqueIdentifier>{3e228370-f60b-41c1-870d-221fae526eea}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\VkCore\FactoryBundle">
+      <UniqueIdentifier>{48027839-4b07-4d3b-8654-21e488ac2b10}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\VkCore\Instance">
+      <UniqueIdentifier>{d20c7714-7583-45ec-b3f6-0f055b974ccb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\VkCore\Window">
+      <UniqueIdentifier>{130f1273-f494-469a-9bde-5e534059bbc2}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="base\App.cpp">
@@ -296,6 +311,18 @@
     <ClCompile Include="base\VkStagingBufferFactory.cpp">
       <Filter>Source Files\Vk</Filter>
     </ClCompile>
+    <ClCompile Include="base\VkRenderpassBase.cpp">
+      <Filter>Source Files\Vk</Filter>
+    </ClCompile>
+    <ClCompile Include="base\VkFactoryBundle.cpp">
+      <Filter>Source Files\Vk</Filter>
+    </ClCompile>
+    <ClCompile Include="base\VkManagerBundle.cpp">
+      <Filter>Source Files\Vk</Filter>
+    </ClCompile>
+    <ClCompile Include="base\VkSwapchainImageFactory.cpp">
+      <Filter>Source Files\Vk</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="base\include\App.h">
@@ -334,9 +361,6 @@
     <ClInclude Include="base\include\VkShaderManager.h">
       <Filter>Header Files\VkCore\Shaders</Filter>
     </ClInclude>
-    <ClInclude Include="base\include\VkWindows.h">
-      <Filter>Header Files\VkCore</Filter>
-    </ClInclude>
     <ClInclude Include="base\include\VkMemoryManager.h">
       <Filter>Header Files\VkCore</Filter>
     </ClInclude>
@@ -345,9 +369,6 @@
     </ClInclude>
     <ClInclude Include="base\include\VkTexture.h">
       <Filter>Header Files\VkCore\Texture</Filter>
-    </ClInclude>
-    <ClInclude Include="base\include\VkInstanceWrapper.h">
-      <Filter>Header Files\VkCore</Filter>
     </ClInclude>
     <ClInclude Include="base\include\Geometry.h">
       <Filter>Header Files\Model</Filter>
@@ -375,9 +396,6 @@
     </ClInclude>
     <ClInclude Include="base\include\imgui_impl_glfw.h">
       <Filter>Header Files\ImGui</Filter>
-    </ClInclude>
-    <ClInclude Include="base\include\VkImgui.h">
-      <Filter>Header Files\VkCore</Filter>
     </ClInclude>
     <ClInclude Include="base\include\VkImageFactory.h">
       <Filter>Header Files\VkCore\Image</Filter>
@@ -445,9 +463,6 @@
     <ClInclude Include="base\include\VkTextureFactory.h">
       <Filter>Header Files\VkCore\Texture</Filter>
     </ClInclude>
-    <ClInclude Include="base\include\VkGraphicsComponent.h">
-      <Filter>Header Files\VkCore</Filter>
-    </ClInclude>
     <ClInclude Include="base\include\Vk.h">
       <Filter>Header Files\VkCore</Filter>
     </ClInclude>
@@ -492,6 +507,30 @@
     </ClInclude>
     <ClInclude Include="base\include\VkStagingBufferFactory.h">
       <Filter>Header Files\VkCore\Buffer\StagingBuffer</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\VkRenderpassBase.h">
+      <Filter>Header Files\VkCore\Renderpass</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\VkFactoryBundle.h">
+      <Filter>Header Files\VkCore\FactoryBundle</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\VkGraphicsComponent.h">
+      <Filter>Header Files\VkCore\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\VkManagerBundle.h">
+      <Filter>Header Files\VkCore\ManagerBundle</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\VkInstanceWrapper.h">
+      <Filter>Header Files\VkCore\Instance</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\VkWindows.h">
+      <Filter>Header Files\VkCore\Window</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\VkImgui.h">
+      <Filter>Header Files\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\VkSwapchainImageFactory.h">
+      <Filter>Header Files\VkCore\Image\SwapChainImage</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

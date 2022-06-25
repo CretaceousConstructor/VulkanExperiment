@@ -28,8 +28,9 @@ class VkRenderpassWrapper
 	const std::vector<VkAttachmentInfo> attachment_infos;
 	const std::vector<VkSubpassDependency>     dependencies;
 	const std::vector<std::shared_ptr<VkSubpassWrapper>> subpasses;
-
 	const std::string  render_pass_name;
+
+
 private:
 	VkGraphicsComponent &gfx;
 	const VkDeviceManager & device_manager;

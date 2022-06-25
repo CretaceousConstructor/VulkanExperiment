@@ -16,6 +16,9 @@
     <Filter Include="Shaderbat Files">
       <UniqueIdentifier>{f7f4f985-fa06-4169-a618-519c45a879d1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Renderpasses">
+      <UniqueIdentifier>{b05fa046-3ff3-42eb-842f-079b37a7feb1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -27,6 +30,9 @@
     <ClCompile Include="KTXTextureRenderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Renderpass0.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="KTXTextureApp.h">
@@ -34,6 +40,12 @@
     </ClInclude>
     <ClInclude Include="KTXTextureRenderer.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderpass0.h">
+      <Filter>Header Files\Renderpasses</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderingMetaInfo.h">
+      <Filter>Header Files\Renderpasses</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

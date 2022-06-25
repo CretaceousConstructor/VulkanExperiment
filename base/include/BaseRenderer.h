@@ -37,25 +37,18 @@ class BaseRenderer
 
 	virtual void CreateAttachmentImages() = 0;
 	virtual void CreateTextureImages()    = 0;
-	virtual void CreateDepthImages()      = 0;
-
-	virtual void CreateRenderPass() = 0;
-
 	virtual void CreateUniformBuffer() = 0;
-
-	virtual void CreateDescriptorSetLayout() = 0;
 	virtual void CreateDescriptorPool()      = 0;
-	virtual void CreateDescriptorSets()      = 0;
-
-	virtual void CreateGraphicsPipelineLayout() = 0;
-	virtual void CompileShaders()               = 0;
-	virtual void CreateGraphicsPipeline()       = 0;
-
 	virtual void PrepareModels()          = 0;
-	virtual void CommandBufferRecording() = 0;
 
+
+	virtual void RenderpassInit() = 0;
+
+	virtual void CommandBufferRecording() = 0;
 	virtual void InitSynObjects()                           = 0;
-	virtual void UpdateUniformBuffer(uint32_t currentImage) = 0;
+
+
+	virtual void UpdateUniformBuffer(size_t currentImage) = 0;
 
   public:
 	//========================================

@@ -1,8 +1,7 @@
 #pragma once
 
-#include "VkTexture.h"
 #include "VkTexImageFactory.h"
-
+#include "VkTexture.h"
 #include <ktx.h>
 #include <ktxvulkan.h>
 #include <stb_image.h>
@@ -11,48 +10,39 @@
 
 class VkTextureFactory
 {
-public:
-
-
-	VkTextureFactory(VkGraphicsComponent &_gfx,VkTexImageFactory & _tex_img_factory);
-	std::shared_ptr<VkTexture> GetTexture(const std::string &image_path, VkFormat format_of_image, VkImageLayout para_imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-
-
-private:
-
+  public:
 
 	class SamplerParaPack
 	{
-		public:
+	  public:
 		SamplerParaPack()
 		{
+			mip_count   = 1;
+			layer_count = 1;
 
-			VkSamplerCreateInfo samplerInfo{};
-			samplerInfo.sType     = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-			samplerInfo.magFilter = VK_FILTER_LINEAR;
-			samplerInfo.minFilter = VK_FILTER_LINEAR;
+			sampler_CI.magFilter = VK_FILTER_LINEAR;
+			sampler_CI.minFilter = VK_FILTER_LINEAR;
 
-			samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-			samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-			samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+			sampler_CI.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+			sampler_CI.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+			sampler_CI.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
 
 			//VkPhysicalDeviceProperties properties{};
 			//vkGetPhysicalDeviceProperties(device_manager.GetPhysicalDevice(), &properties);
 			//samplerInfo.anisotropyEnable = VK_TRUE;
 			//samplerInfo.maxAnisotropy    = properties.limits.maxSamplerAnisotropy;
 
-			samplerInfo.compareEnable = VK_FALSE;
-			samplerInfo.compareOp     = VK_COMPARE_OP_ALWAYS;
+			sampler_CI.compareEnable = VK_FALSE;
+			sampler_CI.compareOp     = VK_COMPARE_OP_ALWAYS;
 
 			//The maxAnisotropy field limits the amount of texel samples that can be used to calculate the final color.
-			samplerInfo.borderColor             = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
-			samplerInfo.unnormalizedCoordinates = VK_FALSE;
+			sampler_CI.borderColor             = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+			sampler_CI.unnormalizedCoordinates = VK_FALSE;
 
-			samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-			samplerInfo.mipLodBias = 0.0f;
-			samplerInfo.minLod     = 0.0f;
+			sampler_CI.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+			sampler_CI.mipLodBias = 0.0f;
+			sampler_CI.minLod     = 0.0f;
 			//samplerInfo.maxLod     = (ktx_use_staging) ? (float) mip_levels : 0.0f;
-			
 		}
 
 		VkSamplerCreateInfo sampler_CI{};
@@ -60,21 +50,20 @@ private:
 		uint32_t            layer_count{};
 	};
 
+	VkTextureFactory(VkGraphicsComponent &_gfx, VkTexImageFactory &_tex_img_factory);
+	std::shared_ptr<VkTexture> GetTexture(
+	    const std::string &image_path, VkFormat format_of_image, const SamplerParaPack &sampler_para_pack, VkImageLayout para_imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+	)const;
+  private:
+	//void InitTexture(const std::string &image_path, const VkFormat format_of_image, const VkImageLayout _imageLayout, SamplerParaPack &para_pack) const;
 
-private:
+	std::shared_ptr<VkGeneralPurposeImage> InitKTXTexture(const std::string &image_path, const VkFormat format_of_image, const VkImageLayout _imageLayout, SamplerParaPack &para_pack) const;
 
+	VkSampler InitSampler(const SamplerParaPack &para_pack) const;
 
-	void InitTexture(const std::string &image_path, const VkFormat format_of_image, const VkImageLayout _imageLayout,SamplerParaPack & para_pack) const;
-
-	std::shared_ptr<VkGeneralPurposeImage> InitKTXTexture(const std::string &image_path, const VkFormat format_of_image, const VkImageLayout _imageLayout,SamplerParaPack & para_pack) const;
-
-	VkSampler InitSampler(const SamplerParaPack& para_pack);
-
-
-private:
-	VkGraphicsComponent &gfx;
-	const VkDeviceManager & device_manager;
+  private:
+	VkGraphicsComponent &  gfx;
+	const VkDeviceManager &device_manager;
 	const VkWindows &      window;
-	VkTexImageFactory&    tex_img_factory;
-	
+	VkTexImageFactory &    tex_img_factory;
 };

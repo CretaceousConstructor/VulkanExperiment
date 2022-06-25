@@ -154,10 +154,13 @@
     <ClCompile Include="KTXTextureRenderer.cpp" />
     <ClCompile Include="KTXTextureApp.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Renderpass0.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="KTXTextureRenderer.h" />
     <ClInclude Include="KTXTextureApp.h" />
+    <ClInclude Include="RenderingMetaInfo.h" />
+    <ClInclude Include="Renderpass0.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\data\shaderbat\KTXTextureShaderCompile.bat" />

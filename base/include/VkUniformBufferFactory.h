@@ -2,6 +2,7 @@
 #include "VkBufferBundle.h"
 #include "VkBufferFactory.h"
 #include "VkGraphicsComponent.h"
+#include "VkUniformBuffer.h"
 class VkUniformBufferFactory : public VkBufferFactory
 {
   public:

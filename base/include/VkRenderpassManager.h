@@ -1,17 +1,6 @@
 #pragma once
-#include "VkGraphicsComponent.h"
-#include "VkAttachmentInfo.h"
-#include "VkDescriptorManager.h"
-#include "VkPipelineBuilder.h"
-#include "VkPipelineManager.h"
-#include "VkRenderpassWrapper.h"
-#include "VkShaderManager.h"
-#include "VkSubpassFactory.h"
-#include "VkSynObjectFactory.h"
-#include "VkTextureFactory.h"
-#include "VkUniformBufferFactory.h"
-#include "VkTexImageFactory.h"
-#include "VkDepthImageFactory.h"
+#include "VkFactoryBundle.h"
+#include "VkManagerBundle.h"
 #include <unordered_map>
 
 class VkRenderpassManager
@@ -19,7 +8,6 @@ class VkRenderpassManager
   public:
 	VkRenderpassManager(VkGraphicsComponent &_gfx);
 	~VkRenderpassManager() = default;
-
 
 	VkRenderpassManager()                            = delete;
 	VkRenderpassManager(const VkRenderpassManager &) = delete;
@@ -36,58 +24,40 @@ class VkRenderpassManager
 
 	void AddPipelineLayout(const PipelineLayoutMetaInfo &pipe_layout_info);
 
-
-
-
   public:
-	[[nodiscard]] VkPipeline            GetPipeline(const PipelineMetaInfo& meta_info) const;
-	[[nodiscard]] VkPipelineLayout      GetPipelineLayout(const PipelineLayoutMetaInfo& meta_info) const;
+	[[nodiscard]] VkPipeline       GetPipeline(const PipelineMetaInfo &meta_info) const;
+	[[nodiscard]] VkPipelineLayout GetPipelineLayout(const PipelineLayoutMetaInfo &meta_info) const;
 
-
-
-	VkRenderpassWrapper &               GetRenderpass(uint8_t pass);
+	VkRenderpassWrapper &                             GetRenderpass(uint32_t pass);
 	[[nodiscard]] const std::vector<VkDescriptorSet> &GetDescriptorSetBundle(DescriptorSetMetaInfo meta_info) const;
 
   public:
 	VkDescriptorManager &GetDescriptorManager();
-	VkPipelineManager &GetPipelineManager();
+	VkPipelineManager &  GetPipelineManager();
 
-
-	VkSubPassFacotry &   GetSubPassFactory();
-	VkUniformBufferFactory &GetUniformBufferFactory();
-	VkTextureFactory &      GetTextureFactory();
-	VkSynObjectFactory &    GetSynOjectFactory();
+	/**
+	 * \brief 返回没有状态记忆的工厂类对象
+	 * \return stateless factory
+	 */
+	const VkSubPassFacotry &       GetSubPassFactory();
+	VkUniformBufferFactory &       GetUniformBufferFactory();
+	const VkTextureFactory &       GetTextureFactory();
+	const VkSynObjectFactory &     GetSynOjectFactory();
+	const VkDepthImageFactory &    GetDepthImageFactory();
+	const VkSwapchainImageFactory &GetSwapchainImageFactory();
 
   public:
+	VkManagerBundle &GetManagerBundle();
+	VkFactoryBundle &GetFactoryBundl();
 
   private:
-	VkGraphicsComponent &     gfx;
-	const VkDeviceManager &   device_manager;
-	const VkSwapchainManager &swapchain_manager;
-	const VkWindows &         window;
-	const VkCommandManager &  command_manager;
+	VkGraphicsComponent &gfx;
 
   private:
-	//DESCRIPTOR MANs(layouts and pools and sets)
-	VkDescriptorManager descriptor_manager;
-	VkPipelineManager   pipeline_manager;
-	//FACTORIES
-	VkSubPassFacotry       subpass_factory;
-	VkUniformBufferFactory ubuffer_factory;
-	VkTexImageFactory      tex_image_factory;
-	VkDepthImageFactory    depth_image_factory;
-	VkSynObjectFactory     syn_obj_factory;
-	VkTextureFactory       texture_factory;
+	VkManagerBundle managers;
+	VkFactoryBundle factories;
 
-	
   private:
 	std::unordered_map<uint32_t, VkRenderpassWrapper> render_passes;
 	std::unordered_map<uint32_t, std::string>         render_passes_names;
-
-
-
-
-
-
-
 };

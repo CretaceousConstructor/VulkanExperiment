@@ -36,6 +36,20 @@ void App::MainLoop() const
 
 		glfwPollEvents();
 	}
+
 	vkDeviceWaitIdle(device_manager.GetLogicalDevice());
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
 

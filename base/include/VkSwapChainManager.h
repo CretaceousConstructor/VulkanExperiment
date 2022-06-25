@@ -1,6 +1,6 @@
 #pragma once
-#include "EngineMarco.h"
-#include "EngineHeader.h"
+
+
 #include "VkDeviceManager.h"
 #include "VkWindows.h"
 #include <iostream>
@@ -8,8 +8,6 @@
 #include <vector>
 
 
-class VkImageBase;
-class VkSwapchainImage;
 
 class VkSwapchainManager
 {
@@ -26,6 +24,7 @@ class VkSwapchainManager
 
 	void                     CreateSwapChainAndSwapImages();
 	[[nodiscard]] VkFormat   GetSwapChainImageFormat() const;
+	[[nodiscard]] VkFormat   GetSwapChainImageViewFormat() const;
 	[[nodiscard]] VkExtent3D GetSwapChainImageExtent() const;
 	[[nodiscard]] VkFormat   FindDepthFormat() const;
 
@@ -34,7 +33,11 @@ class VkSwapchainManager
 
 	[[nodiscard]] VkSwapchainKHR GetSwapChain() const;
 
-	[[nodiscard]] const std::vector<std::shared_ptr<VkImageBase>>& GetSwapChainImages() const;
+	//[[nodiscard]] const std::vector<std::shared_ptr<VkImageBase>>& GetSwapChainImages() const;
+
+
+	[[nodiscard]] std::vector<VkImage> GetSwapChainImages() const;
+	//[[nodiscard]] std::vector<VkImageView> GetSwapChainImageViews() const;
 
   private:
 
@@ -51,16 +54,18 @@ class VkSwapchainManager
 
   private:
 	VkSwapchainKHR                               swap_chain;
-
-
 private:
 	//这里用image bundle是不是好一点
-	std::vector<std::shared_ptr<VkImageBase>> swap_chain_images;
+	//std::vector<std::shared_ptr<VkImageBase>> swap_chain_images;
 
-	uint32_t   image_count;
-	VkExtent2D swap_chain_extent;
-	VkFormat   swap_chain_image_format;
-	VkFormat   swap_chain_image_view_format;
+
+	std::vector<VkImage> raw_swap_chain_images;
+	//std::vector<VkImageView> swap_chain_image_views;  //3
+
+	uint32_t   image_count{};
+	VkExtent2D swap_chain_extent{};
+	VkFormat   swap_chain_image_format{};
+	VkFormat   swap_chain_image_view_format{};
 
 	private:
 	VkDeviceManager &device_manager;

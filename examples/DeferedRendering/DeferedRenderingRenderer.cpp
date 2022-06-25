@@ -746,7 +746,7 @@ void DeferedRenderingRenderer::CreateGraphicsPipeline()
 			colorBlendAttachment
 		};
 
-		colorBlending.attachmentCount = static_cast<uint32_t>(blendAttachmentStates.size());
+		colorBlending.attachmentCount = static_cast<size_t>(blendAttachmentStates.size());
 		colorBlending.pAttachments    = blendAttachmentStates.data();
 
 		if (vkCreateGraphicsPipelines(device_manager->GetLogicalDeviceRef(), pipeline_cache, 1, &pipeline_subpass_CI, nullptr, &material.pipeline) != VK_SUCCESS)
@@ -822,7 +822,7 @@ void DeferedRenderingRenderer::DrawFrame()
 
 	vkWaitForFences(device_manager->GetLogicalDeviceRef(), 1, &frame_fences[currentFrame], VK_TRUE, UINT64_MAX);        //vkWaitForFences无限时阻塞CPU，等待fence被signal后 从 unsignaled状态 变成 signaled状态 这里应该是防止和自己(currentFrame)冲突。To wait for one or more fences to enter the signaled state on the host,
 
-	uint32_t imageIndex;
+	size_t imageIndex;
 
 	VkResult result = vkAcquireNextImageKHR(device_manager->GetLogicalDeviceRef(), swapchain_manager->GetSwapChain(), UINT64_MAX, image_available_semaphores[currentFrame], VK_NULL_HANDLE, &imageIndex);        //As such, all vkAcquireNextImageKHR function does is let you know which image will be made available to you next. This is the minimum that needs to happen in order for you to be able to use that image (for example, by building command buffers that reference the image in some way). However, that image is not YET available to you.This is why this function requires you to provide a semaphore and/or a fence: so that the process which consumes the image can wait for the image to be made available.得到下一个可以使用的image的index，但是这个image可能还没用完，这里获得的imageIndex对应的image很有可能是最快被某一帧使用完毕的那一个，由vulkan实现具体决定
 
@@ -910,7 +910,7 @@ void DeferedRenderingRenderer::DrawFrame()
 	currentFrame = (currentFrame + 1) % s_MAX_FRAMES_IN_FLIGHT;
 }
 
-void DeferedRenderingRenderer::UpdateUniformBuffer(uint32_t currentImage)
+void DeferedRenderingRenderer::UpdateUniformBuffer(size_t currentImage)
 {
 	UpdateUniformBufferOffscreen(currentImage);
 	UpdateUniformBufferComposition(currentImage);
@@ -990,7 +990,7 @@ void DeferedRenderingRenderer::CleanUpImages()
 void DeferedRenderingRenderer::CleanUpUniformBuffers()
 {}
 
-void DeferedRenderingRenderer::UpdateUniformBufferOffscreen(uint32_t currentImage)
+void DeferedRenderingRenderer::UpdateUniformBufferOffscreen(size_t currentImage)
 {
 	ubo_cpu_off_screen.projection = camera->GetProj();
 	ubo_cpu_off_screen.view       = camera->GetView();
@@ -1001,7 +1001,7 @@ void DeferedRenderingRenderer::UpdateUniformBufferOffscreen(uint32_t currentImag
 	vkUnmapMemory(device_manager->GetLogicalDeviceRef(), ubo_vs_off_screen[currentImage].memory);
 }
 
-void DeferedRenderingRenderer::UpdateUniformBufferComposition(uint32_t currentImage)
+void DeferedRenderingRenderer::UpdateUniformBufferComposition(size_t currentImage)
 {
 	// White
 	ubo_cpu_composition.lights[0].position = glm::vec4(0.0f, 0.0f, 1.0f, 0.0f);
@@ -1079,7 +1079,7 @@ void DeferedRenderingRenderer::OffScreenPassCommandBufferRecording()
 		clearValues[1].color           = {{0.0f, 0.0f, 0.0f, 0.0f}};
 		clearValues[2].color           = {{0.0f, 0.0f, 0.0f, 0.0f}};
 		clearValues[3].depthStencil    = {1.0f, 0};
-		renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
+		renderPassInfo.clearValueCount = static_cast<size_t>(clearValues.size());
 		renderPassInfo.pClearValues    = clearValues.data();
 
 		//vkviewport viewport = vks::initializers::viewport((float)offscreenframebuf.width, (float)offscreenframebuf.height, 0.0f, 1.0f);
@@ -1160,7 +1160,7 @@ void DeferedRenderingRenderer::CompositionPassCommandBufferRecording()
 		clearValues[0].color        = {{0.0f, 0.0f, 0.2f, 0.0f}};
 		clearValues[1].depthStencil = {1.0f, 0};
 
-		renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
+		renderPassInfo.clearValueCount = static_cast<size_t>(clearValues.size());
 		renderPassInfo.pClearValues    = clearValues.data();
 
 		vkCmdBeginRenderPass(graphics_command_buffers_composition[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);        //
@@ -1269,7 +1269,7 @@ void DeferedRenderingRenderer::CreateOffScreenRenderPass()
 	VkSubpassDescription subpass_des            = {};
 	subpass_des.pipelineBindPoint               = VK_PIPELINE_BIND_POINT_GRAPHICS;
 	subpass_des.pColorAttachments               = colorReferences.data();
-	subpass_des.colorAttachmentCount            = static_cast<uint32_t>(colorReferences.size());
+	subpass_des.colorAttachmentCount            = static_cast<size_t>(colorReferences.size());
 	subpass_des.pDepthStencilAttachment         = &depthReference;
 	std::vector<VkSubpassDescription> subpasses = {subpass_des};
 	//-------------------------------------------------------------------------------------
@@ -1306,9 +1306,9 @@ void DeferedRenderingRenderer::CreateOffScreenRenderPass()
 
 	VkRenderPassCreateInfo renderPassInfo{};
 	renderPassInfo.sType           = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-	renderPassInfo.dependencyCount = static_cast<uint32_t>(dependencies.size());
+	renderPassInfo.dependencyCount = static_cast<size_t>(dependencies.size());
 	renderPassInfo.pDependencies   = dependencies.data();
-	renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments_decs.size());
+	renderPassInfo.attachmentCount = static_cast<size_t>(attachments_decs.size());
 	renderPassInfo.pAttachments    = attachments_decs.data();
 	renderPassInfo.subpassCount    = static_cast<uint32_t>(subpasses.size());
 	renderPassInfo.pSubpasses      = subpasses.data();

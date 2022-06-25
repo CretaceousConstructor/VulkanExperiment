@@ -1,5 +1,6 @@
 #include "VkUniformBufferFactory.h"
 
+
 VkUniformBufferFactory::VkUniformBufferFactory(VkGraphicsComponent &_gfx) :
     VkBufferFactory(_gfx)
 {
@@ -32,6 +33,8 @@ void VkUniformBufferFactory::BuildBuffer()
 	const std::set<uint32_t> queueFamilyIndices = {indices.graphicsFamily.value(), indices.presentFamily.value(), indices.transferFamily.value()};
 
 	std::vector<uint32_t> uniqueQueueFamilyIndices;
+
+
 	for (auto index : queueFamilyIndices)
 	{
 		uniqueQueueFamilyIndices.push_back(index);
@@ -80,7 +83,7 @@ void VkUniformBufferFactory::BindBufferToMemo()
 
 void VkUniformBufferFactory::Assemble()
 {
-	result = std::make_shared<VkBufferBase>(gfx,temp_buffer,temp_buffer_memory,temp_buffer_size);
+	result = std::make_shared<VkUniformBuffer>(gfx,temp_buffer,temp_buffer_memory,temp_buffer_size);
 }
 
 

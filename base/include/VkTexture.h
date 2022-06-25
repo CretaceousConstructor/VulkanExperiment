@@ -3,10 +3,10 @@
 #include "VkGeneralPurposeImage.h"
 #include "VkGraphicsComponent.h"
 #include <memory>
-#include <ktx.h>
-#include <ktxvulkan.h>
-#include <stb_image.h>
-#include <stb_image_write.h>
+//#include <ktx.h>
+//#include <ktxvulkan.h>
+//#include <stb_image.h>
+//#include <stb_image_write.h>
 #include <string>
 
 class VkTexture
@@ -18,6 +18,7 @@ class VkTexture
 
 
 	~VkTexture();
+
 
   private:
 	//传入的材质文件格式为常用的格式，如jpg等。用stb读取图片文件
@@ -31,8 +32,8 @@ class VkTexture
 
   public:
 	//void InitTextureView(VkFormat format, VkImageAspectFlags aspectFlags);
-	void InitSampler();
-	void InitSampler(const VkSamplerCreateInfo& sampler_CI);
+	//void InitSampler();
+	//void InitSampler(const VkSamplerCreateInfo& sampler_CI);
 
 	[[nodiscard]] VkWriteDescriptorSet GetWriteDescriptorSetInfo(uint32_t dstbinding, uint32_t dstArrayElement);
 

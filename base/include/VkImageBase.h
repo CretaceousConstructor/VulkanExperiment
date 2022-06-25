@@ -14,6 +14,8 @@ class VkImageBase
 	VkImageBase(VkImageBase &&) = delete;
 	VkImageBase &operator=(VkImageBase &&) = delete;
 
+
+
 	[[nodiscard]]VkImage  GetImage()const;
 	[[nodiscard]]VkFormat GetImageFormat()const;
 
@@ -23,7 +25,6 @@ class VkImageBase
   protected:
 	VkGraphicsComponent &  gfx;
 	const VkDeviceManager &device_manager;
-
   protected:
 	VkImage  image{};
 	VkFormat image_format{};

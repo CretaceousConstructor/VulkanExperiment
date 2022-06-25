@@ -8,23 +8,21 @@ VkTextureFactory::VkTextureFactory(VkGraphicsComponent &_gfx,VkTexImageFactory &
     gfx(_gfx),device_manager(gfx.DeviceMan()),window(gfx.Window()),tex_img_factory(_tex_img_factory)
 {
 
-
-
 }
 
-std::shared_ptr<VkTexture> VkTextureFactory::GetTexture(const std::string &image_path, VkFormat format_of_image, VkImageLayout para_imageLayout)
+std::shared_ptr<VkTexture> VkTextureFactory::GetTexture(const std::string &image_path, VkFormat format_of_image, const SamplerParaPack& sampler_para_pack,VkImageLayout para_imageLayout)const
 {
 
 
 	std::shared_ptr<VkGeneralPurposeImage> texture_image;
-	SamplerParaPack                       para_pack;
+	SamplerParaPack                       para_pack{sampler_para_pack};
 	if (true)
 	{
 		texture_image = InitKTXTexture(image_path, format_of_image, para_imageLayout,para_pack);
 	}
 	else
 	{
-		InitTexture(image_path, format_of_image, para_imageLayout,para_pack);
+		//InitTexture(image_path, format_of_image, para_imageLayout,para_pack);
 	}
 
 
@@ -35,17 +33,20 @@ std::shared_ptr<VkTexture> VkTextureFactory::GetTexture(const std::string &image
 	//para_pack.sampler_CI.maxLod     = (ktx_use_staging) ? (float) mip_levels : 0.0f;
 	para_pack.sampler_CI.maxLod     = (para_pack.mip_count > 1) ? (float) para_pack.mip_count : 0.0f;
 
-	VkSampler texture_sampele = InitSampler(para_pack);
+	VkSampler texture_sampler = InitSampler(para_pack);
 
 
-
-}
-
-void VkTextureFactory::InitTexture(const std::string &image_path, const VkFormat format_of_image, const VkImageLayout _image_layout,SamplerParaPack & sample_para_pack)const
-{
-	throw std::runtime_error("not implemented!");
+	return std::make_shared<VkTexture>(gfx,image_path,texture_image,texture_sampler,para_imageLayout);
 
 }
+
+//void VkTextureFactory::InitTexture(const std::string &image_path, const VkFormat format_of_image, const VkImageLayout _image_layout,SamplerParaPack & sample_para_pack)const
+//{
+//	throw std::runtime_error("not implemented!");
+//
+//}
+
+
 
 std::shared_ptr<VkGeneralPurposeImage> VkTextureFactory::InitKTXTexture(const std::string &image_path, const VkFormat format_of_image, const VkImageLayout image_layout_,SamplerParaPack & sampler_para_pack_)const
 {
@@ -128,7 +129,7 @@ std::shared_ptr<VkGeneralPurposeImage> VkTextureFactory::InitKTXTexture(const st
 
 
 
-		VkTexImageFactory::ImageParaPack para_pack(tex_name,format_of_image,temp_image_extent);
+		VkTexImageFactory::ParaPack para_pack(tex_name,format_of_image,temp_image_extent);
 
 		para_pack.default_image_CI.mipLevels = ktxTexture->numLevels;
 		para_pack.default_image_CI.arrayLayers = ktxTexture->numLayers;
@@ -162,13 +163,9 @@ std::shared_ptr<VkGeneralPurposeImage> VkTextureFactory::InitKTXTexture(const st
 //========================================================================================================================
 	return texture_image;
 
-
-
-
-
 }
 
-VkSampler VkTextureFactory::InitSampler(const SamplerParaPack &para_pack)
+VkSampler VkTextureFactory::InitSampler(const SamplerParaPack &para_pack)const
 {
 
 

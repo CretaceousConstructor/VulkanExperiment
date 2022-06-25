@@ -57,10 +57,10 @@ void VkDescriptorManager::AddDescriptorPool(const DescriptorPoolMetaInfo pool_me
 
 const VkDescriptorPool& VkDescriptorManager::GetPool(const DescriptorPoolMetaInfo   pool_meta_info) const
 {
-	//if (!descriptor_pools.contains(pool_meta_info))
-	//{
-	//	throw std::runtime_error("non-existent pool!");
-	//}
+	////if (!descriptor_pools.contains(pool_meta_info))
+	////{
+	////	throw std::runtime_error("non-existent pool!");
+	////}
 	return descriptor_pools.at(pool_meta_info).descriptor_pool;
 }
 
@@ -77,7 +77,7 @@ void VkDescriptorManager::AddDescriptorSetLayout(const DescriptorSetLayoutMetaIn
 
 	VkDescriptorSetLayoutCreateInfo layout_bindingCI{};
 	layout_bindingCI.sType        = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-	layout_bindingCI.bindingCount = temp_layout.LayoutBindings.size();        //the amount of VkDescriptorSetLayoutBinding
+	layout_bindingCI.bindingCount = static_cast<uint32_t>(temp_layout.LayoutBindings.size());        //the amount of VkDescriptorSetLayoutBinding
 	layout_bindingCI.pBindings    = temp_layout.LayoutBindings.data();
 	if (vkCreateDescriptorSetLayout(device_manager.GetLogicalDevice(), &layout_bindingCI, nullptr, &temp_layout.set_layout) != VK_SUCCESS)
 	{
@@ -92,10 +92,10 @@ void VkDescriptorManager::AddDescriptorSetLayout(const DescriptorSetLayoutMetaIn
 
 const VkDescriptorSetLayout& VkDescriptorManager::GetSetLayout(const DescriptorSetLayoutMetaInfo set_layout_meta_info)  const
 {
-	//if (!set_layouts.contains(set_layout_meta_info))
-	//{
-	//	throw std::runtime_error("non-existent set layout!");
-	//}
+	////if (!set_layouts.contains(set_layout_meta_info))
+	////{
+	////	throw std::runtime_error("non-existent set layout!");
+	////}
 	return set_layouts.at(set_layout_meta_info).set_layout;
 }
 
@@ -108,8 +108,6 @@ const VkDescriptorSetLayout& VkDescriptorManager::GetSetLayout(const DescriptorS
 void VkDescriptorManager::AddDescriptorSetBundle(const DescriptorSetMetaInfo bundle_set_meta_info, size_t num_of_bundle)
 {
 	// meta-info processing
-
-
 	//test if decriptor_bundle exsits
 	if (descriptor_sets.contains(bundle_set_meta_info))
 	{
@@ -141,14 +139,14 @@ void VkDescriptorManager::AddDescriptorSetBundle(const DescriptorSetMetaInfo bun
 
 }
 
-void VkDescriptorManager::UpdateDescriptorSet(std::vector<VkWriteDescriptorSet> write_descriptor_sets, const DescriptorSetMetaInfo set_meta_info, size_t frame_inflight) 
+void VkDescriptorManager::UpdateDescriptorSet(std::vector<VkWriteDescriptorSet> write_descriptor_sets, const DescriptorSetMetaInfo set_meta_info, size_t frame_inflight) const
 {
 	if (!descriptor_sets.contains(set_meta_info))
 	{
 		throw std::runtime_error("descriptor set doesn't exist!");
 	}
 
-	const auto &set_bundle = descriptor_sets[set_meta_info];
+	const auto &set_bundle = descriptor_sets.at(set_meta_info);
 
 
 	for (auto &write_set : write_descriptor_sets)
@@ -161,10 +159,10 @@ void VkDescriptorManager::UpdateDescriptorSet(std::vector<VkWriteDescriptorSet> 
 
 const std::vector<VkDescriptorSet> & VkDescriptorManager::GetDescriptorSetBundle(DescriptorSetMetaInfo meta_info)const
 {
-	//if (!descriptor_sets.contains(meta_info))
-	//{
-	//	throw std::runtime_error("non-existent pool!");
-	//}
+	if (!descriptor_sets.contains(meta_info))
+	{
+		throw std::runtime_error("non-existent pool!");
+	}
 
 	return descriptor_sets.at(meta_info);
 

@@ -6,8 +6,6 @@
 #include <vector>
 #include <string>
 
-
-
 #include <iostream>
 #include "VkTexture.h"
 #include "tiny_obj_loader.h"

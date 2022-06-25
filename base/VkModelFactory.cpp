@@ -217,8 +217,9 @@ void VkModelFactory::LoadImages(tinygltf::Model &input)
 
 			//if (std::string("ktx") == file_extension)
 			//{
-				images[i].tex_name = glTFImage.name;
-				images[i].texture  = texture_factory.GetTexture(path,format_of_image);
+			images[i].tex_name = glTFImage.name;
+			VkTextureFactory::SamplerParaPack sampler_para;
+			images[i].texture  = texture_factory.GetTexture(path,format_of_image,sampler_para);
 			//}
 			//else
 			//{

@@ -14,40 +14,30 @@ BaseRenderer::BaseRenderer(VkGraphicsComponent& gfx_)
 
 void BaseRenderer::RenderingPreparation()
 {
-
+	//***************USER INPUT***************
 	this->SetUpUserInput();
 	//Init Camera
 	this->CreateCamera();
-	//prepare Models
-	this->PrepareModels();
 
-
-	//prepare Images
+	//**************COMMON RESOURCES***************
+	//Images
 	this->CreateAttachmentImages();
 	this->CreateTextureImages();
-	this->CreateDepthImages();
-
-	//prepare Buffers
+	//Buffers
 	this->CreateUniformBuffer();
-
-
-	//prepare Descriptor Sets
-	this->CreateDescriptorSetLayout();
+	//descriptor pool
 	this->CreateDescriptorPool();
-	this->CreateDescriptorSets();
+	//Models
+	this->PrepareModels();
 
+	//*************RENDERPASS INIT***************
+	this->RenderpassInit();
 
-	//prepare Renderpass
-	this->CreateRenderPass();
-	//prepare Pipeline
-	//this->CreateGraphicsPipelineLayout();
-	this->CompileShaders();
-	this->CreateGraphicsPipeline();
-
-	//command buffer recording
-	this->CommandBufferRecording();
+	//*************COMMAND BUFFER RECORDING***************
 	//prepare sync objects
 	this->InitSynObjects();
+	//command buffer recording
+	this->CommandBufferRecording();
 
 
 

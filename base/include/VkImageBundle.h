@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include "VkImageBase.h"
 #include <memory>
 #include <vector>
@@ -9,7 +8,8 @@ class VkImageBundle
 {
   public:
 	VkImageBundle() = delete;
-	VkImageBundle(std::vector<std::shared_ptr<VkImageBase>> _images, uint32_t bundle_size);
+
+	VkImageBundle(std::vector<std::shared_ptr<VkImageBase>> _images, size_t bundle_size);
 	~VkImageBundle() = default;
 
 	VkImageBundle(const VkImageBundle &) = default;
@@ -19,16 +19,18 @@ class VkImageBundle
 	VkImageBundle &operator=(VkImageBundle &&) = default;
 
 
-	[[nodiscard]] uint32_t GetBundleCount() const;
-	const VkImageBase &operator[](uint32_t index) const;
-	[[nodiscard]] const VkImageBase &GetOne(uint32_t index) const;
+	[[nodiscard]] size_t GetBundleCount() const;
+	const VkImageBase &operator[](size_t index) const;
+	[[nodiscard]] const VkImageBase &GetOne(size_t index) const;
 	[[nodiscard]] const std::vector<std::shared_ptr<VkImageBase>> &GetImagesArray() const;
 
 
 
 
   private:
-	uint32_t                                   bundle_count{};
+	size_t                                   bundle_count{};
 	std::vector<std::shared_ptr<VkImageBase>> images;
+
+
 
 };

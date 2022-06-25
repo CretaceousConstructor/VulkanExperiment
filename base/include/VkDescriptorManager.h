@@ -35,7 +35,12 @@ class VkDescriptorManager
 	void AddDescriptorSetBundle(const DescriptorSetMetaInfo bundle_set_meta_info, size_t num_of_bundle);
 	const std::vector<VkDescriptorSet> &      GetDescriptorSetBundle(DescriptorSetMetaInfo meta_info) const;
 
-	void UpdateDescriptorSet(std::vector<VkWriteDescriptorSet> write_descriptor_sets, const DescriptorSetMetaInfo set_meta_info, size_t frame_inflight) ;
+
+
+
+	void UpdateDescriptorSet(std::vector<VkWriteDescriptorSet> write_descriptor_sets, const DescriptorSetMetaInfo set_meta_info, size_t frame_inflight) const;
+
+
 	template <class Resource>
 	void UpdateDescriptorSet(Resource &resource, const DescriptorSetMetaInfo set_meta_info, uint32_t dstbinding, uint32_t dstArrayElement);
 
@@ -45,7 +50,7 @@ class VkDescriptorManager
 
 	//TODO:
 	[[nodiscard]] std::vector<VkDescriptorSetLayout> SearchLayout(const std::vector<DescriptorSetLayoutMetaInfo>& set_layout_meta_info) const;
-	[[nodiscard]] std::vector<VkDescriptorSetLayout> SearchLayout(const PipelineMetaInfo set_layout_meta_info) const;
+	//[[nodiscard]] std::vector<VkDescriptorSetLayout> SearchLayout(const PipelineMetaInfo set_layout_meta_info) const;
 
 
 

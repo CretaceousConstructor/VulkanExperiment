@@ -252,11 +252,6 @@ void VkGeneralPurposeImage::TransitionImageLayout(VkImageLayout oldLayout, VkIma
 void VkGeneralPurposeImage::TransitionImageLayout(VkImageLayout oldLayout, VkImageLayout newLayout, const VkCommandPool &command_pool, const VkQueue &command_quque, VkDeviceManager::QueueFamilyIndices queue_family_indices, uint32_t miplevelcount)const
 {
 
-
-
-
-
-
 	const VkCommandBuffer commandBuffer = VkCommandManager::BeginSingleTimeCommands(command_pool, device_manager.GetLogicalDevice());
 
 
