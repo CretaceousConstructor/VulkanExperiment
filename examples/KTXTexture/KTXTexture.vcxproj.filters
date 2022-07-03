@@ -45,7 +45,7 @@
       <Filter>Header Files\Renderpasses</Filter>
     </ClInclude>
     <ClInclude Include="RenderingMetaInfo.h">
-      <Filter>Header Files\Renderpasses</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

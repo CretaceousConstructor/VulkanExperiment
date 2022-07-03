@@ -2,16 +2,15 @@
 
 #include "VkTexImageFactory.h"
 #include "VkTexture.h"
-#include <ktx.h>
-#include <ktxvulkan.h>
-#include <stb_image.h>
-#include <stb_image_write.h>
+//#include <ktx.h>
+//#include <ktxvulkan.h>
+//#include <stb_image.h>
+//#include <stb_image_write.h>
 #include <string>
 
 class VkTextureFactory
 {
   public:
-
 	class SamplerParaPack
 	{
 	  public:
@@ -19,7 +18,7 @@ class VkTextureFactory
 		{
 			mip_count   = 1;
 			layer_count = 1;
-
+			sampler_CI.sType     = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
 			sampler_CI.magFilter = VK_FILTER_LINEAR;
 			sampler_CI.minFilter = VK_FILTER_LINEAR;
 
@@ -51,19 +50,20 @@ class VkTextureFactory
 	};
 
 	VkTextureFactory(VkGraphicsComponent &_gfx, VkTexImageFactory &_tex_img_factory);
-	std::shared_ptr<VkTexture> GetTexture(
-	    const std::string &image_path, VkFormat format_of_image, const SamplerParaPack &sampler_para_pack, VkImageLayout para_imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
-	)const;
+	[[nodiscard]] std::shared_ptr<VkTexture> GetTexture(const std::string &image_path, VkFormat format_of_image, const SamplerParaPack &sampler_para_pack, VkImageLayout para_imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) const;
+
   private:
 	//void InitTexture(const std::string &image_path, const VkFormat format_of_image, const VkImageLayout _imageLayout, SamplerParaPack &para_pack) const;
 
-	std::shared_ptr<VkGeneralPurposeImage> InitKTXTexture(const std::string &image_path, const VkFormat format_of_image, const VkImageLayout _imageLayout, SamplerParaPack &para_pack) const;
+	std::shared_ptr<VkGeneralPurposeImage> InitKTXTexture(const std::string &image_path, const VkFormat format_of_image, const VkImageLayout image_layout_,SamplerParaPack & sampler_para_pack_) const;
 
-	VkSampler InitSampler(const SamplerParaPack &para_pack) const;
+	[[nodiscard]] VkSampler InitSampler(const SamplerParaPack &para_pack) const;
 
   private:
 	VkGraphicsComponent &  gfx;
 	const VkDeviceManager &device_manager;
 	const VkWindows &      window;
 	VkTexImageFactory &    tex_img_factory;
+
+
 };

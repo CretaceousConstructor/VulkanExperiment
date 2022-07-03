@@ -1,5 +1,5 @@
-#define STB_IMAGE_IMPLEMENTATION
-#define STB_IMAGE_WRITE_IMPLEMENTATION
+//#define STB_IMAGE_IMPLEMENTATION
+//#define STB_IMAGE_WRITE_IMPLEMENTATION
 
 
 #include "VkTextureFactory.h"
@@ -28,13 +28,35 @@ std::shared_ptr<VkTexture> VkTextureFactory::GetTexture(const std::string &image
 
 	VkPhysicalDeviceProperties properties{};
 	vkGetPhysicalDeviceProperties(device_manager.GetPhysicalDevice(), &properties);
+
+
+	//typedef struct VkSamplerCreateInfo {
+	//    VkStructureType         sType;
+	//    const void*             pNext;
+	//    VkSamplerCreateFlags    flags;
+	//    VkFilter                magFilter;
+	//    VkFilter                minFilter;
+	//    VkSamplerMipmapMode     mipmapMode;
+	//    VkSamplerAddressMode    addressModeU;
+	//    VkSamplerAddressMode    addressModeV;
+	//    VkSamplerAddressMode    addressModeW;
+	//    float                   mipLodBias;
+	//    VkBool32                anisotropyEnable;
+	//    float                   maxAnisotropy;
+	//    VkBool32                compareEnable;
+	//    VkCompareOp             compareOp;
+	//    float                   minLod;
+	//    float                   maxLod;
+	//    VkBorderColor           borderColor;
+	//    VkBool32                unnormalizedCoordinates;
+	//} VkSamplerCreateInfo;
+
+
 	para_pack.sampler_CI.anisotropyEnable = VK_TRUE;
 	para_pack.sampler_CI.maxAnisotropy    = properties.limits.maxSamplerAnisotropy;
 	//para_pack.sampler_CI.maxLod     = (ktx_use_staging) ? (float) mip_levels : 0.0f;
-	para_pack.sampler_CI.maxLod     = (para_pack.mip_count > 1) ? (float) para_pack.mip_count : 0.0f;
-
+	para_pack.sampler_CI.maxLod     = (para_pack.mip_count > 1) ? static_cast<float>( para_pack.mip_count) : 0.0f;
 	VkSampler texture_sampler = InitSampler(para_pack);
-
 
 	return std::make_shared<VkTexture>(gfx,image_path,texture_image,texture_sampler,para_imageLayout);
 
@@ -103,7 +125,7 @@ std::shared_ptr<VkGeneralPurposeImage> VkTextureFactory::InitKTXTexture(const st
 
 //========================================================================================================================
 		//创建完staging buffer以后，把texture中的数据拷贝进staging buffer
-		// Setup buffer copy regions for each mip level
+		//Setup buffer copy regions for each mip level
 		//TODO:这里没有考虑layer的问题，
 		std::vector<VkBufferImageCopy> bufferCopyRegions;
 
@@ -129,7 +151,7 @@ std::shared_ptr<VkGeneralPurposeImage> VkTextureFactory::InitKTXTexture(const st
 
 
 
-		VkTexImageFactory::ParaPack para_pack(tex_name,format_of_image,temp_image_extent);
+		VkTexImageFactory::ParameterPack para_pack(tex_name,format_of_image,temp_image_extent);
 
 		para_pack.default_image_CI.mipLevels = ktxTexture->numLevels;
 		para_pack.default_image_CI.arrayLayers = ktxTexture->numLayers;
@@ -138,7 +160,9 @@ std::shared_ptr<VkGeneralPurposeImage> VkTextureFactory::InitKTXTexture(const st
 		para_pack.default_image_view_CI.subresourceRange.layerCount = ktxTexture->numLayers;
 
 		texture_image = tex_img_factory.ProduceImage(para_pack);
+
 		texture_image->CopyBufferToImage(stagingBuffer, bufferCopyRegions,VkDeviceManager::CommandPoolType::transfor_command_pool );
+
 
 		texture_image->TransitionImageLayout( VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, image_layout_,VkDeviceManager::CommandPoolType::graphics_command_pool,  ktxTexture->numLevels,ktxTexture->numLayers);
 
@@ -174,8 +198,6 @@ VkSampler VkTextureFactory::InitSampler(const SamplerParaPack &para_pack)const
 	{
 		throw std::runtime_error("failed to create texture sampler!");
 	}
-
-
 	return result;
 	
 }

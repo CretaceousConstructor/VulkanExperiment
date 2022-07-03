@@ -11,8 +11,7 @@ class Camera
 
 	//
 	// 获取摄像机位置
-
-	glm::vec3 GetPosition() const;
+	[[nodiscard]] glm::vec3 GetPosition() const;
 	//设置相机位置
 	void SetPosition(float x, float y, float z);
 	void SetPosition(const glm::vec3 &pos);
@@ -21,28 +20,27 @@ class Camera
 	//
 	// 获取摄像机旋转
 	//
-
 	// 获取绕X轴旋转的欧拉角弧度
-	float GetRotationX() const;
+	[[nodiscard]]float GetRotationX() const;
 	// 获取绕Y轴旋转的欧拉角弧度
-	float GetRotationY() const;
+	[[nodiscard]]float GetRotationY() const;
+
+	[[nodiscard]]float GetRotationZ() const;
+
 
 	//
 	// 获取摄像机的坐标轴向量
 	//
-	glm::vec3 GetRightAxis() const;
-
-	glm::vec3 GetUpAxis() const;
-
-	glm::vec3 GetLookAxis() const;
+	[[nodiscard]]glm::vec3 GetRightAxis() const;
+	[[nodiscard]]glm::vec3 GetUpAxis() const;
+	[[nodiscard]]glm::vec3 GetLookAxis() const;
 
 	//
 	// 获取矩阵
 	//
-
-	glm::mat4x4 GetView() const;
-	glm::mat4x4 GetProj() const;
-	glm::mat4x4 GetViewProj() const;
+	[[nodiscard]]glm::mat4x4 GetView() const;
+	[[nodiscard]]glm::mat4x4 GetProj() const;
+	[[nodiscard]]glm::mat4x4 GetViewProj() const;
 
 	// 获取视口
 	VkViewport GetViewPort() const;
@@ -50,8 +48,8 @@ class Camera
 	// 设置视锥体
 	void SetFrustum(float fovY, float aspect, float nearZ, float farZ);
 
-	float GetNearZ() const;
-	float GetFarZ() const;
+	[[nodiscard]]float GetNearZ() const;
+	[[nodiscard]]float GetFarZ() const;
 
 	// 设置视口
 	void SetViewPort(const VkViewport &viewPort);

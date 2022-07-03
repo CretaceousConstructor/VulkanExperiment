@@ -10,40 +10,33 @@ public:
 
     Transform(const glm::vec3& scale, const  glm::vec3& rotation, const  glm::vec3& position);
     Transform() = default;
-    ~Transform() = default;
-
-    Transform(const Transform&) = default;
-    Transform& operator=(const Transform&) = default;
-
-    Transform(Transform&&) = default;
-    Transform& operator=(Transform&&) = default;
 
     // 获取对象缩放比例
-    glm::vec3 GetScale() const;
+    [[nodiscard]]glm::vec3 GetScale() const;
 
     // 获取对象欧拉角(弧度制)
     // 对象以Y-X-Z轴顺序旋转?是否是这样需要测试
-    glm::vec3 GetRotation() const;
+    [[nodiscard]]glm::vec3 GetRotation() const;
 
 
     // 获取对象位置
-    glm::vec3 GetPosition() const;
+    [[nodiscard]]glm::vec3 GetPosition() const;
 
 
     // 获取右方向轴
-    glm::vec3 GetRightAxis() const;
+    [[nodiscard]]glm::vec3 GetRightAxis() const;
 
     // 获取上方向轴
-    glm::vec3 GetUpAxis() const;
+    [[nodiscard]]glm::vec3 GetUpAxis() const;
 
     // 获取前方向轴
-    glm::vec3 GetForwardAxis() const;
+    [[nodiscard]]glm::vec3 GetForwardAxis() const;
 
     // 获取世界变换矩阵
-    glm::mat4x4 GetLocalToWorldMatrix() const;
+    [[nodiscard]]glm::mat4x4 GetLocalToWorldMatrix() const;
  
     // 获取逆世界变换矩阵
-    glm::mat4x4 GetWorldToLocalMatrix() const;
+    [[nodiscard]]glm::mat4x4 GetWorldToLocalMatrix() const;
 
 
     // 设置对象缩放比例
@@ -57,8 +50,8 @@ public:
     void SetRotation(const  glm::vec3& eulerAnglesInRadian);
     // 设置对象欧拉角(弧度制)
     // 对象以Y-X-Z轴顺序旋转是否是这样需要测试
-
     void SetRotation(float x, float y, float z);
+
 
     // 设置对象位置
     void SetPosition(const  glm::vec3& position);
@@ -76,7 +69,6 @@ public:
 
     // 沿着某一方向平移
     void Translate(const  glm::vec3& direction, float magnitude);
-
     // 观察某一点
     void LookAt(const  glm::vec3& target, const glm::vec3& up = { 0.0f, 1.0f, 0.0f });
     // 沿着某一方向观察

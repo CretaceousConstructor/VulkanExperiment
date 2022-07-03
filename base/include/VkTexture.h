@@ -3,8 +3,8 @@
 #include "VkGeneralPurposeImage.h"
 #include "VkGraphicsComponent.h"
 #include <memory>
-//#include <ktx.h>
-//#include <ktxvulkan.h>
+#include <ktx.h>
+#include <ktxvulkan.h>
 //#include <stb_image.h>
 //#include <stb_image_write.h>
 #include <string>
@@ -35,7 +35,7 @@ class VkTexture
 	//void InitSampler();
 	//void InitSampler(const VkSamplerCreateInfo& sampler_CI);
 
-	[[nodiscard]] VkWriteDescriptorSet GetWriteDescriptorSetInfo(uint32_t dstbinding, uint32_t dstArrayElement);
+	[[nodiscard]] VkWriteDescriptorSet GetWriteDescriptorSetInfo(uint32_t dstbinding, uint32_t dstArrayElement = 0);
 
   public:
 	[[nodiscard]] VkImage       GetTextureImage() const;

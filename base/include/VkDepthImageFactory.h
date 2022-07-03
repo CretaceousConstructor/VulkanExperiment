@@ -1,9 +1,8 @@
 #pragma once
 #include "VkGeneralPurposeImage.h"
 #include "VkImageBundle.h"
-#include "VkImageFactory.h"
 
-class VkDepthImageFactory : public VkImageFactory
+class VkDepthImageFactory  
 {
   public:
 	VkDepthImageFactory(VkGraphicsComponent &_gfx);
@@ -64,10 +63,11 @@ class VkDepthImageFactory : public VkImageFactory
 	[[nodiscard]]VkImage BuildImage(const ParaPack &para_pack) const;
 	[[nodiscard]]VkDeviceMemory  CreateAndBindMemory(const ParaPack &para_pack,VkImage temp_image) const;
 	[[nodiscard]]VkImageView    BuildImageView(const ParaPack &para_pack,VkImage temp_image)const;
-	void    TransitionImageLayout(const ParaPack &para_pack,std::shared_ptr<VkGeneralPurposeImage> result)const ;
+	static void    TransitionImageLayout(const ParaPack &para_pack,std::shared_ptr<VkGeneralPurposeImage> result);
 
   private:
-	//VkImage temp_image{};
-	//VkDeviceMemory temp_image_mem{};
-	//VkImageView temp_image_view{};
+
+	VkGraphicsComponent &gfx;
+	const VkDeviceManager &    device_manager;
+
 };

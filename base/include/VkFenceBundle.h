@@ -20,8 +20,8 @@ class VkFenceBundle : public VkSynObjectBundleBase
 
 
 
-	VkFence operator[](uint8_t num) const;
-	[[nodiscard]] const VkFence &GetOne(uint8_t num) const;
+	VkFence operator[](size_t num) const;
+	[[nodiscard]] const VkFence &GetOne(size_t num) const;
 	~VkFenceBundle();
 
   private:

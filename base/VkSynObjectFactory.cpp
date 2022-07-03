@@ -10,9 +10,9 @@ VkSynObjectFactory::VkSynObjectFactory(VkGraphicsComponent & _gfx)
 {
 }
 
-std::shared_ptr<VkSemaphoreBundle> VkSynObjectFactory::GetSemaphoreBundle(uint32_t _bundle_size, Vk::SyncObjCreateOption option ) const
+std::shared_ptr<VkSemaphoreBundle> VkSynObjectFactory::GetSemaphoreBundle(uint32_t _bundle_size ) const
 {
-	auto result = std::make_shared<VkSemaphoreBundle>(device_manager, _bundle_size, option);
+	auto result = std::make_shared<VkSemaphoreBundle>(device_manager, _bundle_size);
 	return result;
 }
 

@@ -3,6 +3,7 @@
 #include "VkRenderpassBase.h"
 #include "VkRenderpassManager.h"
 
+
 class Renderpass0 : public VkRenderpassBase
 {
   public:
@@ -18,7 +19,10 @@ class Renderpass0 : public VkRenderpassBase
 	void CreateGraphicsPipeline() override;
 
   public:
-	[[nodiscard]] VkRenderPassBeginInfo StartRenderpass(uint32_t index) const override;
+	void BeginRenderpass(size_t index, VkCommandBuffer command_buffer) const override;
+
+	void RenderpassExecute(VkCommandBuffer command_buffer) ;
+
 
   private:
 	KtxRenderer::RenderpassCommonResources &common_resources;

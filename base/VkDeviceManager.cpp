@@ -347,7 +347,6 @@ void VkDeviceManager::CreateLogicalDeviceAndQueues()
 	//TODO:这里可以进行优化，因为物理设备已经定了，就直接用类成员调用
 	QueueFamilyIndices                   indices = FindQueueFamilies(physical_device, window.GetSurface());
 	std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
-
 	std::set<uint32_t>                   uniqueQueueFamilies = {indices.graphicsFamily.value(), indices.presentFamily.value(), indices.transferFamily.value()};
 
 	constexpr float queuePriority = 1.0f;
@@ -368,7 +367,6 @@ void VkDeviceManager::CreateLogicalDeviceAndQueues()
 
 	VkPhysicalDeviceFeatures deviceFeatures{};        //是否支持纹理压缩，64位float，多视口等
 	vkGetPhysicalDeviceFeatures(physical_device, &deviceFeatures);
-	deviceFeatures.samplerAnisotropy = VK_TRUE;       //前面已经测试过，直接设置成true就行了
 
 	VkDeviceCreateInfo device_create_info{};
 	device_create_info.sType                = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
@@ -518,7 +516,7 @@ void VkDeviceManager::CreateBufferAndBindToMemo(VkDeviceSize size, VkBufferUsage
 
 }
 
-void VkDeviceManager::CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size, const VkCommandBuffer &transfer_command_buffer)
+void VkDeviceManager::CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size, const VkCommandBuffer &transfer_command_buffer)const
 {
 	VkCommandBufferBeginInfo beginInfo{};
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;

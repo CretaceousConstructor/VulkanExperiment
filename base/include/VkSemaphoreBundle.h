@@ -7,7 +7,9 @@
 class VkSemaphoreBundle : public VkSynObjectBundleBase
 {
   public:
-	VkSemaphoreBundle(const VkDeviceManager &_device_manager, uint32_t _bundle_size,  Vk::SyncObjCreateOption option);
+
+	//vkCreateSemaphore: parameter pCreateInfo->flags must be 0. The Vulkan spec states: flags must be 0
+	VkSemaphoreBundle(const VkDeviceManager &_device_manager, uint32_t _bundle_size  );
 
 
 	VkSemaphoreBundle() = delete;

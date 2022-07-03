@@ -53,6 +53,11 @@ VkPipelineLayout VkRenderpassManager::GetPipelineLayout(const PipelineLayoutMeta
 	return managers.pipeline_manager.GetPipelineLayout(meta_info);
 }
 
+VkPipelineBuilder &VkRenderpassManager::GetPipelineBuilder() 
+{
+	return managers.pipeline_manager.GetPipelineBuilder();
+}
+
 VkRenderpassWrapper &VkRenderpassManager::GetRenderpass(uint32_t pass)
 {
 	return render_passes.at(pass);
@@ -78,9 +83,9 @@ const VkSubPassFacotry &VkRenderpassManager::GetSubPassFactory()
 	return factories.subpass_factory;
 }
 
-VkUniformBufferFactory &VkRenderpassManager::GetUniformBufferFactory()
+const VkBufferFactory &VkRenderpassManager::GetBufferFactory()
 {
-	return factories.ubuffer_factory;
+	return factories.buffer_factory;
 }
 
 const VkTextureFactory &VkRenderpassManager::GetTextureFactory()
@@ -101,6 +106,11 @@ const VkDepthImageFactory &VkRenderpassManager::GetDepthImageFactory()
 const VkSwapchainImageFactory &VkRenderpassManager::GetSwapchainImageFactory()
 {
 	return factories.swapchain_factory;
+}
+
+const VkModelFactory &VkRenderpassManager::GetModelFactory()
+{
+	return factories.model_factory;
 }
 
 VkManagerBundle &VkRenderpassManager::GetManagerBundle()

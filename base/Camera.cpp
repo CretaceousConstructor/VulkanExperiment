@@ -1,9 +1,8 @@
 #include "Camera.h"
 
 
-Camera::~Camera()
-{
-}
+Camera::~Camera() = default;
+
 
 glm::vec3 Camera::GetPosition() const
 {
@@ -29,6 +28,12 @@ float Camera::GetRotationY() const
 	return m_Transform.GetRotation().y;
 }
 
+float Camera::GetRotationZ() const
+{
+
+	return m_Transform.GetRotation().z;
+
+}
 
 
 glm::vec3 Camera::GetRightAxis() const

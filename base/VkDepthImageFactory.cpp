@@ -1,7 +1,7 @@
 #include "VkDepthImageFactory.h"
 
 VkDepthImageFactory::VkDepthImageFactory(VkGraphicsComponent &_gfx) :
-    VkImageFactory(_gfx)
+    gfx(_gfx), device_manager(gfx.DeviceMan())
 {
 }
 
@@ -36,46 +36,46 @@ VkDepthImageFactory::VkDepthImageFactory(VkGraphicsComponent &_gfx) :
 //	default_final_layout           = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 //}
 
-std::shared_ptr<VkImageBase> VkDepthImageFactory::ProduceImage(const ParaPack &para_pack)const 
+std::shared_ptr<VkImageBase> VkDepthImageFactory::ProduceImage(const ParaPack &para_pack) const
 {
-	const auto image = BuildImage(para_pack);
-	const auto image_mem  = CreateAndBindMemory(para_pack,image);
-	const auto image_view =  BuildImageView(para_pack,image);
+	const auto image      = BuildImage(para_pack);
+	const auto image_mem  = CreateAndBindMemory(para_pack, image);
+	const auto image_view = BuildImageView(para_pack, image);
 
 	auto result = std::make_shared<VkGeneralPurposeImage>(gfx, image, image_mem, image_view, para_pack.default_image_format, para_pack.default_image_format);
-	TransitionImageLayout(para_pack,result);
+	TransitionImageLayout(para_pack, result);
 	return result;
-
 }
 
-VkImageBundle VkDepthImageFactory::ProduceImageBundle(const ParaPack &para_pack, size_t bundle_size)const
+VkImageBundle VkDepthImageFactory::ProduceImageBundle(const ParaPack &para_pack, size_t bundle_size) const
 {
-
 	std::vector<std::shared_ptr<VkImageBase>> result_bundle;
 	for (size_t i = 0; i < bundle_size; i++)
 	{
 		result_bundle.push_back(ProduceImage(para_pack));
 	}
-
-
 	return VkImageBundle{std::move(result_bundle), bundle_size};
-
-
 }
 
-std::shared_ptr<VkImageBundle> VkDepthImageFactory::ProduceImageBundlePtr(const ParaPack &para_pack, size_t bundle_size)const
+std::shared_ptr<VkImageBundle> VkDepthImageFactory::ProduceImageBundlePtr(const ParaPack &para_pack, size_t bundle_size) const
 {
-
-
 	std::vector<std::shared_ptr<VkImageBase>> result_bundle;
 	for (size_t i = 0; i < bundle_size; i++)
 	{
 		result_bundle.push_back(ProduceImage(para_pack));
 	}
-
-
 	return std::make_shared<VkImageBundle>(std::move(result_bundle), bundle_size);
 }
+
+
+
+
+
+
+
+
+
+
 
 VkImage VkDepthImageFactory::BuildImage(const ParaPack &para_pack) const
 {
@@ -149,9 +149,8 @@ VkImageView VkDepthImageFactory::BuildImageView(const ParaPack &para_pack, VkIma
 	return temp_image_view;
 }
 
-
-void VkDepthImageFactory::TransitionImageLayout(const ParaPack &para_pack,std::shared_ptr<VkGeneralPurposeImage> result)const
+void VkDepthImageFactory::TransitionImageLayout(const ParaPack &para_pack, std::shared_ptr<VkGeneralPurposeImage> result) 
 {
-	const VkDeviceManager::QueueFamilyIndices queue_family_index = VkDeviceManager::FindQueueFamilies(device_manager.GetPhysicalDevice(), window.GetSurface());
-	std::dynamic_pointer_cast<VkGeneralPurposeImage>(result)->TransitionImageLayout(VK_IMAGE_LAYOUT_UNDEFINED, para_pack.default_final_layout, command_manager.graphics_command_pool, device_manager.GetGraphicsQueue(), queue_family_index);
+	//const VkDeviceManager::QueueFamilyIndices queue_family_index = VkDeviceManager::FindQueueFamilies(device_manager.GetPhysicalDevice(), window.GetSurface());
+	result->TransitionImageLayout(VK_IMAGE_LAYOUT_UNDEFINED, para_pack.default_final_layout, VkDeviceManager::CommandPoolType::graphics_command_pool);
 }

@@ -13,7 +13,6 @@ void KTXTextureRenderer::CreateTextureImages()
 	const auto &texture_factory{render_pass_manager.GetTextureFactory()};
 
 
-
 	constexpr VkFormat format_of_texture = VK_FORMAT_R8G8B8A8_SRGB;
 	const VkTextureFactory::SamplerParaPack sampler_para_pack;
 	common_resources.ktx_texure          = texture_factory.GetTexture(std::string("../../data/textures/metalplate01_rgba.ktx"), format_of_texture,sampler_para_pack);
@@ -24,6 +23,8 @@ void KTXTextureRenderer::CreateTextureImages()
 
 void KTXTextureRenderer::PrepareModels()
 {
+
+
 	//暂时不用改成工厂模式，因为这个模型之后用的不多
 	std::vector<KtxRenderer::Vertex> vertices =
 	    {
@@ -34,7 +35,9 @@ void KTXTextureRenderer::PrepareModels()
 	// Setup indices
 	std::vector<uint32_t> indices = {0, 1, 2, 2, 3, 0};
 
-	//quad_model = std::make_shared<VkModel<Vertex>>(vertices, indices, device_manager, window, command_manager);
+	common_resources.quad_model = std::make_shared<VkModel<Vertex>>(vertices, indices, gfx);
+
+
 }
 
 void KTXTextureRenderer::CreateDescriptorPool()
@@ -101,13 +104,7 @@ void KTXTextureRenderer::CreateDescriptorPool()
 void KTXTextureRenderer::CreateUniformBuffer()
 {
 	auto &ubuffer_factory{render_pass_manager.GetUniformBufferFactory()};
-	//////CPU SIDE
-	//ubo.projection = m_pCamera->GetProj();
-	//ubo.view       = m_pCamera->GetView();
-	//ubo.eyepos     = glm::vec4(m_pCamera->GetPosition(), 1.f);
-
 	//GPU SIDE
-
 	constexpr VkDeviceSize bufferSize = sizeof(KtxRenderer::UboData);
 	common_resources.uniform_buffers  = ubuffer_factory.ProduceBufferBundlePtr(bufferSize, swapchain_manager.GetSwapImageCount(), VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
 }
@@ -150,7 +147,7 @@ void KTXTextureRenderer::CreateSwapchainImages()
 
 //void KTXTextureRenderer::CreatePipelineRenderPass0Subpass0()
 //{
-//	////										 subpass0
+//	////										 subpass0[[nodiscard]]
 //	///******************************************************************************************************/
 //	//VkShaderManager vertex_shader_subpass0(device_manager, std::string("../../data/shaders/KTXTexture/KTXTexture_vertex_shader.spv"), VK_SHADER_STAGE_VERTEX_BIT);
 //	//VkShaderManager fragment_shader_subpass0(device_manager, std::string("../../data/shaders/KTXTexture/KTXTexture_fragment_shader.spv"), VK_SHADER_STAGE_FRAGMENT_BIT);
@@ -398,9 +395,9 @@ void KTXTextureRenderer::CommandBufferRecording()
 
 		//renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
 		//renderPassInfo.pClearValues    = clearValues.data();
-		auto render_pass_begin_info = renderpasses[0]->StartRenderpass(i);
 
-		vkCmdBeginRenderPass(graphics_command_buffers[i], &render_pass_begin_info, VK_SUBPASS_CONTENTS_INLINE);        //
+
+		renderpasses[0]->BeginRenderpass(i,graphics_command_buffers[i]);
 
 		const auto  p0s0_layout = render_pass_manager.GetPipelineLayout(layout_0_0);
 		const auto  p0s0_pipe   = render_pass_manager.GetPipeline(pipe_0_0);
@@ -411,7 +408,9 @@ void KTXTextureRenderer::CommandBufferRecording()
 
 		common_resources.quad_model->Draw(graphics_command_buffers[i]);
 
-		vkCmdEndRenderPass(graphics_command_buffers[i]);
+		renderpasses[0]->EndRenderpass(graphics_command_buffers[i]);
+
+
 
 		if (vkEndCommandBuffer(graphics_command_buffers[i]) != VK_SUCCESS)
 		{
@@ -459,6 +458,7 @@ void KTXTextureRenderer::InitSynObjects()
 
 void KTXTextureRenderer::RenderpassInit()
 {
+
 	renderpasses.push_back(std::make_shared<Renderpass0>(gfx, render_pass_manager, common_resources));
 
 }
@@ -477,8 +477,8 @@ void KTXTextureRenderer::SetUpUserInput()
 
 void KTXTextureRenderer::CreateAttachmentImages()
 {
+	CreateSwapchainImages();
 	CreateDepthImages();
-
 
 }
 
@@ -678,7 +678,7 @@ void KTXTextureRenderer::DrawFrame()
 	currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 
-void KTXTextureRenderer::UpdateUniformBuffer(uint32_t currentImage)
+void KTXTextureRenderer::UpdateUniformBuffer(size_t currentImage)
 {
 	common_resources.ubo.projection = camera->GetProj();
 	common_resources.ubo.view       = camera->GetView();

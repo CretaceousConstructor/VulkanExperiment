@@ -152,10 +152,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="RenderingMetaInfo.cpp" />
+    <ClCompile Include="Renderpass0.cpp" />
     <ClCompile Include="SceneLoadingApp.cpp" />
     <ClCompile Include="SceneLoadingRenderer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="RenderingMetaInfo.h" />
+    <ClInclude Include="Renderpass0.h" />
     <ClInclude Include="SceneLoadingApp.h" />
     <ClInclude Include="SceneLoadingRenderer.h" />
   </ItemGroup>

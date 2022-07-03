@@ -51,8 +51,6 @@ void VkDescriptorManager::AddDescriptorPool(const DescriptorPoolMetaInfo pool_me
 	}
 
 	descriptor_pools.emplace(pool_meta_info, std::move(result));
-
-
 }
 
 const VkDescriptorPool& VkDescriptorManager::GetPool(const DescriptorPoolMetaInfo   pool_meta_info) const

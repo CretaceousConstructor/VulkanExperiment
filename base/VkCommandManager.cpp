@@ -1,21 +1,16 @@
 #include "VkCommandManager.h"
 
-VkCommandManager::VkCommandManager(VkDeviceManager& _device_manager,size_t num_of_graphics_command_buffers,size_t num_of_transfer_command_buffer) :
+VkCommandManager::VkCommandManager(VkDeviceManager &_device_manager, size_t num_of_graphics_command_buffers, size_t num_of_transfer_command_buffer) :
     device_manager(_device_manager),
     graphics_command_pool(device_manager.CreateCommandPool(VkDeviceManager::CommandPoolType::graphics_command_pool)),
     transfer_command_pool(device_manager.CreateCommandPool(VkDeviceManager::CommandPoolType::transfor_command_pool))
 {
-
-
-
 	transfer_command_buffer.resize(num_of_graphics_command_buffers);
 
 	for (size_t i = 0; i < transfer_command_buffer.size(); i++)
 	{
-		
 		VkCommandManager::CreateCommandBuffer(device_manager.GetLogicalDevice(), transfer_command_pool, transfer_command_buffer[i], VK_COMMAND_BUFFER_LEVEL_PRIMARY);
 	}
-
 
 	graphics_command_buffers.resize(num_of_graphics_command_buffers);
 
@@ -23,11 +18,7 @@ VkCommandManager::VkCommandManager(VkDeviceManager& _device_manager,size_t num_o
 	{
 		VkCommandManager::CreateCommandBuffer(device_manager.GetLogicalDevice(), graphics_command_pool, graphics_command_buffers[i], VK_COMMAND_BUFFER_LEVEL_PRIMARY);
 	}
-
-
 }
-
-
 
 VkCommandBuffer VkCommandManager::BeginSingleTimeCommands(const VkCommandPool &command_pool, const VkDevice &device)
 {
@@ -59,9 +50,6 @@ VkCommandBuffer VkCommandManager::BeginSingleTimeCommands(const VkCommandPool &c
 
 void VkCommandManager::EndSingleTimeCommands(const VkCommandPool &command_pool, const VkDevice &device, const VkCommandBuffer command_buffer, const VkQueue &command_quque)
 {
-
-
-
 	vkEndCommandBuffer(command_buffer);
 	//typedef struct VkSubmitInfo {
 	//	VkStructureType                sType;
@@ -95,17 +83,40 @@ void VkCommandManager::CreateCommandBuffer(const VkDevice &device, const VkComma
 	BufferAllocInfo.commandPool        = commandpool;
 	BufferAllocInfo.commandBufferCount = 1;
 	vkAllocateCommandBuffers(device, &BufferAllocInfo, &CommandBuffer);
-
 }
 
-const std::vector<VkCommandBuffer> & VkCommandManager::GetGraphicsCommandBuffers() const
+void VkCommandManager::BeginCommandBuffer(const std::vector<VkCommandBuffer> &command_buffers)
+{
+	for (const auto &command_buffer : command_buffers)
+	{
+		VkCommandBufferBeginInfo beginInfo{};
+		beginInfo.sType            = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		beginInfo.flags            = 0;              // Optional
+		beginInfo.pInheritanceInfo = nullptr;        // Optional
+		if (vkBeginCommandBuffer(command_buffer, &beginInfo) != VK_SUCCESS)
+		{
+			throw std::runtime_error("failed to begin recording command buffer!");
+		}
+	}
+}
+
+void VkCommandManager::EndCommandBuffer(const std::vector<VkCommandBuffer> &command_buffers)
+{
+	for (const auto &command_buffer : command_buffers)
+	{
+		if (vkEndCommandBuffer(command_buffer) != VK_SUCCESS)
+		{
+			throw std::runtime_error("failed to record command buffer!");
+		}
+	}
+}
+
+const std::vector<VkCommandBuffer> &VkCommandManager::GetGraphicsCommandBuffers() const
 {
 	return graphics_command_buffers;
-
 }
 
-const std::vector<VkCommandBuffer> & VkCommandManager::GetTransferCommandBuffers() const
+const std::vector<VkCommandBuffer> &VkCommandManager::GetTransferCommandBuffers() const
 {
 	return transfer_command_buffer;
-
 }

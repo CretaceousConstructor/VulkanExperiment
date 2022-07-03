@@ -4,22 +4,6 @@
 //
 #include "VkTexture.h"
 
-//VkTexture::VkTexture(VkGraphicsComponent &_gfx, const std::string &image_path, VkImageLayout para_imageLayout) :
-//    gfx(_gfx),
-//    device_manager(gfx.DeviceMan()),
-//    window(gfx.Window())
-//{
-//	if (true)
-//	{
-//		InitKTXTexture(image_path, format_of_texture, para_imageLayout);
-//	}
-//	else
-//	{
-//		InitTexture(image_path, format_of_texture, para_imageLayout);
-//	}
-//	InitSampler();
-//}
-
 
 
 VkTexture::VkTexture(VkGraphicsComponent &gfx_, std::string image_path, std::shared_ptr<VkGeneralPurposeImage> image_, VkSampler texture_sampler_,VkImageLayout imageLayout_) :
@@ -39,6 +23,62 @@ VkTexture::~VkTexture()
 {
 	vkDestroySampler(gfx.DeviceMan().GetLogicalDevice(), texture_sampler, nullptr);
 }
+
+
+VkWriteDescriptorSet VkTexture::GetWriteDescriptorSetInfo(uint32_t dstbinding, uint32_t dstArrayElement)
+{
+	imageInfo.imageLayout = image_layout;
+	imageInfo.imageView   = GetTextureImageView();
+	imageInfo.sampler     = GetTextureSampler();
+
+	VkWriteDescriptorSet temp_writeDescriptorSet{};
+	temp_writeDescriptorSet.sType           = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	temp_writeDescriptorSet.dstBinding      = dstbinding;
+	temp_writeDescriptorSet.descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	temp_writeDescriptorSet.pImageInfo      = &imageInfo;
+	temp_writeDescriptorSet.descriptorCount = 1;
+	temp_writeDescriptorSet.dstArrayElement = dstArrayElement;
+
+	return temp_writeDescriptorSet;
+}
+
+VkImage VkTexture::GetTextureImage() const
+{
+	return texture_image->GetImage();
+}
+
+VkImageView VkTexture::GetTextureImageView() const
+{
+	return texture_image->GetImageView();
+}
+
+VkSampler VkTexture::GetTextureSampler() const
+{
+	return texture_sampler;
+}
+
+VkImageLayout VkTexture::GetImageLayout() const
+{
+	return image_layout;
+}
+
+
+
+//VkTexture::VkTexture(VkGraphicsComponent &_gfx, const std::string &image_path, VkImageLayout para_imageLayout) :
+//    gfx(_gfx),
+//    device_manager(gfx.DeviceMan()),
+//    window(gfx.Window())
+//{
+//	if (true)
+//	{
+//		InitKTXTexture(image_path, format_of_texture, para_imageLayout);
+//	}
+//	else
+//	{
+//		InitTexture(image_path, format_of_texture, para_imageLayout);
+//	}
+//	InitSampler();
+//}
 
 /*
 void VkTexture::InitTexture(const std::string& image_path, VkFormat format_of_texture, VkImageLayout para_imageLayout)
@@ -325,39 +365,3 @@ void VkTexture::InitSampler(const VkSamplerCreateInfo& sampler_CI)
 	}
 }*/
 
-VkWriteDescriptorSet VkTexture::GetWriteDescriptorSetInfo(uint32_t dstbinding, uint32_t dstArrayElement)
-{
-	imageInfo.imageLayout = image_layout;
-	imageInfo.imageView   = GetTextureImageView();
-	imageInfo.sampler     = GetTextureSampler();
-
-	VkWriteDescriptorSet temp_writeDescriptorSet{};
-	temp_writeDescriptorSet.sType           = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	temp_writeDescriptorSet.dstBinding      = dstbinding;
-	temp_writeDescriptorSet.descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	temp_writeDescriptorSet.pImageInfo      = &imageInfo;
-	temp_writeDescriptorSet.descriptorCount = 1;
-	temp_writeDescriptorSet.dstArrayElement = dstArrayElement;
-
-	return temp_writeDescriptorSet;
-}
-
-VkImage VkTexture::GetTextureImage() const
-{
-	return texture_image->GetImage();
-}
-
-VkImageView VkTexture::GetTextureImageView() const
-{
-	return texture_image->GetImageView();
-}
-
-VkSampler VkTexture::GetTextureSampler() const
-{
-	return texture_sampler;
-}
-
-VkImageLayout VkTexture::GetImageLayout() const
-{
-	return image_layout;
-}

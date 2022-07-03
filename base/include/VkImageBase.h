@@ -6,7 +6,7 @@ class VkImageBase
 {
   public:
 	VkImageBase(VkGraphicsComponent &_gfx   , const VkImage _image, const VkFormat _image_format,  const VkImageView _image_view,const VkFormat _image_view_format);
-	virtual ~VkImageBase() = 0;
+	virtual ~VkImageBase()  = 0;
 
 	VkImageBase(const VkImageBase &) = delete;
 	VkImageBase &operator=(const VkImageBase &) = delete;

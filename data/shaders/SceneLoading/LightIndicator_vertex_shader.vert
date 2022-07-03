@@ -19,8 +19,6 @@ layout(push_constant) uniform PushConsts {
 } primitive;
 
 
-
-
 void main() 
 {
 

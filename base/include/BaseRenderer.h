@@ -17,9 +17,7 @@
 class BaseRenderer
 {
   public:
-	BaseRenderer(
-	    VkGraphicsComponent &gfx_);
-
+	BaseRenderer(VkGraphicsComponent &gfx_);
 	virtual ~BaseRenderer() = default;
 
 	BaseRenderer() = delete;
@@ -30,23 +28,21 @@ class BaseRenderer
 	BaseRenderer(BaseRenderer &&) = delete;
 	BaseRenderer &operator=(BaseRenderer &&) = delete;
 
-
   protected:
 	virtual void SetUpUserInput() = 0;
-	virtual void CreateCamera()                             = 0;
+	virtual void CreateCamera()   = 0;
 
 	virtual void CreateAttachmentImages() = 0;
 	virtual void CreateTextureImages()    = 0;
-	virtual void CreateUniformBuffer() = 0;
-	virtual void CreateDescriptorPool()      = 0;
-	virtual void PrepareModels()          = 0;
-
+	virtual void CreateUniformBuffer()    = 0;
+	virtual void CreateDescriptorPool()   = 0;
 
 	virtual void RenderpassInit() = 0;
 
-	virtual void CommandBufferRecording() = 0;
-	virtual void InitSynObjects()                           = 0;
+	virtual void PrepareModels() = 0;
 
+	virtual void CommandBufferRecording() = 0;
+	virtual void InitSynObjects()         = 0;
 
 	virtual void UpdateUniformBuffer(size_t currentImage) = 0;
 

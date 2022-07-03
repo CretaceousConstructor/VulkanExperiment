@@ -1,16 +1,15 @@
 #include "VkTexImageFactory.h"
 
-std::shared_ptr<VkGeneralPurposeImage> VkTexImageFactory::ProduceImage(const ParaPack &para_pack)const
+std::shared_ptr<VkGeneralPurposeImage> VkTexImageFactory::ProduceImage(const ParameterPack &para_pack)const
 {
-
-
 	const auto image = BuildImage(para_pack);
 	const auto image_mem  = CreateAndBindMemory(para_pack,image);
 	const auto image_view =  BuildImageView(para_pack,image);
 
 	auto result = std::make_shared<VkGeneralPurposeImage>(gfx, image, image_mem, image_view, para_pack.format_of_image, para_pack.format_of_image);
-	//const auto result = std::make_shared<VkGeneralPurposeImage>(gfx,temp_image,   temp_image_mem,temp_image_view,image_create_info.format,image_view_create_info.format);
 
+	//ownership is implicitly acquired upon first use within a queue.
+	TransitionImageLayout(para_pack, result);
 
 	return result;
 
@@ -18,13 +17,14 @@ std::shared_ptr<VkGeneralPurposeImage> VkTexImageFactory::ProduceImage(const Par
 }
 
 VkTexImageFactory::VkTexImageFactory(VkGraphicsComponent &_gfx):
-    VkImageFactory(_gfx)
+    gfx(_gfx), device_manager(gfx.DeviceMan())
 {
+
 }
 
 
 
-VkImage VkTexImageFactory::BuildImage(const ParaPack &para_pack) const
+VkImage VkTexImageFactory::BuildImage(const ParameterPack &para_pack) const
 {
 	VkImage temp_image;
 	if (vkCreateImage(device_manager.GetLogicalDevice(), &para_pack.default_image_CI, nullptr, &temp_image) != VK_SUCCESS)
@@ -36,7 +36,7 @@ VkImage VkTexImageFactory::BuildImage(const ParaPack &para_pack) const
 
 }
 
-VkDeviceMemory VkTexImageFactory::CreateAndBindMemory(const ParaPack &para_pack, VkImage temp_image) const
+VkDeviceMemory VkTexImageFactory::CreateAndBindMemory(const ParameterPack &para_pack, VkImage temp_image) const
 {
 
 
@@ -61,7 +61,7 @@ VkDeviceMemory VkTexImageFactory::CreateAndBindMemory(const ParaPack &para_pack,
 
 }
 
-VkImageView VkTexImageFactory::BuildImageView(const ParaPack &para_pack, VkImage temp_image) const
+VkImageView VkTexImageFactory::BuildImageView(const ParameterPack &para_pack, VkImage temp_image) const
 {
 
 
@@ -80,11 +80,12 @@ VkImageView VkTexImageFactory::BuildImageView(const ParaPack &para_pack, VkImage
 
 }
 
-void VkTexImageFactory::TransitionImageLayout(const ParaPack &para_pack, std::shared_ptr<VkGeneralPurposeImage> result) const
+void VkTexImageFactory::TransitionImageLayout(const ParameterPack &para_pack, std::shared_ptr<VkGeneralPurposeImage> result) const
 {
 
-	const VkDeviceManager::QueueFamilyIndices queue_family_index = VkDeviceManager::FindQueueFamilies(device_manager.GetPhysicalDevice(), window.GetSurface());
-	std::dynamic_pointer_cast<VkGeneralPurposeImage>(result)->TransitionImageLayout(VK_IMAGE_LAYOUT_UNDEFINED, para_pack.default_final_layout, command_manager.graphics_command_pool, device_manager.GetGraphicsQueue(), queue_family_index);
+
+	//ownership is implicitly acquired upon first use within a queue.
+	result->TransitionImageLayout(VK_IMAGE_LAYOUT_UNDEFINED, para_pack.default_final_layout, VkDeviceManager::CommandPoolType::transfor_command_pool,para_pack.default_image_CI.mipLevels,para_pack.default_image_CI.arrayLayers);
 
 
 }

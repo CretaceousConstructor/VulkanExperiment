@@ -27,20 +27,26 @@
     <ClCompile Include="..\..\..\vulkanExample\Vulkan\external\ktx\lib\texture.c" />
     <ClCompile Include="base\App.cpp" />
     <ClCompile Include="base\BaseRenderer.cpp" />
+    <ClCompile Include="base\Bindable.cpp" />
     <ClCompile Include="base\Camera.cpp" />
+    <ClCompile Include="base\ModelStrcture.cpp" />
+    <ClCompile Include="base\NonPbrMaterial.cpp" />
     <ClCompile Include="base\VkBufferBundle.cpp" />
     <ClCompile Include="base\VkBufferFactory.cpp" />
+    <ClCompile Include="base\VkBufferCI.cpp" />
     <ClCompile Include="base\VkFactoryBundle.cpp" />
     <ClCompile Include="base\VkFenceBundle.cpp" />
     <ClCompile Include="base\VkGraphicsComponent.cpp" />
     <ClCompile Include="base\VkImageBase.cpp" />
     <ClCompile Include="base\VkImageBundle.cpp" />
     <ClCompile Include="base\VkManagerBundle.cpp" />
+    <ClCompile Include="base\VkMaterial.cpp" />
     <ClCompile Include="base\VkModelFactory.cpp" />
     <ClCompile Include="base\VkPipelineManager.cpp" />
     <ClCompile Include="base\VkRenderpassBase.cpp" />
     <ClCompile Include="base\VkSemaphoreBundle.cpp" />
     <ClCompile Include="base\Vk.cpp" />
+    <ClCompile Include="base\VkShaderWrapper.cpp" />
     <ClCompile Include="base\VkStagingBuffer.cpp" />
     <ClCompile Include="base\VkStagingBufferFactory.cpp" />
     <ClCompile Include="base\VkSubpassFactory.cpp" />
@@ -93,6 +99,7 @@
   <ItemGroup>
     <ClInclude Include="base\include\App.h" />
     <ClInclude Include="base\include\BaseRenderer.h" />
+    <ClInclude Include="base\include\Bindable.h" />
     <ClInclude Include="base\include\Camera.h" />
     <ClInclude Include="base\include\EngineHeader.h" />
     <ClInclude Include="base\include\EngineMarco.h" />
@@ -109,9 +116,13 @@
     <ClInclude Include="base\include\imstb_truetype.h" />
     <ClInclude Include="base\include\KeyBoardInputManager.h" />
     <ClInclude Include="base\include\ModelLoader.h" />
+    <ClInclude Include="base\include\ModelStrcture.h" />
     <ClInclude Include="base\include\MouseInputManager.h" />
+    <ClInclude Include="base\include\NonPbrMaterial.h" />
+    <ClInclude Include="base\include\VkBufferCI.h" />
     <ClInclude Include="base\include\VkFactoryBundle.h" />
     <ClInclude Include="base\include\VkManagerBundle.h" />
+    <ClInclude Include="base\include\VkMaterial.h" />
     <ClInclude Include="base\include\VkRenderpassBase.h" />
     <ClInclude Include="base\include\VkShaderManager.h" />
     <ClInclude Include="base\include\VkBufferBundle.h" />
@@ -125,6 +136,7 @@
     <ClInclude Include="base\include\VkPipelineManager.h" />
     <ClInclude Include="base\include\VkSemaphoreBundle.h" />
     <ClInclude Include="base\include\Vk.h" />
+    <ClInclude Include="base\include\VkShaderWrapper.h" />
     <ClInclude Include="base\include\VkStagingBuffer.h" />
     <ClInclude Include="base\include\VkStagingBufferFactory.h" />
     <ClInclude Include="base\include\VkSubpassFactory.h" />

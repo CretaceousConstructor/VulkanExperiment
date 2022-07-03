@@ -7,8 +7,8 @@ namespace Vk
 
 	enum SyncObjCreateOption
 	{
-		Signaled,
-		Unsignaled,
+		Signaled = 0x1,
+		Unsignaled = 0x2,
 	};
 
 

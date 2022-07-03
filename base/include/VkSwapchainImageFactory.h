@@ -1,16 +1,15 @@
 #pragma once
 
-#include "VkImageFactory.h"
 #include "VkImageBundle.h"
 #include "VkSwapchainImage.h"
 
 
-class VkSwapchainImageFactory : public VkImageFactory
+class VkSwapchainImageFactory  
 {
 public:
 
-	VkSwapchainImageFactory(VkGraphicsComponent &_gfx);
-	virtual ~VkSwapchainImageFactory() override = default;
+	VkSwapchainImageFactory(VkGraphicsComponent &gfx_);
+	~VkSwapchainImageFactory() = default;
 
 	VkSwapchainImageFactory() = delete;
 	VkSwapchainImageFactory(const VkSwapchainImageFactory &) = delete;
@@ -47,11 +46,27 @@ public:
 	};
 
 
-
-
 	//VkBufferBundle is copyable without risks of memory leak
-	[[nodiscard]]	VkImageBundle ProduceImageBundle(const ParameterPack& para_pack) const;
-	[[nodiscard]]	std::shared_ptr<VkImageBundle> ProduceImageBundlePtr(const ParameterPack& para_pack)const;
+	[[nodiscard]]	VkImageBundle ProduceImageBundle(const ParameterPack &para_pack) const;
+	[[nodiscard]]	std::shared_ptr<VkImageBundle> ProduceImageBundlePtr(const ParameterPack &para_pack)const;
+private:
 
+	VkGraphicsComponent &     gfx;
+	const VkDeviceManager &   device_manager;
+	const VkSwapchainManager &swapchain_manager;
 
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+

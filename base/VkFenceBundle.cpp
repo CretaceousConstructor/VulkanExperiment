@@ -6,8 +6,8 @@ VkFenceBundle::VkFenceBundle(const VkDeviceManager &_device_manager, uint32_t _b
 {
 	VkFenceCreateInfo fence_CI{};
 	fence_CI.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-
-	if (option | Vk::SyncObjCreateOption::Signaled)
+	fence_CI.pNext = nullptr;
+	if (option & Vk::SyncObjCreateOption::Signaled)
 	{
 		fence_CI.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 	}
@@ -22,12 +22,12 @@ VkFenceBundle::VkFenceBundle(const VkDeviceManager &_device_manager, uint32_t _b
 	}
 }
 
-VkFence VkFenceBundle::operator[](uint8_t num) const
+VkFence VkFenceBundle::operator[](size_t num) const
 {
 	return syn_objects_bundle[num];
 }
 
-const VkFence &VkFenceBundle::GetOne(uint8_t num) const
+const VkFence &VkFenceBundle::GetOne(size_t num) const
 {
 	return syn_objects_bundle[num];
 }

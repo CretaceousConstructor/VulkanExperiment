@@ -3,50 +3,30 @@
 #include "VkShaderManager.h"
 #include <vector>
 
-
 class VkPipelineParameterPack
 {
   public:
-	VkPipelineParameterPack(VkGraphicsComponent& _gfx);
+	VkPipelineParameterPack(VkGraphicsComponent &_gfx);
 	void SetShaderInfo(const std::vector<ShaderMetaInfo> &_shader_infos);
 	void RestoreToDefaultState();
 
-	struct Vertex
+	struct VkSpecializationInfoPack
 	{
-		glm::vec3                                             pos;
-		glm::vec3                                             normal;
-		glm::vec2                                             uv;
-		static std::vector<VkVertexInputAttributeDescription> GetAttributeDescriptions()
-		{
-			std::vector<VkVertexInputAttributeDescription> attributeDescriptions{};
-			attributeDescriptions.resize(3);
-
-			attributeDescriptions[0].binding  = 0;
-			attributeDescriptions[0].location = 0;
-			attributeDescriptions[0].format   = VK_FORMAT_R32G32B32_SFLOAT;
-			attributeDescriptions[0].offset   = offsetof(Vertex, pos);
-
-			attributeDescriptions[1].binding  = 0;
-			attributeDescriptions[1].location = 1;
-			attributeDescriptions[1].format   = VK_FORMAT_R32G32B32_SFLOAT;
-			attributeDescriptions[1].offset   = offsetof(Vertex, normal);
-
-			attributeDescriptions[2].binding  = 0;
-			attributeDescriptions[2].location = 2;
-			attributeDescriptions[2].format   = VK_FORMAT_R32G32_SFLOAT;
-			attributeDescriptions[2].offset   = offsetof(Vertex, uv);
-
-			return attributeDescriptions;
-		}
+		VkSpecializationInfo  sp_info;
+		VkShaderStageFlagBits shader_stage;
 	};
+	std::vector<ShaderMetaInfo> shader_infos;
 
-	std::vector<ShaderMetaInfo>                    shader_infos;
+
+
+
+
+	std::vector<VkSpecializationInfoPack>                     specialization_infos;
+	std::vector<VkPipelineShaderStageCreateInfo>              shader_stage_CI;
 	std::vector<VkVertexInputBindingDescription>              VIBDS;
 	std::pair<std::vector<VkViewport>, std::vector<VkRect2D>> view_port_scissor_pair;
 	std::vector<VkPipelineColorBlendAttachmentState>          color_blend_attachments;
 	std::vector<VkDynamicState>                               dynamic_states;
-
-
 
 	VkPipelineDynamicStateCreateInfo       dynamic_state_CI{};
 	VkPipelineVertexInputStateCreateInfo   vertex_input_state_CI{};
@@ -57,11 +37,10 @@ class VkPipelineParameterPack
 	VkPipelineDepthStencilStateCreateInfo  depth_stencil_CI{};
 	VkPipelineColorBlendStateCreateInfo    color_blend_state_CI{};
 
+	VkRenderPass render_pass{nullptr};
+	VkPipelineLayout pipeline_layout{nullptr};
 
-private:
-	VkGraphicsComponent &gfx;
-  const VkSwapchainManager &swapchain_manager;
   private:
-	bool state_has_changed = false;
-
+	VkGraphicsComponent &     gfx;
+	const VkSwapchainManager &swapchain_manager;
 };

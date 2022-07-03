@@ -7,7 +7,7 @@ VkShaderManager::VkShaderManager(VkGraphicsComponent &_gfx) :
 	
 }
 
-	VkShaderManager::~VkShaderManager()
+VkShaderManager::~VkShaderManager()
 {
 
 	for (const auto& shader :shaders_dict)
@@ -20,7 +20,7 @@ VkShaderManager::VkShaderManager(VkGraphicsComponent &_gfx) :
 
 
 
-VkPipelineShaderStageCreateInfo VkShaderManager::GetShader(const ShaderMetaInfo &shader_meta_info) const
+VkPipelineShaderStageCreateInfo VkShaderManager::GetShader(const ShaderMetaInfo &shader_meta_info) 
 {
 
 
@@ -30,11 +30,9 @@ VkPipelineShaderStageCreateInfo VkShaderManager::GetShader(const ShaderMetaInfo 
 	}
 
 	const std::vector<char> shader_code = ReadFile(shader_meta_info.shader_path);
-	const VkShaderModule shader_module       = CreateShaderModule(shader_code);
+	VkShaderModule shader_module       = CreateShaderModule(shader_code);
 
-	//TODO:
-	//这里报错是因为没有实现hash函数
-	//shaders_dict.insert({shader_meta_info, shader_module});
+	
 	VkPipelineShaderStageCreateInfo  shader_stage_create_info{};
 	shader_stage_create_info        = VkPipelineShaderStageCreateInfo{};
 	shader_stage_create_info.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -44,10 +42,31 @@ VkPipelineShaderStageCreateInfo VkShaderManager::GetShader(const ShaderMetaInfo 
 
 	//TODO:
 	//这里报错是因为没有实现hash函数
-	//shader_stage_CI.insert({shader_meta_info,shader_stage_create_info});
+	shader_stage_CI.insert({shader_meta_info, shader_stage_create_info});
+	shaders_dict.insert({shader_meta_info,shader_module});
+
+
+
 	return shader_stage_create_info;
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 std::vector<char> VkShaderManager::ReadFile(const std::string &filename)

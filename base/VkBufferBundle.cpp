@@ -1,8 +1,8 @@
 #include "VkBufferBundle.h"
-VkBufferBundle::VkBufferBundle(std::vector<std::shared_ptr<VkBufferBase>> _uniform_buffers, uint32_t bundle_size)
+VkBufferBundle::VkBufferBundle(std::vector<std::shared_ptr<VkBufferBase>> buffers_, uint32_t bundle_size)
     :
     bundle_count(bundle_size),
-    buffers(std::move(_uniform_buffers))
+    buffers(std::move(buffers_))
 {
 	
 }
@@ -22,7 +22,7 @@ VkBufferBase &VkBufferBundle::GetOne(uint32_t index) const
 	return *buffers[index];
 }
 
-const std::vector<std::shared_ptr<VkBufferBase>> &VkBufferBundle::GetUniformBuffersArray() const
+const std::vector<std::shared_ptr<VkBufferBase>> &VkBufferBundle::GetBufferArray() const
 
 {
 	return buffers;

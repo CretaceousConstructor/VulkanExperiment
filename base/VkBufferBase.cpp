@@ -1,7 +1,7 @@
 #include "VkBufferBase.h"
 
 VkBufferBase::VkBufferBase(VkGraphicsComponent &_gfx, const VkBuffer _buffer, const VkDeviceMemory _buffer_memory, VkDeviceSize _size) :
-    gfx(_gfx), device_manager(gfx.DeviceMan()), buffer(_buffer), buffer_memory(_buffer_memory), size_of_buffer(_size) 
+    gfx(_gfx), device_manager(gfx.DeviceMan()), buffer(_buffer), buffer_memory(_buffer_memory), size_of_buffer(_size)
 {
 }
 
@@ -34,4 +34,10 @@ void VkBufferBase::MapMemory(VkDeviceSize mapped_region_starting_offset, VkDevic
 	vkMapMemory(device_manager.GetLogicalDevice(), buffer_memory, mapped_region_starting_offset, mapped_region_size, flgs, &data);
 	memcpy(data, outside_data_to_be_mapped, outside_data_size);
 	vkUnmapMemory(device_manager.GetLogicalDevice(), buffer_memory);
+}
+
+const VkBuffer& VkBufferBase::GetBuffer() const
+
+{
+	return buffer;
 }

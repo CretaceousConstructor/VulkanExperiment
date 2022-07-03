@@ -1,17 +1,15 @@
 #include "VkSwapchainImageFactory.h"
 
-VkSwapchainImageFactory::VkSwapchainImageFactory(VkGraphicsComponent &_gfx)
+VkSwapchainImageFactory::VkSwapchainImageFactory(VkGraphicsComponent &gfx_)
+	:
+    gfx(gfx_),device_manager(gfx.DeviceMan()),swapchain_manager(gfx.SwapchainMan())
 
-:
-    VkImageFactory(_gfx)
 {
 }
 
 
 VkImageBundle VkSwapchainImageFactory::ProduceImageBundle(const ParameterPack &para_pack)const
 {
-
-
 	const auto images = swapchain_manager.GetSwapChainImages();
 
 
@@ -38,17 +36,16 @@ VkImageBundle VkSwapchainImageFactory::ProduceImageBundle(const ParameterPack &p
 	return VkImageBundle{image_wrappers, static_cast<size_t>(images.size())};
 }
 
-std::shared_ptr<VkImageBundle> VkSwapchainImageFactory::ProduceImageBundlePtr(const ParameterPack&para_pack)const
+std::shared_ptr<VkImageBundle> VkSwapchainImageFactory::ProduceImageBundlePtr(const ParameterPack &para_pack)const
 {
 
 
 	const auto images = swapchain_manager.GetSwapChainImages();
 
-
 	std::vector<std::shared_ptr<VkImageBase>> image_wrappers;
 
 	std::vector<VkImageView> temp_image_views;
-	temp_image_views.reserve(images.size());
+	temp_image_views.resize(images.size());
 
 	for (size_t i = 0; i < images.size(); i++)
 	{
@@ -68,5 +65,19 @@ std::shared_ptr<VkImageBundle> VkSwapchainImageFactory::ProduceImageBundlePtr(co
 
 	//VkImageBundle
 	return std::make_shared<VkImageBundle>(image_wrappers, static_cast<uint32_t>(images.size()));
-
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

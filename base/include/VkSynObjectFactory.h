@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include "Vk.h"
 #include "VkGraphicsComponent.h"
 #include "VkSemaphoreBundle.h"
@@ -12,7 +11,8 @@ class VkSynObjectFactory
 
 	VkSynObjectFactory(VkGraphicsComponent & _gfx);
 
-	[[nodiscard]] std::shared_ptr<VkSemaphoreBundle> GetSemaphoreBundle(uint32_t _bundle_size, Vk::SyncObjCreateOption option = Vk::Unsignaled) const;
+	//vkCreateSemaphore: parameter pCreateInfo->flags must be 0. The Vulkan spec states: flags must be 0
+	[[nodiscard]] std::shared_ptr<VkSemaphoreBundle> GetSemaphoreBundle(uint32_t _bundle_size ) const;
 	[[nodiscard]] std::shared_ptr<VkFenceBundle>     GetFenceBundle(uint32_t _bundle_size,  Vk::SyncObjCreateOption option = Vk::Unsignaled) const;
 
 

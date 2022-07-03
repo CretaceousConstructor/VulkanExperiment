@@ -103,6 +103,7 @@ VkRenderpassWrapper::VkRenderpassWrapper(std::string _renderpass_name, std::vect
 
 
 	//frame buffers
+	frame_buffers.resize(swapchain_manager.GetSwapImageCount());
 	for (size_t i = 0; i < swapchain_manager.GetSwapImageCount(); i++)
 	{
 		std::vector<VkImageView> attachments_view;

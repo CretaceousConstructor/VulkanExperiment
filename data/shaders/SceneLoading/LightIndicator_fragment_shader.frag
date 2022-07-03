@@ -9,6 +9,8 @@ layout (location = 0) out vec4 outFragColor;
 
 void main() 
 {
+
+	//use const color for light indicator
 	outFragColor = vec4(1.f,1.f,1.f,1.f);
 }
 

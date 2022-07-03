@@ -1,13 +1,21 @@
 #include "VkImageFactory.h"
-VkImageFactory::VkImageFactory(VkGraphicsComponent& _gfx):
-    gfx(_gfx),
-	device_manager(gfx.DeviceMan()),
-	swapchain_manager(gfx.SwapchainMan()),
-	command_manager(gfx.CommandMan()),
-	window(gfx.Window())
-{
-}
 
+
+
+//VkImageFactory::VkImageFactory(VkGraphicsComponent& _gfx):
+//    gfx(_gfx),
+//	device_manager(gfx.DeviceMan()),
+//	swapchain_manager(gfx.SwapchainMan()),
+//	command_manager(gfx.CommandMan()),
+//	window(gfx.Window())
+//{
+//
+//
+//}
+//
+//
+//
+//VkImageFactory::~VkImageFactory() = default;
 
 //std::shared_ptr<VkImageBase> VkImageFactory::ProduceImage()
 //{

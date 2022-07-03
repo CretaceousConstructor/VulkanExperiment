@@ -23,7 +23,7 @@ class VkShaderManager
 	VkShaderManager(VkShaderManager &&rhs) = delete;
 	VkShaderManager &operator=(VkShaderManager &&) = delete;
 
-	[[nodiscard]] VkPipelineShaderStageCreateInfo GetShader(const ShaderMetaInfo& shader_meta_info) const;
+	[[nodiscard]] VkPipelineShaderStageCreateInfo GetShader(const ShaderMetaInfo& shader_meta_info) ;
 	//[[nodiscard]] VkPipelineShaderStageCreateInfo GetVkPipelineShaderStageCreateInfo() const;
 
 
@@ -36,7 +36,7 @@ class VkShaderManager
 	VkGraphicsComponent &           gfx;
 	const VkDeviceManager &device_manager;
 private:
-	const std::string shader_entry_name{"main"};
+	inline static const std::string shader_entry_name{"main"};
 
   private:
 

@@ -25,6 +25,7 @@ void VkPipelineManager::AddPipeline(const VkPipelineParameterPack &para_pack, co
 {
 	const VkPipelineLayout pipeline_layout = pipline_layouts.at(pipe_meta_info.pipelayout_id);
 	piplines.insert({pipe_meta_info, pipeline_builder.BuildPipeline(para_pack, render_pass, pipeline_layout, pipe_meta_info)});
+
 }
 
 void VkPipelineManager::AddPipelineLayout(const PipelineLayoutMetaInfo &pipe_layout_info, const std::vector<VkDescriptorSetLayout> &des_layouts)
@@ -53,4 +54,14 @@ VkPipeline VkPipelineManager::GetPipeline(const PipelineMetaInfo &meta_info) con
 VkPipelineLayout VkPipelineManager::GetPipelineLayout(const PipelineLayoutMetaInfo &meta_info) const
 {
 	return pipline_layouts.at(meta_info);
+}
+
+VkPipelineBuilder & VkPipelineManager::GetPipelineBuilder()
+{
+	return pipeline_builder;
+}
+
+VkShaderManager & VkPipelineManager::GetShaderFactory()
+{
+	return shader_factory;
 }

@@ -8,12 +8,13 @@
 #include "VkSynObjectFactory.h"
 #include "RenderingMetaInfo.h"
 #include "VkRenderpassBase.h"
-#include "VkTexture.h"
 #include "Renderpass0.h"
-#include  "VkRenderpassBase.h"
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtx/hash.hpp>
+
+//#include "VkTexture.h"
+//#include  "VkRenderpassBase.h"
+//#include <glm/glm.hpp>
+//#include <glm/gtc/matrix_transform.hpp>
+//#include <glm/gtx/hash.hpp>
 #include <memory>
 #include <vector>
 
@@ -41,21 +42,10 @@ class KTXTextureRenderer : public BaseRenderer
 
 	void CreateAttachmentImages() override;
 	void CreateTextureImages() override;
-	//void CreateDepthImages() override;
-
-	//void CreateRenderPass() override;
-
 	void CreateUniformBuffer() override;
 
-	//void CreateDescriptorSetLayout() override;
-	void CreateDescriptorPool() override;
-	//void CreateDescriptorSets() override;
-
-	//void CreateGraphicsPipelineLayout() override;
-	//void CompileShaders() override;
-	//void CreateGraphicsPipeline() override;
-
 	void PrepareModels() override;
+	void CreateDescriptorPool() override;
 
 
 	void RenderpassInit() override;
@@ -63,11 +53,8 @@ class KTXTextureRenderer : public BaseRenderer
 
 
 	void InitSynObjects() override;
-
 	void CommandBufferRecording() override;
-
-
-	void UpdateUniformBuffer(uint32_t currentImage) override;
+	void UpdateUniformBuffer(size_t currentImage) override;
 
 
 
@@ -84,7 +71,7 @@ class KTXTextureRenderer : public BaseRenderer
 private:
 	//RENDERPASS MAN
 	VkRenderpassManager               render_pass_manager;
-	KtxRenderer::RenderpassCommonResources common_resources;
+	//KtxRenderer::RenderpassCommonResources common_resources;
 
 	//RENDERPASS
 	std::vector<std::shared_ptr<VkRenderpassBase>> renderpasses;

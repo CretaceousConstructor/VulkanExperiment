@@ -1,10 +1,12 @@
 #include "Renderpass0.h"
+//using namespace SceneLoading
 
 Renderpass0::Renderpass0(VkGraphicsComponent &gfx_, VkRenderpassManager &renderpass_manager_, KtxRenderer::RenderpassCommonResources &common_resources_) :
     VkRenderpassBase(gfx_, renderpass_manager_),
     common_resources(common_resources_),
     swapchain_manager(gfx_.SwapchainMan())
 {
+	this->Init();
 }
 
 void Renderpass0::CreateDescriptorSetLayout()
@@ -63,21 +65,21 @@ void Renderpass0::CreateRenderPass()
 	color_attachment.clear_value.color    = {0.0f, 0.0f, 0.0f, 1.0f};
 
 	//Depth attachment index 1
-	VkAttachmentInfo depth_attachment_temp{common_resources.depth_attachments->GetImagesArray()};
-	auto &           attachment_dec_depth          = depth_attachment_temp.attachment_description;
-	attachment_dec_depth.format                    = swapchain_manager.FindDepthFormat();
-	attachment_dec_depth.samples                   = VK_SAMPLE_COUNT_1_BIT;
-	attachment_dec_depth.loadOp                    = VK_ATTACHMENT_LOAD_OP_CLEAR;
-	attachment_dec_depth.storeOp                   = VK_ATTACHMENT_STORE_OP_STORE;
-	attachment_dec_depth.stencilLoadOp             = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-	attachment_dec_depth.stencilStoreOp            = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-	attachment_dec_depth.initialLayout             = VK_IMAGE_LAYOUT_UNDEFINED;
-	attachment_dec_depth.finalLayout               = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-	depth_attachment_temp.attachment_index         = 1;
-	depth_attachment_temp.clear_value.depthStencil = {1.0f, 0};
+	VkAttachmentInfo depth_attachment{common_resources.depth_attachments->GetImagesArray()};
+	auto &           attachment_dec_depth     = depth_attachment.attachment_description;
+	attachment_dec_depth.format               = swapchain_manager.FindDepthFormat();
+	attachment_dec_depth.samples              = VK_SAMPLE_COUNT_1_BIT;
+	attachment_dec_depth.loadOp               = VK_ATTACHMENT_LOAD_OP_CLEAR;
+	attachment_dec_depth.storeOp              = VK_ATTACHMENT_STORE_OP_STORE;
+	attachment_dec_depth.stencilLoadOp        = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+	attachment_dec_depth.stencilStoreOp       = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	attachment_dec_depth.initialLayout        = VK_IMAGE_LAYOUT_UNDEFINED;
+	attachment_dec_depth.finalLayout          = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+	depth_attachment.attachment_index         = 1;
+	depth_attachment.clear_value.depthStencil = {1.0f, 0};
 
 	//TODO:COPY CONTROL
-	const std::vector<VkAttachmentInfo> attachments{color_attachment, depth_attachment_temp};
+	const std::vector<VkAttachmentInfo> attachments{color_attachment, depth_attachment};
 
 	//-------------------------------------------------------------------------------------
 	const std::vector<VkSubpassDependency> dependencies{};
@@ -158,45 +160,46 @@ void Renderpass0::CreateGraphicsPipeline()
 	};
 	para_pack.shader_infos = shader_infos;
 	//const PipelineMetaInfo meta_info{.pass = 0, .subpass = 0};
+
 	renderpass_manager.AddPipeline(para_pack, KtxRenderer::pipe_0_0);
 }
 
-VkRenderPassBeginInfo Renderpass0::StartRenderpass(uint32_t index) const
+void Renderpass0::BeginRenderpass(size_t index, VkCommandBuffer command_buffer) const
 {
-
-
-
-	VkRenderPassBeginInfo renderPassInfo{};        //开始信息这是，注意
-	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+	VkRenderPassBeginInfo render_pass_begin_info{};        //开始信息这是，注意
+	render_pass_begin_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 
 	const auto &renderpass = (renderpass_manager.GetRenderpass(pass_num));
 
+	render_pass_begin_info.renderPass  = renderpass.GetRenderpass();
+	render_pass_begin_info.framebuffer = renderpass.GetFrameBuffers()[index];
 
-	renderPassInfo.renderPass  = renderpass.GetRenderpass();
-	renderPassInfo.framebuffer = renderpass.GetFrameBuffers()[index];
-
-	renderPassInfo.renderArea.offset = {0, 0};
-	renderPassInfo.renderArea.extent = VkExtent2D{swapchain_manager.GetSwapChainImageExtent().width, swapchain_manager.GetSwapChainImageExtent().height};
-
+	render_pass_begin_info.renderArea.offset = {0, 0};
+	render_pass_begin_info.renderArea.extent = VkExtent2D{swapchain_manager.GetSwapChainImageExtent().width, swapchain_manager.GetSwapChainImageExtent().height};
 
 	std::vector<VkClearValue> clear_values;
 	clear_values.resize(renderpass.attachment_infos.size());
 
-	for (const auto& attachment :renderpass.attachment_infos)
+	for (const auto &attachment : renderpass.attachment_infos)
 	{
-		const auto attach_index = attachment.attachment_index;
-		clear_values[attach_index] = attachment.clear_value; 
+		const auto attach_index    = attachment.attachment_index;
+		clear_values[attach_index] = attachment.clear_value;
 	}
-
-
 
 	//std::array<VkClearValue, 2> clearValues{};
 	//clearValues[0].color        = {0.0f, 0.0f, 0.0f, 1.0f};
 	//clearValues[1].depthStencil = {1.0f, 0};
 
-	renderPassInfo.clearValueCount = static_cast<uint32_t>(clear_values.size());
-	renderPassInfo.pClearValues    = clear_values.data();
+	render_pass_begin_info.clearValueCount = static_cast<uint32_t>(clear_values.size());
+	render_pass_begin_info.pClearValues    = clear_values.data();
+
+	vkCmdBeginRenderPass(command_buffer, &render_pass_begin_info, VK_SUBPASS_CONTENTS_INLINE);        //
+}
 
 
-	return renderPassInfo;
+void Renderpass0::RenderpassExecute(VkCommandBuffer command_buffer)
+{
+
+
+
 }

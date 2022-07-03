@@ -1,46 +1,12 @@
 #include "VkBufferFactory.h"
 
 VkBufferFactory::VkBufferFactory(VkGraphicsComponent &_gfx) :
-    gfx(_gfx), device_manager(gfx.DeviceMan()), window(gfx.Window()), temp_buffer(nullptr), temp_buffer_memory(nullptr)
+    gfx(_gfx), device_manager(gfx.DeviceMan())
 {
 }
 
-std::shared_ptr<VkBufferBase> VkBufferFactory::ProduceBuffer(VkDeviceSize buffer_size, VkMemoryPropertyFlags properties)
+
+void VkBufferFactory::BindBufferToMemo(VkBuffer buffer, VkDeviceMemory memory,VkDeviceSize offset) const
 {
-
-	result.reset();
-	temp_buffer_size       = buffer_size;
-	temp_properties = properties;
-	if (!factory_state_modified)
-	{
-		RestoreToDefaultState();
-	}
-	BuildBuffer();
-	BuildMemory();
-	BindBufferToMemo();
-	Assemble();
-	RestoreToDefaultState();
-	return result;
+	vkBindBufferMemory(device_manager.GetLogicalDevice(), buffer, memory, offset);
 }
-
-VkBufferBundle VkBufferFactory::ProduceBufferBundle(VkDeviceSize buffer_size, uint32_t bundle_size, VkMemoryPropertyFlags memory_properties)
-{
-	std::vector<std::shared_ptr<VkBufferBase>> result_bundle;
-	for (size_t i = 0; i < bundle_size; i++)
-	{
-		result_bundle.push_back(ProduceBuffer(buffer_size, memory_properties));
-	}
-	return {std::move(result_bundle), bundle_size};
-}
-
-
-std::shared_ptr<VkBufferBundle> VkBufferFactory::ProduceBufferBundlePtr(VkDeviceSize buffer_size, uint32_t bundle_size, VkMemoryPropertyFlags memory_properties)
-{
-	std::vector<std::shared_ptr<VkBufferBase>> result_bundle;
-	for (size_t i = 0; i < bundle_size; i++)
-	{
-		result_bundle.push_back(ProduceBuffer(buffer_size, memory_properties));
-	}
-	return std::make_shared<VkBufferBundle>(std::move(result_bundle), bundle_size);
-}
-

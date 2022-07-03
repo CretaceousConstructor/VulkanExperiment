@@ -27,6 +27,11 @@ class VkPipelineManager
 	[[nodiscard]] VkPipeline GetPipeline(const PipelineMetaInfo &meta_info) const;
 
 	[[nodiscard]]VkPipelineLayout GetPipelineLayout(const PipelineLayoutMetaInfo &meta_info) const;
+
+
+	VkPipelineBuilder& GetPipelineBuilder();
+	VkShaderManager &  GetShaderFactory();
+
   private:
 	VkGraphicsComponent &gfx;
 	const VkDeviceManager &    device_manager;

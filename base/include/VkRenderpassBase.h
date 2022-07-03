@@ -10,7 +10,6 @@ class VkRenderpassBase
 	                 VkRenderpassManager &renderpass_manager_);
 	virtual ~VkRenderpassBase()                = default;
 
-
 	VkRenderpassBase()                         = delete;
 	VkRenderpassBase(const VkRenderpassBase &) = delete;
 	VkRenderpassBase &operator=(const VkRenderpassBase &) = delete;
@@ -18,7 +17,10 @@ class VkRenderpassBase
 	VkRenderpassBase &operator=(VkRenderpassBase &&) = delete;
 
 	void Init();
-
+	virtual void BeginRenderpass(const std::vector<VkCommandBuffer>& command_buffers) const = 0;
+	virtual void RenderpassExecute(const std::vector<VkCommandBuffer>& command_buffers) = 0;
+	void         EndRenderpass(const std::vector<VkCommandBuffer>& command_buffers)const;
+protected:
 	virtual void CreateDescriptorSetLayout() = 0;
 	virtual void CreateDescriptorSets()      = 0;
 
@@ -27,8 +29,6 @@ class VkRenderpassBase
 	virtual void CreateGraphicsPipelineLayout() = 0;
 	virtual void CompileShaders()               = 0;
 	virtual void CreateGraphicsPipeline()       = 0;
-
-	virtual VkRenderPassBeginInfo StartRenderpass(uint32_t index) const = 0;
 
 
   protected:

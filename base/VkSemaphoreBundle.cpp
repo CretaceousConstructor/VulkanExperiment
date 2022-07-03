@@ -1,17 +1,13 @@
 #include "VkSemaphoreBundle.h"
-
-VkSemaphoreBundle::VkSemaphoreBundle(const VkDeviceManager &_device_manager, uint32_t _bundle_size,  Vk::SyncObjCreateOption option) :
+//vkCreateSemaphore: parameter pCreateInfo->flags must be 0. The Vulkan spec states: flags must be 0
+VkSemaphoreBundle::VkSemaphoreBundle(const VkDeviceManager &_device_manager, uint32_t _bundle_size) :
     VkSynObjectBundleBase(_bundle_size),
     device_manager(_device_manager)
 {
 	VkSemaphoreCreateInfo semaphore_CI{};
 	semaphore_CI.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-
-	if (option | Vk::SyncObjCreateOption::Signaled)
-	{
-	
-		semaphore_CI.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-	}
+	semaphore_CI.pNext = nullptr;
+	semaphore_CI.flags = 0;
 
 	syn_objects_bundle.resize(bundle_size);
 	for (auto &semaphore : syn_objects_bundle)

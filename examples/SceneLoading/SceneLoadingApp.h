@@ -7,7 +7,7 @@ class SceneLoadingApp : public App
 {
   public:
 	SceneLoadingApp()  = default;
-	~SceneLoadingApp() = default;
+	~SceneLoadingApp() override= default ;
 
   protected:
 	void InitRenderer() override;

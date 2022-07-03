@@ -19,6 +19,9 @@
     <Filter Include="Shaderbat Files">
       <UniqueIdentifier>{c663c0ae-dff1-42c0-a575-4b7138b8c207}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Renderpasses">
+      <UniqueIdentifier>{9af3ab35-8b5b-40d5-b3b7-0c7a41381b87}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SceneLoadingApp.cpp">
@@ -30,6 +33,12 @@
     <ClCompile Include="SceneLoadingRenderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Renderpass0.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderingMetaInfo.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SceneLoadingApp.h">
@@ -37,6 +46,12 @@
     </ClInclude>
     <ClInclude Include="SceneLoadingRenderer.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderingMetaInfo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderpass0.h">
+      <Filter>Header Files\Renderpasses</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

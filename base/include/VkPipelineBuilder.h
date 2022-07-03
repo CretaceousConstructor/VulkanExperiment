@@ -20,7 +20,7 @@ class VkPipelineBuilder
 
   public:
 	VkPipeline BuildPipeline(const VkPipelineParameterPack &para_pack, const VkRenderPass render_pass, VkPipelineLayout pipeline_layout, const PipelineMetaInfo &pipe_meta_info) const;
-
+	VkPipeline BuildPipeline(const VkPipelineParameterPack &para_pack, const uint32_t supass) const;
 
   private:
 	VkGraphicsComponent &gfx;

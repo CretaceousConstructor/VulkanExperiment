@@ -1,24 +1,20 @@
 #pragma once
 
 #include "VkBufferBase.h"
+#include "VkGraphicsComponent.h"
+#include <vector>
 
-//class VkStagingBuffer :public VkBufferBase
+////TODO:把cpu端的数据整合到这个类里面
+//class VkStagingBuffer : public VkBufferBase
 //{
+//  public:
+//	VkStagingBuffer(VkGraphicsComponent &_gfx, const VkBuffer _buffer, const VkDeviceMemory _buffer_memory, VkDeviceSize _size);
 //
-//
-//public:
-//
-//
-//	VkStagingBuffer(VkGraphicsComponent &gfx_, const VkBuffer buffer_, const VkDeviceMemory buffer_memory_, VkDeviceSize size_);
-//	~VkStagingBuffer() override = default;
-//
+//	~VkStagingBuffer() override              = default;
 //	VkStagingBuffer(const VkStagingBuffer &) = delete;
 //	VkStagingBuffer &operator=(const VkStagingBuffer &) = delete;
 //	VkStagingBuffer(VkStagingBuffer &&)                 = delete;
 //	VkStagingBuffer &operator=(VkStagingBuffer &&) = delete;
 //
-//	//void MapMemory(VkDeviceSize mapped_region_starting_offset, VkDeviceSize mapped_region_size, void const *outside_data_to_be_mapped, size_t outside_data_size, VkMemoryMapFlags flgs = 0) const;
-//
-//
-//
 //};
+

@@ -18,20 +18,21 @@ void BaseRenderer::RenderingPreparation()
 	this->SetUpUserInput();
 	//Init Camera
 	this->CreateCamera();
-
 	//**************COMMON RESOURCES***************
 	//Images
 	this->CreateAttachmentImages();
 	this->CreateTextureImages();
 	//Buffers
 	this->CreateUniformBuffer();
-	//descriptor pool
+
+	//DESCRIPTOR POOL
 	this->CreateDescriptorPool();
-	//Models
-	this->PrepareModels();
 
 	//*************RENDERPASS INIT***************
 	this->RenderpassInit();
+	//*************MODEL INIT***************
+	//Models
+	this->PrepareModels();
 
 	//*************COMMAND BUFFER RECORDING***************
 	//prepare sync objects

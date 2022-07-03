@@ -26,22 +26,22 @@ void VkPipelineParameterPack::RestoreToDefaultState()
 	dynamic_states.clear();
 
 
-	//这里不知道怎么处理这个vertex_input_state_CI
-	////TODO:需要更多的abstraction
-	static VkVertexInputBindingDescription bindingDescription0{};
-	bindingDescription0.binding   = 0;
-	bindingDescription0.stride    = sizeof(Vertex);
-	bindingDescription0.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+	////这里不知道怎么处理这个vertex_input_state_CI
+	//////TODO:需要更多的abstraction
+	//static VkVertexInputBindingDescription bindingDescription0{};
+	//bindingDescription0.binding   = 0;
+	//bindingDescription0.stride    = sizeof(Vertex);
+	//bindingDescription0.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
-	static const std::vector<VkVertexInputBindingDescription> VIBDS = {bindingDescription0};
+	//static const std::vector<VkVertexInputBindingDescription> VIBDS = {bindingDescription0};
 
-	static const auto attributeDescriptions = Vertex::GetAttributeDescriptions();
+	//static const auto attributeDescriptions = Vertex::GetAttributeDescriptions();
 
-	vertex_input_state_CI.sType                           = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-	vertex_input_state_CI.vertexBindingDescriptionCount   = (uint32_t) VIBDS.size();
-	vertex_input_state_CI.pVertexBindingDescriptions      = VIBDS.data();        // Optional
-	vertex_input_state_CI.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
-	vertex_input_state_CI.pVertexAttributeDescriptions    = attributeDescriptions.data();        // Optional
+	//vertex_input_state_CI.sType                           = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
+	//vertex_input_state_CI.vertexBindingDescriptionCount   = (uint32_t) VIBDS.size();
+	//vertex_input_state_CI.pVertexBindingDescriptions      = VIBDS.data();        // Optional
+	//vertex_input_state_CI.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+	//vertex_input_state_CI.pVertexAttributeDescriptions    = attributeDescriptions.data();        // Optional
 
 
 	input_assembly_state_CI.sType                  = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -138,5 +138,7 @@ void VkPipelineParameterPack::RestoreToDefaultState()
 	depth_stencil_CI.stencilTestEnable     = VK_FALSE;
 	//depth_stencil_CI.front = {}; // Optional
 	//depth_stencil_CI.back = {}; // Optional
+
+
 
 }

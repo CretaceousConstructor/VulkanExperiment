@@ -27,7 +27,13 @@ class VkCommandManager
 	static void            EndSingleTimeCommands(const VkCommandPool &command_pool, const  VkDevice &device, const VkCommandBuffer command_buffer, const VkQueue &command_quque);
 	static void            CreateCommandBuffer(const VkDevice &device, const VkCommandPool &commandpool, VkCommandBuffer &CommandBuffer, VkCommandBufferLevel level);
 
+	static void BeginCommandBuffer(	const std::vector<VkCommandBuffer> & command_buffers);
+	static void EndCommandBuffer(	const std::vector<VkCommandBuffer> & command_buffers);
 
+
+private:
+	VkDeviceManager &device_manager;
+public:
 	//COMMAND POOL
 	const VkCommandPool& graphics_command_pool;
 	const VkCommandPool& transfer_command_pool;
@@ -39,8 +45,6 @@ class VkCommandManager
 	[[nodiscard]]	const std::vector<VkCommandBuffer> &GetTransferCommandBuffers() const;
 
 
-private:
-	VkDeviceManager &device_manager;
 
 private:
 	//COMMAND BUFFERS

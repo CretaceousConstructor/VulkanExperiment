@@ -28,6 +28,8 @@ class VkRenderpassManager
 	[[nodiscard]] VkPipeline       GetPipeline(const PipelineMetaInfo &meta_info) const;
 	[[nodiscard]] VkPipelineLayout GetPipelineLayout(const PipelineLayoutMetaInfo &meta_info) const;
 
+	[[nodiscard]] VkPipelineBuilder &GetPipelineBuilder();
+
 	VkRenderpassWrapper &                             GetRenderpass(uint32_t pass);
 	[[nodiscard]] const std::vector<VkDescriptorSet> &GetDescriptorSetBundle(DescriptorSetMetaInfo meta_info) const;
 
@@ -40,11 +42,12 @@ class VkRenderpassManager
 	 * \return stateless factory
 	 */
 	const VkSubPassFacotry &       GetSubPassFactory();
-	VkUniformBufferFactory &       GetUniformBufferFactory();
+	const VkBufferFactory &        GetBufferFactory();
 	const VkTextureFactory &       GetTextureFactory();
 	const VkSynObjectFactory &     GetSynOjectFactory();
 	const VkDepthImageFactory &    GetDepthImageFactory();
 	const VkSwapchainImageFactory &GetSwapchainImageFactory();
+	const VkModelFactory &         GetModelFactory();
 
   public:
 	VkManagerBundle &GetManagerBundle();

@@ -19,6 +19,8 @@ void App::Run()
 	InitRenderer();        //多态调用，这个函数会给智能指针一个具体的实例对象
 	renderer->RenderingPreparation();
 	MainLoop();
+
+
 }
 
 

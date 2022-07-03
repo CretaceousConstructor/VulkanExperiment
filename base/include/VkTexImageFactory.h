@@ -1,23 +1,22 @@
 #pragma once
 
 #include "VkGeneralPurposeImage.h"
-#include "VkImageFactory.h"
 
-class VkTexImageFactory : public VkImageFactory
+class VkTexImageFactory 
 {
   public:
-	class ParaPack
+	VkTexImageFactory(VkGraphicsComponent &_gfx);
+	class ParameterPack
 	{
 	  public:
 		//a parameter pack contains all info needed to create a Texture image,for multithreading rendering(make this object stateless);
-		ParaPack(std::string _image_path, const VkFormat format, const VkExtent3D &_image_extend) :
+		ParameterPack(std::string _image_path, const VkFormat format, const VkExtent3D &_image_extend) :
 		    image_path(std::move(_image_path)), format_of_image(format), image_extend(_image_extend)
 		{
 			RestoreToDefaultState();
 		}
 
-		ParaPack() = delete;
-
+		ParameterPack() = delete;
 
 		void RestoreToDefaultState()
 		{
@@ -43,6 +42,7 @@ class VkTexImageFactory : public VkImageFactory
 			default_image_CI.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 			default_final_layout           = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
 
+			//=========================memory 
 			default_image_mem_prop_flag = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
 
 			//=========================image view
@@ -72,24 +72,20 @@ class VkTexImageFactory : public VkImageFactory
 		const VkExtent3D  image_extend{};
 	};
 
-	[[nodiscard]] std::shared_ptr<VkGeneralPurposeImage> ProduceImage(const ParaPack &para_pack)const;
+	[[nodiscard]] std::shared_ptr<VkGeneralPurposeImage> ProduceImage(const ParameterPack &para_pack)const;
 
 
-	VkTexImageFactory(VkGraphicsComponent &_gfx);
 
 
   protected:
   private:
-	[[nodiscard]]VkImage BuildImage(const ParaPack &para_pack) const;
-	[[nodiscard]]VkDeviceMemory  CreateAndBindMemory(const ParaPack &para_pack,VkImage temp_image) const;
-	[[nodiscard]]VkImageView    BuildImageView(const ParaPack &para_pack,VkImage temp_image)const;
-	void    TransitionImageLayout(const ParaPack &para_pack,std::shared_ptr<VkGeneralPurposeImage> result)const ;
+	[[nodiscard]]VkImage BuildImage(const ParameterPack &para_pack) const;
+	[[nodiscard]]VkDeviceMemory  CreateAndBindMemory(const ParameterPack &para_pack,VkImage temp_image) const;
+	[[nodiscard]]VkImageView    BuildImageView(const ParameterPack &para_pack,VkImage temp_image)const;
+	void    TransitionImageLayout(const ParameterPack &para_pack,std::shared_ptr<VkGeneralPurposeImage> result)const ;
 
   private:
-	//void RestoreToDefaultState() override;
+	VkGraphicsComponent &gfx;
+	const VkDeviceManager &    device_manager;
 
-  private:
-	//VkImage        temp_image{};
-	//VkDeviceMemory temp_image_mem{};
-	//VkImageView    temp_image_view{};
 };

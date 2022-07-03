@@ -9,7 +9,7 @@ VkImageBase::VkImageBase(VkGraphicsComponent &_gfx   , const VkImage _image, con
 
 {}
 
-
+VkImageBase::~VkImageBase() = default;
 
 
 VkImage VkImageBase::GetImage()const
