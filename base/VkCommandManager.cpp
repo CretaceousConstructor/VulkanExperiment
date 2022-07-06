@@ -85,7 +85,7 @@ void VkCommandManager::CreateCommandBuffer(const VkDevice &device, const VkComma
 	vkAllocateCommandBuffers(device, &BufferAllocInfo, &CommandBuffer);
 }
 
-void VkCommandManager::BeginCommandBuffer(const std::vector<VkCommandBuffer> &command_buffers)
+void VkCommandManager::BeginCommandBuffers(const std::vector<VkCommandBuffer> &command_buffers)
 {
 	for (const auto &command_buffer : command_buffers)
 	{
@@ -100,7 +100,7 @@ void VkCommandManager::BeginCommandBuffer(const std::vector<VkCommandBuffer> &co
 	}
 }
 
-void VkCommandManager::EndCommandBuffer(const std::vector<VkCommandBuffer> &command_buffers)
+void VkCommandManager::EndCommandBuffers(const std::vector<VkCommandBuffer> &command_buffers)
 {
 	for (const auto &command_buffer : command_buffers)
 	{

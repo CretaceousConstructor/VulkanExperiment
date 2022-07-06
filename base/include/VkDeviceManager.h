@@ -1,12 +1,12 @@
 #pragma once
 #include "EngineMarco.h"
 #include "EngineHeader.h"
-#include "VkWindows.h"
 #include "VkExtensionUtility.h"
-#include <optional>
+#include "VkWindows.h"
 #include <list>
-#include<set>
 #include <map>
+#include <optional>
+#include <set>
 class VkDeviceManager
 {
   public:
@@ -18,11 +18,6 @@ class VkDeviceManager
 
 	VkDeviceManager(VkDeviceManager &&) = delete;
 	VkDeviceManager &operator=(VkDeviceManager &&) = delete;
-
-
-
-
-
 
   public:
 	struct SwapChainSupportDetails
@@ -41,7 +36,7 @@ class VkDeviceManager
 		std::optional<uint32_t> graphicsFamily;
 		std::optional<uint32_t> presentFamily;
 		std::optional<uint32_t> transferFamily;
-		bool                    IsComplete() const;
+		[[nodiscard]] bool      IsComplete() const;
 	};
 
   public:
@@ -52,26 +47,25 @@ class VkDeviceManager
 	static uint32_t                FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties, const VkPhysicalDevice &para_physical_device);
 
   public:
-	[[nodiscard]]VkBool32       FormatIsFilterable(VkFormat format, VkImageTiling tiling) const;
-	const VkCommandPool& CreateCommandPool(CommandPoolType type);
-	void           CreateLogicalDeviceAndQueues();
+	[[nodiscard]] VkBool32 FormatIsFilterable(VkFormat format, VkImageTiling tiling) const;
+	const VkCommandPool &  CreateCommandPool(CommandPoolType type);
+	void                   CreateLogicalDeviceAndQueues();
 
-	[[nodiscard]]VkFormat FindSupportedFormat(const std::vector<VkFormat> &candidates, VkImageTiling tiling, VkFormatFeatureFlags features) const;
-	void     CreateBufferAndBindToMemo(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer &buffer, VkDeviceMemory &bufferMemory, VkSharingMode sharingmode, const VkSurfaceKHR &surface) const;
-	void     CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size, const VkCommandBuffer &transfer_command_buffer) const;
+	[[nodiscard]] VkFormat FindSupportedFormat(const std::vector<VkFormat> &candidates, VkImageTiling tiling, VkFormatFeatureFlags features) const;
+	void                   CreateBufferAndBindToMemo(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer &buffer, VkDeviceMemory &bufferMemory, VkSharingMode sharingmode, const VkSurfaceKHR &surface) const;
+	void                   CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size, const VkCommandBuffer &transfer_command_buffer) const;
 
   public:
-	[[nodiscard]]VkDevice         GetLogicalDevice() const;
-	[[nodiscard]]VkPhysicalDevice GetPhysicalDevice() const;
+	[[nodiscard]] VkDevice         GetLogicalDevice() const;
+	[[nodiscard]] VkPhysicalDevice GetPhysicalDevice() const;
 
-	[[nodiscard]]VkQueue GetGraphicsQueue() const;
-	[[nodiscard]]VkQueue GetPresentQueue() const;
-	[[nodiscard]]VkQueue GetTransferQueue() const;
+	[[nodiscard]] VkQueue GetGraphicsQueue() const;
+	[[nodiscard]] VkQueue GetPresentQueue() const;
+	[[nodiscard]] VkQueue GetTransferQueue() const;
 
   private:
 	void       PickPhysicalDevice();
 	static int RateDeviceSuitability(const VkPhysicalDevice &_device);
-
 
 	std::list<VkCommandPool> command_pools;
 
@@ -86,5 +80,4 @@ class VkDeviceManager
 	VkQueue graphics_queue{nullptr};        //used to issue commands
 	VkQueue present_queue{nullptr};         //used to present images
 	VkQueue tranfer_queue{nullptr};         //used for tranfer buffer
-
 };

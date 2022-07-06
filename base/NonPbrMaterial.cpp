@@ -188,7 +188,7 @@ void NonPbrMaterial::AllocateDescriptorSetAndUpdate(VkDescriptorPool descriptor_
 	write_descriptor_sets.push_back(binding1);
 
 	//UPDATE DESCRIPTOR SET
-	vkUpdateDescriptorSets(device_manager.GetLogicalDevice(), write_descriptor_sets.size(), write_descriptor_sets.data(), 0, nullptr);
+	vkUpdateDescriptorSets(device_manager.GetLogicalDevice(), uint32_t(write_descriptor_sets.size()), write_descriptor_sets.data(), 0, nullptr);
 }
 
 void NonPbrMaterial::ModifyPipelineCI(VkPipelineParameterPack &pipeline_CI)
@@ -295,12 +295,12 @@ VkPipelineLayout NonPbrMaterial::CreatePipelineLayout(const VkDeviceManager &dev
 
 	VkPipelineLayoutCreateInfo pipelineLayoutInfo_subpass0{};
 	pipelineLayoutInfo_subpass0.sType          = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-	pipelineLayoutInfo_subpass0.setLayoutCount = set_layouts.size();
+	pipelineLayoutInfo_subpass0.setLayoutCount = uint32_t(set_layouts.size());
 	pipelineLayoutInfo_subpass0.pSetLayouts    = set_layouts.data();
 
 	//TODO: testing multiple push constants and how to access it
 	// We will use push constants to push the local matrices of a primitive to the vertex shader
-	pipelineLayoutInfo_subpass0.pushConstantRangeCount = push_constant_ranges.size();        // Optional
+	pipelineLayoutInfo_subpass0.pushConstantRangeCount = uint32_t(push_constant_ranges.size());        // Optional
 	pipelineLayoutInfo_subpass0.pPushConstantRanges    = push_constant_ranges.data();        // Optional
 
 	if (vkCreatePipelineLayout(device_manager.GetLogicalDevice(), &pipelineLayoutInfo_subpass0, nullptr, &pipe_layout) != VK_SUCCESS)

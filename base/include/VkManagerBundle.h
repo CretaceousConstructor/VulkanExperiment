@@ -12,4 +12,7 @@ class VkManagerBundle
 	//DESCRIPTOR MANs(layouts and pools and sets)
 	VkDescriptorManager descriptor_manager;
 	VkPipelineManager   pipeline_manager;
+
+
+
 };

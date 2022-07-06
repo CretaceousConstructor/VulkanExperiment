@@ -44,7 +44,7 @@ class GltfModel
 
   public:
 
-	void ProcessMaterial(const uint32_t subpass, const std::vector<VkDescriptorSetLayout> &set_layouts, const VkPipelineParameterPack &pipeline_para_pack, const VkPipelineBuilder &pipeline_builder);
+	void ProcessMaterial( const std::vector<VkDescriptorSetLayout> &set_layouts, const VkPipelineParameterPack &pipeline_para_pack, const VkPipelineBuilder &pipeline_builder);
 	void CleanUpMaterial();
 	void Draw(VkCommandBuffer commandBuffer) const;
 
@@ -135,7 +135,7 @@ VkDescriptorSetLayout GltfModel<M>::GetDescriptorSetLayout() const
 }
 
 template <typename M>
-void GltfModel<M>::ProcessMaterial(const uint32_t subpass, const std::vector<VkDescriptorSetLayout> &set_layouts, const VkPipelineParameterPack &pipeline_para_pack, const VkPipelineBuilder &pipeline_builder)
+void GltfModel<M>::ProcessMaterial(const std::vector<VkDescriptorSetLayout> &set_layouts, const VkPipelineParameterPack &pipeline_para_pack, const VkPipelineBuilder &pipeline_builder)
 {
 
 
@@ -195,7 +195,7 @@ void GltfModel<M>::ProcessMaterial(const uint32_t subpass, const std::vector<VkD
 		//CREATE PIPELINE [PER MATERIAL OBJECT]
 		material->ModifyPipelineCI(local_para_pack);
 		local_para_pack.pipeline_layout = pipe_layout;
-		VkPipeline pipeline             = pipeline_builder.BuildPipeline(local_para_pack, subpass);
+		VkPipeline pipeline             = pipeline_builder.BuildPipeline(local_para_pack );
 		pipeline_array.back().push_back(pipeline);
 		material->SetPipeline(pipeline);
 

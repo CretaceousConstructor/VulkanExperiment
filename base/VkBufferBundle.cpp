@@ -12,12 +12,12 @@ uint32_t VkBufferBundle::GetBundleCount() const
 	return bundle_count;
 }
 
-VkBufferBase &VkBufferBundle::operator[](uint32_t index) const
+VkBufferBase &VkBufferBundle::operator[](size_t index) const
 {
 	return *buffers[index];
 }
 
-VkBufferBase &VkBufferBundle::GetOne(uint32_t index) const
+VkBufferBase &VkBufferBundle::GetOne(size_t index) const
 {
 	return *buffers[index];
 }

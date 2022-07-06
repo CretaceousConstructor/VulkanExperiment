@@ -12,17 +12,15 @@ VkDeviceManager::VkDeviceManager(const VkInstance &_instance, const VkWindows &_
 
 VkDeviceManager::~VkDeviceManager()
 {
-	for(const auto& cp : command_pools)
+	for (const auto &cp : command_pools)
 	{
 		vkDestroyCommandPool(device, cp, nullptr);
 	}
 	vkDestroyDevice(device, nullptr);
-
 }
 
 void VkDeviceManager::PickPhysicalDevice()
 {
-	
 	uint32_t deviceCount = 0;
 	vkEnumeratePhysicalDevices(instance, &deviceCount, nullptr);
 	if (deviceCount == 0)
@@ -32,7 +30,7 @@ void VkDeviceManager::PickPhysicalDevice()
 	std::vector<VkPhysicalDevice> devices(deviceCount);
 	vkEnumeratePhysicalDevices(instance, &deviceCount, devices.data());
 
-	for (const auto &d: devices)
+	for (const auto &d : devices)
 	{
 		if (VkDeviceManager::IsDeviceSuitable(d, window.GetSurface()))
 		{
@@ -48,26 +46,22 @@ void VkDeviceManager::PickPhysicalDevice()
 
 	// Use an ordered map to automatically sort candidates by increasing score
 
-	//目前没使用
+	//目前没使用评分系统
 	std::multimap<int, VkPhysicalDevice> candidates;
 	for (const auto &device : devices)
 	{
 		int score = RateDeviceSuitability(device);
 		candidates.insert(std::make_pair(score, device));
 	}
-
-
-
 }
 
-int VkDeviceManager::RateDeviceSuitability(const VkPhysicalDevice& _device)
+int VkDeviceManager::RateDeviceSuitability(const VkPhysicalDevice &device_)
 {
-	
 	VkPhysicalDeviceProperties deviceProperties;        //物理器件的名字类型支持的vulkan版本
-	vkGetPhysicalDeviceProperties(_device, &deviceProperties);
+	vkGetPhysicalDeviceProperties(device_, &deviceProperties);
 
 	VkPhysicalDeviceFeatures deviceFeatures;        //纹理压缩，64位float，多视口
-	vkGetPhysicalDeviceFeatures(_device, &deviceFeatures);
+	vkGetPhysicalDeviceFeatures(device_, &deviceFeatures);
 
 	int score = 0;
 
@@ -87,7 +81,6 @@ int VkDeviceManager::RateDeviceSuitability(const VkPhysicalDevice& _device)
 	}
 
 	return score;
-
 }
 
 bool VkDeviceManager::QueueFamilyIndices::IsComplete() const
@@ -102,11 +95,9 @@ VkDeviceManager::QueueFamilyIndices VkDeviceManager::FindQueueFamilies(const VkP
 	uint32_t queueFamilyCount = 0;
 	vkGetPhysicalDeviceQueueFamilyProperties(_device, &queueFamilyCount, nullptr);
 
-
 	//TODO:VkQueueFamilyProperties含有队列的数目queueCount
 	std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
 	vkGetPhysicalDeviceQueueFamilyProperties(_device, &queueFamilyCount, queueFamilies.data());
-
 
 	//typedef struct VkQueueFamilyProperties {
 	//	VkQueueFlags    queueFlags;
@@ -228,10 +219,6 @@ bool VkDeviceManager::CheckDeviceExtensionSupport(const VkPhysicalDevice &device
 	return requiredExtensions.empty();        //如果是空的，则代表需要的设备扩展功能都有
 }
 
-
-
-
-
 //这个函数在swapchainmanager也需要，但是为了防止circular depen，只能重复一份
 VkDeviceManager::SwapChainSupportDetails VkDeviceManager::QuerySwapChainSupport(const VkPhysicalDevice &device, const VkSurfaceKHR &surface)
 {
@@ -246,7 +233,6 @@ VkDeviceManager::SwapChainSupportDetails VkDeviceManager::QuerySwapChainSupport(
 	//VK_FORMAT_B8G8R8A8_UNORM = 44,
 	//VK_FORMAT_B8G8R8A8_SRGB = 50,
 	//VK_FORMAT_A2B10G10R10_UNORM_PACK32 = 64
-
 
 	uint32_t formatCount;
 	vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, nullptr);
@@ -302,7 +288,7 @@ VkBool32 VkDeviceManager::FormatIsFilterable(VkFormat format, VkImageTiling tili
 	return false;
 }
 
-const VkCommandPool& VkDeviceManager::CreateCommandPool(CommandPoolType type)
+const VkCommandPool &VkDeviceManager::CreateCommandPool(CommandPoolType type)
 {
 	const QueueFamilyIndices queueFamilyIndices = FindQueueFamilies(physical_device, window.GetSurface());
 
@@ -344,14 +330,14 @@ const VkCommandPool& VkDeviceManager::CreateCommandPool(CommandPoolType type)
 
 void VkDeviceManager::CreateLogicalDeviceAndQueues()
 {
-	//TODO:这里可以进行优化，因为物理设备已经定了，就直接用类成员调用
+	//队列家族创建信息
 	QueueFamilyIndices                   indices = FindQueueFamilies(physical_device, window.GetSurface());
 	std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
-	std::set<uint32_t>                   uniqueQueueFamilies = {indices.graphicsFamily.value(), indices.presentFamily.value(), indices.transferFamily.value()};
+	std::set<uint32_t>                   unique_queue_families = {indices.graphicsFamily.value(), indices.presentFamily.value(), indices.transferFamily.value()};
 
-	constexpr float queuePriority = 1.0f;
+	constexpr float queue_priority = 1.0f;
 
-	for (uint32_t queueFamily : uniqueQueueFamilies)
+	for (uint32_t queue_family : unique_queue_families)
 	{
 		//每种队列家族创建一个queue,每一种队列家族可以多创建几个queue，但是这里我们就创建一个
 		VkDeviceQueueCreateInfo queueCreateInfo{};
@@ -359,21 +345,71 @@ void VkDeviceManager::CreateLogicalDeviceAndQueues()
 
 		//TODO:hard code直接全部创建0号家族的，因为之后出现bug至今不知道怎么修复
 		//queueCreateInfo.queueFamilyIndex = 0;
-		queueCreateInfo.queueFamilyIndex = queueFamily;
+		queueCreateInfo.queueFamilyIndex = queue_family;
 		queueCreateInfo.queueCount       = 1;
-		queueCreateInfo.pQueuePriorities = &queuePriority;
+		queueCreateInfo.pQueuePriorities = &queue_priority;
 		queueCreateInfos.push_back(queueCreateInfo);
 	}
 
-	VkPhysicalDeviceFeatures deviceFeatures{};        //是否支持纹理压缩，64位float，多视口等
-	vkGetPhysicalDeviceFeatures(physical_device, &deviceFeatures);
+	/***********************************************************************/
+	VkPhysicalDeviceFeatures         enabled_gpu_features   = {};        // vulkan 1.0
+	VkPhysicalDeviceVulkan11Features enabled11_gpu_features = {};        // vulkan 1.1
+	VkPhysicalDeviceVulkan12Features enabled12_gpu_features = {};        // vulkan 1.2
+	VkPhysicalDeviceVulkan13Features enabled13_gpu_features = {};        // vulkan 1.3
+
+	//这里直接硬编码是否开启一些特征，也可以通过函数质询某些feature是否被device支持。
+	//If the VkPhysicalDeviceVulkan12Features structure is included in the pNext chain of the VkPhysicalDeviceFeatures2 structure passed to vkGetPhysicalDeviceFeatures2, it is filled in to indicate whether each corresponding feature is supported. VkPhysicalDeviceVulkan12Features can also be used in the pNext chain of VkDeviceCreateInfo to selectively enable these features.
+	//
+	// Enable gpu features 1.0 here.
+	enabled_gpu_features.samplerAnisotropy                      = VK_TRUE;
+	enabled_gpu_features.depthClamp                             = VK_TRUE;
+	enabled_gpu_features.shaderSampledImageArrayDynamicIndexing = VK_TRUE;
+	enabled_gpu_features.multiDrawIndirect                      = VK_TRUE;
+	enabled_gpu_features.drawIndirectFirstInstance              = VK_TRUE;
+	enabled_gpu_features.independentBlend                       = VK_TRUE;
+	enabled_gpu_features.multiViewport                          = VK_TRUE;
+	enabled_gpu_features.fragmentStoresAndAtomics               = VK_TRUE;
+
+	// Enable gpu features 1.1 here.   链接的开头
+	enabled11_gpu_features.sType                = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES;
+	enabled11_gpu_features.pNext                = &enabled12_gpu_features;
+	enabled11_gpu_features.shaderDrawParameters = VK_TRUE;
+	enabled11_gpu_features.multiview            = VK_TRUE;
+
+	// Enable gpu features 1.2 here.
+	enabled12_gpu_features.sType                                        = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
+	enabled12_gpu_features.drawIndirectCount                            = VK_TRUE;
+	enabled12_gpu_features.drawIndirectCount                            = VK_TRUE;
+	enabled12_gpu_features.imagelessFramebuffer                         = VK_TRUE;
+	enabled12_gpu_features.separateDepthStencilLayouts                  = VK_TRUE;
+	enabled12_gpu_features.descriptorIndexing                           = VK_TRUE;
+	enabled12_gpu_features.runtimeDescriptorArray                       = VK_TRUE;
+	enabled12_gpu_features.descriptorBindingPartiallyBound              = VK_TRUE;
+	enabled12_gpu_features.descriptorBindingVariableDescriptorCount     = VK_TRUE;
+	enabled12_gpu_features.shaderSampledImageArrayNonUniformIndexing    = VK_TRUE;
+	enabled12_gpu_features.descriptorBindingUpdateUnusedWhilePending    = VK_TRUE;
+	enabled12_gpu_features.descriptorBindingSampledImageUpdateAfterBind = VK_TRUE;
+	enabled12_gpu_features.timelineSemaphore                            = VK_TRUE;
+	enabled12_gpu_features.pNext                                        = &enabled13_gpu_features;
+
+	// Enable gpu features 1.3 here.
+	enabled13_gpu_features.sType            = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES;
+	enabled13_gpu_features.pNext            = nullptr;        // todo: vulkan 1.4
+	enabled13_gpu_features.dynamicRendering = VK_TRUE;
+
+	//*********************************************************************
+	VkPhysicalDeviceFeatures2 physicalDeviceFeatures2{};
+	physicalDeviceFeatures2.sType    = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+	physicalDeviceFeatures2.features = enabled_gpu_features;
+	physicalDeviceFeatures2.pNext    = &enabled11_gpu_features;
 
 	VkDeviceCreateInfo device_create_info{};
 	device_create_info.sType                = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 	device_create_info.pQueueCreateInfos    = queueCreateInfos.data();
 	device_create_info.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
-	device_create_info.pEnabledFeatures     = &deviceFeatures;
-
+	//device_create_info.pEnabledFeatures     = &physical_device_features;
+	device_create_info.pEnabledFeatures = nullptr;
+	device_create_info.pNext            = &physicalDeviceFeatures2;
 
 	auto deviceRequiredExtensions = VkExtensionUtility::GetRequiredExtensionsForAGoodDevice();
 
@@ -382,47 +418,44 @@ void VkDeviceManager::CreateLogicalDeviceAndQueues()
 	device_create_info.ppEnabledExtensionNames = deviceRequiredExtensions.data();
 
 	//createInfo.enabledLayerCount is deprecated and ignored.
-	//createInfo.ppEnabledLayerNames?is deprecatedand ignored.
+	//createInfo.ppEnabledLayerNames is deprecatedand ignored.
 
 	if (vkCreateDevice(physical_device, &device_create_info, nullptr, &device) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to create logical device!");
 	}
 
-
-
 	//TODO:这里为什么只能用0号家族的队列？
 	vkGetDeviceQueue(device, indices.graphicsFamily.value(), 0, &graphics_queue);
 	vkGetDeviceQueue(device, indices.presentFamily.value(), 0, &present_queue);
 	vkGetDeviceQueue(device, indices.transferFamily.value(), 0, &tranfer_queue);
 	//vkGetDeviceQueue(device, indices.graphicsFamily.value(), 0, &tranfer_queue);
-
 }
 
-VkDevice VkDeviceManager::GetLogicalDevice()const 
+VkDevice VkDeviceManager::GetLogicalDevice() const
 {
 	return device;
 }
 
-VkPhysicalDevice VkDeviceManager::GetPhysicalDevice()const 
+VkPhysicalDevice VkDeviceManager::GetPhysicalDevice() const
 {
 	return physical_device;
 }
 
-VkQueue VkDeviceManager::GetGraphicsQueue()const
+VkQueue VkDeviceManager::GetGraphicsQueue() const
 {
 	return graphics_queue;
 }
-VkQueue VkDeviceManager::GetPresentQueue()const
+VkQueue VkDeviceManager::GetPresentQueue() const
 {
 	return present_queue;
 }
-VkQueue VkDeviceManager::GetTransferQueue()const
+VkQueue VkDeviceManager::GetTransferQueue() const
 {
 	return tranfer_queue;
 }
 
-VkFormat VkDeviceManager::FindSupportedFormat(const std::vector<VkFormat> &candidates, VkImageTiling tiling, VkFormatFeatureFlags features)const
+VkFormat VkDeviceManager::FindSupportedFormat(const std::vector<VkFormat> &candidates, VkImageTiling tiling, VkFormatFeatureFlags features) const
 {
 	//// Provided by VK_VERSION_1_0
 	//typedef struct VkFormatProperties {
@@ -449,7 +482,7 @@ VkFormat VkDeviceManager::FindSupportedFormat(const std::vector<VkFormat> &candi
 	throw std::runtime_error("failed to find supported format!");
 }
 
-void VkDeviceManager::CreateBufferAndBindToMemo(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer &buffer, VkDeviceMemory &bufferMemory, VkSharingMode sharingmode, const VkSurfaceKHR &surface)const
+void VkDeviceManager::CreateBufferAndBindToMemo(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer &buffer, VkDeviceMemory &bufferMemory, VkSharingMode sharingmode, const VkSurfaceKHR &surface) const
 {
 	/*typedef struct VkBufferCreateInfo {
 		VkStructureType        sType;
@@ -495,14 +528,10 @@ void VkDeviceManager::CreateBufferAndBindToMemo(VkDeviceSize size, VkBufferUsage
 	allocInfo.sType          = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 	allocInfo.allocationSize = memRequirements.size;
 
-
-
 	//if (size != memRequirements.size)
 	//{
 	//	throw std::runtime_error("memRequirements size differs from size parameter!");
 	//}
-
-
 
 	allocInfo.memoryTypeIndex = FindMemoryType(memRequirements.memoryTypeBits, properties, physical_device);
 
@@ -512,11 +541,9 @@ void VkDeviceManager::CreateBufferAndBindToMemo(VkDeviceSize size, VkBufferUsage
 	}
 
 	vkBindBufferMemory(device, buffer, bufferMemory, 0);
-
-
 }
 
-void VkDeviceManager::CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size, const VkCommandBuffer &transfer_command_buffer)const
+void VkDeviceManager::CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size, const VkCommandBuffer &transfer_command_buffer) const
 {
 	VkCommandBufferBeginInfo beginInfo{};
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;

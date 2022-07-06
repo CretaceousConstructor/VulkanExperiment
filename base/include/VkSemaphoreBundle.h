@@ -21,8 +21,8 @@ class VkSemaphoreBundle : public VkSynObjectBundleBase
 	VkSemaphoreBundle &operator=(VkSemaphoreBundle &&) = delete;
 
 
-	VkSemaphore operator[](uint32_t num) const;
-	[[nodiscard]] const VkSemaphore &GetOne(uint32_t num) const;
+	VkSemaphore operator[](size_t num) const;
+	[[nodiscard]] const VkSemaphore &GetOne(size_t num) const;
 
 	~VkSemaphoreBundle();
 

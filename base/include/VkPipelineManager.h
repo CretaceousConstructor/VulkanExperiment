@@ -20,12 +20,11 @@ class VkPipelineManager
 
 
 
-	void AddPipeline(const VkPipelineParameterPack &para_pack, const VkRenderPass render_pass, const PipelineMetaInfo pipe_meta_info);
+	void AddPipeline(const VkPipelineParameterPack &para_pack,  const PipelineMetaInfo pipe_meta_info);
 	void AddPipelineLayout(const PipelineLayoutMetaInfo& pipe_layout_info,const std::vector<VkDescriptorSetLayout>& des_layouts);
 
 
 	[[nodiscard]] VkPipeline GetPipeline(const PipelineMetaInfo &meta_info) const;
-
 	[[nodiscard]]VkPipelineLayout GetPipelineLayout(const PipelineLayoutMetaInfo &meta_info) const;
 
 

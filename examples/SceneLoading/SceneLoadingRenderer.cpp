@@ -3,9 +3,8 @@
 using namespace SceneLoading;
 void SceneLoadingRenderer::PrepareModels()
 {
-
-	const auto &model_factory = render_pass_manager.GetModelFactory();
-	const std::string filename                = "../../data/models/sponza/sponza.gltf";
+	const auto &      model_factory    = render_pass_manager.GetModelFactory();
+	const std::string filename         = "../../data/models/sponza/sponza.gltf";
 	common_resources.gltf_scene_sponza = model_factory.GetGltfModel<NonPbrMaterial>(filename, VkModelFactory::LoadingOption::LoadImagesFromFile, 0);
 
 	//auto                  data = Geometry::CreateSphere(.2f, 20, 40, glm::vec4(1.f, 1.f, 1.f, 1.f));
@@ -24,16 +23,14 @@ void SceneLoadingRenderer::PrepareModels()
 void SceneLoadingRenderer::CommandBufferRecording()
 {
 	auto &graphics_command_buffers = command_manager.GetGraphicsCommandBuffers();
-	VkCommandManager::BeginCommandBuffer(graphics_command_buffers);
+	VkCommandManager::BeginCommandBuffers(graphics_command_buffers);
 
 	renderpasses[0]->BeginRenderpass(graphics_command_buffers);
-	renderpasses[0]->RenderpassExecute(graphics_command_buffers);
+	renderpasses[0]->ExecuteRenderpass(graphics_command_buffers);
 	renderpasses[0]->EndRenderpass(graphics_command_buffers);
 
-	VkCommandManager::EndCommandBuffer(graphics_command_buffers);
+	VkCommandManager::EndCommandBuffers(graphics_command_buffers);
 }
-
-
 
 void SceneLoadingRenderer::CreateUniformBuffer()
 {
@@ -41,10 +38,8 @@ void SceneLoadingRenderer::CreateUniformBuffer()
 
 	//GPU SIDE
 	constexpr VkBufferCI::UniformBuffer unim_buf_para_pack;
-	common_resources.ubo_matrix_gpu = buffer_factory.ProduceBufferBundlePtr(sizeof(Common::UboMatrix),swapchain_manager.GetSwapImageCount(), unim_buf_para_pack);
+	common_resources.ubo_matrix_gpu = buffer_factory.ProduceBufferBundlePtr(sizeof(Common::UboMatrix), swapchain_manager.GetSwapImageCount(), unim_buf_para_pack);
 }
-
-
 
 void SceneLoadingRenderer::CreateDescriptorPool()
 {
@@ -61,7 +56,7 @@ void SceneLoadingRenderer::CreateDescriptorPool()
 
 void SceneLoadingRenderer::RenderpassInit()
 {
-	renderpasses.push_back(std::make_shared<Renderpass0>(gfx, render_pass_manager,common_resources));
+	renderpasses.push_back(std::make_shared<Renderpass0>(gfx, render_pass_manager, common_resources));
 }
 
 void SceneLoadingRenderer::InitSynObjects()
@@ -88,9 +83,6 @@ void SceneLoadingRenderer::UpdateUniformBuffer(size_t currentImage)
 	common_resources.ubo_matrix_cpu.view_pos   = camera->GetPosition();
 
 	common_resources.ubo_matrix_gpu->GetOne(currentImage).MapMemory(0, sizeof(common_resources.ubo_matrix_cpu), &common_resources.ubo_matrix_cpu, sizeof(common_resources.ubo_matrix_cpu));
-
-
-
 }
 
 void SceneLoadingRenderer::DrawFrame()
@@ -734,14 +726,14 @@ void SceneLoadingRenderer::CreateTextureImages()
 //
 void SceneLoadingRenderer::CreateDepthImages()
 {
-	const VkDepthImageFactory::ParaPack depth_para_pack{gfx};
-	common_resources.depth_attachments = render_pass_manager.GetDepthImageFactory().ProduceImageBundlePtr(depth_para_pack, swapchain_manager.GetSwapImageCount());
+	const DepthImgParameterPack depth_para_pack{gfx};
+	common_resources.depth_attachments = render_pass_manager.GetImageFactory().ProduceImageBundlePtr(depth_para_pack, swapchain_manager.GetSwapImageCount());
 }
 
 void SceneLoadingRenderer::CreateSwapchainImages()
 {
-	const VkSwapchainImageFactory::ParameterPack parameter_pack;
-	common_resources.swapchain_images = render_pass_manager.GetSwapchainImageFactory().ProduceImageBundlePtr(parameter_pack);
+	const SwapImgParameterPack parameter_pack;
+	common_resources.swapchain_images = render_pass_manager.GetImageFactory().ProduceImageBundlePtr(parameter_pack);
 }
 
 //void SceneLoadingRenderer::CreateLightIndicatorPipeline()

@@ -7,34 +7,26 @@
 //}
 //
 
-
-
-
-
-
-
-VkGeneralPurposeImage::VkGeneralPurposeImage(VkGraphicsComponent& _gfx, VkImage _image,	const VkDeviceMemory   _image_mem ,const VkImageView _image_view,const VkFormat _image_format,const VkFormat _image_view_format) :
-	VkImageBase(_gfx,_image,_image_format,_image_view,_image_view_format),
-	command_manager(gfx.CommandMan()),
-	window(gfx.Window()),
- 	image_mem(_image_mem)
+VkGeneralPurposeImage::VkGeneralPurposeImage(VkGraphicsComponent &_gfx, const VkImage _image, const VkDeviceMemory _image_mem, const VkImageView _image_view, std::shared_ptr<ImgParameterPack> para_pack_) :
+    VkImageBase(_gfx, _image, _image_view, std::move(para_pack_)),
+    command_manager(gfx.CommandMan()),
+    window(gfx.Window()),
+    image_mem(_image_mem)
 {
-
-
 }
 VkGeneralPurposeImage::~VkGeneralPurposeImage()
 {
-
 	vkDestroyImageView(device_manager.GetLogicalDevice(), image_view, nullptr);
 	vkDestroyImage(device_manager.GetLogicalDevice(), image, nullptr);
 	vkFreeMemory(device_manager.GetLogicalDevice(), image_mem, nullptr);
-
 }
 
 void VkGeneralPurposeImage::CopyBufferToImage(VkBuffer buffer, uint32_t width, uint32_t height, const VkCommandPool &command_pool, const VkQueue &command_quque) const
 {
+	//这里的mipmap没有管
+	assert(1 == 2);
 	const VkCommandBuffer commandBuffer = VkCommandManager::BeginSingleTimeCommands(command_pool, device_manager.GetLogicalDevice());
-	VkBufferImageCopy region{};
+	VkBufferImageCopy     region{};
 	region.bufferOffset      = 0;
 	region.bufferRowLength   = 0;
 	region.bufferImageHeight = 0;
@@ -58,11 +50,9 @@ void VkGeneralPurposeImage::CopyBufferToImage(VkBuffer buffer, uint32_t width, u
 	    &region);
 
 	VkCommandManager::EndSingleTimeCommands(command_pool, device_manager.GetLogicalDevice(), commandBuffer, command_quque);
-
-
 }
 
-void VkGeneralPurposeImage::CopyBufferToImage(VkBuffer buffer, const std::vector<VkBufferImageCopy> &bufferCopyRegions, const VkCommandPool &command_pool, const VkQueue &command_quque)const
+void VkGeneralPurposeImage::CopyBufferToImage(VkBuffer buffer, const std::vector<VkBufferImageCopy> &bufferCopyRegions, const VkCommandPool &command_pool, const VkQueue &command_quque) const
 {
 	const VkCommandBuffer commandBuffer = VkCommandManager::BeginSingleTimeCommands(command_pool, device_manager.GetLogicalDevice());
 
@@ -77,32 +67,27 @@ void VkGeneralPurposeImage::CopyBufferToImage(VkBuffer buffer, const std::vector
 	VkCommandManager::EndSingleTimeCommands(command_pool, device_manager.GetLogicalDevice(), commandBuffer, command_quque);
 }
 
-void VkGeneralPurposeImage::CopyBufferToImage(VkBuffer buffer, const std::vector<VkBufferImageCopy> &bufferCopyRegions, VkDeviceManager::CommandPoolType command_type)const
+void VkGeneralPurposeImage::CopyBufferToImage(VkBuffer buffer, const std::vector<VkBufferImageCopy> &bufferCopyRegions, VkDeviceManager::CommandPoolType command_type) const
 {
-
 	VkCommandPool command_pool;
 	VkQueue       command_quque;
 
-
 	if (command_type == VkDeviceManager::CommandPoolType::graphics_command_pool)
 	{
-		command_quque =  device_manager.GetGraphicsQueue();
-		command_pool = command_manager.graphics_command_pool;
+		command_quque = device_manager.GetGraphicsQueue();
+		command_pool  = command_manager.graphics_command_pool;
 	}
 
 	else if (command_type == VkDeviceManager::CommandPoolType::transfor_command_pool)
 	{
-		command_quque =  device_manager.GetTransferQueue();
-		command_pool = command_manager.transfer_command_pool;
+		command_quque = device_manager.GetTransferQueue();
+		command_pool  = command_manager.transfer_command_pool;
 	}
 	else
 	{
-		
 	}
 
-
-
-	const VkCommandBuffer commandBuffer = VkCommandManager::BeginSingleTimeCommands(command_pool, device_manager.GetLogicalDevice());
+const VkCommandBuffer commandBuffer = VkCommandManager::BeginSingleTimeCommands(command_pool, device_manager.GetLogicalDevice());
 
 	vkCmdCopyBufferToImage(
 	    commandBuffer,
@@ -112,183 +97,171 @@ void VkGeneralPurposeImage::CopyBufferToImage(VkBuffer buffer, const std::vector
 	    bufferCopyRegions.size(),
 	    bufferCopyRegions.data());
 
-
 	VkCommandManager::EndSingleTimeCommands(command_pool, device_manager.GetLogicalDevice(), commandBuffer, command_quque);
 }
 
-bool VkGeneralPurposeImage::HasStencilComponent(VkFormat format)
-{
-	return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
-}
+//bool VkGeneralPurposeImage::HasStencilComponent(VkFormat format)
+//{
+//	return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
+//}
 
-
-
-
-
-void VkGeneralPurposeImage::TransitionImageLayout(VkImageLayout oldLayout, VkImageLayout newLayout, const VkDeviceManager::CommandPoolType command_type , uint32_t mip_count, uint32_t layer_count)const
-{
-
-	VkCommandPool command_pool;
-	VkQueue       command_quque;
-
-	const VkDeviceManager::QueueFamilyIndices queue_family_indices = VkDeviceManager::FindQueueFamilies(device_manager.GetPhysicalDevice(), window.GetSurface());
-
-	if (command_type == VkDeviceManager::CommandPoolType::graphics_command_pool)
-	{
-		command_quque =  device_manager.GetGraphicsQueue();
-		command_pool = command_manager.graphics_command_pool;
-	}
-
-	else if (command_type == VkDeviceManager::CommandPoolType::transfor_command_pool)
-	{
-		command_quque =  device_manager.GetTransferQueue();
-		command_pool = command_manager.transfer_command_pool;
-	}
-	else
-	{
-		
-	}
-
-	const VkCommandBuffer commandBuffer = VkCommandManager::BeginSingleTimeCommands(command_pool, device_manager.GetLogicalDevice());
-
-	VkImageMemoryBarrier barrier{};
-	barrier.sType     = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-	barrier.oldLayout = oldLayout;
-	barrier.newLayout = newLayout;
-
-	barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-
-	barrier.image                       = image;
-	barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-
-	if (newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
-	{
-		barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-
-		if (HasStencilComponent(image_format))
-		{
-			barrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
-		}
-	}
-	else
-	{
-		barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-	}
-
-	barrier.subresourceRange.baseMipLevel   = 0;
-	barrier.subresourceRange.levelCount     = mip_count;
-	barrier.subresourceRange.baseArrayLayer = 0;
-	barrier.subresourceRange.layerCount     = layer_count;
-
-	VkPipelineStageFlags sourceStage;
-	VkPipelineStageFlags destinationStage;
-
-	//unchecked
-	if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
-	{
-		barrier.srcAccessMask = 0;
-		barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-
-		sourceStage      = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-		destinationStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-	}
-
-	//checked
-	else if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
-	{
-		barrier.srcAccessMask = 0;
-		barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-		//VK_PIPELINE_STAGE_HOST_BIT
-		sourceStage      = VK_PIPELINE_STAGE_HOST_BIT;
-		destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-	}
-	//unchecked
-	else if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
-	{
-		barrier.srcAccessMask = 0;
-		barrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-
-		sourceStage      = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-		destinationStage = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-	}
-
-
-	//checked
-	else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
-	{
-
-
-		//队列家族对资源的拥有权问题
-		//*****************************release operation*****************************
-		auto transfer_command_quque =  device_manager.GetTransferQueue();
-		auto transfer_command_pool = command_manager.transfer_command_pool;
-
-		const VkCommandBuffer transfer_commandBuffer = VkCommandManager::BeginSingleTimeCommands(transfer_command_pool, device_manager.GetLogicalDevice());
-
-
-
-		sourceStage           = VK_PIPELINE_STAGE_TRANSFER_BIT;
-		barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-		barrier.oldLayout     = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-		//dstAccessMask is ignored for such a barrier,
-		//Whilst it is not invalid to provide destination or source access masks for memory
-		//barriers used for release or acquire operations, respectively, they have no practical
-		//effect.
-		destinationStage      = VK_PIPELINE_STAGE_TRANSFER_BIT;
-		barrier.dstAccessMask = 0;
-		barrier.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-
-
-		barrier.srcQueueFamilyIndex = queue_family_indices.transferFamily.value();
-		barrier.dstQueueFamilyIndex = queue_family_indices.graphicsFamily.value();
-
-		vkCmdPipelineBarrier(
-			transfer_commandBuffer,
-			sourceStage, destinationStage,
-			0,
-			0, nullptr,
-			0, nullptr,
-			1, &barrier);
-
-
-		VkCommandManager::EndSingleTimeCommands(transfer_command_pool, device_manager.GetLogicalDevice(), transfer_commandBuffer, transfer_command_quque);
-		//**************************acquire operation*****************************
-		sourceStage           = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-		//sourceStage           = 0;
-		barrier.srcAccessMask = 0;
-		barrier.oldLayout     = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-		//dstAccessMask is ignored for such a barrier,
-		//Whilst it is not invalid to provide destination or source access masks for memory
-		//barriers used for release or acquire operations, respectively, they have no practical
-		//effect.
-		destinationStage      = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-		barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-		barrier.newLayout =     VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-
-		//队列家族对资源的拥有权问题
-		barrier.srcQueueFamilyIndex = queue_family_indices.transferFamily.value();
-		barrier.dstQueueFamilyIndex = queue_family_indices.graphicsFamily.value();
-
-	}
-	else
-	{
-		throw std::invalid_argument("unsupported layout transition!");
-	}
-
-	vkCmdPipelineBarrier(
-	    commandBuffer,
-	    sourceStage, destinationStage,
-	    0,
-	    0, nullptr,
-	    0, nullptr,
-	    1, &barrier);
-
-	VkCommandManager::EndSingleTimeCommands(command_pool, device_manager.GetLogicalDevice(), commandBuffer, command_quque);
-
-
-
-}
+//void VkGeneralPurposeImage::TransitionImageLayout(VkImageLayout oldLayout, VkImageLayout newLayout, const VkDeviceManager::CommandPoolType command_type, uint32_t mip_count, uint32_t layer_count) const
+//{
+//	VkCommandPool command_pool;
+//	VkQueue       command_quque;
+//
+//	const VkDeviceManager::QueueFamilyIndices queue_family_indices = VkDeviceManager::FindQueueFamilies(device_manager.GetPhysicalDevice(), window.GetSurface());
+//
+//	if (command_type == VkDeviceManager::CommandPoolType::graphics_command_pool)
+//	{
+//		command_quque = device_manager.GetGraphicsQueue();
+//		command_pool  = command_manager.graphics_command_pool;
+//	}
+//
+//	else if (command_type == VkDeviceManager::CommandPoolType::transfor_command_pool)
+//	{
+//		command_quque = device_manager.GetTransferQueue();
+//		command_pool  = command_manager.transfer_command_pool;
+//	}
+//	else
+//	{
+//
+//
+//
+//	}
+//
+//	const VkCommandBuffer commandBuffer = VkCommandManager::BeginSingleTimeCommands(command_pool, device_manager.GetLogicalDevice());
+//
+//	VkImageMemoryBarrier barrier{};
+//	barrier.sType     = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+//	barrier.oldLayout = oldLayout;
+//	barrier.newLayout = newLayout;
+//
+//	barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+//	barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+//
+//	barrier.image                       = image;
+//	barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+//
+//	if (newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
+//	{
+//		barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+//
+//		if (HasStencilComponent(para_pack->default_image_format))
+//		{
+//			barrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+//		}
+//	}
+//	else
+//	{
+//		barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+//	}
+//
+//	barrier.subresourceRange.baseMipLevel   = 0;
+//	barrier.subresourceRange.levelCount     = mip_count;
+//	barrier.subresourceRange.baseArrayLayer = 0;
+//	barrier.subresourceRange.layerCount     = layer_count;
+//
+//	VkPipelineStageFlags sourceStage;
+//	VkPipelineStageFlags destinationStage;
+//
+//	//unchecked
+//	if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
+//	{
+//		barrier.srcAccessMask = 0;
+//		barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+//
+//		sourceStage      = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+//		destinationStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+//	}
+//
+//	//checked
+//	else if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
+//	{
+//		barrier.srcAccessMask = 0;
+//		barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+//		//VK_PIPELINE_STAGE_HOST_BIT
+//		sourceStage      = VK_PIPELINE_STAGE_HOST_BIT;
+//		destinationStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+//	}
+//	//unchecked
+//	else if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
+//	{
+//		barrier.srcAccessMask = 0;
+//		barrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+//
+//		sourceStage      = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+//		destinationStage = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+//	}
+//
+//	//checked
+//	else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+//	{
+//		//队列家族对资源的拥有权问题
+//		//*****************************release operation*****************************
+//		auto transfer_command_quque = device_manager.GetTransferQueue();
+//		auto transfer_command_pool  = command_manager.transfer_command_pool;
+//
+//		const VkCommandBuffer transfer_commandBuffer = VkCommandManager::BeginSingleTimeCommands(transfer_command_pool, device_manager.GetLogicalDevice());
+//
+//		sourceStage           = VK_PIPELINE_STAGE_TRANSFER_BIT;
+//		barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+//		barrier.oldLayout     = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+//		//dstAccessMask is ignored for such a barrier,
+//		//Whilst it is not invalid to provide destination or source access masks for memory
+//		//barriers used for release or acquire operations, respectively, they have no practical
+//		//effect.
+//		//destinationStage      = VK_PIPELINE_STAGE_TRANSFER_BIT;
+//		destinationStage      = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+//		barrier.dstAccessMask = 0;
+//		barrier.newLayout     = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+//
+//		barrier.srcQueueFamilyIndex = queue_family_indices.transferFamily.value();
+//		barrier.dstQueueFamilyIndex = queue_family_indices.graphicsFamily.value();
+//
+//		vkCmdPipelineBarrier(
+//		    transfer_commandBuffer,
+//		    sourceStage, destinationStage,
+//		    0,
+//		    0, nullptr,
+//		    0, nullptr,
+//		    1, &barrier);
+//
+//		VkCommandManager::EndSingleTimeCommands(transfer_command_pool, device_manager.GetLogicalDevice(), transfer_commandBuffer, transfer_command_quque);
+//		//**************************acquire operation*****************************
+//		sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+//		barrier.srcAccessMask = 0;
+//		barrier.oldLayout     = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+//		//dstAccessMask is ignored for such a barrier,
+//		//Whilst it is not invalid to provide destination or source access masks for memory
+//		//barriers used for release or acquire operations, respectively, they have no practical
+//		//effect.
+//		destinationStage      = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+//		barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+//		barrier.newLayout     = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+//
+//		//队列家族对资源的拥有权问题
+//		barrier.srcQueueFamilyIndex = queue_family_indices.transferFamily.value();
+//		barrier.dstQueueFamilyIndex = queue_family_indices.graphicsFamily.value();
+//
+//
+//
+//	}
+//	else
+//	{
+//		throw std::invalid_argument("unsupported layout transition!");
+//	}
+//
+//	vkCmdPipelineBarrier(
+//	    commandBuffer,
+//	    sourceStage, destinationStage,
+//	    0,
+//	    0, nullptr,
+//	    0, nullptr,
+//	    1, &barrier);
+//
+//	VkCommandManager::EndSingleTimeCommands(command_pool, device_manager.GetLogicalDevice(), commandBuffer, command_quque);
+//}
 //void VkGeneralPurposeImage::TransitionImageLayout(VkImageLayout oldLayout, VkImageLayout newLayout, const VkCommandPool &command_pool, const VkQueue &command_quque, VkDeviceManager::QueueFamilyIndices queue_family_indices, uint32_t miplevelcount)const
 //{
 //
@@ -411,37 +384,6 @@ void VkGeneralPurposeImage::TransitionImageLayout(VkImageLayout oldLayout, VkIma
 //
 //
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 //para_initialLayout目前还没有使用，以后可以直接拿来layout transition？
 
 //void VkGeneralPurposeImage::Init(VkImageType para_image_type, VkFormat para_format, VkExtent3D para_image_extent, uint32_t para_mip_levels, uint32_t para_array_layers, VkSampleCountFlagBits para_samples, VkImageTiling para_tiling, VkBufferUsageFlags para_usage_image, VkSharingMode para_sharing_mode, VkImageLayout para_initialLayout, VkMemoryPropertyFlagBits para_image_mem_property_flag)
@@ -547,5 +489,3 @@ void VkGeneralPurposeImage::TransitionImageLayout(VkImageLayout oldLayout, VkIma
 //		throw std::runtime_error("failed to create texture image view!");
 //	}
 //}
-
-

@@ -27,8 +27,8 @@ class VkCommandManager
 	static void            EndSingleTimeCommands(const VkCommandPool &command_pool, const  VkDevice &device, const VkCommandBuffer command_buffer, const VkQueue &command_quque);
 	static void            CreateCommandBuffer(const VkDevice &device, const VkCommandPool &commandpool, VkCommandBuffer &CommandBuffer, VkCommandBufferLevel level);
 
-	static void BeginCommandBuffer(	const std::vector<VkCommandBuffer> & command_buffers);
-	static void EndCommandBuffer(	const std::vector<VkCommandBuffer> & command_buffers);
+	static void BeginCommandBuffers(	const std::vector<VkCommandBuffer> & command_buffers);
+	static void EndCommandBuffers(	const std::vector<VkCommandBuffer> & command_buffers);
 
 
 private:

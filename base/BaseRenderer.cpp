@@ -40,8 +40,6 @@ void BaseRenderer::RenderingPreparation()
 	//command buffer recording
 	this->CommandBufferRecording();
 
-
-
 }
 
 

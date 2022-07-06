@@ -16,8 +16,8 @@ class VkBufferBundle
 
 
 	[[nodiscard]] uint32_t GetBundleCount() const;
-	VkBufferBase &   operator[](uint32_t index) const;
-	[[nodiscard]] VkBufferBase & GetOne(uint32_t index) const;
+	VkBufferBase &   operator[](size_t index) const;
+	[[nodiscard]] VkBufferBase & GetOne(size_t index) const;
 
 	[[nodiscard]] const std::vector<std::shared_ptr<VkBufferBase>> &GetBufferArray() const;
 

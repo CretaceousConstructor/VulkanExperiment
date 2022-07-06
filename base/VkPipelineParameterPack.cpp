@@ -72,10 +72,10 @@ void VkPipelineParameterPack::RestoreToDefaultState()
 	view_port_scissor_pair.second.push_back(scissor);
 
 	viewport_state_CI.sType         = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
-	viewport_state_CI.viewportCount = view_port_scissor_pair.first.size();
+	viewport_state_CI.viewportCount = uint32_t(view_port_scissor_pair.first.size());
 	viewport_state_CI.pViewports    = view_port_scissor_pair.first.data();
 
-	viewport_state_CI.scissorCount = view_port_scissor_pair.second.size();
+	viewport_state_CI.scissorCount = uint32_t(view_port_scissor_pair.second.size());
 	viewport_state_CI.pScissors    = view_port_scissor_pair.second.data();
 
 	rasterization_state_CI.sType                   = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;

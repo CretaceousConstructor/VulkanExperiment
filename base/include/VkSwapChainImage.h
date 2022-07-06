@@ -4,9 +4,8 @@
 class VkSwapchainImage : public VkImageBase
 {
   public:
-	VkSwapchainImage(VkGraphicsComponent &_gfx, VkImage _image, VkImageView _image_view, VkFormat _image_format, VkFormat _image_view_format);
+	VkSwapchainImage(VkGraphicsComponent &_gfx, VkImage _image, VkImageView _image_view, std::shared_ptr<ImgParameterPack> para_pack_);
 	~VkSwapchainImage() override;
-
 
 	VkSwapchainImage()                         = delete;
 
@@ -15,4 +14,8 @@ class VkSwapchainImage : public VkImageBase
 
 	VkSwapchainImage(VkSwapchainImage &&) = delete;
 	VkSwapchainImage &operator=(VkSwapchainImage &&) = delete;
+
+
+
+
 };

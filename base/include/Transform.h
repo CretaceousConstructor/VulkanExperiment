@@ -83,13 +83,5 @@ private:
      glm::vec3  m_Position = {0.f,0.f,0.f};                                // Œª÷√
 
 
-
-
-
-
-
-
-
-
 };
 

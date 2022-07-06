@@ -1,4 +1,5 @@
 #pragma once
+#include "VkAttachmentInfo.h"
 #include "VkGraphicsComponent.h"
 #include "VkShaderManager.h"
 #include <vector>
@@ -15,11 +16,8 @@ class VkPipelineParameterPack
 		VkSpecializationInfo  sp_info;
 		VkShaderStageFlagBits shader_stage;
 	};
+
 	std::vector<ShaderMetaInfo> shader_infos;
-
-
-
-
 
 	std::vector<VkSpecializationInfoPack>                     specialization_infos;
 	std::vector<VkPipelineShaderStageCreateInfo>              shader_stage_CI;
@@ -36,11 +34,12 @@ class VkPipelineParameterPack
 	VkPipelineMultisampleStateCreateInfo   multisample_state_CI{};
 	VkPipelineDepthStencilStateCreateInfo  depth_stencil_CI{};
 	VkPipelineColorBlendStateCreateInfo    color_blend_state_CI{};
-
-	VkRenderPass render_pass{nullptr};
-	VkPipelineLayout pipeline_layout{nullptr};
+	VkPipelineLayout                       pipeline_layout{nullptr};
+	std::vector<VkAttachmentInfo>          attachment_infos;
 
   private:
 	VkGraphicsComponent &     gfx;
 	const VkSwapchainManager &swapchain_manager;
+
+
 };

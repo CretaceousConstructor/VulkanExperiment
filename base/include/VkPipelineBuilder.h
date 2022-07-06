@@ -1,15 +1,15 @@
 #pragma once
 #include "VkGraphicsComponent.h"
+#include "VkPipelineParameterPack.h"
 #include "VkPipelineWrapper.h"
 #include "VkRenderpassWrapper.h"
-#include "VkPipelineParameterPack.h"
 #include "VkShaderManager.h"
 #include <memory>
 
 class VkPipelineBuilder
 {
   public:
-	VkPipelineBuilder(VkGraphicsComponent& _gfx,VkShaderManager& _shader_factory);
+	VkPipelineBuilder(VkGraphicsComponent &_gfx, VkShaderManager &_shader_factory);
 	~VkPipelineBuilder() = default;
 
 	VkPipelineBuilder()                          = delete;
@@ -19,13 +19,11 @@ class VkPipelineBuilder
 	VkPipelineBuilder &operator=(VkPipelineBuilder &&) = delete;
 
   public:
-	VkPipeline BuildPipeline(const VkPipelineParameterPack &para_pack, const VkRenderPass render_pass, VkPipelineLayout pipeline_layout, const PipelineMetaInfo &pipe_meta_info) const;
-	VkPipeline BuildPipeline(const VkPipelineParameterPack &para_pack, const uint32_t supass) const;
+	VkPipeline BuildPipeline(const VkPipelineParameterPack &para_pack, VkPipelineLayout pipeline_layout, const PipelineMetaInfo &pipe_meta_info) const;
+	[[nodiscard]] VkPipeline BuildPipeline(const VkPipelineParameterPack &para_pack) const;
 
   private:
-	VkGraphicsComponent &gfx;
-	const VkDeviceManager &   device_manager;
+	VkGraphicsComponent &  gfx;
+	const VkDeviceManager &device_manager;
 	VkShaderManager &      shader_factory;
-
-
 };

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "VkImageBase.h"
-
+#include "ImageParameterPack.h"
 
 
 class VkGeneralPurposeImage :public VkImageBase
@@ -20,7 +20,7 @@ class VkGeneralPurposeImage :public VkImageBase
 
 
 public:
-	VkGeneralPurposeImage(VkGraphicsComponent& _gfx, const VkImage _image, const VkDeviceMemory _image_mem, const VkImageView _image_view, const VkFormat _image_format, const VkFormat _image_view_format);
+	VkGeneralPurposeImage(VkGraphicsComponent& _gfx, const VkImage _image, const VkDeviceMemory _image_mem, const VkImageView _image_view, std::shared_ptr<ImgParameterPack> para_pack );
 
 
 	~VkGeneralPurposeImage() override;
@@ -35,30 +35,16 @@ public:
 
 
 
-
-
-
-
-
-
-
-
-
-
-	
 	//void TransitionImageLayout(VkImageLayout oldLayout, VkImageLayout newLayout, const VkCommandPool &command_pool, const VkQueue &command_quque, VkDeviceManager::QueueFamilyIndices queue_family_indices, uint32_t miplevelcount = 1) const;
-	void TransitionImageLayout(VkImageLayout oldLayout, VkImageLayout newLayout, const VkDeviceManager::CommandPoolType command_type , uint32_t mip_count = 1, uint32_t layer_count = 1) const;
+	//void TransitionImageLayout(VkImageLayout oldLayout, VkImageLayout newLayout, const VkDeviceManager::CommandPoolType command_type , uint32_t mip_count = 1, uint32_t layer_count = 1) const;
  
 
 	void CopyBufferToImage(VkBuffer buffer, uint32_t width, uint32_t height, const VkCommandPool &command_pool, const VkQueue &command_quque) const;
-
 	void CopyBufferToImage(VkBuffer buffer, const std::vector<VkBufferImageCopy> &bufferCopyRegions, const VkCommandPool &command_pool, const VkQueue &command_quque) const;
 	void CopyBufferToImage(VkBuffer buffer, const std::vector<VkBufferImageCopy> &bufferCopyRegions, VkDeviceManager::CommandPoolType command_type) const;
 
 
 
-  private:
-	static bool HasStencilComponent(VkFormat format);
   private:
 	const VkCommandManager &command_manager;
 	const VkWindows&        window;

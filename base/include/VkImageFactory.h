@@ -1,52 +1,46 @@
 #pragma once
-//#include "VkGraphicsComponent.h"
-//class VkImageFactory
-//{
-//  public:
-//	VkImageFactory(VkGraphicsComponent &_gfx);
-//	virtual ~VkImageFactory() = 0 ;
-//
-//	VkImageFactory() = delete;
-//	VkImageFactory(const VkImageFactory &) = delete;
-//	VkImageFactory &operator=(const VkImageFactory &) = delete;
-//
-//	VkImageFactory(VkImageFactory &&) = delete;
-//	VkImageFactory &operator=(VkImageFactory &&) = delete;
-//
-//
-//
-//	//virtual std::shared_ptr<VkImageBase> ProduceImage();
-//	////VkBufferBundle is copyable without risks of memory leak
-//	//virtual VkImageBundle ProduceImageBundle(uint32_t bundle_size);
-//	//virtual std::shared_ptr<VkImageBundle> ProduceImageBundlePtr(uint32_t bundle_size);
-//
-//
-// // protected:
-//
-//	//virtual void BuildImage()            = 0;
-//	//virtual void CreateAndBindMemory()   = 0;
-//	//virtual void BuildImageView()        = 0;
-//	//virtual void Assemble()              = 0;
-//	//virtual void TransitionImageLayout() = 0;
-//	//virtual void RestoreToDefaultState() = 0;
-//
-//
-//
-//
-//  protected:
-//	//std::shared_ptr<VkImageBase> result;
-//
-//  protected:
-//	VkGraphicsComponent &     gfx;
-//	const VkDeviceManager &   device_manager;
-//	const VkSwapchainManager &swapchain_manager;
-//	const VkCommandManager &  command_manager;
-//	const VkWindows &         window;
-//
-//
-//	//those are temp variables used when contructing buffer.when the call of ProduceBuffer function finishes,those vars are not valid anymore
-//  protected:
-//
-//	//bool factory_state_modified{false};
-//
-//};            
+#include "VkGraphicsComponent.h"
+#include "ImageParameterPack.h"
+#include "VkGeneralPurposeImage.h"
+#include "VkImageBase.h"
+#include "VkImageBundle.h"
+#include "VkSwapchainImage.h"
+
+
+class VkImageFactory
+{
+  public:
+	VkImageFactory(VkGraphicsComponent &_gfx);
+	~VkImageFactory() = default;
+
+	VkImageFactory()                       = delete;
+	VkImageFactory(const VkImageFactory &) = delete;
+	VkImageFactory &operator=(const VkImageFactory &) = delete;
+
+	VkImageFactory(VkImageFactory &&) = delete;
+	VkImageFactory &operator=(VkImageFactory &&) = delete;
+
+	[[nodiscard]] std::shared_ptr<VkImageBase> ProduceImage(const ImgParameterPack &para_pack) const;
+	//VkBufferBundle is copyable without risks of memory leak
+
+	//[[nodiscard]] VkImageBundle ProduceImageBundle(const ImgParameterPack &para_pack, size_t bundle_size) const;
+	[[nodiscard]] std::shared_ptr<VkImageBundle> ProduceImageBundlePtr(const ImgParameterPack &para_pack, size_t bundle_size) const;
+
+
+	//[[nodiscard]] VkImageBundle ProduceImageBundle(const SwapImgParameterPack &para_pack) const;
+	[[nodiscard]] std::shared_ptr<VkImageBundle> ProduceImageBundlePtr(const SwapImgParameterPack &para_pack) const;
+
+  private:
+	[[nodiscard]] VkImage        BuildImage(ImgParameterPack &para_pack) const;
+	[[nodiscard]] VkDeviceMemory CreateAndBindMemory(ImgParameterPack &para_pack, VkImage temp_image) const;
+	[[nodiscard]] VkImageView    BuildImageView(ImgParameterPack &para_pack, VkImage temp_image) const;
+	static void                  TransitionImageLayout(const ImgParameterPack &para_pack, const std::shared_ptr<VkImageBase>& result);
+
+  private:
+  protected:
+	VkGraphicsComponent &     gfx;
+	const VkDeviceManager &   device_manager;
+	const VkSwapchainManager &swapchain_manager;
+	const VkCommandManager &  command_manager;
+	const VkWindows &         window;
+};

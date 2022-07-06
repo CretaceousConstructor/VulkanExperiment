@@ -8,23 +8,34 @@
 class Renderpass0 : public VkRenderpassBase
 {
   public:
-	Renderpass0(VkGraphicsComponent &gfx_, VkRenderpassManager &renderpass_manager_,SceneLoading::CommonResources &common_resources_);
+	Renderpass0(VkGraphicsComponent &gfx_, VkRenderpassManager &renderpass_manager_, SceneLoading::CommonResources &common_resources_);
 
 	void CreateDescriptorSetLayout() override;
 	void CreateDescriptorSets() override;
 
-	void CreateRenderPass() override;
+	void CreateAttachments() override;
 
 	void CreateGraphicsPipelineLayout() override;
 	void CompileShaders() override;
-	void CreateGraphicsPipeline() override;
 
   public:
-	void BeginRenderpass(const std::vector<VkCommandBuffer>& command_buffers) const override;
-	void RenderpassExecute(const std::vector<VkCommandBuffer>& command_buffers) override;
+	void BeginRenderpass(const std::vector<VkCommandBuffer> &command_buffers) override;
+	void ExecuteRenderpass(const std::vector<VkCommandBuffer> &command_buffers) override;
+	void EndRenderpass(const std::vector<VkCommandBuffer> &command_buffers) override;
+
 
   private:
-	VkPipelineParameterPack          subpass0_pipeline_pack;
+	void LayoutTransitionStartOfRendering(VkCommandBuffer cmd_buffer, size_t image_index) const;
+	void LayoutTransitionEndOfRendering(VkCommandBuffer cmd_buffer, size_t image_index) const;
+
+	//void LayoutTransitionStartOfRenderpass(VkCommandBuffer cmd_buffer, size_t image_index) const;
+
+
+
+
+  private:
+	VkPipelineParameterPack pass0_pipeline_pack;
+
 	std::shared_ptr<VkShaderWrapper> model_fragment_shader;
 	std::shared_ptr<VkShaderWrapper> model_vertex_shader;
 
@@ -32,8 +43,9 @@ class Renderpass0 : public VkRenderpassBase
 	std::shared_ptr<VkShaderWrapper> light_indicator_vertex_shader;
 
   private:
-	const VkSwapchainManager &swapchain_manager;
-	SceneLoading::CommonResources &common_resources;
+	std::vector<VkAttachmentInfo> attachments;
 
-	uint32_t                  pass_num{SceneLoading::Pass0::renderpass0};
+  private:
+	const VkSwapchainManager &     swapchain_manager;
+	SceneLoading::CommonResources &common_resources;
 };

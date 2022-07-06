@@ -16,7 +16,7 @@ VkSwapchainManager::~VkSwapchainManager()
 
 void VkSwapchainManager::CreateSwapChainAndSwapImages()
 {
-	VkDeviceManager::SwapChainSupportDetails swapChainSupport = VkDeviceManager::QuerySwapChainSupport(device_manager.GetPhysicalDevice(), window.GetSurface());
+	const VkDeviceManager::SwapChainSupportDetails swapChainSupport = VkDeviceManager::QuerySwapChainSupport(device_manager.GetPhysicalDevice(), window.GetSurface());
 	////支持的backbuffer格式
 
 	//format;
@@ -29,13 +29,13 @@ void VkSwapchainManager::CreateSwapChainAndSwapImages()
 	//VK_PRESENT_MODE_MAILBOX_KHR = 1,
 	//VK_PRESENT_MODE_IMMEDIATE_KHR = 0,
 
-	VkSurfaceFormatKHR surfaceFormat = ChooseSwapSurfaceFormat(swapChainSupport.formats);
+	const VkSurfaceFormatKHR surfaceFormat = ChooseSwapSurfaceFormat(swapChainSupport.formats);
 
-	VkPresentModeKHR presentMode = ChooseSwapPresentMode(swapChainSupport.present_modes);
+	const VkPresentModeKHR presentMode = ChooseSwapPresentMode(swapChainSupport.present_modes);
 
 	//VK_PRESENT_MODE_MAILBOX_KHR:等待下一次的vertical blanking的时候才会把渲染好的帧给front buffer，内部存在一个队列存放渲染好的帧；如果队列满了，会用新渲染的帧替换队列中已有的帧，并且被替换的那些帧可以被应用程序再次利用。
 
-	VkExtent2D extent = ChooseSwapExtent(swapChainSupport.capabilities, window);
+	const VkExtent2D extent = ChooseSwapExtent(swapChainSupport.capabilities, window);
 
 	//3
 	image_count = swapChainSupport.capabilities.minImageCount + 1;
@@ -56,8 +56,8 @@ void VkSwapchainManager::CreateSwapChainAndSwapImages()
 	swapchain_createInfo.imageArrayLayers = 1;                                          //给3D应用用的，直接当成1不用管了
 	swapchain_createInfo.imageUsage       = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;        //直接往image渲染颜色
 
-	VkDeviceManager::QueueFamilyIndices indices            = VkDeviceManager::FindQueueFamilies(device_manager.GetPhysicalDevice(), window.GetSurface());
-	std::set<uint32_t>                  queueFamilyIndices = {indices.graphicsFamily.value(), indices.presentFamily.value(), indices.transferFamily.value()};
+	const VkDeviceManager::QueueFamilyIndices indices            = VkDeviceManager::FindQueueFamilies(device_manager.GetPhysicalDevice(), window.GetSurface());
+	const std::set<uint32_t>                  queueFamilyIndices = {indices.graphicsFamily.value(), indices.presentFamily.value(), indices.transferFamily.value()};
 
 	//If the queue families differ, then we'll be using the concurrent mode in this tutorial to avoid having to do the ownership chapters, because these involve some concepts that are better explained at a later time. Concurrent mode requires you to specify in advance between which queue families ownership will be shared using the queueFamilyIndexCount and pQueueFamilyIndices parameters.
 

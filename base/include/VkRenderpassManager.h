@@ -25,12 +25,10 @@ class VkRenderpassManager
 	void AddPipelineLayout(const PipelineLayoutMetaInfo &pipe_layout_info);
 
   public:
-	[[nodiscard]] VkPipeline       GetPipeline(const PipelineMetaInfo &meta_info) const;
-	[[nodiscard]] VkPipelineLayout GetPipelineLayout(const PipelineLayoutMetaInfo &meta_info) const;
-
+	[[nodiscard]] VkPipeline         GetPipeline(const PipelineMetaInfo &meta_info) const;
+	[[nodiscard]] VkPipelineLayout   GetPipelineLayout(const PipelineLayoutMetaInfo &meta_info) const;
 	[[nodiscard]] VkPipelineBuilder &GetPipelineBuilder();
 
-	VkRenderpassWrapper &                             GetRenderpass(uint32_t pass);
 	[[nodiscard]] const std::vector<VkDescriptorSet> &GetDescriptorSetBundle(DescriptorSetMetaInfo meta_info) const;
 
   public:
@@ -41,12 +39,14 @@ class VkRenderpassManager
 	 * \brief 返回没有状态记忆的工厂类对象
 	 * \return stateless factory
 	 */
-	const VkSubPassFacotry &       GetSubPassFactory();
+	//const VkSubPassFacotry &       GetSubPassFactory();
 	const VkBufferFactory &        GetBufferFactory();
 	const VkTextureFactory &       GetTextureFactory();
 	const VkSynObjectFactory &     GetSynOjectFactory();
-	const VkDepthImageFactory &    GetDepthImageFactory();
-	const VkSwapchainImageFactory &GetSwapchainImageFactory();
+	//const VkDepthImageFactory &    GetDepthImageFactory();
+	//const VkSwapchainImageFactory &GetSwapchainImageFactory();
+
+	const VkImageFactory &GetImageFactory();
 	const VkModelFactory &         GetModelFactory();
 
   public:
@@ -61,6 +61,8 @@ class VkRenderpassManager
 	VkFactoryBundle factories;
 
   private:
-	std::unordered_map<uint32_t, VkRenderpassWrapper> render_passes;
-	std::unordered_map<uint32_t, std::string>         render_passes_names;
+	//VkRenderpassWrapper &                             GetRenderpass(uint32_t pass);
+
+	//std::unordered_map<uint32_t, VkRenderpassWrapper> render_passes;
+	//std::unordered_map<uint32_t, std::string>         render_passes_names;
 };
