@@ -69,9 +69,7 @@ void VkCommandManager::EndSingleTimeCommands(const VkCommandPool &command_pool, 
 	submitInfo.pCommandBuffers    = &command_buffer;
 
 	vkQueueSubmit(command_quque, 1, &submitInfo, nullptr);
-
 	vkQueueWaitIdle(command_quque);
-
 	vkFreeCommandBuffers(device, command_pool, 1, &command_buffer);
 }
 

@@ -3,6 +3,7 @@
 #include "VkGraphicsComponent.h"
 #include "VkShaderManager.h"
 #include "VkDescriptorManager.h"
+
 //obsolete
 class VkPipelineWrapper
 {
@@ -10,6 +11,9 @@ class VkPipelineWrapper
 public:
 
 	friend class VkPipelineBuilder;
+
+
+
 
 	VkPipelineWrapper(VkGraphicsComponent& _gfx);
 

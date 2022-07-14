@@ -1,6 +1,6 @@
 #pragma once
 #include "VkGraphicsComponent.h"
-#include "VkPipelineParameterPack.h"
+#include "VkPipelinePP.h"
 #include "VkPipelineWrapper.h"
 #include "VkRenderpassWrapper.h"
 #include "VkShaderManager.h"
@@ -19,8 +19,8 @@ class VkPipelineBuilder
 	VkPipelineBuilder &operator=(VkPipelineBuilder &&) = delete;
 
   public:
-	VkPipeline BuildPipeline(const VkPipelineParameterPack &para_pack, VkPipelineLayout pipeline_layout, const PipelineMetaInfo &pipe_meta_info) const;
-	[[nodiscard]] VkPipeline BuildPipeline(const VkPipelineParameterPack &para_pack) const;
+	VkPipeline BuildPipeline(const VkPipelinePP &para_pack, VkPipelineLayout pipeline_layout, const PipelineMetaInfo &pipe_meta_info) const;
+	[[nodiscard]] VkPipeline BuildPipeline(const VkPipelinePP &para_pack_) const;
 
   private:
 	VkGraphicsComponent &  gfx;

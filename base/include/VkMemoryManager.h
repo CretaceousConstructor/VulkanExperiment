@@ -1,7 +1,5 @@
 #pragma once
-#include "EngineMarco.h"
-#include "EngineHeader.h"
-
+#include "VkHeader.h"
 class VkMemoryManager
 {
 public:

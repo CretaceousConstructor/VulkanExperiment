@@ -5,7 +5,7 @@ VkMaterial::VkMaterial(VkGraphicsComponent &gfx_) :
 
 {}
 
-//VkPipelineLayout VkMaterial<Derived>::CreatePipelineLayout(const VkDeviceManager &device_manager, const std::vector<VkDescriptorSetLayout> &other_layouts, const std::vector<VkPushConstantRange> &push_constant_ranges)
+//VkPipelineLayout VkMaterial<Derived>::GetPipelineLayout(const VkDeviceManager &device_manager, const std::vector<VkDescriptorSetLayout> &other_layouts, const std::vector<VkPushConstantRange> &push_constant_ranges)
 //{
 //	return Derived::CreatePipelineLayoutImpl(device_manager, other_layouts, push_constant_ranges);
 //}
@@ -15,7 +15,6 @@ VkMaterial::VkMaterial(VkGraphicsComponent &gfx_) :
 //{
 //	return Derived::CreateDesciptorSetLayoutImpl(device_manager);
 //}
-
 
 
 void VkMaterial::SetPipeline(VkPipeline pipeline_)

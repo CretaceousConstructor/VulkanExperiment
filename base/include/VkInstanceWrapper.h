@@ -1,9 +1,11 @@
 #pragma once
 
-#include "EngineMarco.h"
-#include "EngineHeader.h"
+//#include "EngineMarco.h"
+//#include "EngineHeader.h"
 #include "VkExtensionUtility.h"
 #include "VkValidationUtility.h"
+
+
 
 class VkInstanceWrapper
 {
@@ -18,7 +20,9 @@ class VkInstanceWrapper
 	VkInstanceWrapper &operator=(VkInstanceWrapper &&) = delete;
 
 	[[nodiscard]] VkInstance GetInstance() const;
-	//VkInstance GetInstance() const;
+
+
+
 
   private:
 	void CreateInstance();

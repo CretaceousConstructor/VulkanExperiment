@@ -13,7 +13,7 @@ class VkSynObjectFactory
 
 	//vkCreateSemaphore: parameter pCreateInfo->flags must be 0. The Vulkan spec states: flags must be 0
 	[[nodiscard]] std::shared_ptr<VkSemaphoreBundle> GetSemaphoreBundle(uint32_t _bundle_size ) const;
-	[[nodiscard]] std::shared_ptr<VkFenceBundle>     GetFenceBundle(uint32_t _bundle_size,  Vk::SyncObjCreateOption option = Vk::Unsignaled) const;
+	[[nodiscard]] std::shared_ptr<VkFenceBundle>     GetFenceBundle(uint32_t _bundle_size,  VkSynObjectBundleBase::SyncObjCreateOption option = VkSynObjectBundleBase::Unsignaled) const;
 
 
 

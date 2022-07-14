@@ -2,6 +2,8 @@
 //#define STB_IMAGE_IMPLEMENTATION
 //#define STB_IMAGE_WRITE_IMPLEMENTATION
 //
+
+
 #include "VkTexture.h"
 
 
@@ -13,7 +15,6 @@ VkTexture::VkTexture(VkGraphicsComponent &gfx_, std::string image_path, std::sha
     texture_image(image_),
     texture_sampler(texture_sampler_),
     image_layout(imageLayout_)
-
 {
 
 

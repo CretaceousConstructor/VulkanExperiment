@@ -48,8 +48,18 @@ std::shared_ptr<VkBufferBase> VkBufferFactory::ProduceBuffer(VkDeviceSize N, con
 	BindBufferToMemo(uniform_buffer, buffer_memory);
 	auto result = std::make_shared<VkBufferBase>(gfx, uniform_buffer, buffer_memory, N);
 
+	if (para_pack.memory_properties & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)
+	{
+		result->MapMemory(VK_WHOLE_SIZE, 0);
+	}
+
 	return result;
+
+
 }
+
+
+
 
 template <typename CI>
 VkBufferBundle VkBufferFactory::ProduceBufferBundle(VkDeviceSize N, uint32_t bundle_size, const CI &para_pack) const

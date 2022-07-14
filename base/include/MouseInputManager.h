@@ -1,30 +1,28 @@
 #pragma once
-#include "EngineMarco.h"
-#include "EngineHeader.h"
+#include "VkGraphicsComponent.h"
+#include "WindowsSubsys.h"
 
 #include <vector>
 class MouseInputManager
 {
-public:
-
-	MouseInputManager(VkExtent3D swap_chain_extend);
+  public:
+	MouseInputManager(VkGraphicsComponent &gfx_, VkExtent3D swap_chain_extend_);
 	~MouseInputManager();
-	void SetMousePosition(double xpos, double ypos);
+	void SetMousePosition(float xpos, float ypos);
 
+	static void SetupMouseInputs(const GLFWwindow *window);
+	static void MousePosCallback(GLFWwindow *window, double xpos, double ypos);
+	float       GetPitchDiff();
+	float       GetYawDiff();
 
-	static  void  SetupMouseInputs(const GLFWwindow* window);
-	static void MousePosCallback(GLFWwindow* window, double xpos, double ypos);
-	float GetPitchDiff() ;
-	float GetYawDiff() ;
-
-
-private:
-
+  private:
 	float lastX, lastY;
-	bool firstMouse = true;
-	float yaw_diff = 0.f;
-	float pitch_diff = 0.f;
+	bool  first_time_use = true;
+	float yaw_diff       = 0.f;
+	float pitch_diff     = 0.f;
 
-	static std::vector<MouseInputManager*> _instances;
+	VkExtent3D           swap_chain_extend;
+	VkGraphicsComponent &gfx;
+
+	static std::vector<MouseInputManager *> _instances;
 };
-

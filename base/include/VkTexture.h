@@ -25,7 +25,7 @@ class VkTexture
 	//void InitTexture(const std::string &image_path, VkFormat format_of_texture, VkImageLayout para_imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
 	//传入的材质文件格式为KTX文件,预设layer只有一层，之后应该还会添加参数修改layer
-	//void InitKTXTexture(const std::string &image_path, VkFormat format_of_underlying_image, VkImageLayout para_imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+	//void InitKTXImg(const std::string &image_path, VkFormat format_of_underlying_image, VkImageLayout para_imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
 	//直接传入存储图片的buffer，不需要图片的路径
 	//void InitTexture(const void *buffer, VkDeviceSize bufferSize, uint32_t texWidth, uint32_t texHeight, VkFormat format_of_underlying_image, VkImageLayout imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);

@@ -8,6 +8,10 @@ VkRenderpassBase::VkRenderpassBase(VkGraphicsComponent &gfx_,
 
 void VkRenderpassBase::Init()
 {
+
+
+	ResourceInit();
+
 	CreateDescriptorSetLayout();
 	CreateDescriptorSets();
 
@@ -15,5 +19,8 @@ void VkRenderpassBase::Init()
 
 	CreateGraphicsPipelineLayout();
 	CompileShaders();
+
+
+
 }
 

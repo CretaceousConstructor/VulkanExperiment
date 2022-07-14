@@ -2,6 +2,9 @@
 #include "BaseRenderer.h"
 #include "VkGraphicsComponent.h"
 #include "VkInstanceWrapper.h"
+
+#include "VkMath.h"
+
 #include <memory>
 
 class App
@@ -19,6 +22,7 @@ class App
   public:
 	void Run();
 	void MainLoop() const;
+
 
   protected:
 	virtual void InitRenderer() = 0;

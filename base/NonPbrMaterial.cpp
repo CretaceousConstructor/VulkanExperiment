@@ -5,9 +5,6 @@
 //{
 //}
 
-
-
-
 //VkDescriptorSetLayout NonPbrMaterial::CreateDesciptorSetLayout()
 //{
 //	//only one set will be allocate for one type of material
@@ -63,13 +60,13 @@
 //	const auto                        normal_image_index = textures[normalTextureIndex].imageIndex;
 //	std::vector<VkWriteDescriptorSet> write_descriptor_sets;
 //	/*
-//				Binding 0: color mapping 
+//				Binding 0: color mapping
 //	*/
 //	auto binding0   = images[color_image_index]->GetWriteDescriptorSetInfo(0);
 //	binding0.dstSet = descriptor_set;
 //	write_descriptor_sets.push_back(binding0);
 //	/*
-//				Binding 1: normal mapping 
+//				Binding 1: normal mapping
 //	*/
 //
 //	auto binding1   = images[normal_image_index]->GetWriteDescriptorSetInfo(1);
@@ -83,7 +80,7 @@
 //
 //}
 //
-//VkPipelineLayout NonPbrMaterial::CreatePipelineLayout(const std::vector<VkDescriptorSetLayout> &set_layouts, const std::vector<VkPushConstantRange> &push_constant_ranges)
+//VkPipelineLayout NonPbrMaterial::GetPipelineLayout(const std::vector<VkDescriptorSetLayout> &set_layouts, const std::vector<VkPushConstantRange> &push_constant_ranges)
 //{
 //	//这里的constant ranges也可以由材质决定
 //	VkPipelineLayout pipeline_layout{};
@@ -106,7 +103,7 @@
 //	return pipeline_layout;
 //}
 //
-//void NonPbrMaterial::ModifyPipelineCI(VkPipelineParameterPack &pipeline_CI)
+//void NonPbrMaterial::ModifyPipelineCI(VkPipelinePP &pipeline_CI)
 //{
 //	material_specialization_data.alphaMask       = (alphaMode == "MASK");
 //	material_specialization_data.alphaMaskCutoff = alphaCutOff;
@@ -136,7 +133,7 @@
 //	specialization_info.dataSize      = sizeof(material_specialization_data);
 //	specialization_info.pData         = &material_specialization_data;
 //
-//	const VkPipelineParameterPack::VkSpecializationInfoPack result{.sp_info = specialization_info, .shader_stage = VK_SHADER_STAGE_FRAGMENT_BIT};
+//	const VkPipelinePP::VkSpecializationInfoPack result{.sp_info = specialization_info, .shader_stage = VK_SHADER_STAGE_FRAGMENT_BIT};
 //	//shader_stages_create_info[1].pSpecializationInfo = &specializationInfo;
 //	// For double sided materials, culling will be disabled
 //	pipeline_CI.specialization_infos.clear();
@@ -150,7 +147,6 @@ constexpr uint32_t NonPbrMaterial::GetRequiredDescirpotrCount()
 	return 2;
 }
 
-
 NonPbrMaterial::NonPbrMaterial(VkGraphicsComponent &gfx_) :
     VkMaterial(gfx_)
 {
@@ -158,13 +154,9 @@ NonPbrMaterial::NonPbrMaterial(VkGraphicsComponent &gfx_) :
 
 void NonPbrMaterial::AllocateDescriptorSetAndUpdate(VkDescriptorPool descriptor_pool, VkDescriptorSetLayout desc_set_layout, const std::vector<Gltf::Texture> &textures, const std::vector<std::shared_ptr<VkTexture>> &images)
 {
-
 	//ALLOCATE DESCRIPTORS
-	VkDescriptorSetAllocateInfo allocInfoWrite{};
-	allocInfoWrite.sType              = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-	allocInfoWrite.descriptorPool     = descriptor_pool;
-	allocInfoWrite.descriptorSetCount = 1;
-	allocInfoWrite.pSetLayouts        = &desc_set_layout;
+
+	VkDescriptorSetAllocateInfo allocInfoWrite = VkDescriptorManager::GetDescriptorAllocateInfo(descriptor_pool, desc_set_layout);
 	if (vkAllocateDescriptorSets(device_manager.GetLogicalDevice(), &allocInfoWrite, &descriptor_set) != VK_SUCCESS)
 	{
 		throw std::runtime_error("failed to allocate descriptor sets!");
@@ -191,7 +183,7 @@ void NonPbrMaterial::AllocateDescriptorSetAndUpdate(VkDescriptorPool descriptor_
 	vkUpdateDescriptorSets(device_manager.GetLogicalDevice(), uint32_t(write_descriptor_sets.size()), write_descriptor_sets.data(), 0, nullptr);
 }
 
-void NonPbrMaterial::ModifyPipelineCI(VkPipelineParameterPack &pipeline_CI)
+void NonPbrMaterial::ModifyPipelineCI(VkPipelinePP &pipeline_CI)
 {
 	material_specialization_data.alphaMask       = (alphaMode == "MASK");
 	material_specialization_data.alphaMaskCutoff = alphaCutOff;
@@ -220,7 +212,7 @@ void NonPbrMaterial::ModifyPipelineCI(VkPipelineParameterPack &pipeline_CI)
 	specialization_info.dataSize      = sizeof(material_specialization_data);
 	specialization_info.pData         = &material_specialization_data;
 
-	const VkPipelineParameterPack::VkSpecializationInfoPack result{.sp_info = specialization_info, .shader_stage = VK_SHADER_STAGE_FRAGMENT_BIT};
+	const VkPipelinePP::VkSpecializationInfoPack result{.sp_info = specialization_info, .shader_stage = VK_SHADER_STAGE_FRAGMENT_BIT};
 	//shader_stages_create_info[1].pSpecializationInfo = &specializationInfo;
 	// For double sided materials, culling will be disabled
 	pipeline_CI.specialization_infos.clear();
@@ -229,9 +221,8 @@ void NonPbrMaterial::ModifyPipelineCI(VkPipelineParameterPack &pipeline_CI)
 	pipeline_CI.rasterization_state_CI.cullMode = doubleSided ? VK_CULL_MODE_NONE : VK_CULL_MODE_BACK_BIT;
 }
 
-void NonPbrMaterial::CleanUpMaterial(const VkDeviceManager& device_manager)
+void NonPbrMaterial::CleanUpMaterial(const VkDeviceManager &device_manager)
 {
-
 	vkDestroyPipelineLayout(device_manager.GetLogicalDevice(), pipe_layout, nullptr);
 
 	vkDestroyDescriptorSetLayout(device_manager.GetLogicalDevice(), desc_layout, nullptr);
@@ -239,7 +230,6 @@ void NonPbrMaterial::CleanUpMaterial(const VkDeviceManager& device_manager)
 
 VkDescriptorSetLayout NonPbrMaterial::GetDescriptorSetLayout()
 {
-
 	return desc_layout;
 }
 
@@ -248,10 +238,10 @@ VkPipelineLayout NonPbrMaterial::GetPipelineLayout()
 	return pipe_layout;
 }
 
-
-
 VkDescriptorSetLayout NonPbrMaterial::CreateDesciptorSetLayout(const VkDeviceManager &device_manager)
 {
+
+
 	vkDestroyDescriptorSetLayout(device_manager.GetLogicalDevice(), desc_layout, nullptr);
 	//LAYOUT FOR  THIS MATERIAL
 	// Descriptor set layout for passing material :binding 0 for color,binding 1 for normal mappings
@@ -289,25 +279,13 @@ VkDescriptorSetLayout NonPbrMaterial::CreateDesciptorSetLayout(const VkDeviceMan
 
 VkPipelineLayout NonPbrMaterial::CreatePipelineLayout(const VkDeviceManager &device_manager, const std::vector<VkDescriptorSetLayout> &set_layouts, const std::vector<VkPushConstantRange> &push_constant_ranges)
 {
+
 	vkDestroyPipelineLayout(device_manager.GetLogicalDevice(), pipe_layout, nullptr);
 
-	//这里的constant ranges也可以由材质决定
-
-	VkPipelineLayoutCreateInfo pipelineLayoutInfo_subpass0{};
-	pipelineLayoutInfo_subpass0.sType          = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-	pipelineLayoutInfo_subpass0.setLayoutCount = uint32_t(set_layouts.size());
-	pipelineLayoutInfo_subpass0.pSetLayouts    = set_layouts.data();
-
-	//TODO: testing multiple push constants and how to access it
-	// We will use push constants to push the local matrices of a primitive to the vertex shader
-	pipelineLayoutInfo_subpass0.pushConstantRangeCount = uint32_t(push_constant_ranges.size());        // Optional
-	pipelineLayoutInfo_subpass0.pPushConstantRanges    = push_constant_ranges.data();        // Optional
-
-	if (vkCreatePipelineLayout(device_manager.GetLogicalDevice(), &pipelineLayoutInfo_subpass0, nullptr, &pipe_layout) != VK_SUCCESS)
-	{
-		throw std::runtime_error("failed to create pipeline layout!");
-	}
+	pipe_layout = 	Vk::GetPipelineLayout(device_manager.GetLogicalDevice(), set_layouts, push_constant_ranges);
 
 	return pipe_layout;
-}
 
+
+
+}

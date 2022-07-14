@@ -1,7 +1,8 @@
 #pragma once
-#include "EngineMarco.h"
-#include "EngineHeader.h"
+//#include "EngineMarco.h"
+//#include "EngineHeader.h"
 #include "Transform.h"
+#include "VkHeader.h"
 
 class Camera
 {
@@ -16,31 +17,33 @@ class Camera
 	void SetPosition(float x, float y, float z);
 	void SetPosition(const glm::vec3 &pos);
 
-
 	//
 	// 获取摄像机旋转
 	//
 	// 获取绕X轴旋转的欧拉角弧度
-	[[nodiscard]]float GetRotationX() const;
+	[[nodiscard]] float GetRotationX() const;
 	// 获取绕Y轴旋转的欧拉角弧度
-	[[nodiscard]]float GetRotationY() const;
+	[[nodiscard]] float GetRotationY() const;
 
-	[[nodiscard]]float GetRotationZ() const;
-
+	[[nodiscard]] float GetRotationZ() const;
 
 	//
 	// 获取摄像机的坐标轴向量
 	//
-	[[nodiscard]]glm::vec3 GetRightAxis() const;
-	[[nodiscard]]glm::vec3 GetUpAxis() const;
-	[[nodiscard]]glm::vec3 GetLookAxis() const;
+	[[nodiscard]] glm::vec3 GetRightAxis() const;
+	[[nodiscard]] glm::vec3 GetUpAxis() const;
+	[[nodiscard]] glm::vec3 GetLookAxis() const;
 
 	//
 	// 获取矩阵
 	//
-	[[nodiscard]]glm::mat4x4 GetView() const;
-	[[nodiscard]]glm::mat4x4 GetProj() const;
-	[[nodiscard]]glm::mat4x4 GetViewProj() const;
+	[[nodiscard]] glm::mat4x4 GetView() const;
+	[[nodiscard]] glm::mat4x4 GetInverseView() const;
+	[[nodiscard]] glm::mat4x4 GetProj() const;
+	[[nodiscard]] glm::mat4x4 GetInverseProj() const;
+
+	[[nodiscard]] glm::mat4x4 GetViewProj() const;
+
 
 	// 获取视口
 	VkViewport GetViewPort() const;
@@ -48,8 +51,8 @@ class Camera
 	// 设置视锥体
 	void SetFrustum(float fovY, float aspect, float nearZ, float farZ);
 
-	[[nodiscard]]float GetNearZ() const;
-	[[nodiscard]]float GetFarZ() const;
+	[[nodiscard]] float GetNearZ() const;
+	[[nodiscard]] float GetFarZ() const;
 
 	// 设置视口
 	void SetViewPort(const VkViewport &viewPort);
@@ -67,4 +70,7 @@ class Camera
 
 	// 当前视口
 	VkViewport m_ViewPort = {};
+	glm::quat  quat4rotation;
+
+	;
 };

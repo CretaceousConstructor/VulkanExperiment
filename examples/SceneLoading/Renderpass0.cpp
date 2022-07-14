@@ -4,32 +4,32 @@ using namespace SceneLoading;
 Renderpass0::Renderpass0(VkGraphicsComponent &gfx_, VkRenderpassManager &renderpass_manager_, SceneLoading::CommonResources &common_resources_) :
     VkRenderpassBase(gfx_, renderpass_manager_), pass0_pipeline_pack(gfx), swapchain_manager(gfx.SwapchainMan()), common_resources(common_resources_)
 {
-	Init();
+
+
+
+}
+
+void Renderpass0::ResourceInit()
+{
+	return;
 }
 
 void Renderpass0::CreateDescriptorSetLayout()
 {
+	
 	auto &des_man = renderpass_manager.GetDescriptorManager();
 	//LAYOUT FOR SET 0
 	// Descriptor set layout for passing matrices
 	{
 		std::vector<VkDescriptorSetLayoutBinding> layout_bindings_matrix;
-		VkDescriptorSetLayoutBinding              temp_binding{};
-
-		temp_binding.binding            = 0;
-		temp_binding.descriptorType     = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		temp_binding.descriptorCount    = 1;
-		temp_binding.stageFlags         = VK_SHADER_STAGE_VERTEX_BIT;        //
-		temp_binding.pImmutableSamplers = nullptr;                           // Optional
+		const VkDescriptorSetLayoutBinding              temp_binding{Vk::GetDescriptorSetLayoutBinding(Vk::Binding<0>,VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,VK_SHADER_STAGE_VERTEX_BIT)};
 		layout_bindings_matrix.push_back(temp_binding);
 
-		VkDescriptorSetLayoutCreateInfo LayoutBindingCISubpass0{};
-		LayoutBindingCISubpass0.sType        = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-		LayoutBindingCISubpass0.bindingCount = (uint32_t) layout_bindings_matrix.size();        //the amount of VkDescriptorSetLayoutBinding
-		LayoutBindingCISubpass0.pBindings    = layout_bindings_matrix.data();
 
 		des_man.AddDescriptorSetLayout(Common::des_set_layout_matrices, std::move(layout_bindings_matrix));
 	}
+
+
 }
 
 void Renderpass0::CreateDescriptorSets()
@@ -132,6 +132,8 @@ void Renderpass0::CreateAttachments()
 void Renderpass0::CreateGraphicsPipelineLayout()
 {
 	//PIPELINELAYOUT FOR LIGHT INDICATOR
+
+
 }
 
 void Renderpass0::CompileShaders()
@@ -140,10 +142,15 @@ void Renderpass0::CompileShaders()
 
 	model_vertex_shader   = std::make_shared<VkShaderWrapper>(VK_SHADER_STAGE_VERTEX_BIT, std::string("../../data/shaders/SceneLoading/SceneLoading_vertex_shader.spv"), gfx);
 	model_fragment_shader = std::make_shared<VkShaderWrapper>(VK_SHADER_STAGE_FRAGMENT_BIT, std::string("../../data/shaders/SceneLoading/SceneLoading_fragment_shader.spv"), gfx);
+
+
+
 }
 
 void Renderpass0::ExecuteRenderpass(const std::vector<VkCommandBuffer> &command_buffers)
 {
+
+
 	const auto &des_man      = renderpass_manager.GetDescriptorManager();
 	const auto &pipe_builder = renderpass_manager.GetPipelineBuilder();
 
@@ -176,11 +183,19 @@ void Renderpass0::ExecuteRenderpass(const std::vector<VkCommandBuffer> &command_
 
 void Renderpass0::EndRenderpass(const std::vector<VkCommandBuffer> &command_buffers)
 {
+
 	for (size_t i = 0; i < command_buffers.size(); i++)
 	{
 		vkCmdEndRendering(command_buffers[i]);
 		LayoutTransitionEndOfRendering(command_buffers[i], i);
 	}
+
+
+}
+
+void Renderpass0::UpdateResources(size_t currentImage)
+{
+	
 }
 
 void Renderpass0::LayoutTransitionStartOfRendering(VkCommandBuffer cmd_buffer, size_t image_index) const
@@ -215,37 +230,6 @@ void Renderpass0::LayoutTransitionEndOfRendering(VkCommandBuffer cmd_buffer, siz
 
 
 
-//void Renderpass0::LayoutTransitionStartOfRenderpass(VkCommandBuffer cmd_buffer, size_t image_index) const
-//{
-//	auto &                     color_attachments     = attachments[0].GetImages();
-//	const auto &               color_attachment_info = attachments[0];
-//	const VkImageMemoryBarrier imageMemoryBarrier{
-//	    .srcAccessMask = 0,
-//	    .dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-//	    .oldLayout     = color_attachment_info.attachment_description.initialLayout,
-//	    .newLayout     = color_attachment_info.inpass_layout,
-//	};
-//
-//	color_attachments[image_index]->InsertImageMemoryBarrier(cmd_buffer, imageMemoryBarrier, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT);
-//}
-//
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 void Renderpass0::BeginRenderpass(const std::vector<VkCommandBuffer> &command_buffers)
@@ -274,16 +258,13 @@ void Renderpass0::BeginRenderpass(const std::vector<VkCommandBuffer> &command_bu
 				depth_attachment_info           = attchment.GetRenderingAttachmentInfo(i);
 				rendering_info.pDepthAttachment = &depth_attachment_info;
 			}
-
-
-
 		}
 
 		rendering_info.colorAttachmentCount = uint32_t(color_attachment_infos.size());
 		rendering_info.pColorAttachments    = color_attachment_infos.data();
 
-		//LayoutTransitionStartOfRenderpass(command_buffers[i], i);
 		LayoutTransitionStartOfRendering(command_buffers[i], i);
 		vkCmdBeginRendering(command_buffers[i], &rendering_info);
+
 	}
 }

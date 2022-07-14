@@ -20,7 +20,7 @@ class VkRenderpassManager
 	    const std::string &name, uint32_t slot, const std::vector<VkAttachmentInfo> &attachments,
 	    const std::vector<VkSubpassDependency> &dependencies, const std::vector<std::shared_ptr<VkSubpassWrapper>> &subpasses);
 
-	void AddPipeline(const VkPipelineParameterPack &para_pack, const PipelineMetaInfo &meta_info);
+	void AddPipeline(const VkPipelinePP &para_pack, const PipelineMetaInfo &meta_info);
 
 	void AddPipelineLayout(const PipelineLayoutMetaInfo &pipe_layout_info);
 

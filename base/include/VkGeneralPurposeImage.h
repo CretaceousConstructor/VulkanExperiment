@@ -39,9 +39,11 @@ public:
 	//void TransitionImageLayout(VkImageLayout oldLayout, VkImageLayout newLayout, const VkDeviceManager::CommandPoolType command_type , uint32_t mip_count = 1, uint32_t layer_count = 1) const;
  
 
-	void CopyBufferToImage(VkBuffer buffer, uint32_t width, uint32_t height, const VkCommandPool &command_pool, const VkQueue &command_quque) const;
-	void CopyBufferToImage(VkBuffer buffer, const std::vector<VkBufferImageCopy> &bufferCopyRegions, const VkCommandPool &command_pool, const VkQueue &command_quque) const;
+	//void CopyBufferToImage(VkBuffer buffer, const std::vector<VkBufferImageCopy> &bufferCopyRegions, const VkCommandPool &command_pool, const VkQueue &command_quque) const;
+
+
 	void CopyBufferToImage(VkBuffer buffer, const std::vector<VkBufferImageCopy> &bufferCopyRegions, VkDeviceManager::CommandPoolType command_type) const;
+	void CopyBufferToImage(VkBuffer buffer, uint32_t width, uint32_t height, VkDeviceManager::CommandPoolType command_type) const;
 
 
 

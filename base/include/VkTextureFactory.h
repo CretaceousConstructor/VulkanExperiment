@@ -6,18 +6,22 @@
 //#include <ktxvulkan.h>
 //#include <stb_image.h>
 //#include <stb_image_write.h>
+
 #include "VkBufferFactory.h"
 #include "VkImageFactory.h"
-
+#include <bitset>
 #include <string>
+#include <array>
+#include <unordered_set>
+#include <unordered_map>
 
 class VkTextureFactory
 {
   public:
-	class SamplerParaPack
+	class SamplerPP
 	{
 	  public:
-		SamplerParaPack()
+		SamplerPP()
 		{
 			mip_count            = 1;
 			layer_count          = 1;
@@ -52,21 +56,113 @@ class VkTextureFactory
 		uint32_t            layer_count{};
 	};
 
-	VkTextureFactory(VkGraphicsComponent &_gfx, const VkImageFactory &img_factory_,const VkBufferFactory& buffer_factory_);
-	[[nodiscard]] std::shared_ptr<VkTexture> GetTexture(const std::string &image_path, VkFormat format_of_image, const SamplerParaPack &sampler_para_pack, VkImageLayout para_imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) const;
+	class TexturePP
+	{
+	  public:
+		TexturePP(const unsigned char *const font_data_, VkFormat format_of_image_, uint32_t tex_width_, uint32_t tex_height_, uint32_t depth_ = 1) :
+		    data(font_data_),
+		    width(tex_width_),
+		    height(tex_height_),
+		    depth(depth_),
+		    format_of_image(format_of_image_)
+		{
+		}
+
+		[[nodiscard]] VkExtent3D GetImgExtend() const
+		{
+			return VkExtent3D{.width = width, .height = height, .depth = depth};
+		}
+
+		TexturePP() = delete;
+		const unsigned char *const data{};
+		const uint32_t             width{};
+		const uint32_t             height{};
+		const uint32_t             depth{};
+		const VkFormat             format_of_image{};
+	};
+
+	VkTextureFactory(VkGraphicsComponent &_gfx, const VkImageFactory &img_factory_, const VkBufferFactory &buffer_factory_);
+
+
+	[[nodiscard]] std::shared_ptr<VkTexture> GetTexture(const std::string &image_path, VkFormat format_of_image, const SamplerPP &sampler_para_pack, VkImageLayout para_imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) const;
+	[[nodiscard]] std::shared_ptr<VkTexture> GetTexture(const TexturePP &texture_pp, const SamplerPP &sampler_para_pack, VkImageLayout para_imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) const;
 
   private:
-	//void InitTexture(const std::string &image_path, const VkFormat format_of_image, const VkImageLayout _imageLayout, SamplerParaPack &para_pack) const;
+	//void InitImg(const std::string &image_path, const VkFormat format_of_image, const VkImageLayout _imageLayout, SamplerPP &para_pack) const;
+	std::shared_ptr<VkGeneralPurposeImage> InitKTXImg(const std::string &image_path, const VkFormat format_of_image, const VkImageLayout image_layout_, SamplerPP &sampler_para_pack_) const;
+	std::shared_ptr<VkGeneralPurposeImage> InitImgFromBuffer(const TexturePP &texture_pp, const VkImageLayout image_layout_, SamplerPP &sampler_para_pack_) const;
 
-	std::shared_ptr<VkGeneralPurposeImage> InitKTXTexture(const std::string &image_path, const VkFormat format_of_image, const VkImageLayout image_layout_, SamplerParaPack &sampler_para_pack_) const;
-
-	[[nodiscard]] VkSampler InitSampler(const SamplerParaPack &para_pack) const;
+	[[nodiscard]] VkSampler InitSampler(const SamplerPP &para_pack) const;
 
   private:
 	VkGraphicsComponent &  gfx;
 	const VkDeviceManager &device_manager;
 	const VkWindows &      window;
-	const VkImageFactory &       img_factory;
-	const VkBufferFactory &      buffer_factory;
+	const VkImageFactory & img_factory;
+	const VkBufferFactory &buffer_factory;
+};
+
+
+
+
+
+
+
+
+
+
+
+
+class SamplerWrapper
+{
+public:
+
+	struct id
+	{
+		size_t UUID{};
+		bool   marked_as_unused{false};
+		
+	};
+
+	VkSampler sampler;
+};
+
+
+
+
+template <size_t capacity>
+class SamplerFactory
+{
+
+public:
+
+	std::bitset<capacity> set;
+	std::array<VkSampler,capacity> samplers;
+	std::unordered_map<VkSampler,size_t> samplers;
+
+	std::vector<std::pair<VkSampler, size_t>> unused_samplers;
+
+
 
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

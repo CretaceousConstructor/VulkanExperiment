@@ -1,6 +1,8 @@
 #pragma once
 
 #include "VkMaterial.h"
+#include "VkDescriptorManager.h"
+#include "Vk.h"
 
 class NonPbrMaterial : public VkMaterial
 {
@@ -25,7 +27,7 @@ class NonPbrMaterial : public VkMaterial
 	//***********************************************************************
 	constexpr uint32_t GetRequiredDescirpotrCount() override;
 	void               AllocateDescriptorSetAndUpdate(VkDescriptorPool descriptor_pool, VkDescriptorSetLayout desc_set_layout, const std::vector<Gltf::Texture> &textures, const std::vector<std::shared_ptr<VkTexture>> &images) override;
-	void               ModifyPipelineCI(VkPipelineParameterPack &pipeline_CI) override;
+	void               ModifyPipelineCI(VkPipelinePP &pipeline_CI) override;
 
   public:
 	static VkDescriptorSetLayout GetDescriptorSetLayout();

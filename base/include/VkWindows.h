@@ -1,8 +1,17 @@
 #pragma once
-#include "EngineMarco.h"
-#include "EngineHeader.h"
+
+//#include "EngineMarco.h"
+//#include "EngineHeader.h"
+
+#include "VkHeader.h"
+#include "WindowsSubsys.h"
+
 #include <memory>
 #include <string>
+#include <stdexcept>
+
+
+
 //这里需要创建singleton class，否则在析构函数中调用glfwTerminate会使得其他任何窗口都没法继续使用。但是暂时先懒得管
 class VkWindows
 {
@@ -20,6 +29,8 @@ class VkWindows
 
   public:
 	[[nodiscard]]VkSurfaceKHR GetSurface() const;
+	//[[nodiscard]] VkFormat     GetSurfaceFormat() const;
+
 	//const VkSurfaceKHR &GetSurfaceRef() const;
 	//VkSurfaceKHR &      GetSurfaceRef();
 	[[nodiscard]] const GLFWwindow * GetWindowPtr() const;
@@ -39,4 +50,6 @@ class VkWindows
 	const VkInstance &instance;
 	GLFWwindow *      raw_window_ptr = nullptr;
 	VkSurfaceKHR      surface;
+
+
 };

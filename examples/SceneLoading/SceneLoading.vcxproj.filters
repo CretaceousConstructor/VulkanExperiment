@@ -39,6 +39,9 @@
     <ClCompile Include="RenderingMetaInfo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="UIRenderpass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SceneLoadingApp.h">
@@ -51,6 +54,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Renderpass0.h">
+      <Filter>Header Files\Renderpasses</Filter>
+    </ClInclude>
+    <ClInclude Include="UIRenderpass.h">
       <Filter>Header Files\Renderpasses</Filter>
     </ClInclude>
   </ItemGroup>

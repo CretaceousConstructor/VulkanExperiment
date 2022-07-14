@@ -7,15 +7,16 @@
 #include "KeyBoardInputManager.h"
 #include "MouseInputManager.h"
 #include "RenderingMetaInfo.h"
+
+
 #include "Renderpass0.h"
+#include "ImguiRenderpass.h"
+#include "VkMath.h"
 #include "VkRenderpassBase.h"
 #include "VkRenderpassManager.h"
 #include "VkTexture.h"
 #include <array>
 #include <chrono>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtx/hash.hpp>
 #include <iostream>
 #include <memory>
 #include <random>
@@ -40,15 +41,14 @@ class SceneLoadingRenderer : public BaseRenderer
 	void CreateAttachmentImages() override;
 	void CreateTextureImages() override;
 	void CreateUniformBuffer() override;
-
 	void CreateDescriptorPool() override;
 
 	void RenderpassInit() override;
 
 	void PrepareModels() override;
-	void InitSynObjects() override;
 
 	void CommandBufferRecording() override;
+	void InitSynObjects() override;
 
 	void UpdateUniformBuffer(size_t currentImage) override;
 
@@ -56,10 +56,14 @@ class SceneLoadingRenderer : public BaseRenderer
 	//========================================
 	void DrawFrame() override;
 	void UpdateCamera(float dt) override;
+
   private:
 	static constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 
   private:
+
+
+
 	//void CreatePipelineCache();
 	void CreateDepthImages();
 	void CreateSwapchainImages();
@@ -67,7 +71,6 @@ class SceneLoadingRenderer : public BaseRenderer
   private:
 	//RENDERPASS MAN
 	VkRenderpassManager render_pass_manager;
-
 	//RENDERPASS
 	std::vector<std::shared_ptr<VkRenderpassBase>> renderpasses;
 
@@ -82,7 +85,6 @@ class SceneLoadingRenderer : public BaseRenderer
 	std::shared_ptr<VkFenceBundle>     frame_fences;
 	//-----------------------------------------------------------
 	std::vector<VkFence> image_fences;
-
 
 	SceneLoading::CommonResources common_resources;
 

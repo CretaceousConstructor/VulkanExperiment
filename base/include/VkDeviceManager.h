@@ -1,6 +1,6 @@
 #pragma once
-#include "EngineMarco.h"
-#include "EngineHeader.h"
+//#include "EngineMarco.h"
+//#include "EngineHeader.h"
 #include "VkExtensionUtility.h"
 #include "VkWindows.h"
 #include <list>
@@ -65,7 +65,7 @@ class VkDeviceManager
 
   private:
 	void       PickPhysicalDevice();
-	static int RateDeviceSuitability(const VkPhysicalDevice &_device);
+	static int RateDeviceSuitability(const VkPhysicalDevice &device_);
 
 	std::list<VkCommandPool> command_pools;
 

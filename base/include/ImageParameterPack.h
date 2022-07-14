@@ -41,6 +41,7 @@ class TexImgParameterPack : public ImgParameterPack
 {
   public:
 	TexImgParameterPack(std::string _image_path, const VkFormat format_, const VkExtent3D &image_extend_);
+	TexImgParameterPack(const VkFormat format_, const VkExtent3D &image_extend_);
 
 	[[nodiscard]] std::shared_ptr<ImgParameterPack> Clone() const override;
   private:

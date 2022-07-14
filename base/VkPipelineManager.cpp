@@ -21,11 +21,10 @@ VkPipelineManager::~VkPipelineManager()
 	}
 }
 
-void VkPipelineManager::AddPipeline(const VkPipelineParameterPack &para_pack,  const PipelineMetaInfo pipe_meta_info)
+void VkPipelineManager::AddPipeline(const VkPipelinePP &para_pack, const PipelineMetaInfo pipe_meta_info)
 {
 	const VkPipelineLayout pipeline_layout = pipline_layouts.at(pipe_meta_info.pipelayout_id);
-	piplines.insert({pipe_meta_info, pipeline_builder.BuildPipeline(para_pack,  pipeline_layout, pipe_meta_info)});
-
+	piplines.insert({pipe_meta_info, pipeline_builder.BuildPipeline(para_pack, pipeline_layout, pipe_meta_info)});
 }
 
 void VkPipelineManager::AddPipelineLayout(const PipelineLayoutMetaInfo &pipe_layout_info, const std::vector<VkDescriptorSetLayout> &des_layouts)
@@ -56,12 +55,13 @@ VkPipelineLayout VkPipelineManager::GetPipelineLayout(const PipelineLayoutMetaIn
 	return pipline_layouts.at(meta_info);
 }
 
-VkPipelineBuilder & VkPipelineManager::GetPipelineBuilder()
+VkPipelineBuilder &VkPipelineManager::GetPipelineBuilder()
 {
 	return pipeline_builder;
 }
 
-VkShaderManager & VkPipelineManager::GetShaderFactory()
+VkShaderManager &VkPipelineManager::GetShaderFactory()
 {
 	return shader_factory;
 }
+

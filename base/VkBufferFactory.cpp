@@ -5,8 +5,7 @@ VkBufferFactory::VkBufferFactory(VkGraphicsComponent &_gfx) :
 {
 }
 
-
-void VkBufferFactory::BindBufferToMemo(VkBuffer buffer, VkDeviceMemory memory,VkDeviceSize offset) const
+void VkBufferFactory::BindBufferToMemo(VkBuffer buffer, VkDeviceMemory memory, VkDeviceSize offset) const
 {
-	vkBindBufferMemory(device_manager.GetLogicalDevice(), buffer, memory, offset);
+	VK_CHECK_RESULT(vkBindBufferMemory(device_manager.GetLogicalDevice(), buffer, memory, offset));
 }

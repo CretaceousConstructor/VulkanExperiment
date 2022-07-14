@@ -229,14 +229,6 @@ void VkImageBase::TransitionImageLayout(VkImageLayout oldLayout, VkImageLayout n
 
 
 
-
-
-
-
-
-
-
-
 }
 
 bool VkImageBase::HasStencilComponent(VkFormat format)

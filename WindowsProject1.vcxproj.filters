@@ -24,9 +24,6 @@
     <Filter Include="Header Files\Transform">
       <UniqueIdentifier>{2112289d-a2de-44ce-a799-7a18bf435c4a}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\ImGui\VulkanShader">
-      <UniqueIdentifier>{b85ef455-2136-47dd-a629-4dbddda85597}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\Vk">
       <UniqueIdentifier>{7ef85353-c567-418a-b501-6554ef5913af}</UniqueIdentifier>
     </Filter>
@@ -120,6 +117,21 @@
     <Filter Include="Header Files\VkCore\Image\Useless\ImageFactory">
       <UniqueIdentifier>{8de3d23e-9c52-4f77-b328-710ca9b36907}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\VkCore\Math">
+      <UniqueIdentifier>{082cb941-d1b6-4163-912b-38522e15c6ce}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\WindowsSubsys">
+      <UniqueIdentifier>{780af6da-ed66-405c-bafa-42bcb6e70e78}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Application">
+      <UniqueIdentifier>{afaf6a75-9888-4bd6-9cb7-776f28253b48}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\ImGui\ImguiShaders">
+      <UniqueIdentifier>{756adca8-0c9e-49e3-b1b2-41f8f29383dc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\VkCore\Pipeline\ParameterPack">
+      <UniqueIdentifier>{faf8b4ec-19e7-46f3-b401-5c3cff444360}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="base\App.cpp">
@@ -155,7 +167,7 @@
     <ClCompile Include="base\VkGeneralPurposeImage.cpp">
       <Filter>Source Files\Vk</Filter>
     </ClCompile>
-    <ClCompile Include="base\VkImgui.cpp">
+    <ClCompile Include="base\ImguiRenderpass.cpp">
       <Filter>Source Files\Vk</Filter>
     </ClCompile>
     <ClCompile Include="base\VkInstanceWrapper.cpp">
@@ -266,7 +278,7 @@
     <ClCompile Include="base\VkSynObjectBundleBase.cpp">
       <Filter>Source Files\Vk</Filter>
     </ClCompile>
-    <ClCompile Include="base\VkPipelineParameterPack.cpp">
+    <ClCompile Include="base\VkPipelinePP.cpp">
       <Filter>Source Files\Vk</Filter>
     </ClCompile>
     <ClCompile Include="base\VkSubpassFactory.cpp">
@@ -353,17 +365,20 @@
     <ClCompile Include="base\ImageParameterPack.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="base\VkMath.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="base\ImguiPipePP.cpp">
+      <Filter>Source Files\Imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="base\ForwardShadingPipelinePP.cpp">
+      <Filter>Source Files\Vk</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="base\include\App.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="base\include\EngineHeader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="base\include\EngineMarco.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="base\include\Camera.h">
       <Filter>Header Files\Camera</Filter>
     </ClInclude>
@@ -526,9 +541,6 @@
     <ClInclude Include="base\include\VkTexImageFactory.h">
       <Filter>Header Files\VkCore\Image\Useless\ImageFactory</Filter>
     </ClInclude>
-    <ClInclude Include="base\include\VkPipelineParameterPack.h">
-      <Filter>Header Files\VkCore\Pipeline</Filter>
-    </ClInclude>
     <ClInclude Include="base\include\VkRenderpassBase.h">
       <Filter>Header Files\VkCore\Renderpass</Filter>
     </ClInclude>
@@ -547,7 +559,7 @@
     <ClInclude Include="base\include\VkWindows.h">
       <Filter>Header Files\VkCore\Window</Filter>
     </ClInclude>
-    <ClInclude Include="base\include\VkImgui.h">
+    <ClInclude Include="base\include\ImguiRenderpass.h">
       <Filter>Header Files\ImGui</Filter>
     </ClInclude>
     <ClInclude Include="base\include\VkMaterial.h">
@@ -583,16 +595,37 @@
     <ClInclude Include="base\include\ImageParameterPack.h">
       <Filter>Header Files\VkCore\Image</Filter>
     </ClInclude>
+    <ClInclude Include="base\include\VkMath.h">
+      <Filter>Header Files\VkCore\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\WindowsSubsys.h">
+      <Filter>Header Files\WindowsSubsys</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\VkHeader.h">
+      <Filter>Header Files\VkCore</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\App.h">
+      <Filter>Header Files\Application</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\VkPipelinePP.h">
+      <Filter>Header Files\VkCore\Pipeline\ParameterPack</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\ImguiPipePP.h">
+      <Filter>Header Files\VkCore\Pipeline\ParameterPack</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\ForwardShadingPipelinePP.h">
+      <Filter>Header Files\VkCore\Pipeline\ParameterPack</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="base\vulkan\glsl_shader.vert">
-      <Filter>Header Files\ImGui\VulkanShader</Filter>
+    <None Include="base\imguishaders\glsl_shader.frag">
+      <Filter>Header Files\ImGui\ImguiShaders</Filter>
     </None>
-    <None Include="base\vulkan\generate_spv.sh">
-      <Filter>Header Files\ImGui\VulkanShader</Filter>
+    <None Include="base\imguishaders\glsl_shader.vert">
+      <Filter>Header Files\ImGui\ImguiShaders</Filter>
     </None>
-    <None Include="base\vulkan\glsl_shader.frag">
-      <Filter>Header Files\ImGui\VulkanShader</Filter>
+    <None Include="base\imguishaders\generate_spv.bat">
+      <Filter>Header Files\ImGui\ImguiShaders</Filter>
     </None>
   </ItemGroup>
 </Project>

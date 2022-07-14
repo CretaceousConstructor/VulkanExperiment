@@ -14,7 +14,7 @@ void KTXTextureRenderer::CreateTextureImages()
 
 
 	constexpr VkFormat format_of_texture = VK_FORMAT_R8G8B8A8_SRGB;
-	const VkTextureFactory::SamplerParaPack sampler_para_pack;
+	const VkTextureFactory::SamplerPP sampler_para_pack;
 	common_resources.ktx_texure          = texture_factory.GetTexture(std::string("../../data/textures/metalplate01_rgba.ktx"), format_of_texture,sampler_para_pack);
 
 
@@ -329,7 +329,7 @@ void KTXTextureRenderer::CreateSwapchainImages()
 //
 //
 //
-//	VkPipelineParameterPack para_pack{gfx};
+//	VkPipelinePP para_pack{gfx};
 //	const std::vector<ShaderMetaInfo> shader_infos
 //	{
 //		{.name{"vs"},.shader_path{"../../data/shaders/KTXTexture/KTXTexture_vertex_shader.spv"}, .shader_binding_stage{VK_SHADER_STAGE_VERTEX_BIT}},

@@ -4,6 +4,15 @@
 
 class VkSynObjectBundleBase
 {
+public:
+	enum SyncObjCreateOption
+	{
+		Signaled = 0x1,
+		Unsignaled = 0x2,
+	};
+
+
+
   public:
 	VkSynObjectBundleBase(glm::uint32_t _bundle_size);
 

@@ -2,7 +2,7 @@
 
 #include "VkBufferBase.h"
 #include "VkTexture.h"
-
+#include "VkMath.h"
 
 namespace Gltf
 {

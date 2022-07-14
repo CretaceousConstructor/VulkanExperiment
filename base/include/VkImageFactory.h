@@ -1,10 +1,10 @@
 #pragma once
 #include "VkGraphicsComponent.h"
-#include "ImageParameterPack.h"
-#include "VkGeneralPurposeImage.h"
 #include "VkImageBase.h"
 #include "VkImageBundle.h"
+#include "ImageParameterPack.h"
 #include "VkSwapchainImage.h"
+#include "VkGeneralPurposeImage.h"
 
 
 class VkImageFactory

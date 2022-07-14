@@ -9,14 +9,12 @@ VkSwapchainManager::VkSwapchainManager(VkDeviceManager &_device_manager, VkWindo
 
 VkSwapchainManager::~VkSwapchainManager()
 {
-
 	vkDestroySwapchainKHR(device_manager.GetLogicalDevice(), swap_chain, nullptr);
-
 }
 
 void VkSwapchainManager::CreateSwapChainAndSwapImages()
 {
-	const VkDeviceManager::SwapChainSupportDetails swapChainSupport = VkDeviceManager::QuerySwapChainSupport(device_manager.GetPhysicalDevice(), window.GetSurface());
+	const VkDeviceManager::SwapChainSupportDetails swapchain_support = VkDeviceManager::QuerySwapChainSupport(device_manager.GetPhysicalDevice(), window.GetSurface());
 	////支持的backbuffer格式
 
 	//format;
@@ -29,29 +27,29 @@ void VkSwapchainManager::CreateSwapChainAndSwapImages()
 	//VK_PRESENT_MODE_MAILBOX_KHR = 1,
 	//VK_PRESENT_MODE_IMMEDIATE_KHR = 0,
 
-	const VkSurfaceFormatKHR surfaceFormat = ChooseSwapSurfaceFormat(swapChainSupport.formats);
-
-	const VkPresentModeKHR presentMode = ChooseSwapPresentMode(swapChainSupport.present_modes);
+	surface_format = ChooseSwapSurfaceFormat(swapchain_support.formats);
+	present_mode    = ChooseSwapPresentMode(swapchain_support.present_modes);
+	swapchain_capabilities = swapchain_support.capabilities;
 
 	//VK_PRESENT_MODE_MAILBOX_KHR:等待下一次的vertical blanking的时候才会把渲染好的帧给front buffer，内部存在一个队列存放渲染好的帧；如果队列满了，会用新渲染的帧替换队列中已有的帧，并且被替换的那些帧可以被应用程序再次利用。
 
-	const VkExtent2D extent = ChooseSwapExtent(swapChainSupport.capabilities, window);
+	const VkExtent2D extent = ChooseSwapExtent(swapchain_support.capabilities, window);
 
 	//3
-	image_count = swapChainSupport.capabilities.minImageCount + 1;
+	image_count = swapchain_support.capabilities.minImageCount + 1;
 
 	//swapChainSupport.capabilities.maxImageCount如果等于0表示没有限制
-	if (swapChainSupport.capabilities.maxImageCount > 0 && image_count > swapChainSupport.capabilities.maxImageCount)
+	if (swapchain_support.capabilities.maxImageCount > 0 && image_count > swapchain_support.capabilities.maxImageCount)
 	{
-		image_count = swapChainSupport.capabilities.maxImageCount;
+		image_count = swapchain_support.capabilities.maxImageCount;
 	}
 
 	VkSwapchainCreateInfoKHR swapchain_createInfo{};
 	swapchain_createInfo.sType            = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
 	swapchain_createInfo.surface          = window.GetSurface();
 	swapchain_createInfo.minImageCount    = image_count;
-	swapchain_createInfo.imageFormat      = surfaceFormat.format;
-	swapchain_createInfo.imageColorSpace  = surfaceFormat.colorSpace;
+	swapchain_createInfo.imageFormat      = surface_format.format;
+	swapchain_createInfo.imageColorSpace  = surface_format.colorSpace;
 	swapchain_createInfo.imageExtent      = extent;
 	swapchain_createInfo.imageArrayLayers = 1;                                          //给3D应用用的，直接当成1不用管了
 	swapchain_createInfo.imageUsage       = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;        //直接往image渲染颜色
@@ -62,7 +60,7 @@ void VkSwapchainManager::CreateSwapChainAndSwapImages()
 	//If the queue families differ, then we'll be using the concurrent mode in this tutorial to avoid having to do the ownership chapters, because these involve some concepts that are better explained at a later time. Concurrent mode requires you to specify in advance between which queue families ownership will be shared using the queueFamilyIndexCount and pQueueFamilyIndices parameters.
 
 	std::vector<uint32_t> uniqueQueueFamilyIndices;
-	uniqueQueueFamilyIndices.reserve(3); 
+	uniqueQueueFamilyIndices.reserve(3);
 	for (auto index : queueFamilyIndices)
 	{
 		uniqueQueueFamilyIndices.push_back(index);
@@ -83,16 +81,12 @@ void VkSwapchainManager::CreateSwapChainAndSwapImages()
 		throw std::runtime_error("graphicsFamily and presentFamily are not identical!!");
 	}
 
-	swapchain_createInfo.preTransform   = swapChainSupport.capabilities.currentTransform;        //旋转90°操作，反转操作等。。。目前这个显卡除了 不变 以外都不支持
+	swapchain_createInfo.preTransform   = swapchain_support.capabilities.currentTransform;        //旋转90°操作，反转操作等。。。目前这个显卡除了 不变 以外都不支持
 	swapchain_createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;                     //blending with another window
 
-	swapchain_createInfo.presentMode = presentMode;
-	swapchain_createInfo.clipped     = VK_TRUE;        //如果其他窗口遮住了vulkan窗口，那么vulkan窗口被遮住的地方pixel shader不会被调用
+	swapchain_createInfo.presentMode  = present_mode;
+	swapchain_createInfo.clipped      = VK_TRUE;        //如果其他窗口遮住了vulkan窗口，那么vulkan窗口被遮住的地方pixel shader不会被调用
 	swapchain_createInfo.oldSwapchain = nullptr;        //窗口重新绘制，那么swapchain可能就失效了，失效的swapchain需要存在这里面。你要创建新的swapchain
-
-
-
-
 
 	if (vkCreateSwapchainKHR(device_manager.GetLogicalDevice(), &swapchain_createInfo, nullptr, &swap_chain) != VK_SUCCESS)
 	{
@@ -101,18 +95,15 @@ void VkSwapchainManager::CreateSwapChainAndSwapImages()
 
 	//==========================================================================================================
 	//BGRA SRGB
-	swap_chain_image_format = surfaceFormat.format;
-	swap_chain_image_view_format = surfaceFormat.format;
-	swap_chain_extent       = extent;
-
+	//swap_chain_image_format = surface_format.format;
+	//swap_chain_image_view_format = surface_format.format;
+	swap_chain_extent = extent;
 
 	//std::vector<VkImageView> temp_swap_chain_image_views;  //3
-
 
 	vkGetSwapchainImagesKHR(device_manager.GetLogicalDevice(), swap_chain, &image_count, nullptr);
 	raw_swap_chain_images.resize(image_count);
 	vkGetSwapchainImagesKHR(device_manager.GetLogicalDevice(), swap_chain, &image_count, raw_swap_chain_images.data());
-
 
 	//swap_chain_image_views.resize(raw_swap_chain_images.size());
 
@@ -158,12 +149,7 @@ void VkSwapchainManager::CreateSwapChainAndSwapImages()
 	//	}
 
 	//}
-
-
-
-
 }
-
 
 VkSurfaceFormatKHR VkSwapchainManager::ChooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR> &availableFormats)
 {
@@ -216,13 +202,14 @@ VkExtent2D VkSwapchainManager::ChooseSwapExtent(const VkSurfaceCapabilitiesKHR &
 
 VkFormat VkSwapchainManager::GetSwapChainImageFormat() const
 {
-	return swap_chain_image_format;
+	//return swap_chain_image_format;
+	return surface_format.format;
 }
 
 VkFormat VkSwapchainManager::GetSwapChainImageViewFormat() const
 {
-
-	return swap_chain_image_view_format;
+	//return swap_chain_image_view_format;
+	return surface_format.format;
 }
 
 VkExtent3D VkSwapchainManager::GetSwapChainImageExtent() const
@@ -232,6 +219,22 @@ VkExtent3D VkSwapchainManager::GetSwapChainImageExtent() const
 	result.height = swap_chain_extent.height;
 	result.depth  = 1;
 	return result;
+}
+
+VkSurfaceFormatKHR VkSwapchainManager::GetSurfaceFormat() const
+{
+	return surface_format;
+}
+
+VkPresentModeKHR VkSwapchainManager::GetPresentMode() const
+{
+	return present_mode;
+}
+
+uint32_t VkSwapchainManager::GetMinImageCount() const
+{
+
+	return swapchain_capabilities.maxImageCount;
 }
 
 VkFormat VkSwapchainManager::FindDepthFormat() const
@@ -262,11 +265,9 @@ VkSwapchainKHR VkSwapchainManager::GetSwapChain() const
 //	return swap_chain_images;
 //}
 
-std::vector<VkImage>  VkSwapchainManager::GetSwapChainImages() const
+const std::vector<VkImage> &VkSwapchainManager::GetSwapChainImages() const
 {
-
 	return raw_swap_chain_images;
-	
 }
 
 //std::vector<VkImageView> VkSwapchainManager::GetSwapChainImageViews() const

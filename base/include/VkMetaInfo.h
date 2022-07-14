@@ -1,6 +1,8 @@
 #pragma once
-#include "EngineMarco.h"
-#include "EngineHeader.h"
+//#include "EngineMarco.h"
+//#include "EngineHeader.h"
+#include "VkHeader.h"
+#include "VkMath.h"
 #include <vector>
 
 

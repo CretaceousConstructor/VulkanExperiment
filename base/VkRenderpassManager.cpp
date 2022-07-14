@@ -13,7 +13,7 @@ void VkRenderpassManager::AddPipelineLayout(const PipelineLayoutMetaInfo &pipe_l
 	managers.pipeline_manager.AddPipelineLayout(pipe_layout_info, des_set_layouts);
 }
 
-void VkRenderpassManager::AddPipeline(const VkPipelineParameterPack &para_pack, const PipelineMetaInfo &meta_info)
+void VkRenderpassManager::AddPipeline(const VkPipelinePP &para_pack, const PipelineMetaInfo &meta_info)
 {
 	//const auto &subpass_for_pipeline = render_pass_for_pipeline.subpasses[meta_info.subpass];
 

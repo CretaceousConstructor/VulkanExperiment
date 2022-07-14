@@ -57,6 +57,11 @@ void SceneLoadingRenderer::CreateDescriptorPool()
 void SceneLoadingRenderer::RenderpassInit()
 {
 	renderpasses.push_back(std::make_shared<Renderpass0>(gfx, render_pass_manager, common_resources));
+
+
+	renderpasses.push_back(std::make_shared<ImguiRenderpass>(gfx, render_pass_manager, common_resources));
+
+
 }
 
 void SceneLoadingRenderer::InitSynObjects()
@@ -65,7 +70,7 @@ void SceneLoadingRenderer::InitSynObjects()
 
 	image_available_semaphores = syn_obj_factory.GetSemaphoreBundle(MAX_FRAMES_IN_FLIGHT);
 	render_finished_semaphores = syn_obj_factory.GetSemaphoreBundle(MAX_FRAMES_IN_FLIGHT);
-	frame_fences               = syn_obj_factory.GetFenceBundle(MAX_FRAMES_IN_FLIGHT, Vk::SyncObjCreateOption::Signaled);
+	frame_fences               = syn_obj_factory.GetFenceBundle(MAX_FRAMES_IN_FLIGHT, VkSynObjectBundleBase::SyncObjCreateOption::Signaled);
 	image_fences.resize(swapchain_manager.GetSwapImageCount());
 }
 
@@ -79,10 +84,14 @@ void SceneLoadingRenderer::UpdateUniformBuffer(size_t currentImage)
 	//} ubo_vs_scene;                   //用于顶点着色器的uniform buffer object
 
 	common_resources.ubo_matrix_cpu.projection = camera->GetProj();
-	common_resources.ubo_matrix_cpu.view       = camera->GetView();
-	common_resources.ubo_matrix_cpu.view_pos   = camera->GetPosition();
+	//common_resources.ubo_matrix_cpu.view       = camera->GetView();
+	common_resources.ubo_matrix_cpu.view = camera->GetViewMatrix();
+	//common_resources.ubo_matrix_cpu.view_pos   = camera->GetPosition();
+	common_resources.ubo_matrix_cpu.view_pos = camera->GetEyePos();
 
-	common_resources.ubo_matrix_gpu->GetOne(currentImage).MapMemory(0, sizeof(common_resources.ubo_matrix_cpu), &common_resources.ubo_matrix_cpu, sizeof(common_resources.ubo_matrix_cpu));
+	common_resources.ubo_matrix_gpu->GetOne(currentImage).CopyTo(&common_resources.ubo_matrix_cpu, sizeof(common_resources.ubo_matrix_cpu));
+
+
 }
 
 void SceneLoadingRenderer::DrawFrame()
@@ -238,16 +247,106 @@ void SceneLoadingRenderer::DrawFrame()
 	////3.赋值:        images_fences[imageIndex 0（这个下标是从acquireImageindex获取的）]    =    frame_fences[currentFrame 1]赋值
 	////4.渲染:        graphics_command_buffers[imageIndex 0]被使用中
 
+
+
+
 	////===========================================================================================================================================================
 	//因为上面有image_fences[imageIndex] = frame_fences[currentFrame];  所以这时候image_fences[imageIndex]和 frame_fences[currentFrame]会有同样的状态;并且应该同时为unsignaled状态
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 	//frame_fences[currentFrame]; 这时候image_fences[imageIndex]和 frame_fences[currentFrame]会有同样的状态;并且应该同时为unsignaled状态，那么reset为unsignal状态表示现在我要占用了！
 	vkResetFences(device_manager.GetLogicalDevice(), 1, &frame_fences->GetOne(currentFrame));        //To set the state of fences to unsignaled from the host side
 	//vkQueueSubmit:   fence(last parameter is an optional handle to a fence to be signaled once all submitted command buffers have completed execution. If fence is not VK_NULL_HANDLE, it defines a fence signal operation.当command buffer中的命令执行结束以后，也就是GPU渲染完毕以后
-	if (vkQueueSubmit(device_manager.GetGraphicsQueue(), 1, &submit_info, frame_fences->GetOne(currentFrame)) != VK_SUCCESS)
+
+
+
 	{
-		throw std::runtime_error("failed to submit draw command buffer!");
+
+		//UI Reset command buffers
+
+
+		err = vkResetCommandPool(g_Device, fd->CommandPool, 0);
+		check_vk_result(err);
+		VkCommandBufferBeginInfo info = {};
+		info.sType                    = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		info.flags |= VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+		err = vkBeginCommandBuffer(fd->CommandBuffer, &info);
+		check_vk_result(err);
 	}
+
+
+
+	{
+
+		//UI command buffer recording
+	   VkRenderPassBeginInfo info = {};
+        info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+        info.renderPass = RenderPass;
+        info.framebuffer = Framebuffer[];
+        info.renderArea.extent.width = Width;
+        info.renderArea.extent.height = Height;
+        info.clearValueCount = 1;
+        info.pClearValues = &ClearValue;
+        vkCmdBeginRenderPass(CommandBuffer, &info, VK_SUBPASS_CONTENTS_INLINE);
+
+	}
+
+
+
+   // Record dear imgui primitives into command buffer
+    ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), fd->CommandBuffer);
+
+
+	// Submit command buffer
+	vkCmdEndRenderPass(fd->CommandBuffer);
+	err = vkEndCommandBuffer(fd->CommandBuffer);
+	check_vk_result(err);
+
+
+
+
+
+	std::array<VkCommandBuffer, 2> submitCommandBuffers = 
+		{ commandBuffers[imageIndex], imGuiCommandBuffers[imageIndex] };
+	VkSubmitInfo submitInfo = {};
+	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	(...)
+	submitInfo.commandBufferCount = static_cast<uint32_t>(submitCommandBuffers.size());
+	submitInfo.pCommandBuffers = submitCommandBuffers.data();
+
+
+
+
+
+	VK_CHECK_RESULT(vkQueueSubmit(device_manager.GetGraphicsQueue(), 1, &submit_info, frame_fences->GetOne(currentFrame)))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 	VkPresentInfoKHR presentInfo{};
 	presentInfo.sType              = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -278,44 +377,75 @@ void SceneLoadingRenderer::DrawFrame()
 		throw std::runtime_error("failed to present swap chain image!");
 	}
 	currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+
+
 }
 
 void SceneLoadingRenderer::UpdateCamera(float dt)
 {
 	//TODO:用命令模式优化
+	if (keyboard->GetIsKeyDown(GLFW_KEY_ESCAPE))
+	{
+		glfwSetWindowShouldClose(const_cast<GLFWwindow *>(window.GetWindowPtr()), GLFW_TRUE);
+
+	}
+
 	if (keyboard->GetIsKeyDown(GLFW_KEY_W))
 	{
-		camera->Walk(dt * -3.f);
+		camera->ProcessKeyboard(FirstPersonCamera::Camera_Movement::Forward, dt);
 	}
 
 	if (keyboard->GetIsKeyDown(GLFW_KEY_S))
 	{
-		camera->Walk(dt * 3.f);
+
+		camera->ProcessKeyboard(FirstPersonCamera::Camera_Movement::Backward, dt);
 	}
 
 	if (keyboard->GetIsKeyDown(GLFW_KEY_A))
 	{
-		camera->Strafe(dt * -3.0f);
+		camera->ProcessKeyboard(FirstPersonCamera::Camera_Movement::Left, dt);
 	}
 
 	if (keyboard->GetIsKeyDown(GLFW_KEY_D))
 	{
-		camera->Strafe(dt * 3.0f);
+		camera->ProcessKeyboard(FirstPersonCamera::Camera_Movement::Right, dt);
 	}
 
-	if (keyboard->GetIsKeyDown(GLFW_KEY_UP))
+	if (keyboard->GetIsKeyDown(GLFW_KEY_Q))
 	{
-		camera->MoveForward(dt * -3.0f);
+		camera->ProcessKeyboard(FirstPersonCamera::Camera_Movement::RollLeft, dt);
 	}
 
-	if (keyboard->GetIsKeyDown(GLFW_KEY_DOWN))
+	if (keyboard->GetIsKeyDown(GLFW_KEY_E))
 	{
-		camera->MoveForward(dt * 3.0f);
+		camera->ProcessKeyboard(FirstPersonCamera::Camera_Movement::RollRight, dt);
 	}
+
+	if (keyboard->GetIsKeyDown(GLFW_KEY_Z))
+	{
+		camera->ProcessKeyboard(FirstPersonCamera::Camera_Movement::ZoomIn, dt);
+	}
+
+	if (keyboard->GetIsKeyDown(GLFW_KEY_C))
+	{
+		camera->ProcessKeyboard(FirstPersonCamera::Camera_Movement::ZoomOut, dt);
+	}
+
+	//if (keyboard->GetIsKeyDown(GLFW_KEY_UP))
+	//{
+	//	camera->MoveForward(dt * 3.0f);
+	//}
+
+	//if (keyboard->GetIsKeyDown(GLFW_KEY_DOWN))
+	//{
+	//	camera->MoveForward(dt * -3.0f);
+	//}
 
 	//=====================================================================
-	camera->Pitch(dt * mouse->GetPitchDiff());
-	camera->RotateY(-dt * mouse->GetYawDiff());
+	//camera->Pitch(dt * mouse->GetPitchDiff());
+	//camera->RotateY(-dt * mouse->GetYawDiff());
+
+	camera->ProcessMouseMovement(mouse->GetYawDiff(), mouse->GetPitchDiff());
 }
 
 //void SceneLoadingRenderer::CreateDescriptorSets()
@@ -698,19 +828,20 @@ SceneLoadingRenderer::SceneLoadingRenderer(VkGraphicsComponent &gfx_) :
 //
 void SceneLoadingRenderer::SetUpUserInput()
 {
-	std::vector<int> tracked_keys = {GLFW_KEY_W, GLFW_KEY_S, GLFW_KEY_A, GLFW_KEY_D, GLFW_KEY_Q, GLFW_KEY_E, GLFW_KEY_Z, GLFW_KEY_C, GLFW_KEY_UP, GLFW_KEY_DOWN};
+	std::vector<int> tracked_keys = {GLFW_KEY_ESCAPE,GLFW_KEY_W, GLFW_KEY_S, GLFW_KEY_A, GLFW_KEY_D, GLFW_KEY_Q, GLFW_KEY_E, GLFW_KEY_Z, GLFW_KEY_C, GLFW_KEY_UP, GLFW_KEY_DOWN};
 	keyboard                      = std::make_unique<KeyBoardInputManager>(tracked_keys);
 	keyboard->SetupKeyInputs(window.GetWindowPtr());
 
-	mouse = std::make_unique<MouseInputManager>(swapchain_manager.GetSwapChainImageExtent());
+	mouse = std::make_unique<MouseInputManager>(gfx, swapchain_manager.GetSwapChainImageExtent());
 	mouse->SetupMouseInputs(window.GetWindowPtr());
 }
 
 void SceneLoadingRenderer::CreateCamera()
 {
-	camera = std::make_unique<FirstPersonCamera>();
+	camera = std::make_unique<FirstPersonCamera>(glm::vec3(0.f, 0.f, 1.f));
+
 	camera->SetFrustum(glm::radians(60.f), swapchain_manager.GetSwapChainImageExtent().width / (float) swapchain_manager.GetSwapChainImageExtent().height, 0.1f, 256.f);
-	camera->LookAt(glm::vec3(0.f, 0.f, 1.f), glm::vec3(0.f, 0.f, -1.f), glm::vec3(0., 1., 0.));
+	//camera->LookAt(glm::vec3(0.f, 0.f, 1.f), glm::vec3(0.f, 0.f, -1.f), glm::vec3(0., 1., 0.));
 }
 //
 void SceneLoadingRenderer::CreateAttachmentImages()

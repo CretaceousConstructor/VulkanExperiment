@@ -343,8 +343,6 @@ void VkDeviceManager::CreateLogicalDeviceAndQueues()
 		VkDeviceQueueCreateInfo queueCreateInfo{};
 		queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
 
-		//TODO:hard code直接全部创建0号家族的，因为之后出现bug至今不知道怎么修复
-		//queueCreateInfo.queueFamilyIndex = 0;
 		queueCreateInfo.queueFamilyIndex = queue_family;
 		queueCreateInfo.queueCount       = 1;
 		queueCreateInfo.pQueuePriorities = &queue_priority;
@@ -425,11 +423,13 @@ void VkDeviceManager::CreateLogicalDeviceAndQueues()
 		throw std::runtime_error("failed to create logical device!");
 	}
 
-	//TODO:这里为什么只能用0号家族的队列？
+
+
 	vkGetDeviceQueue(device, indices.graphicsFamily.value(), 0, &graphics_queue);
 	vkGetDeviceQueue(device, indices.presentFamily.value(), 0, &present_queue);
 	vkGetDeviceQueue(device, indices.transferFamily.value(), 0, &tranfer_queue);
-	//vkGetDeviceQueue(device, indices.graphicsFamily.value(), 0, &tranfer_queue);
+
+
 }
 
 VkDevice VkDeviceManager::GetLogicalDevice() const

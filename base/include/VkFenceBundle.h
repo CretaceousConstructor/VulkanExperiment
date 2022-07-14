@@ -7,7 +7,7 @@
 class VkFenceBundle : public VkSynObjectBundleBase
 {
   public:
-	VkFenceBundle(const VkDeviceManager &_device_manager, uint32_t _bundle_size,  Vk::SyncObjCreateOption option);
+	VkFenceBundle(const VkDeviceManager &_device_manager, uint32_t _bundle_size,  VkSynObjectBundleBase::SyncObjCreateOption option);
 
 	VkFenceBundle() = delete;
 

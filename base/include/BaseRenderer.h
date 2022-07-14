@@ -5,6 +5,9 @@
 #include "VkSwapchainManager.h"
 #include "VkTexture.h"
 #include "VkUniformBuffer.h"
+
+#include "ImguiRenderpass.h"
+
 #include <array>
 #include <chrono>
 #include <glm/glm.hpp>
@@ -18,7 +21,7 @@ class BaseRenderer
 {
   public:
 	BaseRenderer(VkGraphicsComponent &gfx_);
-	virtual ~BaseRenderer() = default;
+	virtual ~BaseRenderer() ;
 
 	BaseRenderer() = delete;
 
@@ -46,10 +49,18 @@ class BaseRenderer
 
 	virtual void UpdateUniformBuffer(size_t currentImage) = 0;
 
+
   public:
 	//========================================
 	virtual void DrawFrame()            = 0;
 	virtual void UpdateCamera(float dt) = 0;
+	virtual void UIRendering();
+
+   // Our state
+    bool show_demo_window = true;
+    bool show_another_window = false;
+    ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+
 
   public:
 	void RenderingPreparation();
@@ -62,4 +73,8 @@ class BaseRenderer
 	const VkWindows &         window;
 	const VkSwapchainManager &swapchain_manager;
 	const VkCommandManager &  command_manager;
+protected:
+	VkImgui imgui_UI;
+
+
 };

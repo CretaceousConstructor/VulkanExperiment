@@ -21,7 +21,10 @@ class VkRenderpassBase
 	virtual void ExecuteRenderpass(const std::vector<VkCommandBuffer> &command_buffers) = 0;
 	virtual void EndRenderpass(const std::vector<VkCommandBuffer> &command_buffers)     = 0;
 
+	virtual void UpdateResources(size_t currentImage) = 0;
+
   protected:
+	virtual void ResourceInit()              = 0;
 	virtual void CreateDescriptorSetLayout() = 0;
 	virtual void CreateDescriptorSets()      = 0;
 

@@ -156,12 +156,14 @@
     <ClCompile Include="Renderpass0.cpp" />
     <ClCompile Include="SceneLoadingApp.cpp" />
     <ClCompile Include="SceneLoadingRenderer.cpp" />
+    <ClCompile Include="UIRenderpass.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="RenderingMetaInfo.h" />
     <ClInclude Include="Renderpass0.h" />
     <ClInclude Include="SceneLoadingApp.h" />
     <ClInclude Include="SceneLoadingRenderer.h" />
+    <ClInclude Include="UIRenderpass.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\data\shaderbat\SceneLoadingCompile.bat" />

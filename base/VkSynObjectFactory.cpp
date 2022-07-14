@@ -16,7 +16,7 @@ std::shared_ptr<VkSemaphoreBundle> VkSynObjectFactory::GetSemaphoreBundle(uint32
 	return result;
 }
 
-std::shared_ptr<VkFenceBundle> VkSynObjectFactory::GetFenceBundle(uint32_t _bundle_size,  Vk::SyncObjCreateOption option ) const
+std::shared_ptr<VkFenceBundle> VkSynObjectFactory::GetFenceBundle(uint32_t _bundle_size,  VkSynObjectBundleBase::SyncObjCreateOption option ) const
 {
 	auto result = std::make_shared<VkFenceBundle>(device_manager, _bundle_size, option);
 	return result;

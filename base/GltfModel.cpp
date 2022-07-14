@@ -3,9 +3,10 @@
 #define TINYGLTF_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION
+#define TINYGLTF_NO_EXTERNAL_IMAGE
+
 //#define TINYGLTF_NO_STB_IMAGE_WRITE
 //#define TINYGLTF_NO_STB_IMAGE
-#define TINYGLTF_NO_EXTERNAL_IMAGE
 
 //#define TINYGLTF_NOEXCEPTION // optional. disable exception handling.
 
@@ -73,7 +74,7 @@
 //	}
 //}
 //
-//void GltfModel::ProcessMaterial(const uint32_t subpass, const std::vector<VkDescriptorSetLayout> &set_layouts, VkPipelineParameterPack &pipeline_para_pack, const VkPipelineBuilder &pipeline_builder)
+//void GltfModel::ProcessMaterial(const uint32_t subpass, const std::vector<VkDescriptorSetLayout> &set_layouts, VkPipelinePP &pipeline_para_pack, const VkPipelineBuilder &pipeline_builder)
 //{
 //	////TODO:需要更多的abstraction
 //	//VkVertexInputBindingDescription bindingDescription0{};
@@ -120,7 +121,7 @@
 //	//	{
 //	//		std::vector<VkDescriptorSetLayout> temp_set_layouts{set_layouts};
 //	//		temp_set_layouts.push_back(desc_layout);
-//	//		pipe_layout = material->CreatePipelineLayout(temp_set_layouts, push_constant_ranges);
+//	//		pipe_layout = material->GetPipelineLayout(temp_set_layouts, push_constant_ranges);
 //	//	}
 //	//	//ALLOCATE DESCRIPTOR SETS AND UPDATE   [PER MATERIAL OBJECT]
 //	//	material->AllocateDescriptorSetAndUpdate(pool_for_model, desc_layout, textures, images);
@@ -141,12 +142,12 @@
 //	return pipe_layout;
 //}
 //
-//void GltfModel::ProcessMaterials(const uint32_t subpass, const std::vector<VkDescriptorSetLayout> &set_layouts, const VkPipelineParameterPack &pipeline_para_pack, const VkPipelineBuilder &pipeline_builder)
+//void GltfModel::ProcessMaterials(const uint32_t subpass, const std::vector<VkDescriptorSetLayout> &set_layouts, const VkPipelinePP &pipeline_para_pack, const VkPipelineBuilder &pipeline_builder)
 //{
 //	CreateDescriptorPool();
 //	pipeline_array.emplace_back();
 //
-//	VkPipelineParameterPack local_para_pack{pipeline_para_pack};
+//	VkPipelinePP local_para_pack{pipeline_para_pack};
 //
 //	//TODO:需要更多的abstraction
 //	//****************************************************************************
@@ -189,7 +190,7 @@
 //		//GET PIPELINELAYOUT   [PER MATERIAL CLASS]
 //		std::vector<VkDescriptorSetLayout> temp_set_layouts{set_layouts};
 //		temp_set_layouts.push_back(desc_layout);
-//		pipe_layout = material->CreatePipelineLayout(temp_set_layouts, push_constant_ranges);
+//		pipe_layout = material->GetPipelineLayout(temp_set_layouts, push_constant_ranges);
 //		//ALLOCATE DESCRIPTOR SETS AND UPDATE   [PER MATERIAL OBJECT]
 //		material->AllocateDescriptorSetAndUpdate(pools_for_model.back(), desc_layout, textures, images);
 //

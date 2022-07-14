@@ -31,6 +31,9 @@ class VkCommandManager
 	static void EndCommandBuffers(	const std::vector<VkCommandBuffer> & command_buffers);
 
 
+
+
+
 private:
 	VkDeviceManager &device_manager;
 public:

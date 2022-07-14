@@ -155,7 +155,7 @@ void VkModelFactory::LoadImages(GltfModelPack &model) const
 
 			if (std::string("ktx") == file_extension)
 			{
-				VkTextureFactory::SamplerParaPack sampler_para;
+				VkTextureFactory::SamplerPP sampler_para;
 				images[i] = texture_factory.GetTexture(path, format_of_image, sampler_para);
 			}
 			//else
@@ -379,7 +379,7 @@ void VkModelFactory::LoadInToGpuBuffer(GltfModelPack &model) const
 		constexpr VkBufferCI::StagingBuffer staging_para_pack;
 		const auto                          staging_buffer = buffer_factory.ProduceBuffer(vertex_buffer_size, staging_para_pack);
 
-		staging_buffer->MapMemory(0, vertex_buffer_size, vertex_buffer_cpu.data(), vertex_buffer_size);
+		staging_buffer->CopyTo(vertex_buffer_cpu.data(), vertex_buffer_size);
 
 		constexpr VkBufferCI::VertexBuffer vertex_para_pack;
 		vertices_gpu.buffer = buffer_factory.ProduceBuffer(vertex_buffer_size, vertex_para_pack);
@@ -397,7 +397,7 @@ void VkModelFactory::LoadInToGpuBuffer(GltfModelPack &model) const
 		constexpr VkBufferCI::StagingBuffer staging_para_pack;
 		const auto                          staging_buffer = buffer_factory.ProduceBuffer(index_buffer_size, staging_para_pack);
 
-		staging_buffer->MapMemory(0, index_buffer_size, index_buffer_cpu.data(), index_buffer_size);
+		staging_buffer->CopyTo(index_buffer_cpu.data(), index_buffer_size);
 
 		constexpr VkBufferCI::IndexBuffer index_para_pack;
 		indices_gpu.buffer = buffer_factory.ProduceBuffer(index_buffer_size, index_para_pack);

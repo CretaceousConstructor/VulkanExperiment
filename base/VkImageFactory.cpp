@@ -84,7 +84,19 @@ std::shared_ptr<VkImageBundle> VkImageFactory::ProduceImageBundlePtr(const ImgPa
 
 std::shared_ptr<VkImageBundle> VkImageFactory::ProduceImageBundlePtr(const SwapImgParameterPack &para_pack) const
 {
-	const auto images = swapchain_manager.GetSwapChainImages();
+	const std::vector<VkImage>& images = swapchain_manager.GetSwapChainImages();
+
+	//for (const VkImage& image : images)
+	//{
+	//	const auto vkSetDebugUtilsObjectNamePFN= (PFN_vkSetDebugUtilsObjectNameEXT)vkGetDeviceProcAddr(device_manager.GetLogicalDevice(), "vkSetDebugUtilsObjectNameEXT");
+
+	//	VkDebugUtilsObjectNameInfoEXT image_debug_util_info{};
+	//	image_debug_util_info.objectHandle = (uint64_t)image;
+	//	image_debug_util_info.pObjectName = "SWAPCHAIN IMAGE";
+	//	vkSetDebugUtilsObjectNamePFN(device_manager.GetLogicalDevice(), &image_debug_util_info);
+
+	//}
+
 
 	const std::shared_ptr<ImgParameterPack> para_pack_ptr = para_pack.Clone();
 
@@ -114,8 +126,7 @@ std::shared_ptr<VkImageBundle> VkImageFactory::ProduceImageBundlePtr(const SwapI
 
 
 
-
-	return std::make_shared<VkImageBundle>(image_wrappers, static_cast<uint32_t>(images.size()));;
+	return std::make_shared<VkImageBundle>(image_wrappers, static_cast<uint32_t>(images.size()));
 }
 
 VkImage VkImageFactory::BuildImage(ImgParameterPack &para_pack) const
@@ -189,9 +200,6 @@ void VkImageFactory::TransitionImageLayout(const ImgParameterPack &para_pack, co
 	{
 		result->TransitionImageLayout(VK_IMAGE_LAYOUT_UNDEFINED, para_pack.default_final_layout, VkDeviceManager::CommandPoolType::graphics_command_pool, para_pack.default_image_CI.mipLevels, para_pack.default_image_CI.arrayLayers);
 	}
-
-
-
 
 	return;
 }

@@ -8,19 +8,23 @@ VkTextureFactory::VkTextureFactory(VkGraphicsComponent &_gfx, const VkImageFacto
 {
 
 
+
+
 }
 
-std::shared_ptr<VkTexture> VkTextureFactory::GetTexture(const std::string &image_path, VkFormat format_of_image, const SamplerParaPack &sampler_para_pack, VkImageLayout para_imageLayout) const
+std::shared_ptr<VkTexture> VkTextureFactory::GetTexture(const std::string &image_path, VkFormat format_of_image, const SamplerPP &sampler_para_pack, VkImageLayout para_imageLayout) const
 {
 	std::shared_ptr<VkGeneralPurposeImage> texture_image;
-	SamplerParaPack                        sam_para_pack{sampler_para_pack};
+	SamplerPP                        sam_para_pack{sampler_para_pack};
+
 	if (true)
 	{
-		texture_image = InitKTXTexture(image_path, format_of_image, para_imageLayout, sam_para_pack);
+		texture_image = InitKTXImg(image_path, format_of_image, para_imageLayout, sam_para_pack);
 	}
 	else
 	{
-		//InitTexture(image_path, format_of_image, para_imageLayout,para_pack);
+		//TODO: Init texture format other than KTX
+		//InitImg(image_path, format_of_image, para_imageLayout,para_pack);
 	}
 
 	VkPhysicalDeviceProperties properties{};
@@ -51,18 +55,67 @@ std::shared_ptr<VkTexture> VkTextureFactory::GetTexture(const std::string &image
 	sam_para_pack.sampler_CI.maxAnisotropy    = properties.limits.maxSamplerAnisotropy;
 	//para_pack.sampler_CI.maxLod     = (ktx_use_staging) ? (float) mip_levels : 0.0f;
 	sam_para_pack.sampler_CI.maxLod = (sam_para_pack.mip_count > 1) ? static_cast<float>(sam_para_pack.mip_count) : 0.0f;
-	VkSampler texture_sampler   = InitSampler(sam_para_pack);
+	VkSampler texture_sampler       = InitSampler(sam_para_pack);
 
 	return std::make_shared<VkTexture>(gfx, image_path, texture_image, texture_sampler, para_imageLayout);
 }
 
-//void VkTextureFactory::InitTexture(const std::string &image_path, const VkFormat format_of_image, const VkImageLayout _image_layout,SamplerParaPack & sample_para_pack)const
+std::shared_ptr<VkTexture> VkTextureFactory::GetTexture(const TexturePP &texture_pp, const SamplerPP &sampler_para_pack, VkImageLayout para_imageLayout) const
+{
+	std::string                            image_path = "null";
+	std::shared_ptr<VkGeneralPurposeImage> texture_image;
+	SamplerPP                        sam_para_pack{sampler_para_pack};
+	InitImgFromBuffer(texture_pp, para_imageLayout, sam_para_pack);
+
+	VkPhysicalDeviceProperties properties{};
+	vkGetPhysicalDeviceProperties(device_manager.GetPhysicalDevice(), &properties);
+
+	//typedef struct VkSamplerCreateInfo {
+	//    VkStructureType         sType;
+	//    const void*             pNext;
+	//    VkSamplerCreateFlags    flags;
+	//    VkFilter                magFilter;
+	//    VkFilter                minFilter;
+	//    VkSamplerMipmapMode     mipmapMode;
+	//    VkSamplerAddressMode    addressModeU;
+	//    VkSamplerAddressMode    addressModeV;
+	//    VkSamplerAddressMode    addressModeW;
+	//    float                   mipLodBias;
+	//    VkBool32                anisotropyEnable;
+	//    float                   maxAnisotropy;
+	//    VkBool32                compareEnable;
+	//    VkCompareOp             compareOp;
+	//    float                   minLod;
+	//    float                   maxLod;
+	//    VkBorderColor           borderColor;
+	//    VkBool32                unnormalizedCoordinates;
+	//} VkSamplerCreateInfo;
+
+	sam_para_pack.sampler_CI.anisotropyEnable = VK_TRUE;
+	sam_para_pack.sampler_CI.maxAnisotropy    = 1.f;
+
+	sam_para_pack.sampler_CI.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+	sam_para_pack.sampler_CI.addressModeV  = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+	sam_para_pack.sampler_CI.addressModeW  = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+
+	//para_pack.sampler_CI.maxLod     = (ktx_use_staging) ? (float) mip_levels : 0.0f;
+	sam_para_pack.sampler_CI.maxLod = (sam_para_pack.mip_count > 1) ? static_cast<float>(sam_para_pack.mip_count) : 0.0f;
+	VkSampler texture_sampler       = InitSampler(sam_para_pack);
+
+	return std::make_shared<VkTexture>(gfx, image_path, texture_image, texture_sampler, para_imageLayout);
+
+
+
+}
+
+//void VkTextureFactory::InitImg(const std::string &image_path, const VkFormat format_of_image, const VkImageLayout _image_layout,SamplerPP & sample_para_pack)const
 //{
 //	throw std::runtime_error("not implemented!");
 //
 //}
 
-std::shared_ptr<VkGeneralPurposeImage> VkTextureFactory::InitKTXTexture(const std::string &image_path, const VkFormat format_of_image, const VkImageLayout image_layout_, SamplerParaPack &sampler_para_pack_) const
+//This function should be move to other class
+std::shared_ptr<VkGeneralPurposeImage> VkTextureFactory::InitKTXImg(const std::string &image_path, const VkFormat format_of_image, const VkImageLayout image_layout_, SamplerPP &sampler_para_pack_) const
 {
 	std::shared_ptr<VkGeneralPurposeImage> texture_image;
 	const auto                             tex_name = image_path.substr(image_path.find_last_of("\\/") + 1, image_path.length());
@@ -98,8 +151,7 @@ std::shared_ptr<VkGeneralPurposeImage> VkTextureFactory::InitKTXTexture(const st
 
 		//========================================================================================================================
 		VkBufferCI::StagingBuffer staging_para;
-		auto staging_buffer = buffer_factory.ProduceBuffer(ktxTextureSize,staging_para);
-
+		auto                      staging_buffer = buffer_factory.ProduceBuffer(ktxTextureSize, staging_para);
 
 		//VkBuffer       stagingBuffer;        //host visible memory
 		//VkDeviceMemory stagingBufferMemory;
@@ -107,8 +159,7 @@ std::shared_ptr<VkGeneralPurposeImage> VkTextureFactory::InitKTXTexture(const st
 		//device_manager.CreateBufferAndBindToMemo(ktxTextureSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory, VK_SHARING_MODE_EXCLUSIVE, window.GetSurface());
 
 		//创建完staging buffer以后，把cpu中的texture中的数据拷贝进staging buffer
-		staging_buffer->MapMemory(0, ktxTextureSize, (void const *)ktxTextureData, ktxTextureSize);
-
+		staging_buffer->CopyTo( (void const *) ktxTextureData, ktxTextureSize);
 
 		//void *data;
 		////TODO: whether to use memReqs.size or just ktxTexureSize
@@ -117,7 +168,6 @@ std::shared_ptr<VkGeneralPurposeImage> VkTextureFactory::InitKTXTexture(const st
 		//memcpy(data, ktxTextureData, static_cast<size_t>(ktxTextureSize));
 		//vkUnmapMemory(device_manager.GetLogicalDevice(), stagingBufferMemory);
 		//========================================================================================================================
-
 
 		//Setup buffer copy regions for each mip level
 		//TODO:这里没有考虑layer的问题，
@@ -130,7 +180,7 @@ std::shared_ptr<VkGeneralPurposeImage> VkTextureFactory::InitKTXTexture(const st
 			KTX_error_code ret = ktxTexture_GetImageOffset(ktxTexture, i, 0, 0, &offset);
 			assert(ret == KTX_SUCCESS);
 			// Setup a buffer image copy structure for the current mip level
-			VkBufferImageCopy bufferCopyRegion               = {};
+			VkBufferImageCopy bufferCopyRegion{};
 			bufferCopyRegion.imageSubresource.aspectMask     = VK_IMAGE_ASPECT_COLOR_BIT;
 			bufferCopyRegion.imageSubresource.mipLevel       = i;
 			bufferCopyRegion.imageSubresource.baseArrayLayer = 0;
@@ -152,17 +202,12 @@ std::shared_ptr<VkGeneralPurposeImage> VkTextureFactory::InitKTXTexture(const st
 
 		texture_image = std::dynamic_pointer_cast<VkGeneralPurposeImage>(img_factory.ProduceImage(para_pack));
 
-
-
 		texture_image->CopyBufferToImage(staging_buffer->GetBuffer(), bufferCopyRegions, VkDeviceManager::CommandPoolType::transfor_command_pool);
 		texture_image->TransitionImageLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, image_layout_, VkDeviceManager::CommandPoolType::graphics_command_pool, ktxTexture->numLevels, ktxTexture->numLayers);
-
 
 		//========================================================================================================================
 		sampler_para_pack_.mip_count   = ktxTexture->numLevels;
 		sampler_para_pack_.layer_count = ktxTexture->numLevels;
-
-
 	}
 
 	else
@@ -176,7 +221,40 @@ std::shared_ptr<VkGeneralPurposeImage> VkTextureFactory::InitKTXTexture(const st
 	return texture_image;
 }
 
-VkSampler VkTextureFactory::InitSampler(const SamplerParaPack &para_pack) const
+std::shared_ptr<VkGeneralPurposeImage> VkTextureFactory::InitImgFromBuffer(const TexturePP &texture_pp, const VkImageLayout image_layout_, SamplerPP &sampler_para_pack_) const
+{
+	std::shared_ptr<VkGeneralPurposeImage> texture_image;
+
+
+	const VkDeviceSize                     upload_size = texture_pp.height * texture_pp.width * 4 * sizeof(char);
+
+	const TexImgParameterPack para_pack(texture_pp.format_of_image, texture_pp.GetImgExtend());
+
+	texture_image = std::dynamic_pointer_cast<VkGeneralPurposeImage>(img_factory.ProduceImage(para_pack));
+
+	constexpr VkBufferCI::StagingBuffer staging_buffer_PP;
+	const auto                          staging_buffer = buffer_factory.ProduceBuffer(upload_size, staging_buffer_PP);
+
+	//创建完staging buffer以后，把cpu中的texture中的数据拷贝进staging buffer
+	staging_buffer->CopyTo((void const *) texture_pp.data, upload_size);
+
+	//void *data;
+	////TODO: whether to use memReqs.size or just ktxTexureSize
+	////VK_CHECK_RESULT(vkMapMemory(device, stagingMemory, 0, memReqs.size, 0, (void **) &data));
+	//vkMapMemory(device_manager.GetLogicalDevice(), stagingBufferMemory, 0, ktxTextureSize, static_cast<VkMemoryMapFlags>(0), (void **) &data);
+	//memcpy(data, ktxTextureData, static_cast<size_t>(ktxTextureSize));
+	//vkUnmapMemory(device_manager.GetLogicalDevice(), stagingBufferMemory);
+	//========================================================================================================================
+
+	texture_image->CopyBufferToImage(staging_buffer->GetBuffer(), texture_pp.width, texture_pp.height, VkDeviceManager::CommandPoolType::transfor_command_pool);
+	texture_image->TransitionImageLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, image_layout_, VkDeviceManager::CommandPoolType::graphics_command_pool);
+
+
+	return texture_image;
+
+}
+
+VkSampler VkTextureFactory::InitSampler(const SamplerPP &para_pack) const
 {
 	VkSampler result;
 	if (vkCreateSampler(device_manager.GetLogicalDevice(), &para_pack.sampler_CI, nullptr, &result) != VK_SUCCESS)

@@ -29,7 +29,9 @@
     <ClCompile Include="base\BaseRenderer.cpp" />
     <ClCompile Include="base\Bindable.cpp" />
     <ClCompile Include="base\Camera.cpp" />
+    <ClCompile Include="base\ForwardShadingPipelinePP.cpp" />
     <ClCompile Include="base\ImageParameterPack.cpp" />
+    <ClCompile Include="base\ImguiPipePP.cpp" />
     <ClCompile Include="base\ModelStrcture.cpp" />
     <ClCompile Include="base\NonPbrMaterial.cpp" />
     <ClCompile Include="base\VkBufferBundle.cpp" />
@@ -42,6 +44,7 @@
     <ClCompile Include="base\VkImageBundle.cpp" />
     <ClCompile Include="base\VkManagerBundle.cpp" />
     <ClCompile Include="base\VkMaterial.cpp" />
+    <ClCompile Include="base\VkMath.cpp" />
     <ClCompile Include="base\VkModelFactory.cpp" />
     <ClCompile Include="base\VkPipelineManager.cpp" />
     <ClCompile Include="base\VkRenderpassBase.cpp" />
@@ -77,7 +80,7 @@
     <ClCompile Include="base\VkExtensionUtility.cpp" />
     <ClCompile Include="base\VkSwapchainImage.cpp" />
     <ClCompile Include="base\VkGeneralPurposeImage.cpp" />
-    <ClCompile Include="base\VkImgui.cpp" />
+    <ClCompile Include="base\ImguiRenderpass.cpp" />
     <ClCompile Include="base\VkInstanceWrapper.cpp" />
     <ClCompile Include="base\VkMemoryManager.cpp" />
     <ClCompile Include="base\VkBufferBase.cpp" />
@@ -92,18 +95,20 @@
     <ClCompile Include="base\VkTexture.cpp" />
     <ClCompile Include="base\VkTextureFactory.cpp" />
     <ClCompile Include="base\VkUniformBuffer.cpp" />
-    <ClCompile Include="base\VkPipelineParameterPack.cpp" />
+    <ClCompile Include="base\VkPipelinePP.cpp" />
     <ClCompile Include="base\VkUniformBufferFactory.cpp" />
     <ClCompile Include="base\VkValidationUtility.cpp" />
     <ClCompile Include="base\VkWindows.cpp" />
+    <ClCompile Include="Source.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="base\include\App.h" />
     <ClInclude Include="base\include\BaseRenderer.h" />
     <ClInclude Include="base\include\Bindable.h" />
     <ClInclude Include="base\include\Camera.h" />
-    <ClInclude Include="base\include\EngineHeader.h" />
-    <ClInclude Include="base\include\EngineMarco.h" />
+    <ClInclude Include="base\include\ForwardShadingPipelinePP.h" />
+    <ClInclude Include="base\include\ImguiPipePP.h" />
+    <ClInclude Include="base\include\VkHeader.h" />
     <ClInclude Include="base\include\FirstPersonCamera.h" />
     <ClInclude Include="base\include\Geometry.h" />
     <ClInclude Include="base\include\GltfModel.h" />
@@ -125,6 +130,7 @@
     <ClInclude Include="base\include\VkFactoryBundle.h" />
     <ClInclude Include="base\include\VkManagerBundle.h" />
     <ClInclude Include="base\include\VkMaterial.h" />
+    <ClInclude Include="base\include\VkMath.h" />
     <ClInclude Include="base\include\VkRenderpassBase.h" />
     <ClInclude Include="base\include\VkShaderManager.h" />
     <ClInclude Include="base\include\VkBufferBundle.h" />
@@ -155,7 +161,7 @@
     <ClInclude Include="base\include\VkImageFactory.h" />
     <ClInclude Include="base\include\VkSwapchainImage.h" />
     <ClInclude Include="base\include\VkGeneralPurposeImage.h" />
-    <ClInclude Include="base\include\VkImgui.h" />
+    <ClInclude Include="base\include\ImguiRenderpass.h" />
     <ClInclude Include="base\include\VkInstanceWrapper.h" />
     <ClInclude Include="base\include\VkMemoryManager.h" />
     <ClInclude Include="base\include\VkMetaInfo.h" />
@@ -170,15 +176,16 @@
     <ClInclude Include="base\include\VkTexture.h" />
     <ClInclude Include="base\include\VkTextureFactory.h" />
     <ClInclude Include="base\include\VkUniformBuffer.h" />
-    <ClInclude Include="base\include\VkPipelineParameterPack.h" />
+    <ClInclude Include="base\include\VkPipelinePP.h" />
     <ClInclude Include="base\include\VkUniformBufferFactory.h" />
     <ClInclude Include="base\include\VkValidationUtility.h" />
     <ClInclude Include="base\include\VkWindows.h" />
+    <ClInclude Include="base\include\WindowsSubsys.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="base\vulkan\generate_spv.sh" />
-    <None Include="base\vulkan\glsl_shader.frag" />
-    <None Include="base\vulkan\glsl_shader.vert" />
+    <None Include="base\imguishaders\generate_spv.bat" />
+    <None Include="base\imguishaders\glsl_shader.frag" />
+    <None Include="base\imguishaders\glsl_shader.vert" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

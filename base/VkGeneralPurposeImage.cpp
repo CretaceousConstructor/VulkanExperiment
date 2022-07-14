@@ -21,12 +21,29 @@ VkGeneralPurposeImage::~VkGeneralPurposeImage()
 	vkFreeMemory(device_manager.GetLogicalDevice(), image_mem, nullptr);
 }
 
-void VkGeneralPurposeImage::CopyBufferToImage(VkBuffer buffer, uint32_t width, uint32_t height, const VkCommandPool &command_pool, const VkQueue &command_quque) const
+void VkGeneralPurposeImage::CopyBufferToImage(VkBuffer buffer, uint32_t width, uint32_t height, VkDeviceManager::CommandPoolType command_type) const
 {
-	//这里的mipmap没有管
-	assert(1 == 2);
+	VkCommandPool command_pool;
+	VkQueue       command_quque;
+
+	if (command_type == VkDeviceManager::CommandPoolType::graphics_command_pool)
+	{
+		command_quque = device_manager.GetGraphicsQueue();
+		command_pool  = command_manager.graphics_command_pool;
+	}
+
+	else if (command_type == VkDeviceManager::CommandPoolType::transfor_command_pool)
+	{
+		command_quque = device_manager.GetTransferQueue();
+		command_pool  = command_manager.transfer_command_pool;
+	}
+	else
+	{
+	}
+	//这里的mipmap假设是1，除了ktx以外的图片都假设mipmap和layer是1,ktx格式不会调用这个函数
 	const VkCommandBuffer commandBuffer = VkCommandManager::BeginSingleTimeCommands(command_pool, device_manager.GetLogicalDevice());
-	VkBufferImageCopy     region{};
+
+	VkBufferImageCopy region{};
 	region.bufferOffset      = 0;
 	region.bufferRowLength   = 0;
 	region.bufferImageHeight = 0;
@@ -52,20 +69,20 @@ void VkGeneralPurposeImage::CopyBufferToImage(VkBuffer buffer, uint32_t width, u
 	VkCommandManager::EndSingleTimeCommands(command_pool, device_manager.GetLogicalDevice(), commandBuffer, command_quque);
 }
 
-void VkGeneralPurposeImage::CopyBufferToImage(VkBuffer buffer, const std::vector<VkBufferImageCopy> &bufferCopyRegions, const VkCommandPool &command_pool, const VkQueue &command_quque) const
-{
-	const VkCommandBuffer commandBuffer = VkCommandManager::BeginSingleTimeCommands(command_pool, device_manager.GetLogicalDevice());
-
-	vkCmdCopyBufferToImage(
-	    commandBuffer,
-	    buffer,
-	    image,
-	    VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-	    bufferCopyRegions.size(),
-	    bufferCopyRegions.data());
-
-	VkCommandManager::EndSingleTimeCommands(command_pool, device_manager.GetLogicalDevice(), commandBuffer, command_quque);
-}
+//void VkGeneralPurposeImage::CopyBufferToImage(VkBuffer buffer, const std::vector<VkBufferImageCopy> &bufferCopyRegions, const VkCommandPool &command_pool, const VkQueue &command_quque) const
+//{
+//	const VkCommandBuffer commandBuffer = VkCommandManager::BeginSingleTimeCommands(command_pool, device_manager.GetLogicalDevice());
+//
+//	vkCmdCopyBufferToImage(
+//	    commandBuffer,
+//	    buffer,
+//	    image,
+//	    VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+//	    (uint32_t) bufferCopyRegions.size(),
+//	    bufferCopyRegions.data());
+//
+//	VkCommandManager::EndSingleTimeCommands(command_pool, device_manager.GetLogicalDevice(), commandBuffer, command_quque);
+//}
 
 void VkGeneralPurposeImage::CopyBufferToImage(VkBuffer buffer, const std::vector<VkBufferImageCopy> &bufferCopyRegions, VkDeviceManager::CommandPoolType command_type) const
 {
@@ -87,14 +104,14 @@ void VkGeneralPurposeImage::CopyBufferToImage(VkBuffer buffer, const std::vector
 	{
 	}
 
-const VkCommandBuffer commandBuffer = VkCommandManager::BeginSingleTimeCommands(command_pool, device_manager.GetLogicalDevice());
+	const VkCommandBuffer commandBuffer = VkCommandManager::BeginSingleTimeCommands(command_pool, device_manager.GetLogicalDevice());
 
 	vkCmdCopyBufferToImage(
 	    commandBuffer,
 	    buffer,
 	    image,
 	    VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-	    bufferCopyRegions.size(),
+	    uint32_t(bufferCopyRegions.size()),
 	    bufferCopyRegions.data());
 
 	VkCommandManager::EndSingleTimeCommands(command_pool, device_manager.GetLogicalDevice(), commandBuffer, command_quque);

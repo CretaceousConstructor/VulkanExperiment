@@ -152,7 +152,7 @@ void Renderpass0::CompileShaders()
 
 void Renderpass0::CreateGraphicsPipeline()
 {
-	VkPipelineParameterPack           para_pack{gfx};
+	VkPipelinePP           para_pack{gfx};
 	const std::vector<ShaderMetaInfo> shader_infos{
 	    {.name{"vs"}, .shader_path{"../../data/shaders/KTXTexture/KTXTexture_vertex_shader.spv"}, .shader_binding_stage{VK_SHADER_STAGE_VERTEX_BIT}},
 	    {.name{"ps"}, .shader_path{std::string("../../data/shaders/KTXTexture/KTXTexture_fragment_shader.spv")}, .shader_binding_stage{VK_SHADER_STAGE_FRAGMENT_BIT}}

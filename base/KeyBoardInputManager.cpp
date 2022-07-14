@@ -36,7 +36,7 @@ bool KeyBoardInputManager::GetIsKeyDown(int key)
 	bool result = false;
 	if (_isEnabled)
 	{
-		std::map<int, bool>::iterator it = _keys.find(key);
+		const auto it = _keys.find(key);
 		if (it != _keys.end())
 		{
 			result = _keys[key];
@@ -66,11 +66,6 @@ void KeyBoardInputManager::SetIsKeyDown(int key, bool isDown)
 
 void KeyBoardInputManager::SetupKeyInputs(const GLFWwindow *window)
 {
-
-
 	glfwSetKeyCallback(const_cast<GLFWwindow *>(window), KeyBoardInputManager::KeyBoardCallback);
-
-
-
 
 }

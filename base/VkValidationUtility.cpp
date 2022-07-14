@@ -1,14 +1,8 @@
 #include "VkValidationUtility.h"
 
-
-
-
-
-
 //CHECKED
 bool VkValidationUtility::CheckIfRequiredInstanceLayersSupported()
 {
-
 	//之前的版本有device（某个gpu） layer和instance（整个程序）layer的区别，不过已经不再这么区分，全部都用instance layer
 	//遍历所有可用的LAYER
 	//*************************************************************
@@ -44,8 +38,6 @@ bool VkValidationUtility::CheckIfRequiredInstanceLayersSupported()
 		RequiredInstanceValidationLayer.insert(RequiredInstanceValidationLayer.end(), required_validation_instance_layers.begin(), required_validation_instance_layers.end());
 	}
 
-
-	
 	for (const char *layerName : RequiredInstanceValidationLayer)
 	{
 		bool layerFound = false;
@@ -66,17 +58,9 @@ bool VkValidationUtility::CheckIfRequiredInstanceLayersSupported()
 	//*************************************************************
 }
 
-
-
-
-
-
-
-
-
 VkResult VkValidationUtility::CreateDebugUtilsMessengerEXT(const VkInstance &instance, const VkDebugUtilsMessengerCreateInfoEXT *pCreateInfo, const VkAllocationCallbacks *pAllocator, VkDebugUtilsMessengerEXT *pDebugMessenger)
 {
-	const auto func = (PFN_vkCreateDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
+	const auto func = reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>(vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT"));
 	if (func != nullptr)
 	{
 		return func(instance, pCreateInfo, pAllocator, pDebugMessenger);
@@ -89,9 +73,7 @@ VkResult VkValidationUtility::CreateDebugUtilsMessengerEXT(const VkInstance &ins
 
 void VkValidationUtility::SetupDebugMessenger(const VkInstance &instance)
 {
-
-
-	if constexpr(!VkValidationUtility::VALIDATION_LAYERS_ENABLED)
+	if constexpr (!VkValidationUtility::VALIDATION_LAYERS_ENABLED)
 	{
 		return;
 	}
@@ -103,14 +85,7 @@ void VkValidationUtility::SetupDebugMessenger(const VkInstance &instance)
 	{
 		throw std::runtime_error("failed to set up debug messenger!");
 	}
-
-
-
 }
-
-
-
-
 
 void VkValidationUtility::DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT para_debugMessenger, const VkAllocationCallbacks *pAllocator)
 {
@@ -122,76 +97,56 @@ void VkValidationUtility::DestroyDebugUtilsMessengerEXT(VkInstance instance, VkD
 	}
 }
 
-
-
-
-
-
-
-
-
-
-
-
 void VkValidationUtility::PopulateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT &create_info)
 {
-	create_info       = {};
-	create_info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+	create_info                 = {};
+	create_info.sType           = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+	create_info.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
 
-	create_info.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT;
-	//createInfo.messageSeverity =    VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT;
-	create_info.messageType     = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+	create_info.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
 
 	create_info.pfnUserCallback = DebugCallback;
 }
 
-
-
-VKAPI_ATTR VkBool32 VKAPI_CALL VkValidationUtility::DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData, void *pUserData)
+VkBool32 VKAPI_CALL VkValidationUtility::DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData, void *pUserData)
 {
 	//std::ofstream file1;
 	//file1.open("D:/CS/ComputerGraphics/vulkan/WindowsProject1/log.txt", std::ios::app);
 
-	std::string message(pCallbackData->pMessage);
-	std::string debugMessage("DEBUG-PRINTF ]");
+	const std::string message(pCallbackData->pMessage);
+	std::string       debugMessage("DEBUG-PRINTF ]");
 
-	//if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT)
-	//{
-	//	//if (message.find(debugMessage) != std::string::npos)
-	//	//{
-	//	//	std::cout << "validation layer: " << std::endl
-	//	//	          << "--------------------------------------------------------------------------------" << std::endl;
-	//	//	const auto sizeline = 140;
-	//	//	for (int i = 0; i < message.length(); i += sizeline)
-	//	//	{
-	//	//		std::cout << message.substr(i, sizeline) << std::endl;
-	//	//	}
-	//	//	std::cout << "--------------------------------------------------------------------------------" << std::endl;
-	//	//}
+	;
+
+	if (messageSeverity & (VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT))
+	{
+		std::cout << "[VALIDATION LAYER]: " << std::endl
+		          << "********************************************************************************" << std::endl;
+		constexpr auto sizeline = 140;
+		for (size_t i = 0; i < message.length(); i += sizeline)
+		{
+			std::cout << message.substr(i, sizeline) << std::endl;
+		}
+
+		PrintDebugUtilsObjectNameInfo(pCallbackData->objectCount, pCallbackData->pObjects);
+		std::cout << "********************************************************************************" << std::endl;
+	}
 
 	//if (message.find(debugMessage) != std::string::npos)
 	//{
-	//	std::cout << "validation layer: " << std::endl
-	//	          << "--------------------------------------------------------------------------------" << std::endl;
-	//	const auto sizeline = 140;
-	//	for (int i = 0; i < message.length(); i += sizeline)
-	//	{
-	//		std::cout << message.substr(i, sizeline) << std::endl;
-	//	}
-	//	std::cout << "--------------------------------------------------------------------------------" << std::endl
-	//	          << std::endl;
-	//}
-	//else
-
-	std::cout << "validation layer: " << std::endl << "--------------------------------------------------------------------------------" << std::endl;
-	constexpr auto sizeline = 140;
-	for (int i = 0; i < message.length(); i += sizeline)
-	{
-		std::cout << message.substr(i, sizeline) << std::endl;
-	}
-	std::cout << "--------------------------------------------------------------------------------" << std::endl
-	          << std::endl;
-
 	//也可以返回True，具体含义查文档吧
 	return VK_FALSE;
+}
+
+VKAPI_ATTR void VkValidationUtility::PrintDebugUtilsObjectNameInfo(const uint32_t num_of_obj, const VkDebugUtilsObjectNameInfoEXT *object_names)
+{
+	for (size_t i = 0; i < num_of_obj; i++)
+	{
+		if ((object_names + i)->pObjectName)
+		{
+			std::cout << "--------------------------------------------------------------------------------" << std::endl;
+			std::cout << (object_names + i)->pObjectName << std::endl;
+			std::cout << "--------------------------------------------------------------------------------" << std::endl;
+		}
+	}
 }

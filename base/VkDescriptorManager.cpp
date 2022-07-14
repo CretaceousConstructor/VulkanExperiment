@@ -1,7 +1,7 @@
 #include "VkDescriptorManager.h"
 
 VkDescriptorManager::VkDescriptorManager(VkGraphicsComponent &_gfx) :
-    gfx(_gfx),device_manager(gfx.DeviceMan())
+    gfx(_gfx), device_manager(gfx.DeviceMan())
 {
 }
 
@@ -18,6 +18,11 @@ VkDescriptorManager::~VkDescriptorManager()
 	}
 }
 
+
+
+
+
+
 void VkDescriptorManager::AddDescriptorPool(const DescriptorPoolMetaInfo pool_meta_info, std::vector<std::pair<VkDescriptorType, uint32_t>> info_pairs, uint32_t max_sets)
 {
 	if (descriptor_pools.contains(pool_meta_info))
@@ -31,10 +36,11 @@ void VkDescriptorManager::AddDescriptorPool(const DescriptorPoolMetaInfo pool_me
 	std::vector<VkDescriptorPoolSize> poolSizes;
 	for (const auto &pair : result.info)
 	{
-		VkDescriptorPoolSize temp_poolsize{};
-		temp_poolsize.type            = pair.first;
-		temp_poolsize.descriptorCount = pair.second;
-		poolSizes.push_back(temp_poolsize);
+		//GetDescriptorSize(pair.first, pair.second);
+		//VkDescriptorPoolSize temp_poolsize{};
+		//temp_poolsize.type            = pair.first;
+		//temp_poolsize.descriptorCount = pair.second;
+		poolSizes.push_back(GetOneDescriptorPoolSizeDescription(pair.first, pair.second));
 	}
 
 	VkDescriptorPoolCreateInfo descriptor_pool_CI = {};
@@ -53,7 +59,7 @@ void VkDescriptorManager::AddDescriptorPool(const DescriptorPoolMetaInfo pool_me
 	descriptor_pools.emplace(pool_meta_info, std::move(result));
 }
 
-const VkDescriptorPool& VkDescriptorManager::GetPool(const DescriptorPoolMetaInfo   pool_meta_info) const
+const VkDescriptorPool &VkDescriptorManager::GetPool(const DescriptorPoolMetaInfo pool_meta_info) const
 {
 	////if (!descriptor_pools.contains(pool_meta_info))
 	////{
@@ -61,8 +67,6 @@ const VkDescriptorPool& VkDescriptorManager::GetPool(const DescriptorPoolMetaInf
 	////}
 	return descriptor_pools.at(pool_meta_info).descriptor_pool;
 }
-
-
 
 void VkDescriptorManager::AddDescriptorSetLayout(const DescriptorSetLayoutMetaInfo set_layout_meta_info, std::vector<VkDescriptorSetLayoutBinding> LayoutBindings)
 {
@@ -83,12 +87,9 @@ void VkDescriptorManager::AddDescriptorSetLayout(const DescriptorSetLayoutMetaIn
 	}
 
 	set_layouts.emplace(set_layout_meta_info, std::move(temp_layout));
-
-
-
 }
 
-const VkDescriptorSetLayout& VkDescriptorManager::GetSetLayout(const DescriptorSetLayoutMetaInfo set_layout_meta_info)  const
+const VkDescriptorSetLayout &VkDescriptorManager::GetSetLayout(const DescriptorSetLayoutMetaInfo set_layout_meta_info) const
 {
 	////if (!set_layouts.contains(set_layout_meta_info))
 	////{
@@ -96,11 +97,6 @@ const VkDescriptorSetLayout& VkDescriptorManager::GetSetLayout(const DescriptorS
 	////}
 	return set_layouts.at(set_layout_meta_info).set_layout;
 }
-
-
-
-
-
 
 //DescriptorSetMetaInfo
 void VkDescriptorManager::AddDescriptorSetBundle(const DescriptorSetMetaInfo bundle_set_meta_info, size_t num_of_bundle)
@@ -133,8 +129,6 @@ void VkDescriptorManager::AddDescriptorSetBundle(const DescriptorSetMetaInfo bun
 
 	//adding to map
 	descriptor_sets.emplace(bundle_set_meta_info, std::move(descriptor_set_bundle));
-
-
 }
 
 void VkDescriptorManager::UpdateDescriptorSet(std::vector<VkWriteDescriptorSet> write_descriptor_sets, const DescriptorSetMetaInfo set_meta_info, size_t frame_inflight) const
@@ -146,7 +140,6 @@ void VkDescriptorManager::UpdateDescriptorSet(std::vector<VkWriteDescriptorSet> 
 
 	const auto &set_bundle = descriptor_sets.at(set_meta_info);
 
-
 	for (auto &write_set : write_descriptor_sets)
 	{
 		write_set.dstSet = set_bundle[frame_inflight];
@@ -155,7 +148,7 @@ void VkDescriptorManager::UpdateDescriptorSet(std::vector<VkWriteDescriptorSet> 
 	vkUpdateDescriptorSets(device_manager.GetLogicalDevice(), static_cast<uint32_t>(write_descriptor_sets.size()), write_descriptor_sets.data(), 0, nullptr);
 }
 
-const std::vector<VkDescriptorSet> & VkDescriptorManager::GetDescriptorSetBundle(DescriptorSetMetaInfo meta_info)const
+const std::vector<VkDescriptorSet> &VkDescriptorManager::GetDescriptorSetBundle(DescriptorSetMetaInfo meta_info) const
 {
 	if (!descriptor_sets.contains(meta_info))
 	{
@@ -163,24 +156,7 @@ const std::vector<VkDescriptorSet> & VkDescriptorManager::GetDescriptorSetBundle
 	}
 
 	return descriptor_sets.at(meta_info);
-
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 //std::vector<VkDescriptorSetLayout> VkDescriptorManager::SearchLayout(const DescriptorSetMetaInfo set_layout_meta_info) const
 //{
@@ -205,14 +181,77 @@ const std::vector<VkDescriptorSet> & VkDescriptorManager::GetDescriptorSetBundle
 //	return result;
 //}
 
-std::vector<VkDescriptorSetLayout> VkDescriptorManager::SearchLayout(const std::vector<DescriptorSetLayoutMetaInfo>& set_layout_meta_info) const
+std::vector<VkDescriptorSetLayout> VkDescriptorManager::SearchLayout(const std::vector<DescriptorSetLayoutMetaInfo> &set_layout_meta_info) const
 {
-
 	std::vector<VkDescriptorSetLayout> result;
 	for (auto &layout : set_layout_meta_info)
 	{
 		result.push_back(set_layouts.at(layout).set_layout);
 	}
 	return result;
+}
 
+VkDescriptorPoolSize VkDescriptorManager::GetOneDescriptorPoolSizeDescription(VkDescriptorType type, uint32_t descriptor_count)
+{
+	VkDescriptorPoolSize result{};
+	result.type            = type;
+	result.descriptorCount = descriptor_count;
+	return result;
+}
+
+
+
+
+VkDescriptorPoolCreateInfo VkDescriptorManager::GetDescriptorPoolCI(const std::vector<VkDescriptorPoolSize> &pool_sizes, uint32_t max_sets)
+{
+	VkDescriptorPoolCreateInfo descriptor_pool_CI{};
+	descriptor_pool_CI.sType         = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+	descriptor_pool_CI.poolSizeCount = (uint32_t) pool_sizes.size();
+	descriptor_pool_CI.pPoolSizes    = pool_sizes.data();
+	descriptor_pool_CI.maxSets       = max_sets;
+	return descriptor_pool_CI;
+}
+
+
+
+VkDescriptorSetLayoutBinding VkDescriptorManager::GetDescriptorLayoutBindingDescriptions(uint32_t binding, VkDescriptorType type, VkShaderStageFlags stage_flags, uint32_t descriptor_count)
+{
+	VkDescriptorSetLayoutBinding setLayoutBinding{};
+	setLayoutBinding.descriptorType     = type;
+	setLayoutBinding.stageFlags         = stage_flags;
+	setLayoutBinding.binding            = binding;
+	setLayoutBinding.descriptorCount    = descriptor_count;
+	setLayoutBinding.pImmutableSamplers = nullptr;
+
+	return setLayoutBinding;
+}
+
+VkDescriptorSetLayoutCreateInfo VkDescriptorManager::GetDescriptorSetLayoutCI(const std::vector<VkDescriptorSetLayoutBinding> &bindings)
+{
+	VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo{};
+	descriptorSetLayoutCreateInfo.sType        = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+	descriptorSetLayoutCreateInfo.pBindings    = bindings.data();
+	descriptorSetLayoutCreateInfo.bindingCount = (uint32_t) bindings.size();
+
+	return descriptorSetLayoutCreateInfo;
+}
+
+VkDescriptorSetAllocateInfo VkDescriptorManager::GetDescriptorAllocateInfo(VkDescriptorPool descriptorPool, const VkDescriptorSetLayout &SetLayout)
+{
+	VkDescriptorSetAllocateInfo descriptorSetAllocateInfo{};
+	descriptorSetAllocateInfo.sType              = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+	descriptorSetAllocateInfo.descriptorPool     = descriptorPool;
+	descriptorSetAllocateInfo.pSetLayouts        = &SetLayout;
+	descriptorSetAllocateInfo.descriptorSetCount = 1;
+	return descriptorSetAllocateInfo;
+}
+
+VkDescriptorSetAllocateInfo VkDescriptorManager::GetDescriptorAllocateInfo(VkDescriptorPool descriptorPool, const std::vector<VkDescriptorSetLayout> &SetLayouts)
+{
+	VkDescriptorSetAllocateInfo descriptorSetAllocateInfo{};
+	descriptorSetAllocateInfo.sType              = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+	descriptorSetAllocateInfo.descriptorPool     = descriptorPool;
+	descriptorSetAllocateInfo.pSetLayouts        = SetLayouts.data();
+	descriptorSetAllocateInfo.descriptorSetCount = (uint32_t) SetLayouts.size();
+	return descriptorSetAllocateInfo;
 }
