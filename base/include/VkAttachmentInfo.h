@@ -17,7 +17,7 @@ class VkAttachmentInfo
 
 	};
 
-	VkAttachmentInfo(const std::vector<std::shared_ptr<VkImageBase>> &_attachment_images);
+	VkAttachmentInfo(std::vector<std::shared_ptr<VkImageBase>> attachment_images_);
 	VkAttachmentInfo() = delete;
 
 	//VkAttachmentInfo(const VkAttachmentInfo &other) :

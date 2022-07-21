@@ -9,14 +9,22 @@ VkImageFactory::VkImageFactory(VkGraphicsComponent &_gfx) :
 {
 }
 
-std::shared_ptr<VkImageBase> VkImageFactory::ProduceImage(const ImgParameterPack &para_pack) const
+std::shared_ptr<VkImageBase> VkImageFactory::ProduceImage(const ImagePP &para_pack) const
 {
-	if (typeid(para_pack) == typeid(SwapImgParameterPack))
+	if (typeid(para_pack) == typeid(SwapchainImgPP))
 	{
-		throw std::runtime_error("swap chian can't be produced seperately!");
+		throw std::runtime_error("swap chian image can't be produced seperately!");
 	}
 
-	const std::shared_ptr<ImgParameterPack> para_pack_ptr = para_pack.Clone();
+	if (typeid(para_pack) == typeid(DepthImgPP))
+	{
+		const VkFormat depth_format = para_pack.default_image_format;
+		if (depth_format != VK_FORMAT_D32_SFLOAT && depth_format != VK_FORMAT_D32_SFLOAT_S8_UINT && depth_format != VK_FORMAT_D24_UNORM_S8_UINT)
+		{
+			throw std::runtime_error("wrong image format !");
+		}
+	}
+	const std::shared_ptr<ImagePP> para_pack_ptr = para_pack.Clone();
 
 	const auto image      = BuildImage(*para_pack_ptr);
 	const auto image_mem  = CreateAndBindMemory(*para_pack_ptr, image);
@@ -28,20 +36,7 @@ std::shared_ptr<VkImageBase> VkImageFactory::ProduceImage(const ImgParameterPack
 	return result;
 }
 
-//VkImageBundle VkImageFactory::ProduceImageBundle(const ImgParameterPack &para_pack, size_t bundle_size) const
-//{
-//
-//
-//
-//	std::vector<std::shared_ptr<VkImageBase>> result_bundle;
-//	for (size_t i = 0; i < bundle_size; i++)
-//	{
-//		result_bundle.push_back(ProduceImage(para_pack));
-//	}
-//	return {std::move(result_bundle), bundle_size};
-//}
-//
-std::shared_ptr<VkImageBundle> VkImageFactory::ProduceImageBundlePtr(const ImgParameterPack &para_pack, size_t bundle_size) const
+std::shared_ptr<VkImageBundle> VkImageFactory::ProduceImageBundlePtr(const ImagePP &para_pack, size_t bundle_size) const
 {
 	std::vector<std::shared_ptr<VkImageBase>> result_bundle;
 	for (size_t i = 0; i < bundle_size; i++)
@@ -51,11 +46,11 @@ std::shared_ptr<VkImageBundle> VkImageFactory::ProduceImageBundlePtr(const ImgPa
 	return std::make_shared<VkImageBundle>(std::move(result_bundle), bundle_size);
 }
 
-//VkImageBundle VkImageFactory::ProduceImageBundle(const SwapImgParameterPack &para_pack) const
+//VkImageBundle VkImageFactory::ProduceImageBundle(const SwapchainImgPP &para_pack) const
 //{
 //	const auto images = swapchain_manager.GetSwapChainImages();
 //
-//	const std::shared_ptr<ImgParameterPack> para_pack_ptr = para_pack.Clone();
+//	const std::shared_ptr<ImagePP> para_pack_ptr = para_pack.Clone();
 //
 //	para_pack_ptr->default_image_format = swapchain_manager.GetSwapChainImageFormat();
 //	para_pack_ptr->default_image_extent = swapchain_manager.GetSwapChainImageExtent();
@@ -82,9 +77,9 @@ std::shared_ptr<VkImageBundle> VkImageFactory::ProduceImageBundlePtr(const ImgPa
 //	return {image_wrappers, static_cast<uint32_t>(images.size())};
 //}
 
-std::shared_ptr<VkImageBundle> VkImageFactory::ProduceImageBundlePtr(const SwapImgParameterPack &para_pack) const
+std::shared_ptr<VkImageBundle> VkImageFactory::ProduceImageBundlePtr(const SwapchainImgPP &para_pack) const
 {
-	const std::vector<VkImage>& images = swapchain_manager.GetSwapChainImages();
+	const std::vector<VkImage> &images = swapchain_manager.GetSwapChainImages();
 
 	//for (const VkImage& image : images)
 	//{
@@ -97,8 +92,7 @@ std::shared_ptr<VkImageBundle> VkImageFactory::ProduceImageBundlePtr(const SwapI
 
 	//}
 
-
-	const std::shared_ptr<ImgParameterPack> para_pack_ptr = para_pack.Clone();
+	const std::shared_ptr<ImagePP> para_pack_ptr = para_pack.Clone();
 
 	para_pack_ptr->default_image_format = swapchain_manager.GetSwapChainImageFormat();
 	para_pack_ptr->default_image_extent = swapchain_manager.GetSwapChainImageExtent();
@@ -124,12 +118,10 @@ std::shared_ptr<VkImageBundle> VkImageFactory::ProduceImageBundlePtr(const SwapI
 		image_wrappers.push_back(swap_image);
 	}
 
-
-
 	return std::make_shared<VkImageBundle>(image_wrappers, static_cast<uint32_t>(images.size()));
 }
 
-VkImage VkImageFactory::BuildImage(ImgParameterPack &para_pack) const
+VkImage VkImageFactory::BuildImage(ImagePP &para_pack) const
 {
 	para_pack.default_image_CI.format = para_pack.default_image_format;
 	para_pack.default_image_CI.extent = para_pack.default_image_extent;
@@ -141,7 +133,7 @@ VkImage VkImageFactory::BuildImage(ImgParameterPack &para_pack) const
 	return temp_image;
 }
 
-VkDeviceMemory VkImageFactory::CreateAndBindMemory(ImgParameterPack &para_pack, VkImage temp_image) const
+VkDeviceMemory VkImageFactory::CreateAndBindMemory(ImagePP &para_pack, VkImage temp_image) const
 {
 	VkDeviceMemory       temp_image_mem;
 	VkMemoryRequirements memRequirements;
@@ -152,51 +144,39 @@ VkDeviceMemory VkImageFactory::CreateAndBindMemory(ImgParameterPack &para_pack, 
 	allocInfo.allocationSize  = memRequirements.size;
 	allocInfo.memoryTypeIndex = VkDeviceManager::FindMemoryType(memRequirements.memoryTypeBits, para_pack.default_image_mem_prop_flag, device_manager.GetPhysicalDevice());        //找到可以分配VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT内存类型的index
 
-	if (vkAllocateMemory(device_manager.GetLogicalDevice(), &allocInfo, nullptr, &temp_image_mem) != VK_SUCCESS)
-	{
-		throw std::runtime_error("failed to allocate image memory!");
-	}
+	//VK_CHECK_RESULT(vkAllocateMemory(device_manager.GetLogicalDevice(), &allocInfo, nullptr, &temp_image_mem))
+	auto reuslt = vkAllocateMemory(device_manager.GetLogicalDevice(), &allocInfo, nullptr, &temp_image_mem);
 
 	vkBindImageMemory(device_manager.GetLogicalDevice(), temp_image, temp_image_mem, 0);        //把两者联系起来
 
 	return temp_image_mem;
 }
 
-
-
-
-
-
-VkImageView VkImageFactory::BuildImageView(ImgParameterPack &para_pack, VkImage temp_image) const
+VkImageView VkImageFactory::BuildImageView(ImagePP &para_pack, VkImage temp_image) const
 {
 	VkImageView temp_image_view;
-	para_pack.default_image_view_CI.image = temp_image;
+	para_pack.default_image_view_CI.image  = temp_image;
+	para_pack.default_image_view_CI.format = para_pack.default_image_format;
 
 	assert(para_pack.default_image_CI.mipLevels == para_pack.default_image_view_CI.subresourceRange.levelCount);
 	assert(para_pack.default_image_CI.arrayLayers == para_pack.default_image_view_CI.subresourceRange.layerCount);
 
-	if (vkCreateImageView(device_manager.GetLogicalDevice(), &para_pack.default_image_view_CI, nullptr, &temp_image_view) != VK_SUCCESS)
-	{
-		throw std::runtime_error("failed to create texture image view!");
-	}
+	VK_CHECK_RESULT(vkCreateImageView(device_manager.GetLogicalDevice(), &para_pack.default_image_view_CI, nullptr, &temp_image_view))
 
 	return temp_image_view;
 }
 
-void VkImageFactory::TransitionImageLayout(const ImgParameterPack &para_pack, const std::shared_ptr<VkImageBase>& result)
+void VkImageFactory::TransitionImageLayout(const ImagePP &para_pack, const std::shared_ptr<VkImageBase> &result)
 {
-
-
 	if (para_pack.default_final_layout == VK_IMAGE_LAYOUT_UNDEFINED)
 	{
 		return;
 	}
 	else if (para_pack.default_final_layout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
 	{
-
 		result->TransitionImageLayout(VK_IMAGE_LAYOUT_UNDEFINED, para_pack.default_final_layout, VkDeviceManager::CommandPoolType::transfor_command_pool, para_pack.default_image_CI.mipLevels, para_pack.default_image_CI.arrayLayers);
 	}
-	else 
+	else
 	{
 		result->TransitionImageLayout(VK_IMAGE_LAYOUT_UNDEFINED, para_pack.default_final_layout, VkDeviceManager::CommandPoolType::graphics_command_pool, para_pack.default_image_CI.mipLevels, para_pack.default_image_CI.arrayLayers);
 	}

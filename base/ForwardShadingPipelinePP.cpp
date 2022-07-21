@@ -60,7 +60,6 @@ void ForwardShadingPipelinePP::InitMultisampleStateCI()
 
 void ForwardShadingPipelinePP::InitDynamicState()
 {
-	dynamic_state_CI.sType             = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
 	dynamic_state_CI.dynamicStateCount = 0;
 	dynamic_state_CI.pDynamicStates    = nullptr;
 }
@@ -112,12 +111,14 @@ void ForwardShadingPipelinePP::InitViewPortStateCI()
 	view_port_scissor_pair.first.push_back(viewport);
 	view_port_scissor_pair.second.push_back(scissor);
 
-	viewport_state_CI.sType         = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
 	viewport_state_CI.viewportCount = static_cast<uint32_t>(view_port_scissor_pair.first.size());
 	viewport_state_CI.pViewports    = view_port_scissor_pair.first.data();
 
 	viewport_state_CI.scissorCount = static_cast<uint32_t>(view_port_scissor_pair.second.size());
 	viewport_state_CI.pScissors    = view_port_scissor_pair.second.data();
+
+
+
 }
 
 void ForwardShadingPipelinePP::InitVertexInputStateCI()

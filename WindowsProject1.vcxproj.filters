@@ -126,9 +126,6 @@
     <Filter Include="Header Files\Application">
       <UniqueIdentifier>{afaf6a75-9888-4bd6-9cb7-776f28253b48}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\ImGui\ImguiShaders">
-      <UniqueIdentifier>{756adca8-0c9e-49e3-b1b2-41f8f29383dc}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\VkCore\Pipeline\ParameterPack">
       <UniqueIdentifier>{faf8b4ec-19e7-46f3-b401-5c3cff444360}</UniqueIdentifier>
     </Filter>
@@ -167,7 +164,7 @@
     <ClCompile Include="base\VkGeneralPurposeImage.cpp">
       <Filter>Source Files\Vk</Filter>
     </ClCompile>
-    <ClCompile Include="base\ImguiRenderpass.cpp">
+    <ClCompile Include="base\VkImgui.cpp">
       <Filter>Source Files\Vk</Filter>
     </ClCompile>
     <ClCompile Include="base\VkInstanceWrapper.cpp">
@@ -254,13 +251,7 @@
     <ClCompile Include="base\VkImageFactory.cpp">
       <Filter>Source Files\Vk</Filter>
     </ClCompile>
-    <ClCompile Include="base\VkDepthImageFactory.cpp">
-      <Filter>Source Files\Vk</Filter>
-    </ClCompile>
     <ClCompile Include="base\VkSwapchainImage.cpp">
-      <Filter>Source Files\Vk</Filter>
-    </ClCompile>
-    <ClCompile Include="base\VkTexImageFactory.cpp">
       <Filter>Source Files\Vk</Filter>
     </ClCompile>
     <ClCompile Include="base\VkMetaInfo.cpp">
@@ -290,9 +281,6 @@
     <ClCompile Include="base\VkFenceBundle.cpp">
       <Filter>Source Files\Vk</Filter>
     </ClCompile>
-    <ClCompile Include="base\VkUniformBufferFactory.cpp">
-      <Filter>Source Files\Vk</Filter>
-    </ClCompile>
     <ClCompile Include="base\VkModelFactory.cpp">
       <Filter>Source Files\Vk</Filter>
     </ClCompile>
@@ -320,9 +308,6 @@
     <ClCompile Include="base\VkStagingBuffer.cpp">
       <Filter>Source Files\Vk</Filter>
     </ClCompile>
-    <ClCompile Include="base\VkStagingBufferFactory.cpp">
-      <Filter>Source Files\Vk</Filter>
-    </ClCompile>
     <ClCompile Include="base\VkRenderpassBase.cpp">
       <Filter>Source Files\Vk</Filter>
     </ClCompile>
@@ -330,9 +315,6 @@
       <Filter>Source Files\Vk</Filter>
     </ClCompile>
     <ClCompile Include="base\VkManagerBundle.cpp">
-      <Filter>Source Files\Vk</Filter>
-    </ClCompile>
-    <ClCompile Include="base\VkSwapchainImageFactory.cpp">
       <Filter>Source Files\Vk</Filter>
     </ClCompile>
     <ClCompile Include="base\VkMaterial.cpp">
@@ -375,6 +357,9 @@
       <Filter>Source Files\Imgui</Filter>
     </ClCompile>
     <ClCompile Include="base\ForwardShadingPipelinePP.cpp">
+      <Filter>Source Files\Vk</Filter>
+    </ClCompile>
+    <ClCompile Include="base\PbrMaterialMetallic.cpp">
       <Filter>Source Files\Vk</Filter>
     </ClCompile>
   </ItemGroup>
@@ -457,9 +442,6 @@
     <ClInclude Include="base\include\VkUniformBuffer.h">
       <Filter>Header Files\VkCore\Buffer\Useless</Filter>
     </ClInclude>
-    <ClInclude Include="base\include\VkUniformBufferFactory.h">
-      <Filter>Header Files\VkCore\Buffer\Useless</Filter>
-    </ClInclude>
     <ClInclude Include="base\include\VkFenceBundle.h">
       <Filter>Header Files\VkCore\SynObject</Filter>
     </ClInclude>
@@ -523,9 +505,6 @@
     <ClInclude Include="base\include\VkSwapchainImage.h">
       <Filter>Header Files\VkCore\Image\Images</Filter>
     </ClInclude>
-    <ClInclude Include="base\include\VkDepthImageFactory.h">
-      <Filter>Header Files\VkCore\Image\Useless\ImageFactory</Filter>
-    </ClInclude>
     <ClInclude Include="base\include\VkExtensionUtility.h">
       <Filter>Header Files\VkCore\Utility</Filter>
     </ClInclude>
@@ -537,9 +516,6 @@
     </ClInclude>
     <ClInclude Include="base\include\VkRenderpassWrapper.h">
       <Filter>Header Files\VkCore\Renderpass</Filter>
-    </ClInclude>
-    <ClInclude Include="base\include\VkTexImageFactory.h">
-      <Filter>Header Files\VkCore\Image\Useless\ImageFactory</Filter>
     </ClInclude>
     <ClInclude Include="base\include\VkRenderpassBase.h">
       <Filter>Header Files\VkCore\Renderpass</Filter>
@@ -559,7 +535,7 @@
     <ClInclude Include="base\include\VkWindows.h">
       <Filter>Header Files\VkCore\Window</Filter>
     </ClInclude>
-    <ClInclude Include="base\include\ImguiRenderpass.h">
+    <ClInclude Include="base\include\VkImgui.h">
       <Filter>Header Files\ImGui</Filter>
     </ClInclude>
     <ClInclude Include="base\include\VkMaterial.h">
@@ -574,9 +550,6 @@
     <ClInclude Include="base\include\VkGeneralPurposeImage.h">
       <Filter>Header Files\VkCore\Image\Images</Filter>
     </ClInclude>
-    <ClInclude Include="base\include\VkSwapchainImageFactory.h">
-      <Filter>Header Files\VkCore\Image\Useless\ImageFactory</Filter>
-    </ClInclude>
     <ClInclude Include="base\include\VkShaderWrapper.h">
       <Filter>Header Files\VkCore\Shaders</Filter>
     </ClInclude>
@@ -587,9 +560,6 @@
       <Filter>Header Files\VkCore\Buffer</Filter>
     </ClInclude>
     <ClInclude Include="base\include\VkStagingBuffer.h">
-      <Filter>Header Files\VkCore\Buffer\Useless</Filter>
-    </ClInclude>
-    <ClInclude Include="base\include\VkStagingBufferFactory.h">
       <Filter>Header Files\VkCore\Buffer\Useless</Filter>
     </ClInclude>
     <ClInclude Include="base\include\ImageParameterPack.h">
@@ -616,16 +586,8 @@
     <ClInclude Include="base\include\ForwardShadingPipelinePP.h">
       <Filter>Header Files\VkCore\Pipeline\ParameterPack</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="base\imguishaders\glsl_shader.frag">
-      <Filter>Header Files\ImGui\ImguiShaders</Filter>
-    </None>
-    <None Include="base\imguishaders\glsl_shader.vert">
-      <Filter>Header Files\ImGui\ImguiShaders</Filter>
-    </None>
-    <None Include="base\imguishaders\generate_spv.bat">
-      <Filter>Header Files\ImGui\ImguiShaders</Filter>
-    </None>
+    <ClInclude Include="base\include\PbrMaterialMetallic.h">
+      <Filter>Header Files\VkCore\Material</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

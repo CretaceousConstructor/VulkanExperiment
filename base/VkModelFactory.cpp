@@ -18,7 +18,7 @@ bool VkModelFactory::LoadglTFFile(const std::string &path, tinygltf::Model &glTF
 	const bool         file_loaded = gltfContext.LoadASCIIFromFile(&glTFInput, &error, &warning, path);
 
 	std::cout << warning << std::endl;
-	if (file_loaded)
+	if (!file_loaded)
 	{
 		std::cout << error << std::endl;
 	}
@@ -38,30 +38,89 @@ void VkModelFactory::LoadMaterials(GltfModelPack &model) const
 	{
 		//TODO:
 
-		std::shared_ptr<NonPbrMaterial> mat{std::make_shared<NonPbrMaterial>(gfx)};
+		std::shared_ptr<PbrMaterialMetallic> mat{std::make_shared<PbrMaterialMetallic>(gfx)};
+		const tinygltf::Material&              glTFMaterial = input.materials[i];
 
-		// We only read the most basic properties required for our sample
-		tinygltf::Material glTFMaterial = input.materials[i];
-		// Get the base color factor
+		//BASE COLOR TEXTURE
 		if (glTFMaterial.values.contains("baseColorFactor"))
 		{
-			mat->baseColorFactor = glm::make_vec4(glTFMaterial.values["baseColorFactor"].ColorFactor().data());
+			mat->baseColorFactor = glm::make_vec4(glTFMaterial.values.at("baseColorFactor").ColorFactor().data());
 		}
-		// Get base color texture index
 		if (glTFMaterial.values.contains("baseColorTexture"))
 		{
-			mat->baseColorTextureIndex = glTFMaterial.values["baseColorTexture"].TextureIndex();
+			mat->baseColorTextureIndex = glTFMaterial.values.at("baseColorTexture").TextureIndex();
 		}
-		// Get the normal map texture index
+
+		// METALLIC ROUGHNESS WORKFLOW
+		if (glTFMaterial.values.contains("metallicRoughnessTexture"))
+		{
+			mat->metallicRoughnessTextureIndex                = glTFMaterial.values.at("metallicRoughnessTexture").TextureIndex();
+			image_formats[mat->metallicRoughnessTextureIndex] = VK_FORMAT_R8G8B8A8_UNORM;        //这里的format对应的是texture 数组
+		}
+		if (glTFMaterial.values.contains("metallicFactor"))
+		{
+			mat->metallicFactor = static_cast<float>(glTFMaterial.values.at("metallicFactor").Factor());
+		}
+		if (glTFMaterial.values.contains("roughnessFactor"))
+		{
+			mat->roughnessFactor = static_cast<float>(glTFMaterial.values.at("roughnessFactor").Factor());
+		}
+
+		//NORMAL MAP TEXTURE
 		if (glTFMaterial.additionalValues.contains("normalTexture"))
 		{
-			mat->normalTextureIndex                = glTFMaterial.additionalValues["normalTexture"].TextureIndex();
+			mat->normalTextureIndex                = glTFMaterial.additionalValues.at("normalTexture").TextureIndex();
 			image_formats[mat->normalTextureIndex] = VK_FORMAT_R8G8B8A8_UNORM;        //这里的format对应的是texture 数组
 		}
 
-		mat->alphaMode   = glTFMaterial.alphaMode;
-		mat->alphaCutOff = (float) glTFMaterial.alphaCutoff;
-		mat->doubleSided = glTFMaterial.doubleSided;
+		//EMISSIVE TEXTURE
+		if (glTFMaterial.additionalValues.contains("emissiveTexture"))
+		{
+			mat->emissiveTextureIndex                = glTFMaterial.additionalValues.at("emissiveTexture").TextureIndex();
+			image_formats[mat->emissiveTextureIndex] = VK_FORMAT_R8G8B8A8_UNORM;        //这里的format对应的是texture 数组
+		}
+
+		//OCCLUSION TEXTURE
+		if (glTFMaterial.additionalValues.contains("occlusionTexture"))
+		{
+			mat->occlusionTextureIndex                = glTFMaterial.additionalValues.at("occlusionTexture").TextureIndex();
+			image_formats[mat->occlusionTextureIndex] = VK_FORMAT_R8G8B8A8_UNORM;        //这里的format对应的是texture 数组
+		}
+
+		//ALPHA MODE
+		if (glTFMaterial.additionalValues.contains("alphaMode"))
+		{
+			tinygltf::Parameter param = glTFMaterial.additionalValues.at("alphaMode");
+
+			if (param.string_value == "BLEND")
+			{
+				mat->alphaMode = PbrMaterialMetallic::AlphaMode::ALPHAMODE_BLEND;
+			}
+			if (param.string_value == "MASK")
+			{
+				mat->alphaMode = PbrMaterialMetallic::AlphaMode::ALPHAMODE_MASK;
+			}
+			else
+			{
+				mat->alphaMode = PbrMaterialMetallic::AlphaMode::ALPHAMODE_OPAQUE;
+			}
+		}
+		else
+		{
+			mat->alphaMode = PbrMaterialMetallic::AlphaMode::ALPHAMODE_OPAQUE;
+		}
+
+		//ALPHA CUTOFF
+		if (glTFMaterial.additionalValues.contains("alphaCutoff"))
+		{
+			mat->alphaCutoff = static_cast<float>(glTFMaterial.additionalValues.at("alphaCutoff").Factor());
+		}
+
+		//DOUBLE SIDED
+		if (glTFMaterial.additionalValues.contains("doubleSided"))
+		{
+			mat->doubleSided = glTFMaterial.doubleSided;
+		}
 
 		materials.push_back(mat);
 	}
@@ -105,72 +164,60 @@ void VkModelFactory::LoadImages(GltfModelPack &model) const
 
 		const tinygltf::Image &glTFImage = input.images[i];
 
-		if (!(model.option & LoadingOption::LoadImagesFromFile))
+			//"../../data/models/FlightHelmet/FlightHelmet.gltf"
+		const std::string path           = model.model_directory + "/" + glTFImage.uri;
+		const size_t      pos            = glTFImage.uri.find_last_of('.');
+		auto              file_extension = glTFImage.uri.substr(pos + 1, glTFImage.uri.size());
+
+		//tinygltf不会帮我们加载ktx文件格式
+		if ("ktx" == file_extension || (model.option & LoadingOption::LoadingImgByOurselves) || !GltfHadLoadedImg(glTFImage))
 		{
-			//	// Get the image data from the glTF loader
-			//	unsigned char *buffer       = nullptr;
-			//	VkDeviceSize   bufferSize   = 0;
-			//	bool           deleteBuffer = false;
-			//	// We convert RGB-only images to RGBA, as most devices don't support RGB-formats in Vulkan
-			//	if (glTFImage.component == 3)
-			//	{
-			//		bufferSize          = glTFImage.width * glTFImage.height * 4;
-			//		buffer              = new unsigned char[bufferSize];
-			//		unsigned char *rgba = buffer;
-			//		//unsigned char* rgb = &glTFImage.image[0];
-			//		const unsigned char *rgb = glTFImage.image.data();
-			//		for (size_t i = 0; i < glTFImage.width * glTFImage.height; ++i)
-			//		{
-			//			memcpy(rgba, rgb, sizeof(unsigned char) * 3);
-			//			rgba += 4;
-			//			rgb += 3;
-			//		}
-			//		deleteBuffer = true;
-			//		//we don't deal with threee components situation for now
-			//		throw std::runtime_error("only have three components");
-			//	}
-			//	else
-			//	{
-			//		buffer     = glTFImage.image.data();
-			//		bufferSize = glTFImage.image.size();
-			//	}
-
-			//	// Load texture from image buffer
-			//	images[i].texture.tex_name = glTFImage.name;
-			//	images[i].texture.InitTexture(buffer, bufferSize, glTFImage.width, glTFImage.height, device_manager, window, transfer_command_pool, format_of_image);
-			//	images[i].texture.InitTextureView(format_of_image, VK_IMAGE_ASPECT_COLOR_BIT);
-			//	images[i].texture.InitSampler();
-
-			//	if (deleteBuffer)
-			//	{
-			//		delete buffer;
-			//	}
+			VkTextureFactory::SamplerPP sampler_para;
+			images[i] = texture_factory.ProduceTexture(path, format_of_image, sampler_para);
 		}
+		// 用tinygltf加载的格式。Load texture from image buffer
 		else
 		{
-			//"../../data/models/FlightHelmet/FlightHelmet.gltf"
-			const std::string path           = model.model_directory + "/" + glTFImage.uri;
-			const size_t      pos            = glTFImage.uri.find_last_of('.');
-			auto              file_extension = glTFImage.uri.substr(pos + 1, glTFImage.uri.size());
-
-			if (std::string("ktx") == file_extension)
+			// Get the image data from the glTF loader
+			unsigned char *buffer       = nullptr;
+			VkDeviceSize   bufferSize   = 0;
+			bool           delete_buffer = false;
+			// If it's an RGB image (3 components), we convert it to RGBA as most Vulkan implementations don't support 8-Bit RGB-only formats
+			if (glTFImage.component == 3)
 			{
-				VkTextureFactory::SamplerPP sampler_para;
-				images[i] = texture_factory.GetTexture(path, format_of_image, sampler_para);
+				bufferSize          = glTFImage.width * glTFImage.height * 4;
+				buffer              = new unsigned char[bufferSize];
+				unsigned char *rgba = buffer;
+				//unsigned char* rgb = &glTFImage.image[0];
+				const unsigned char *rgb = glTFImage.image.data();
+				for (size_t i = 0; i < glTFImage.width * glTFImage.height; ++i)
+				{
+					memcpy(rgba, rgb, sizeof(unsigned char) * 3);
+					rgba[3] = 0xff;
+					rgba += 4;
+					rgb += 3;
+				}
+				delete_buffer = true;
 			}
-			//else
-			//{
-			//	//void VkTexture::InitTexture(std::string image_path, VkDeviceManager *para_device_manager, VkWindows *window, VkCommandPool &command_pool, VkFormat format_of_texture, VkImageLayout para_imageLayout)
+			else
+			{
+				buffer     = const_cast<unsigned char *>(glTFImage.image.data());
+				bufferSize = glTFImage.image.size();
+			}
 
-			//	images[i].texture.tex_name = glTFImage.name;
-			//	images[i].texture.InitTexture(path, device_manager, window, transfer_command_pool, format_of_image, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-			//	images[i].texture.InitTextureView(format_of_image, VK_IMAGE_ASPECT_COLOR_BIT);
-			//	images[i].texture.InitSampler();
-			//}
+			assert(glTFImage.width > 0);
+			assert(glTFImage.height > 0);
+
+			VkTextureFactory::TexturePP texture_pp{buffer, format_of_image, uint32_t(glTFImage.width), uint32_t(glTFImage.height)};
+			VkTextureFactory::SamplerPP sampler_para;
+			images[i] = texture_factory.ProduceTexture(texture_pp, sampler_para);
+
+			if (delete_buffer)
+			{
+				delete[] buffer;
+			}
 		}
 	}
-
-	return;
 }
 
 void VkModelFactory::LoadNode(const size_t current_node_index_in_glft, int parent, GltfModelPack &model) const
@@ -286,12 +333,12 @@ void VkModelFactory::LoadNode(const size_t current_node_index_in_glft, int paren
 				for (size_t v = 0; v < vertexCount; v++)
 				{
 					Gltf::Vertex vert{};
+					vert.tangent = tangentsBuffer ? glm::make_vec4(&tangentsBuffer[v * 4]) : glm::vec4(0.0f);
 					vert.pos     = glm::vec4(glm::make_vec3(&positionBuffer[v * 3]), 1.0f);
 					vert.normal  = glm::normalize(glm::vec3(normalsBuffer ? glm::make_vec3(&normalsBuffer[v * 3]) : glm::vec3(0.0f)));
-					vert.uv      = texCoordsBuffer ? glm::make_vec2(&texCoordsBuffer[v * 2]) : glm::vec2(0.0f);
-					vert.tangent = tangentsBuffer ? glm::make_vec4(&tangentsBuffer[v * 4]) : glm::vec4(0.0f);
-					//vert.color = materials[glTFPrimitive.material].baseColorFactor;
 					vert.color = glm::vec3(1.0f);
+					vert.uv      = texCoordsBuffer ? glm::make_vec2(&texCoordsBuffer[v * 2]) : glm::vec2(0.0f);
+					//vert.color = materials[glTFPrimitive.material].baseColorFactor;
 					vertex_buffer_cpu.push_back(vert);
 				}
 			}
@@ -340,6 +387,7 @@ void VkModelFactory::LoadNode(const size_t current_node_index_in_glft, int paren
 					}
 					default:
 						std::cerr << "Index component type " << accessor.componentType << " not supported!" << std::endl;
+						assert(false);
 						return;
 				}
 			}
@@ -363,7 +411,7 @@ void VkModelFactory::LoadNode(const size_t current_node_index_in_glft, int paren
 	}
 }
 
-void VkModelFactory::LoadInToGpuBuffer(GltfModelPack &model) const
+void VkModelFactory::LoadVertexAndIndexIntoGpuBuffer(GltfModelPack &model) const
 {
 	const auto &index_buffer_cpu  = model.index_buffer_cpu;
 	const auto &vertex_buffer_cpu = model.vertex_buffer_cpu;
@@ -385,7 +433,7 @@ void VkModelFactory::LoadInToGpuBuffer(GltfModelPack &model) const
 		vertices_gpu.buffer = buffer_factory.ProduceBuffer(vertex_buffer_size, vertex_para_pack);
 		vertices_gpu.count  = static_cast<uint32_t>(vertex_buffer_cpu.size());
 
-		device_manager.CopyBuffer(staging_buffer->GetBuffer(), vertices_gpu.buffer->GetBuffer(), vertex_buffer_size, command_manager.GetTransferCommandBuffers()[0]);
+		device_manager.CopyBuffer(staging_buffer->GetRawBuffer(), vertices_gpu.buffer->GetRawBuffer(), vertex_buffer_size, command_manager.GetTransferCommandBuffers()[0]);
 	}
 
 	//index
@@ -403,6 +451,13 @@ void VkModelFactory::LoadInToGpuBuffer(GltfModelPack &model) const
 		indices_gpu.buffer = buffer_factory.ProduceBuffer(index_buffer_size, index_para_pack);
 		indices_gpu.count  = static_cast<uint32_t>(index_buffer_cpu.size());
 
-		device_manager.CopyBuffer(staging_buffer->GetBuffer(), indices_gpu.buffer->GetBuffer(), index_buffer_size, command_manager.GetTransferCommandBuffers()[0]);
+		device_manager.CopyBuffer(staging_buffer->GetRawBuffer(), indices_gpu.buffer->GetRawBuffer(), index_buffer_size, command_manager.GetTransferCommandBuffers()[0]);
 	}
+}
+
+bool VkModelFactory::GltfHadLoadedImg(const tinygltf::Image &glTFImage)
+{
+	const unsigned char *buffer = glTFImage.image.data();
+
+	return !(nullptr == buffer);
 }

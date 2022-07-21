@@ -40,22 +40,22 @@ class MultiSubpassesRenderer : public BaseRenderer
 	void SetUpUserInput() override;
 	void CreateCamera() override;
 
-	void CreateAttachmentImages() override;
-	void CreateTextureImages() override;
+	void CreateCommomAttachmentImgs() override;
+	void CreateCommonTextureImgs() override;
 	void CreateDepthImages() override;
 
 	void CreateRenderPass() override;
 
-	void CreateUniformBuffer() override;
+	void CreateCommonUniformBuffer() override;
 
 	void CreateDescriptorSetLayout() override;
-	void CreateDescriptorPool() override;
+	void CreateCommonDescriptorPool() override;
 	void CreateDescriptorSets() override;
 
 	void CreateGraphicsPipelineLayout() override;
 	void CreateGraphicsPipeline() override;
 
-	void PrepareModels() override;
+	void PrepareCommonModels() override;
 	void CommandBufferRecording() override;
 
 	void InitSynObjects() override;

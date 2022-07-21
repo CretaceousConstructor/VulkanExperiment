@@ -37,13 +37,14 @@ VkCommandBuffer VkCommandManager::BeginSingleTimeCommands(const VkCommandPool &c
 	allocInfo.commandBufferCount = 1;
 
 	VkCommandBuffer command_buffer;
-	vkAllocateCommandBuffers(device, &allocInfo, &command_buffer);
+
+	VK_CHECK_RESULT(vkAllocateCommandBuffers(device, &allocInfo, &command_buffer))
 
 	VkCommandBufferBeginInfo beginInfo{};
 	beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 	beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 
-	vkBeginCommandBuffer(command_buffer, &beginInfo);
+	VK_CHECK_RESULT(vkBeginCommandBuffer(command_buffer, &beginInfo))
 
 	return command_buffer;
 }
@@ -68,7 +69,7 @@ void VkCommandManager::EndSingleTimeCommands(const VkCommandPool &command_pool, 
 	submitInfo.commandBufferCount = 1;
 	submitInfo.pCommandBuffers    = &command_buffer;
 
-	vkQueueSubmit(command_quque, 1, &submitInfo, nullptr);
+	VK_CHECK_RESULT(vkQueueSubmit(command_quque, 1, &submitInfo, nullptr))
 	vkQueueWaitIdle(command_quque);
 	vkFreeCommandBuffers(device, command_pool, 1, &command_buffer);
 }
@@ -80,7 +81,7 @@ void VkCommandManager::CreateCommandBuffer(const VkDevice &device, const VkComma
 	BufferAllocInfo.level              = level;
 	BufferAllocInfo.commandPool        = commandpool;
 	BufferAllocInfo.commandBufferCount = 1;
-	vkAllocateCommandBuffers(device, &BufferAllocInfo, &CommandBuffer);
+	VK_CHECK_RESULT(vkAllocateCommandBuffers(device, &BufferAllocInfo, &CommandBuffer));
 }
 
 void VkCommandManager::BeginCommandBuffers(const std::vector<VkCommandBuffer> &command_buffers)
@@ -91,10 +92,7 @@ void VkCommandManager::BeginCommandBuffers(const std::vector<VkCommandBuffer> &c
 		beginInfo.sType            = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 		beginInfo.flags            = 0;              // Optional
 		beginInfo.pInheritanceInfo = nullptr;        // Optional
-		if (vkBeginCommandBuffer(command_buffer, &beginInfo) != VK_SUCCESS)
-		{
-			throw std::runtime_error("failed to begin recording command buffer!");
-		}
+		VK_CHECK_RESULT(vkBeginCommandBuffer(command_buffer, &beginInfo))
 	}
 }
 
@@ -102,10 +100,7 @@ void VkCommandManager::EndCommandBuffers(const std::vector<VkCommandBuffer> &com
 {
 	for (const auto &command_buffer : command_buffers)
 	{
-		if (vkEndCommandBuffer(command_buffer) != VK_SUCCESS)
-		{
-			throw std::runtime_error("failed to record command buffer!");
-		}
+		VK_CHECK_RESULT(vkEndCommandBuffer(command_buffer))
 	}
 }
 

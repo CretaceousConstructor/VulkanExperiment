@@ -17,7 +17,7 @@ class VkBufferFactory
 	VkBufferFactory &operator=(VkBufferFactory &&) = delete;
 
 	template <typename CI>
-	[[nodiscard]] std::shared_ptr<VkBufferBase> ProduceBuffer(VkDeviceSize N, const CI &para_pack) const;
+	[[nodiscard]] std::shared_ptr<VkBufferBase> ProduceBuffer(VkDeviceSize N, const CI &para_pack, const void *const data = nullptr) const;
 
 	//VkBufferBundle is copyable without risks of memory leak
 	template <typename CI>
@@ -39,7 +39,7 @@ class VkBufferFactory
 };
 
 template <typename CI>
-std::shared_ptr<VkBufferBase> VkBufferFactory::ProduceBuffer(VkDeviceSize N, const CI &para_pack) const
+std::shared_ptr<VkBufferBase> VkBufferFactory::ProduceBuffer(VkDeviceSize N, const CI &para_pack, const void *const data) const
 {
 	//static_assert(std::is_same_v<CI, VkBufferCI::Buffer<>>);
 
@@ -48,18 +48,26 @@ std::shared_ptr<VkBufferBase> VkBufferFactory::ProduceBuffer(VkDeviceSize N, con
 	BindBufferToMemo(uniform_buffer, buffer_memory);
 	auto result = std::make_shared<VkBufferBase>(gfx, uniform_buffer, buffer_memory, N);
 
-	if (para_pack.memory_properties & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT)
+	if ((para_pack.memory_properties & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT))
 	{
 		result->MapMemory(VK_WHOLE_SIZE, 0);
+		if (data)
+		{
+			result->CopyTo(data, N);
+			if (~(para_pack.memory_properties & VK_MEMORY_PROPERTY_HOST_COHERENT_BIT))
+			{
+				result->Flush();
+			}
+		}
+	}
+	else if (nullptr != data)
+	{
+		//TODO: staing buffer copy
+		assert(2 == 1);
 	}
 
 	return result;
-
-
 }
-
-
-
 
 template <typename CI>
 VkBufferBundle VkBufferFactory::ProduceBufferBundle(VkDeviceSize N, uint32_t bundle_size, const CI &para_pack) const

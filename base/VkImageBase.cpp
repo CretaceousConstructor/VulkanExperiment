@@ -4,9 +4,11 @@ VkImageBase::VkImageBase(
     VkGraphicsComponent &             _gfx,
     const VkImage                     _image,
     const VkImageView                 _image_view,
-    std::shared_ptr<ImgParameterPack> para_pack_) :
+    std::shared_ptr<ImagePP> para_pack_) :
     gfx(_gfx), device_manager(gfx.DeviceMan()), image(_image), image_view(_image_view), para_pack(std::move(para_pack_))
-{}
+{
+	
+}
 
 VkImageBase::~VkImageBase() = default;
 
@@ -35,6 +37,9 @@ void VkImageBase::InsertImageMemoryBarrier(VkCommandBuffer      cmd_buffer,
                                            VkPipelineStageFlags srcStageMask,
                                            VkPipelineStageFlags dstStageMask) const
 {
+
+
+
 	imageMemoryBarrier.sType               = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
 	imageMemoryBarrier.pNext               = nullptr;
 	imageMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
@@ -152,7 +157,6 @@ void VkImageBase::TransitionImageLayout(VkImageLayout oldLayout, VkImageLayout n
 	//checked
 	else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
 	{
-		//队列家族对资源的拥有权问题
 		//*****************************release operation*****************************
 		const auto transfer_command_quque = device_manager.GetTransferQueue();
 		const auto transfer_command_pool  = gfx.CommandMan().transfer_command_pool;
@@ -195,7 +199,6 @@ void VkImageBase::TransitionImageLayout(VkImageLayout oldLayout, VkImageLayout n
 		barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 		barrier.newLayout     = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-		//队列家族对资源的拥有权问题
 		barrier.srcQueueFamilyIndex = queue_family_indices.transferFamily.value();
 		barrier.dstQueueFamilyIndex = queue_family_indices.graphicsFamily.value();
 	}

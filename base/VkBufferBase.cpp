@@ -43,9 +43,6 @@ void VkBufferBase::MapMemory(VkDeviceSize size, VkDeviceSize offset)
 	VK_CHECK_RESULT(vkMapMemory(device_manager.GetLogicalDevice(), buffer_memory, offset, size, 0, &mapped))
 
 
-
-
-
 }
 
 void VkBufferBase::Flush(VkDeviceSize size, VkDeviceSize offset_in_whole_mem) const
@@ -83,7 +80,7 @@ void *VkBufferBase::GetPtrToMappedRegion() const
 	return mapped;
 }
 
-const VkBuffer &VkBufferBase::GetBuffer() const
+const VkBuffer &VkBufferBase::GetRawBuffer() const
 
 {
 	return buffer;

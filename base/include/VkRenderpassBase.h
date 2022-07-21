@@ -6,8 +6,7 @@
 class VkRenderpassBase
 {
   public:
-	VkRenderpassBase(VkGraphicsComponent &gfx_,
-	                 VkRenderpassManager &renderpass_manager_);
+	VkRenderpassBase(VkGraphicsComponent &gfx_,VkRenderpassManager &renderpass_manager_);
 	virtual ~VkRenderpassBase() = default;
 
 	VkRenderpassBase()                         = delete;
@@ -26,7 +25,7 @@ class VkRenderpassBase
   protected:
 	virtual void ResourceInit()              = 0;
 	virtual void CreateDescriptorSetLayout() = 0;
-	virtual void CreateDescriptorSets()      = 0;
+	virtual void CreateDescriptorSetsThenUpdate()      = 0;
 
 	virtual void CreateAttachments() = 0;
 

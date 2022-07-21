@@ -6,8 +6,6 @@
 #include "VkTexture.h"
 #include "VkUniformBuffer.h"
 
-#include "ImguiRenderpass.h"
-
 #include <array>
 #include <chrono>
 #include <glm/glm.hpp>
@@ -21,7 +19,7 @@ class BaseRenderer
 {
   public:
 	BaseRenderer(VkGraphicsComponent &gfx_);
-	virtual ~BaseRenderer() ;
+	virtual ~BaseRenderer() = default;
 
 	BaseRenderer() = delete;
 
@@ -32,38 +30,35 @@ class BaseRenderer
 	BaseRenderer &operator=(BaseRenderer &&) = delete;
 
   protected:
+	void MaterialRegister();
+
 	virtual void SetUpUserInput() = 0;
 	virtual void CreateCamera()   = 0;
 
-	virtual void CreateAttachmentImages() = 0;
-	virtual void CreateTextureImages()    = 0;
-	virtual void CreateUniformBuffer()    = 0;
-	virtual void CreateDescriptorPool()   = 0;
+	virtual void CreateCommomAttachmentImgs() = 0;
+	virtual void CreateCommonTextureImgs()    = 0;
+	virtual void CreateCommonUniformBuffer()  = 0;
+	virtual void CreateCommonDescriptorPool() = 0;
 
-	virtual void RenderpassInit() = 0;
+	virtual void InitRenderpasses() = 0;
 
-	virtual void PrepareModels() = 0;
+	virtual void PrepareCommonModels() = 0;
 
 	virtual void CommandBufferRecording() = 0;
 	virtual void InitSynObjects()         = 0;
 
 	virtual void UpdateUniformBuffer(size_t currentImage) = 0;
 
+  protected:
+	virtual void UpdateCamera(float dt) = 0;
 
   public:
-	//========================================
-	virtual void DrawFrame()            = 0;
-	virtual void UpdateCamera(float dt) = 0;
-	virtual void UIRendering();
-
-   // Our state
-    bool show_demo_window = true;
-    bool show_another_window = false;
-    ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-
+	virtual void DrawFrame(float time_diff) = 0;
+	//virtual void UIRendering() = 0;
 
   public:
 	void RenderingPreparation();
+
 	//BaseRenderer *GetThisPtr();
 
   protected:
@@ -73,8 +68,6 @@ class BaseRenderer
 	const VkWindows &         window;
 	const VkSwapchainManager &swapchain_manager;
 	const VkCommandManager &  command_manager;
-protected:
-	VkImgui imgui_UI;
 
-
+  protected:
 };

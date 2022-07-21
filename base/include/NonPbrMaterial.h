@@ -1,8 +1,7 @@
 #pragma once
 
-#include "VkMaterial.h"
-#include "VkDescriptorManager.h"
 #include "Vk.h"
+#include "VkMaterial.h"
 
 class NonPbrMaterial : public VkMaterial
 {
@@ -18,16 +17,37 @@ class NonPbrMaterial : public VkMaterial
 
 	glm::vec4 baseColorFactor{glm::vec4(1.0f)};
 	uint32_t  baseColorTextureIndex{};
-	uint32_t  normalTextureIndex{};
 
-	std::string alphaMode{"OPAQUE"};
-	float       alphaCutOff{};
-	bool        doubleSided{false};
+	//float    metallicFactor{1.0f};
+	//float    roughnessFactor{1.0f};
+	//uint32_t metallicRoughnessTextureIndex{};
+
+	//uint32_t metallicTextureIndex{};
+	//uint32_t roughnessTextureIndex{};
+
+	uint32_t normalTextureIndex{};
+
+	uint32_t emissiveTextureIndex{};
+
+	uint32_t occlusionTextureIndex{};
+
+  public:
+	enum class AlphaMode
+	{
+		ALPHAMODE_OPAQUE,
+		ALPHAMODE_MASK,
+		ALPHAMODE_BLEND
+	};
+
+	AlphaMode alphaMode{AlphaMode::ALPHAMODE_OPAQUE};
+	float     alphaCutoff{};
+	bool      doubleSided{false};
 
 	//***********************************************************************
-	constexpr uint32_t GetRequiredDescirpotrCount() override;
-	void               AllocateDescriptorSetAndUpdate(VkDescriptorPool descriptor_pool, VkDescriptorSetLayout desc_set_layout, const std::vector<Gltf::Texture> &textures, const std::vector<std::shared_ptr<VkTexture>> &images) override;
-	void               ModifyPipelineCI(VkPipelinePP &pipeline_CI) override;
+	[[nodiscard]] constexpr uint32_t GetRequiredDescirpotrCount() const override;
+
+	void                             AllocateDescriptorSetAndUpdate(VkDescriptorPool descriptor_pool, VkDescriptorSetLayout desc_set_layout, const std::vector<Gltf::Texture> &textures, const std::vector<std::shared_ptr<VkTexture>> &images) override;
+	void                             ModifyPipelineCI(VkPipelinePP &pipeline_CI) override;
 
   public:
 	static VkDescriptorSetLayout GetDescriptorSetLayout();
@@ -36,7 +56,7 @@ class NonPbrMaterial : public VkMaterial
 	static VkDescriptorSetLayout CreateDesciptorSetLayout(const VkDeviceManager &device_manager);
 	static VkPipelineLayout      CreatePipelineLayout(const VkDeviceManager &device_manager, const std::vector<VkDescriptorSetLayout> &set_layouts, const std::vector<VkPushConstantRange> &push_constant_ranges);
 
-	static void CleanUpMaterial(const VkDeviceManager& device_manager);
+	static void CleanUpMaterial(const VkDeviceManager &device_manager);
 
   private:
 	inline static VkDescriptorSetLayout desc_layout{nullptr};
@@ -52,9 +72,3 @@ class NonPbrMaterial : public VkMaterial
 	MaterialSpecializationData            material_specialization_data{};
 	std::vector<VkSpecializationMapEntry> specialization_map_entries;
 };
-
-//template <class Derived>
-//constexpr uint32_t NonPbrMaterial<Derived>::GetRequiredDescirpotrCount()
-//{
-//	return 2;
-//}

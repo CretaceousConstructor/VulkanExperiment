@@ -42,12 +42,14 @@ class GltfModel
 	[[nodiscard]] VkDescriptorSetLayout GetDescriptorSetLayout() const;
 
   public:
-	void ProcessMaterial(const std::vector<VkDescriptorSetLayout> &set_layouts, const VkPipelinePP &pipeline_para_pack, const VkPipelineBuilder &pipeline_builder);
+	void ProcessMaterial(const std::vector<VkDescriptorSetLayout> &set_layouts, const VkPipelinePP &pipeline_para_pack, const VkPipelineBuilder &pipeline_builder, const std::vector<VkPushConstantRange> &push_constant_ranges_outside);
 	void CleanUpMaterial();
 	void Draw(VkCommandBuffer commandBuffer) const;
 
+	VkIndexType index_type{};
   private:
 	void DrawNode(VkCommandBuffer commandBuffer, const int node_index) const;
+
 
   private:
 	void CreateDescriptorPool();
@@ -71,7 +73,6 @@ class GltfModel
 
   private:
 	std::string model_path{};
-	VkIndexType index_type{VK_INDEX_TYPE_UINT32};
 
   private:
 	std::list<VkDescriptorPool> pools_for_model;
@@ -130,7 +131,7 @@ VkDescriptorSetLayout GltfModel<M>::GetDescriptorSetLayout() const
 }
 
 template <typename M>
-void GltfModel<M>::ProcessMaterial(const std::vector<VkDescriptorSetLayout> &set_layouts, const VkPipelinePP &pipeline_para_pack, const VkPipelineBuilder &pipeline_builder)
+void GltfModel<M>::ProcessMaterial(const std::vector<VkDescriptorSetLayout> &set_layouts, const VkPipelinePP &pipeline_para_pack, const VkPipelineBuilder &pipeline_builder, const std::vector<VkPushConstantRange> &push_constant_ranges_outside)
 {
 	const auto    local_para_pack_ptr = pipeline_para_pack.Clone();
 	VkPipelinePP &local_para_pack     = *local_para_pack_ptr;
@@ -145,12 +146,8 @@ void GltfModel<M>::ProcessMaterial(const std::vector<VkDescriptorSetLayout> &set
 	static std::vector<VkVertexInputBindingDescription> VIBDS{bindingDescription0};
 	static auto                                         attributeDescriptions{Gltf::Vertex::GetAttributeDescriptions()};
 
-
-
 	local_para_pack.vertex_input_binding_descriptions  = VIBDS;
 	local_para_pack.vertex_input_attribute_description = attributeDescriptions;
-
-
 
 	//****************************************************************************
 	//一个模型的材质必定只有一个类型，
@@ -162,6 +159,10 @@ void GltfModel<M>::ProcessMaterial(const std::vector<VkDescriptorSetLayout> &set
 	temp_constant_range.offset     = 0;
 	push_constant_ranges.push_back(temp_constant_range);
 
+	for (const auto &push_constant_range : push_constant_ranges_outside)
+	{
+		push_constant_ranges.push_back(push_constant_range);
+	}
 
 	/**************************************************************************/
 	CreateDescriptorPool();
@@ -204,10 +205,10 @@ void GltfModel<M>::Draw(VkCommandBuffer commandBuffer) const
 {
 	// All vertices and indices are stored in single buffers, so we only need to bind once
 	constexpr VkDeviceSize offsets[1] = {0};
-	vkCmdBindVertexBuffers(commandBuffer, 0, 1, &vertices.buffer->GetBuffer(), offsets);
+	vkCmdBindVertexBuffers(commandBuffer, 0, 1, &vertices.buffer->GetRawBuffer(), offsets);
 	//原先是用index_type作为调用的，但是有问题
 	//vkCmdBindIndexBuffer(commandBuffer, indices.buffer, 0, index_type);
-	vkCmdBindIndexBuffer(commandBuffer, indices.buffer->GetBuffer(), 0, VK_INDEX_TYPE_UINT32);
+	vkCmdBindIndexBuffer(commandBuffer, indices.buffer->GetRawBuffer(), 0, index_type);
 
 	// Render all nodes at top-level
 	for (int i = 0; i < nodes.size(); i++)
@@ -261,7 +262,9 @@ void GltfModel<M>::DrawNode(VkCommandBuffer commandBuffer, const int node_index)
 				// Bind the descriptor for the current primitive's texture
 				//注意这里的参数first set数值为1,因为我们已经把binding = 0让给了VP矩阵组成的UBO
 				vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, material->GetPipeline());
+
 				vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, GetPipelineLayout(), 1, 1, &material->GetDescriptorSet(), 0, nullptr);
+
 				vkCmdDrawIndexed(commandBuffer, primitive.indexCount, 1, primitive.firstIndex, 0, 0);
 			}
 		}

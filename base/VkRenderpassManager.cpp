@@ -97,6 +97,13 @@ const VkModelFactory &VkRenderpassManager::GetModelFactory()
 	return factories.model_factory;
 }
 
+const VkDescriptorSetFactory & VkRenderpassManager::GetDescriptorSetFactory()
+{
+
+	return factories.descriptor_set_factory;
+
+}
+
 VkManagerBundle &VkRenderpassManager::GetManagerBundle()
 {
 	return managers;

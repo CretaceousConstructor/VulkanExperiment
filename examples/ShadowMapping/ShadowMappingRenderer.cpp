@@ -28,11 +28,11 @@ void ShadowMappingRenderer::CreateCamera()
 	mp_camera->SetViewPort(viewport);
 }
 
-void ShadowMappingRenderer::CreateAttachmentImages()
+void ShadowMappingRenderer::CreateCommomAttachmentImgs()
 {
 }
 
-void ShadowMappingRenderer::CreateTextureImages()
+void ShadowMappingRenderer::CreateCommonTextureImgs()
 {
 	VkFormat format_of_texture = VK_FORMAT_R8G8B8A8_SRGB;
 	ktx_texure.InitKTXTexture(std::string("../../data/textures/metalplate01_rgba.ktx"), device_manager, window, transfer_command_pool, format_of_texture, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
@@ -107,7 +107,7 @@ void ShadowMappingRenderer::CreateRenderPass()
 	CreateSceneRenderPass();
 }
 
-void ShadowMappingRenderer::CreateUniformBuffer()
+void ShadowMappingRenderer::CreateCommonUniformBuffer()
 {
 	//GPU SIDE
 	CreateOffScreenUniformBuffer();
@@ -197,7 +197,7 @@ void ShadowMappingRenderer::CreateDescriptorSetLayout()
 	}
 }
 
-void ShadowMappingRenderer::CreateDescriptorPool()
+void ShadowMappingRenderer::CreateCommonDescriptorPool()
 {
 	// Create the global descriptor pool
 	std::vector<VkDescriptorPoolSize> poolSizes;
@@ -375,7 +375,7 @@ void ShadowMappingRenderer::InitCommandBuffers()
 	}
 }
 
-void ShadowMappingRenderer::PrepareModels()
+void ShadowMappingRenderer::PrepareCommonModels()
 {
 	std::vector<Vertex> vertices;
 	vertices.resize(7);

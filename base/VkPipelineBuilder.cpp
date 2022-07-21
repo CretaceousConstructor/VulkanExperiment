@@ -106,6 +106,13 @@ VkPipeline VkPipelineBuilder::BuildPipeline(const VkPipelinePP &para_pack_) cons
 	pipeline_CI.basePipelineHandle = nullptr;
 	//*************************************************************
 
+	para_pack.viewport_state_CI.viewportCount = static_cast<uint32_t>(para_pack.view_port_scissor_pair.first.size());
+	para_pack.viewport_state_CI.pViewports    = para_pack.view_port_scissor_pair.first.data();
+
+	para_pack.viewport_state_CI.scissorCount = static_cast<uint32_t>(para_pack.view_port_scissor_pair.second.size());
+	para_pack.viewport_state_CI.pScissors    = para_pack.view_port_scissor_pair.second.data();
+
+	//*************************************************************
 	pipeline_CI.stageCount = static_cast<uint32_t>((para_pack.shader_stage_CI.size()));
 	pipeline_CI.pStages    = para_pack.shader_stage_CI.data();
 
@@ -121,15 +128,11 @@ VkPipeline VkPipelineBuilder::BuildPipeline(const VkPipelinePP &para_pack_) cons
 	pipeline_CI.pStages             = para_pack.shader_stage_CI.data();
 
 	pipeline_CI.pTessellationState = nullptr;
-	pipeline_CI.pNext               = &para_pack.pipeline_rendering_CI;
-	pipeline_CI.layout = para_pack.pipeline_layout;
+	pipeline_CI.pNext              = &para_pack.pipeline_rendering_CI;
+	pipeline_CI.layout             = para_pack.pipeline_layout;
 
 	VkPipeline pipeline;
 	VK_CHECK_RESULT(vkCreateGraphicsPipelines(device_manager.GetLogicalDevice(), nullptr, 1, &pipeline_CI, nullptr, &pipeline));
 
 	return pipeline;
-
-
-
-
 }

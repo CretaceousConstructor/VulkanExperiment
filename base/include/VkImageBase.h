@@ -9,7 +9,7 @@ class VkImageBase
 	    VkGraphicsComponent &             _gfx,
 	    const VkImage                     _image,
 	    const VkImageView                 _image_view,
-	    std::shared_ptr<ImgParameterPack> para_pack_);
+	    std::shared_ptr<ImagePP> para_pack_);
 	virtual ~VkImageBase() = 0;
 
 	VkImageBase(const VkImageBase &) = delete;
@@ -37,7 +37,7 @@ class VkImageBase
   protected:
 	VkImage                           image{};
 	VkImageView                       image_view{};
-	std::shared_ptr<ImgParameterPack> para_pack;
+	std::shared_ptr<ImagePP> para_pack;
 
   private:
 	static bool HasStencilComponent(VkFormat format);

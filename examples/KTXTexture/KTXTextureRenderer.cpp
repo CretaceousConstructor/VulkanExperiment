@@ -8,20 +8,20 @@ KTXTextureRenderer::KTXTextureRenderer(VkGraphicsComponent &gfx_) :
 
 }
 
-void KTXTextureRenderer::CreateTextureImages()
+void KTXTextureRenderer::CreateCommonTextureImgs()
 {
 	const auto &texture_factory{render_pass_manager.GetTextureFactory()};
 
 
 	constexpr VkFormat format_of_texture = VK_FORMAT_R8G8B8A8_SRGB;
 	const VkTextureFactory::SamplerPP sampler_para_pack;
-	common_resources.ktx_texure          = texture_factory.GetTexture(std::string("../../data/textures/metalplate01_rgba.ktx"), format_of_texture,sampler_para_pack);
+	common_resources.ktx_texure          = texture_factory.ProduceTexture(std::string("../../data/textures/metalplate01_rgba.ktx"), format_of_texture,sampler_para_pack);
 
 
 
 }
 
-void KTXTextureRenderer::PrepareModels()
+void KTXTextureRenderer::PrepareCommonModels()
 {
 
 
@@ -40,7 +40,7 @@ void KTXTextureRenderer::PrepareModels()
 
 }
 
-void KTXTextureRenderer::CreateDescriptorPool()
+void KTXTextureRenderer::CreateCommonDescriptorPool()
 {
 	auto &des_man = render_pass_manager.GetDescriptorManager();
 	{
@@ -83,7 +83,7 @@ void KTXTextureRenderer::CreateDescriptorPool()
 //
 //}
 
-//void KTXTextureRenderer::CreateDescriptorSets()
+//void KTXTextureRenderer::CreateDescriptorSetsThenUpdate()
 //{
 //	auto &des_man = render_pass_manager.GetDescriptorManager();
 //	{
@@ -101,7 +101,7 @@ void KTXTextureRenderer::CreateDescriptorPool()
 //	}
 //}
 
-void KTXTextureRenderer::CreateUniformBuffer()
+void KTXTextureRenderer::CreateCommonUniformBuffer()
 {
 	auto &ubuffer_factory{render_pass_manager.GetUniformBufferFactory()};
 	//GPU SIDE
@@ -456,7 +456,7 @@ void KTXTextureRenderer::InitSynObjects()
 	//}
 }
 
-void KTXTextureRenderer::RenderpassInit()
+void KTXTextureRenderer::InitRenderpasses()
 {
 
 	renderpasses.push_back(std::make_shared<Renderpass0>(gfx, render_pass_manager, common_resources));
@@ -475,7 +475,7 @@ void KTXTextureRenderer::SetUpUserInput()
 	mouse->SetupMouseInputs(window.GetWindowPtr());
 }
 
-void KTXTextureRenderer::CreateAttachmentImages()
+void KTXTextureRenderer::CreateCommomAttachmentImgs()
 {
 	CreateSwapchainImages();
 	CreateDepthImages();

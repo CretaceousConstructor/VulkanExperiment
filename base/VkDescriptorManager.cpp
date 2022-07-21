@@ -1,5 +1,20 @@
 #include "VkDescriptorManager.h"
 
+uint32_t VkDescriptorSetBundle::GetBundleCount() const
+{
+	return bundle_count;
+}
+
+const VkDescriptorSet &VkDescriptorSetBundle::operator[](size_t index) const
+{
+	return descriptor_set_bundle[index];
+}
+
+const std::vector<VkDescriptorSet> & VkDescriptorSetBundle::GetDescriptorSetArray() const
+{
+	return descriptor_set_bundle;
+}
+
 VkDescriptorManager::VkDescriptorManager(VkGraphicsComponent &_gfx) :
     gfx(_gfx), device_manager(gfx.DeviceMan())
 {
@@ -47,16 +62,16 @@ void VkDescriptorManager::AddDescriptorPool(const DescriptorPoolMetaInfo pool_me
 	descriptor_pool_CI.sType                      = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 	descriptor_pool_CI.poolSizeCount              = static_cast<uint32_t>(poolSizes.size());
 	descriptor_pool_CI.pPoolSizes                 = poolSizes.data();
-
 	//max number of descriptor sets that can be allocated from this pool
 	descriptor_pool_CI.maxSets = static_cast<uint32_t>(max_sets);
 
-	if (vkCreateDescriptorPool(device_manager.GetLogicalDevice(), &descriptor_pool_CI, nullptr, &result.descriptor_pool) != VK_SUCCESS)
-	{
-		throw std::runtime_error("failed to create descriptor pool!");
-	}
+
+
+	VK_CHECK_RESULT(vkCreateDescriptorPool(device_manager.GetLogicalDevice(), &descriptor_pool_CI, nullptr, &result.descriptor_pool)) 
 
 	descriptor_pools.emplace(pool_meta_info, std::move(result));
+
+
 }
 
 const VkDescriptorPool &VkDescriptorManager::GetPool(const DescriptorPoolMetaInfo pool_meta_info) const

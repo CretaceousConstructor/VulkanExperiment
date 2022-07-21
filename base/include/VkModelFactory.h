@@ -6,7 +6,7 @@
 #include "VkBufferFactory.h"
 #include "VkDescriptorManager.h"
 #include "VkTextureFactory.h"
-
+#include "PbrMaterialMetallic.h"
 #include <unordered_set>
 
 class VkModelFactory
@@ -24,7 +24,7 @@ class VkModelFactory
 	enum LoadingOption
 	{
 		None               = 0x0,
-		LoadImagesFromFile = 0x01,
+		LoadingImgByOurselves = 0x01,
 	};
 
 	template <typename M>
@@ -72,15 +72,14 @@ class VkModelFactory
 
   private:
 	static bool LoadglTFFile(const std::string &path, tinygltf::Model &glTFInput);
-
 	void LoadMaterials(GltfModelPack &model) const;
 	void LoadTextures(GltfModelPack &model) const;
 	void LoadImages(GltfModelPack &model) const;
 	//void LoadNode(const tinygltf::Node &inputNode, const tinygltf::Model &input, int parent, std::vector<uint32_t> &indexBuffer, std::vector<GltfModel::Vertex> &vertexBuffer);
 	void LoadNode(const size_t current_node_index_in_glft, int parent, GltfModelPack &model) const;
-
-	void LoadInToGpuBuffer(GltfModelPack &model) const;
-
+	void LoadVertexAndIndexIntoGpuBuffer(GltfModelPack &model) const;
+private:
+	static bool GltfHadLoadedImg(const tinygltf::Image &glTFImage) ;
   private:
 	VkGraphicsComponent &   gfx;
 	const VkDeviceManager & device_manager;
@@ -90,9 +89,12 @@ class VkModelFactory
 	const VkBufferFactory & buffer_factory;
 };
 
+
+
 template <typename M>
 std::shared_ptr<GltfModel<M>> VkModelFactory::GetGltfModel(const std::string &model_path, const LoadingOption option, uint32_t modle_id) const
 {
+
 	tinygltf::Model glTFInput;
 	const bool      file_loaded = LoadglTFFile(model_path, glTFInput);
 	GltfModelPack   model{model_path, glTFInput, option};
@@ -109,7 +111,7 @@ std::shared_ptr<GltfModel<M>> VkModelFactory::GetGltfModel(const std::string &mo
 		{
 			LoadNode(scene.nodes[i], -1, model);
 		}
-		LoadInToGpuBuffer(model);
+		LoadVertexAndIndexIntoGpuBuffer(model);
 	}
 	else
 	{
@@ -126,6 +128,6 @@ std::shared_ptr<GltfModel<M>> VkModelFactory::GetGltfModel(const std::string &mo
 	        model.vertices_gpu,
 	        model.indices_gpu,
 	        gfx);
-
+	result->index_type = model.index_type;
 	return result;
 }

@@ -8,9 +8,10 @@
 #include "MouseInputManager.h"
 #include "RenderingMetaInfo.h"
 
-
+#include "PreprocessPass.h"
 #include "Renderpass0.h"
-#include "ImguiRenderpass.h"
+#include "VkImgui.h"
+
 #include "VkMath.h"
 #include "VkRenderpassBase.h"
 #include "VkRenderpassManager.h"
@@ -38,32 +39,32 @@ class SceneLoadingRenderer : public BaseRenderer
 	void SetUpUserInput() override;
 	void CreateCamera() override;
 
-	void CreateAttachmentImages() override;
-	void CreateTextureImages() override;
-	void CreateUniformBuffer() override;
-	void CreateDescriptorPool() override;
+	void CreateCommomAttachmentImgs() override;
+	void CreateCommonTextureImgs() override;
+	void CreateCommonUniformBuffer() override;
+	void CreateCommonDescriptorPool() override;
 
-	void RenderpassInit() override;
+	void PrepareCommonModels() override;
 
-	void PrepareModels() override;
+
+	void InitRenderpasses() override;
+
 
 	void CommandBufferRecording() override;
 	void InitSynObjects() override;
 
-	void UpdateUniformBuffer(size_t currentImage) override;
+	void UpdateUniformBuffer(size_t current_image_index) override;
 
   public:
 	//========================================
-	void DrawFrame() override;
+	void DrawFrame(float time_diff) override;
 	void UpdateCamera(float dt) override;
+	//void UIRendering() override ;
 
   private:
 	static constexpr int MAX_FRAMES_IN_FLIGHT = 2;
 
   private:
-
-
-
 	//void CreatePipelineCache();
 	void CreateDepthImages();
 	void CreateSwapchainImages();
@@ -85,11 +86,8 @@ class SceneLoadingRenderer : public BaseRenderer
 	std::shared_ptr<VkFenceBundle>     frame_fences;
 	//-----------------------------------------------------------
 	std::vector<VkFence> image_fences;
+	//UI
+	VkImgui imgui_UI;
 
 	SceneLoading::CommonResources common_resources;
-
-
-
-
-
 };

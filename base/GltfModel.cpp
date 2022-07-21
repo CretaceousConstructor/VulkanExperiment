@@ -1,13 +1,12 @@
 
 
-#define TINYGLTF_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION
+#define TINYGLTF_IMPLEMENTATION
 #define TINYGLTF_NO_EXTERNAL_IMAGE
 
 //#define TINYGLTF_NO_STB_IMAGE_WRITE
 //#define TINYGLTF_NO_STB_IMAGE
-
 //#define TINYGLTF_NOEXCEPTION // optional. disable exception handling.
 
 #include "GltfModel.h"
@@ -219,10 +218,10 @@
 //	assert(pipe_layout != nullptr);
 //	// All vertices and indices are stored in single buffers, so we only need to bind once
 //	constexpr VkDeviceSize offsets[1] = {0};
-//	vkCmdBindVertexBuffers(commandBuffer, 0, 1, &vertices.buffer->GetBuffer(), offsets);
+//	vkCmdBindVertexBuffers(commandBuffer, 0, 1, &vertices.buffer->GetRawBuffer(), offsets);
 //	//原先是用index_type作为调用的，但是有问题
 //	//vkCmdBindIndexBuffer(commandBuffer, indices.buffer, 0, index_type);
-//	vkCmdBindIndexBuffer(commandBuffer, indices.buffer->GetBuffer(), 0, VK_INDEX_TYPE_UINT32);
+//	vkCmdBindIndexBuffer(commandBuffer, indices.buffer->GetRawBuffer(), 0, VK_INDEX_TYPE_UINT32);
 //
 //	// Render all nodes at top-level
 //	for (int i = 0; i < nodes.size(); i++)

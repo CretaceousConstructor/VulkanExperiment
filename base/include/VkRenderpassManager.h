@@ -1,6 +1,7 @@
 #pragma once
 #include "VkFactoryBundle.h"
 #include "VkManagerBundle.h"
+
 #include <unordered_map>
 
 class VkRenderpassManager
@@ -40,14 +41,14 @@ class VkRenderpassManager
 	 * \return stateless factory
 	 */
 	//const VkSubPassFacotry &       GetSubPassFactory();
-	const VkBufferFactory &        GetBufferFactory();
-	const VkTextureFactory &       GetTextureFactory();
-	const VkSynObjectFactory &     GetSynOjectFactory();
-	//const VkDepthImageFactory &    GetDepthImageFactory();
-	//const VkSwapchainImageFactory &GetSwapchainImageFactory();
+	const VkBufferFactory &   GetBufferFactory();
+	const VkTextureFactory &  GetTextureFactory();
+	const VkSynObjectFactory &GetSynOjectFactory();
 
 	const VkImageFactory &GetImageFactory();
-	const VkModelFactory &         GetModelFactory();
+	const VkModelFactory &GetModelFactory();
+
+	const VkDescriptorSetFactory &GetDescriptorSetFactory();
 
   public:
 	VkManagerBundle &GetManagerBundle();

@@ -1,4 +1,5 @@
 #pragma once
+
 #include "VK.h"
 #include "VkBufferBundle.h"
 #include "VkGraphicsComponent.h"
@@ -8,46 +9,33 @@
 #include <unordered_map>
 #include <vector>
 
-
-
-//descriptor UUID的设计：给一个全局变量，每次调用GetUUID的时候都上锁，这样就可以保证调用得到的id是唯一的。之后用这个id来index一个全局的数组
-
-
 class VkDescriptorSetBundle
 {
   public:
 	VkDescriptorSetBundle(std::vector<VkDescriptorSet> descriptor_set_bundle_) :
-	    bundle_count(descriptor_set_bundle_.size()),descriptor_set_bundle(std::move(descriptor_set_bundle_))
+	    bundle_count(static_cast<uint32_t>(descriptor_set_bundle_.size())), descriptor_set_bundle(std::move(descriptor_set_bundle_))
 	{
 	}
 
 	~VkDescriptorSetBundle() = default;
 
-	VkDescriptorSetBundle() = delete;
+	VkDescriptorSetBundle()                              = delete;
 	VkDescriptorSetBundle(const VkDescriptorSetBundle &) = delete;
 	VkDescriptorSetBundle &operator=(const VkDescriptorSetBundle &) = delete;
 
-	VkDescriptorSetBundle(VkDescriptorSetBundle &&)                 = delete;
+	VkDescriptorSetBundle(VkDescriptorSetBundle &&) = delete;
 	VkDescriptorSetBundle &operator=(VkDescriptorSetBundle &&) = delete;
 
-
-
-
-	[[nodiscard]] uint32_t GetBundleCount() const;
-	VkDescriptorSet &   operator[](size_t index) const;
-	[[nodiscard]] VkDescriptorSet & GetOne(size_t index) const;
+	[[nodiscard]] uint32_t         GetBundleCount() const;
+	const VkDescriptorSet &              operator[](size_t index) const;
+	[[nodiscard]] VkDescriptorSet &GetOne(size_t index) const;
 
 	[[nodiscard]] const std::vector<VkDescriptorSet> &GetDescriptorSetArray() const;
 
-
-private:
+  private:
 	uint32_t bundle_count{};
 	std::vector<VkDescriptorSet> descriptor_set_bundle;
-
-
 };
-
-
 
 class VkDescriptorSetFactory
 {
@@ -59,23 +47,17 @@ class VkDescriptorSetFactory
 	{
 	}
 
-
-
 	VkDescriptorSet ProduceDescriptorSet(VkDescriptorPool descriptor_pool, const VkDescriptorSetLayout set_layout) const
 	{
-		VkDescriptorSet result;	
+		VkDescriptorSet result;
 		//ALLOCATE DESCRIPTORS
 		const VkDescriptorSetAllocateInfo alloc_info = Vk::GetDescriptorAllocateInfo(descriptor_pool, set_layout);
 		VK_CHECK_RESULT(vkAllocateDescriptorSets(device_manager.GetLogicalDevice(), &alloc_info, &result));
 		return result;
 	}
 
-
-
 	std::shared_ptr<VkDescriptorSetBundle> ProduceDescriptorSetBundlePtr(VkDescriptorPool descriptor_pool, const VkDescriptorSetLayout set_layout, uint32_t bundle_size) const
 	{
-
-
 		const std::vector<VkDescriptorSetLayout> layouts{bundle_size, set_layout};
 		std::vector<VkDescriptorSet>             result{bundle_size, nullptr};
 
@@ -96,6 +78,7 @@ class VkDescriptorSetFactory
 		return {std::move(result)};
 	}
 
+  private:
 	VkGraphicsComponent &  gfx;
 	const VkDeviceManager &device_manager;
 };
@@ -123,14 +106,20 @@ class VkDescriptorManager
 
 	void UpdateDescriptorSet(std::vector<VkWriteDescriptorSet> write_descriptor_sets, const DescriptorSetMetaInfo set_meta_info, size_t frame_inflight) const;
 
+
+
+
+
+
+	
 	template <class Resource>
 	void UpdateDescriptorSet(Resource &resource, const DescriptorSetMetaInfo set_meta_info, uint32_t dstbinding, uint32_t dstArrayElement = 0);
 
 	template <class Resource>
-	static void UpdateDescriptorSet(const VkDevice device, Resource &resource, const VkDescriptorSetBundle &set_bundle, uint32_t dstbinding);
+	static void UpdateDescriptorSet(const VkDevice device, Resource &resource, const VkDescriptorSetBundle &set_bundle, uint32_t dstbinding,uint32_t dstArrayElement = 0);
 
 	template <class Resource>
-	static void UpdateDescriptorSet(const VkDevice device, Resource &resource, const VkDescriptorSet set, uint32_t dstbinding);
+	static void UpdateDescriptorSet(const VkDevice device, Resource &resource, const VkDescriptorSet set, uint32_t dstbinding,uint32_t dstArrayElement = 0);
 
 	//TODO:
 	[[nodiscard]] std::vector<VkDescriptorSetLayout> SearchLayout(const std::vector<DescriptorSetLayoutMetaInfo> &set_layout_meta_info) const;
@@ -146,13 +135,6 @@ class VkDescriptorManager
 	static VkDescriptorSetAllocateInfo GetDescriptorAllocateInfo(VkDescriptorPool descriptorPool, const VkDescriptorSetLayout &SetLayout);
 	static VkDescriptorSetAllocateInfo GetDescriptorAllocateInfo(VkDescriptorPool descriptorPool, const std::vector<VkDescriptorSetLayout> &SetLayouts);
 	//********************************************************************
-
-
-
-
-
-
-
 
   private:
 	VkGraphicsComponent &  gfx;
@@ -210,12 +192,15 @@ inline void VkDescriptorManager::UpdateDescriptorSet<VkTexture>(VkTexture &resou
 		write_set.dstSet = set_bundle[frame_inflight];
 		vkUpdateDescriptorSets(device_manager.GetLogicalDevice(), static_cast<uint32_t>(1), &write_set, 0, nullptr);
 	}
-
-
 }
 
+
+
+
+
+//n to n update
 template <>
-inline void VkDescriptorManager::UpdateDescriptorSet<VkBufferBundle>(const VkDevice device, VkBufferBundle &resource, const VkDescriptorSetBundle &set_bundle, uint32_t dstbinding)
+inline void VkDescriptorManager::UpdateDescriptorSet<VkBufferBundle>(const VkDevice device, VkBufferBundle &resource, const VkDescriptorSetBundle &set_bundle, uint32_t dstbinding,uint32_t dstArrayElement )
 {
 	const auto &des_set_array = set_bundle.GetDescriptorSetArray();
 	assert(des_set_array.size() == resource.GetBufferArray().size());
@@ -228,8 +213,22 @@ inline void VkDescriptorManager::UpdateDescriptorSet<VkBufferBundle>(const VkDev
 	}
 }
 
+
+//1 to 1 update
 template <>
-inline void VkDescriptorManager::UpdateDescriptorSet<VkTexture>(const VkDevice device, VkTexture &resource, const VkDescriptorSetBundle &set_bundle, uint32_t dstbinding)
+inline void VkDescriptorManager::UpdateDescriptorSet<VkBufferBase>(const VkDevice device, VkBufferBase &resource, const VkDescriptorSet set, uint32_t dstbinding,uint32_t dstArrayElement )
+{
+	auto write_set   = resource.GetWriteDescriptorSetInfo(dstbinding);
+	write_set.dstSet = set;
+	vkUpdateDescriptorSets(device, static_cast<uint32_t>(1), &write_set, 0, nullptr);
+}
+
+
+
+
+//1 to n update
+template <>
+inline void VkDescriptorManager::UpdateDescriptorSet<VkTexture>(const VkDevice device, VkTexture &resource, const VkDescriptorSetBundle &set_bundle, uint32_t dstbinding,uint32_t dstArrayElement )
 {
 	const auto &des_set_array = set_bundle.GetDescriptorSetArray();
 
@@ -241,15 +240,11 @@ inline void VkDescriptorManager::UpdateDescriptorSet<VkTexture>(const VkDevice d
 	}
 }
 
-
-
-
-
+//1 to 1 update
 template <>
-inline void VkDescriptorManager::UpdateDescriptorSet<VkTexture>(const VkDevice device, VkTexture &resource, const VkDescriptorSet set, uint32_t dstbinding)
+inline void VkDescriptorManager::UpdateDescriptorSet<VkTexture>(const VkDevice device, VkTexture &resource, const VkDescriptorSet set, uint32_t dstbinding,uint32_t dstArrayElement )
 {
 	auto write_set   = resource.GetWriteDescriptorSetInfo(dstbinding);
 	write_set.dstSet = set;
 	vkUpdateDescriptorSets(device, static_cast<uint32_t>(1), &write_set, 0, nullptr);
 }
-

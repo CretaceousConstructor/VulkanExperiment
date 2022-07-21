@@ -53,10 +53,10 @@ class FirstPersonCamera : public Camera
 	float mouse_sensitivity;
 
 	static constexpr float min_fov = glm::radians(20.f);
-	static constexpr float max_fov = glm::radians(70.f);
+	static constexpr float max_fov = glm::radians(100.f);
 
 	// Default camera values
-	static constexpr float speed_       = 5.0f;
+	static constexpr float speed_       = 10.0f;
 	static constexpr float sensitivity_ = 1.5f;
 	static constexpr float zoom_rate    = 0.0001f;
 };

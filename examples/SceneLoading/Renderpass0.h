@@ -9,18 +9,18 @@ class Renderpass0 : public VkRenderpassBase
 {
   public:
 	Renderpass0(VkGraphicsComponent &gfx_, VkRenderpassManager &renderpass_manager_, SceneLoading::CommonResources &common_resources_);
+
+
 protected:
 
 	void ResourceInit() override final;
 	void CreateDescriptorSetLayout() override final;
-	void CreateDescriptorSets() override final;
+	void CreateDescriptorSetsThenUpdate() override final;
 
 	void CreateAttachments() override final;
 
 	void CreateGraphicsPipelineLayout() override final;
 	void CompileShaders() override final;
-
-
 
 
   public:

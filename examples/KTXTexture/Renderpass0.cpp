@@ -37,7 +37,7 @@ void Renderpass0::CreateDescriptorSetLayout()
 	}
 }
 
-void Renderpass0::CreateDescriptorSets()
+void Renderpass0::CreateDescriptorSetsThenUpdate()
 {
 	auto &des_man = renderpass_manager.GetDescriptorManager();
 

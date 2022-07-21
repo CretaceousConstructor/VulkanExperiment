@@ -12,13 +12,13 @@
 
 
 }
-void MultiSubpassesRenderer::PrepareModels()
+void MultiSubpassesRenderer::PrepareCommonModels()
 {
 	//========================================================================================================================
 	test_model = std::make_unique<GltfModel>(std::string("../../data/models/FlightHelmet/FlightHelmet.gltf"), device_manager, window, window->GetSurfaceRef(), transfer_command_pool, transfer_command_buffer, true);
 }
 
-void MultiSubpassesRenderer::CreateDescriptorPool()
+void MultiSubpassesRenderer::CreateCommonDescriptorPool()
 {
 	// Create the global descriptor pool
 	std::array<VkDescriptorPoolSize, 3> poolSizes{};
@@ -296,7 +296,7 @@ void MultiSubpassesRenderer::CreateDescriptorSets()
 	}
 }
 
-void MultiSubpassesRenderer::CreateUniformBuffer()
+void MultiSubpassesRenderer::CreateCommonUniformBuffer()
 {
 	//GPU SIDE
 	VkDeviceSize bufferSize = sizeof(UniformBufferOject);
@@ -1023,7 +1023,7 @@ void MultiSubpassesRenderer::InitSynObjects()
 	}
 }
 
-void MultiSubpassesRenderer::CreateTextureImages()
+void MultiSubpassesRenderer::CreateCommonTextureImgs()
 {
 	//UNORM
 	//swapchain_manager->GetSwapChainImageFormat()得到的是
@@ -1060,7 +1060,7 @@ void MultiSubpassesRenderer::SetUpUserInput()
 	mouse->SetupMouseInputs(window->GetWindowPtr());
 }
 
-void MultiSubpassesRenderer::CreateAttachmentImages()
+void MultiSubpassesRenderer::CreateCommomAttachmentImgs()
 {
 	//swapchain_manager->GetSwapChainImageFormat()
 	//VK_FORMAT_R8G8B8A8_UNORM

@@ -6,42 +6,36 @@ App::App() :
     device_manager(instance.GetInstance(), window),
     swap_chain_manager(device_manager, window),
     command_manager(device_manager, swap_chain_manager.GetSwapImageCount(), 1),
-    gfx(device_manager, swap_chain_manager, window, command_manager)
+    gfx(instance, device_manager, swap_chain_manager, window, command_manager)
 {
 }
 
 void App::Run()
 {
-
 	InitRenderer();        //多态调用，这个函数会给智能指针一个具体的实例对象
 	renderer->RenderingPreparation();
-
-	 //some state to be passed
 	MainLoop();
 }
 
 void App::MainLoop() const
 {
-
 	float time_diff = 0.f;
 	while (!glfwWindowShouldClose(const_cast<GLFWwindow *>(window.GetWindowPtr())))
 	{
-
-		//TODO:windows resize and swapchain recreation
-		//auto tStart = std::chrono::high_resolution_clock::now();
-		const auto tStart = glfwGetTime();
-		renderer->UpdateCamera(time_diff);
-		renderer->DrawFrame();
-		renderer->UIRendering();
-		//auto tEnd = std::chrono::high_resolution_clock::now();
-		const auto tEnd = glfwGetTime();
-		time_diff = std::chrono::duration<float, std::chrono::seconds::period>(tEnd - tStart).count();
-
 		glfwPollEvents();
+		//TODO:windows resize and swapchain recreation
+
+		const auto tStart = glfwGetTime();
+
+		renderer->DrawFrame(time_diff);
+
+		const auto tEnd = glfwGetTime();
+
+		time_diff = static_cast<float>(tEnd - tStart);
 	}
 
-	vkDeviceWaitIdle(device_manager.GetLogicalDevice());
+	VK_CHECK_RESULT(vkDeviceWaitIdle(device_manager.GetLogicalDevice()))
+
 
 
 }
-

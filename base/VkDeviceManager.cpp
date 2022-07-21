@@ -288,7 +288,7 @@ VkBool32 VkDeviceManager::FormatIsFilterable(VkFormat format, VkImageTiling tili
 	return false;
 }
 
-const VkCommandPool &VkDeviceManager::CreateCommandPool(CommandPoolType type)
+VkCommandPool VkDeviceManager::CreateCommandPool(CommandPoolType type)
 {
 	const QueueFamilyIndices queueFamilyIndices = FindQueueFamilies(physical_device, window.GetSurface());
 
@@ -296,33 +296,28 @@ const VkCommandPool &VkDeviceManager::CreateCommandPool(CommandPoolType type)
 	{
 		case CommandPoolType::graphics_command_pool: {
 			VkCommandPool           graphicsCommandPool;
-			VkCommandPoolCreateInfo graphicsPoolInfo{};
-			graphicsPoolInfo.sType            = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-			graphicsPoolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
-			graphicsPoolInfo.flags            = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;        // Optional
+			VkCommandPoolCreateInfo graphics_command_pool_CI{};
+			graphics_command_pool_CI.sType            = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+			graphics_command_pool_CI.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
+			graphics_command_pool_CI.flags            = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;        // Optional
 
-			if (vkCreateCommandPool(device, &graphicsPoolInfo, nullptr, &graphicsCommandPool) != VK_SUCCESS)
-			{
-				throw std::runtime_error("failed to create command pool!");
-			}
+			VK_CHECK_RESULT(vkCreateCommandPool(device, &graphics_command_pool_CI, nullptr, &graphicsCommandPool))
 			command_pools.push_back(graphicsCommandPool);
 			return command_pools.back();
 		}
 		case CommandPoolType::transfor_command_pool: {
 			VkCommandPool           transforCommandPool;
-			VkCommandPoolCreateInfo transforPoolInfo{};
-			transforPoolInfo.sType            = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-			transforPoolInfo.queueFamilyIndex = queueFamilyIndices.transferFamily.value();
+			VkCommandPoolCreateInfo transfer_command_pool_CI{};
+			transfer_command_pool_CI.sType            = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+			transfer_command_pool_CI.queueFamilyIndex = queueFamilyIndices.transferFamily.value();
 			//transforPoolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
-			transforPoolInfo.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;        // 仅仅用于短暂的使用 并且可以复用 DON'T KNOW
-
-			if (vkCreateCommandPool(device, &transforPoolInfo, nullptr, &transforCommandPool) != VK_SUCCESS)
-			{
-				throw std::runtime_error("failed to create command pool!");
-			}
+			transfer_command_pool_CI.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;        // 仅仅用于短暂的使用 并且可以复用 
+			VK_CHECK_RESULT(vkCreateCommandPool(device, &transfer_command_pool_CI, nullptr, &transforCommandPool))
 			command_pools.push_back(transforCommandPool);
 			return command_pools.back();
 		}
+
+
 		default: /* 可选的 */
 			throw std::runtime_error("failed to create command pool!");
 	}

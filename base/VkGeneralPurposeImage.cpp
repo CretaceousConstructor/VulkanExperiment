@@ -1,13 +1,7 @@
 #include "VkGeneralPurposeImage.h"
 
-//VkGeneralPurposeImage::VkGeneralPurposeImage(VkGraphicsComponent& _gfx, VkImageType para_image_type, VkFormat para_format, VkExtent3D para_image_extent, uint32_t para_mip_levels, uint32_t para_array_layers, VkSampleCountFlagBits para_samples, VkImageTiling para_tiling, VkBufferUsageFlags para_usage_image, VkSharingMode para_sharing_mode, VkImageLayout initialLayout, VkMemoryPropertyFlagBits para_image_mem_property_flag) :
-//	VkImageBase(_gfx)
-//{
-//	Init(para_image_type, para_format, para_image_extent, para_mip_levels, para_array_layers, para_samples, para_tiling, para_usage_image, para_sharing_mode, initialLayout, para_image_mem_property_flag);
-//}
-//
 
-VkGeneralPurposeImage::VkGeneralPurposeImage(VkGraphicsComponent &_gfx, const VkImage _image, const VkDeviceMemory _image_mem, const VkImageView _image_view, std::shared_ptr<ImgParameterPack> para_pack_) :
+VkGeneralPurposeImage::VkGeneralPurposeImage(VkGraphicsComponent &_gfx, const VkImage _image, const VkDeviceMemory _image_mem, const VkImageView _image_view, std::shared_ptr<ImagePP> para_pack_) :
     VkImageBase(_gfx, _image, _image_view, std::move(para_pack_)),
     command_manager(gfx.CommandMan()),
     window(gfx.Window()),
@@ -21,10 +15,10 @@ VkGeneralPurposeImage::~VkGeneralPurposeImage()
 	vkFreeMemory(device_manager.GetLogicalDevice(), image_mem, nullptr);
 }
 
-void VkGeneralPurposeImage::CopyBufferToImage(VkBuffer buffer, uint32_t width, uint32_t height, VkDeviceManager::CommandPoolType command_type) const
+void VkGeneralPurposeImage::CopyBufferToImage1mip1level(VkBuffer buffer, uint32_t width, uint32_t height, VkDeviceManager::CommandPoolType command_type) const
 {
 	VkCommandPool command_pool;
-	VkQueue       command_quque;
+	VkQueue       command_quque; 
 
 	if (command_type == VkDeviceManager::CommandPoolType::graphics_command_pool)
 	{
@@ -69,20 +63,6 @@ void VkGeneralPurposeImage::CopyBufferToImage(VkBuffer buffer, uint32_t width, u
 	VkCommandManager::EndSingleTimeCommands(command_pool, device_manager.GetLogicalDevice(), commandBuffer, command_quque);
 }
 
-//void VkGeneralPurposeImage::CopyBufferToImage(VkBuffer buffer, const std::vector<VkBufferImageCopy> &bufferCopyRegions, const VkCommandPool &command_pool, const VkQueue &command_quque) const
-//{
-//	const VkCommandBuffer commandBuffer = VkCommandManager::BeginSingleTimeCommands(command_pool, device_manager.GetLogicalDevice());
-//
-//	vkCmdCopyBufferToImage(
-//	    commandBuffer,
-//	    buffer,
-//	    image,
-//	    VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-//	    (uint32_t) bufferCopyRegions.size(),
-//	    bufferCopyRegions.data());
-//
-//	VkCommandManager::EndSingleTimeCommands(command_pool, device_manager.GetLogicalDevice(), commandBuffer, command_quque);
-//}
 
 void VkGeneralPurposeImage::CopyBufferToImage(VkBuffer buffer, const std::vector<VkBufferImageCopy> &bufferCopyRegions, VkDeviceManager::CommandPoolType command_type) const
 {
@@ -116,6 +96,80 @@ void VkGeneralPurposeImage::CopyBufferToImage(VkBuffer buffer, const std::vector
 
 	VkCommandManager::EndSingleTimeCommands(command_pool, device_manager.GetLogicalDevice(), commandBuffer, command_quque);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 //bool VkGeneralPurposeImage::HasStencilComponent(VkFormat format)
 //{

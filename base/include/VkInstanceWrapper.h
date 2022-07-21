@@ -1,7 +1,5 @@
 #pragma once
 
-//#include "EngineMarco.h"
-//#include "EngineHeader.h"
 #include "VkExtensionUtility.h"
 #include "VkValidationUtility.h"
 

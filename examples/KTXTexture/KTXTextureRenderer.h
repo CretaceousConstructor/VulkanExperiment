@@ -40,15 +40,15 @@ class KTXTextureRenderer : public BaseRenderer
 	void SetUpUserInput() override;
 	void CreateCamera() override;
 
-	void CreateAttachmentImages() override;
-	void CreateTextureImages() override;
-	void CreateUniformBuffer() override;
+	void CreateCommomAttachmentImgs() override;
+	void CreateCommonTextureImgs() override;
+	void CreateCommonUniformBuffer() override;
 
-	void PrepareModels() override;
-	void CreateDescriptorPool() override;
+	void PrepareCommonModels() override;
+	void CreateCommonDescriptorPool() override;
 
 
-	void RenderpassInit() override;
+	void InitRenderpasses() override;
 
 
 

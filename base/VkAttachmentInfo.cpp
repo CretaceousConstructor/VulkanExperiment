@@ -1,7 +1,7 @@
 #include "VkAttachmentInfo.h"
 
-VkAttachmentInfo::VkAttachmentInfo(const std::vector<std::shared_ptr<VkImageBase>> &_attachment_images) :
-    attachment_images(_attachment_images)
+VkAttachmentInfo::VkAttachmentInfo(std::vector<std::shared_ptr<VkImageBase>> attachment_images_) :
+    attachment_images(std::move(attachment_images_))
 {
 	rendering_attachment_infos.resize(attachment_images.size());
 
@@ -28,5 +28,8 @@ VkRenderingAttachmentInfo VkAttachmentInfo::GetRenderingAttachmentInfo(size_t in
 
 
 	return rendering_attachment_info;
+
+
+
 
 }

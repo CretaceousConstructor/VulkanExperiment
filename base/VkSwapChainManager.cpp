@@ -234,7 +234,7 @@ VkPresentModeKHR VkSwapchainManager::GetPresentMode() const
 uint32_t VkSwapchainManager::GetMinImageCount() const
 {
 
-	return swapchain_capabilities.maxImageCount;
+	return swapchain_capabilities.minImageCount;
 }
 
 VkFormat VkSwapchainManager::FindDepthFormat() const

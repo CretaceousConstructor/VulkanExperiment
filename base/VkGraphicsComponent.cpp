@@ -1,10 +1,11 @@
 #include "VkGraphicsComponent.h"
 
-VkGraphicsComponent::VkGraphicsComponent(VkDeviceManager &_device_manager, VkSwapchainManager &_swapchain_manager, VkWindows &_window, VkCommandManager &_command_manager) :
-    device_manager(_device_manager),
-    swapchain_manager(_swapchain_manager),
-    window(_window),
-    command_manager(_command_manager)
+VkGraphicsComponent::VkGraphicsComponent(VkInstanceWrapper &instance_, VkDeviceManager &device_manager_, VkSwapchainManager &swapchain_manager_, VkWindows &window_, VkCommandManager &command_manager_) :
+    instance(instance_),
+    device_manager(device_manager_),
+    swapchain_manager(swapchain_manager_),
+    window(window_),
+    command_manager(command_manager_)
 {
 }
 
@@ -28,7 +29,8 @@ const VkCommandManager &VkGraphicsComponent::CommandMan() const
 	return command_manager;
 }
 
-//VkDeviceManager & VkGraphicsComponent::Device() const
-//{
-//	return device_manager;
-//}
+const VkInstanceWrapper & VkGraphicsComponent::Instance() const
+{
+	return instance;
+}
+

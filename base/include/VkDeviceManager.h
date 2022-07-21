@@ -48,8 +48,9 @@ class VkDeviceManager
 
   public:
 	[[nodiscard]] VkBool32 FormatIsFilterable(VkFormat format, VkImageTiling tiling) const;
-	const VkCommandPool &  CreateCommandPool(CommandPoolType type);
-	void                   CreateLogicalDeviceAndQueues();
+	VkCommandPool          CreateCommandPool(CommandPoolType type);
+
+	void CreateLogicalDeviceAndQueues();
 
 	[[nodiscard]] VkFormat FindSupportedFormat(const std::vector<VkFormat> &candidates, VkImageTiling tiling, VkFormatFeatureFlags features) const;
 	void                   CreateBufferAndBindToMemo(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer &buffer, VkDeviceMemory &bufferMemory, VkSharingMode sharingmode, const VkSurfaceKHR &surface) const;

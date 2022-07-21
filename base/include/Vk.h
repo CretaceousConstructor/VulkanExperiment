@@ -1,7 +1,6 @@
 #pragma once
-#include "VkBufferBundle.h"
 #include "VkHeader.h"
-
+#include "VkBufferBundle.h"
 #include <thread>
 #include <vector>
 
@@ -12,20 +11,7 @@ namespace Vk
 	{
 		Sampler
 
-
-
 	};
-
-
-	//template const expression in replace of magic number in code.
-	template <uint32_t T>
-	constexpr uint32_t Binding{T};
-
-	template <uint32_t T>
-	constexpr uint32_t Offset{T};
-
-	template <uint32_t T>
-	constexpr uint32_t AttachmentRef{T};
 
 	//template variable in replace of magic number in code.
 
@@ -36,18 +22,39 @@ namespace Vk
 	size_t UUID_unsafe{0};
 
 
+	//template const expressions in replace of magic numbers in the code.
+	template <uint32_t T>
+	constexpr uint32_t Binding{T};
+
+	template <uint32_t T>
+	constexpr uint32_t Offset{T};
+
+	template <uint32_t T>
+	constexpr uint32_t AttachmentRef{T};
+
+	template <uint32_t T>
+	constexpr uint32_t BindingCount{T};
+
+	template <uint32_t T>
+	constexpr uint32_t SetCount{T};
+
+	template <uint32_t T>
+	constexpr uint32_t DescriptorCount{T};
+
 
 
 //....
 VkAttachmentReference           GetAttachmentReference(uint32_t attachment, VkImageLayout layout);
 VkDescriptorPoolSize            GetOneDescriptorPoolSizeDescription(VkDescriptorType type, uint32_t descriptor_count);
 VkDescriptorPoolCreateInfo      GetDescriptorPoolCI(const std::vector<VkDescriptorPoolSize> &pool_sizes, uint32_t max_sets, const void *pNext = nullptr, VkDescriptorPoolCreateFlags flags = 0);
-VkDescriptorSetLayoutBinding    GetDescriptorSetLayoutBinding(uint32_t binding, VkDescriptorType type, VkShaderStageFlags stage_flags, uint32_t descriptor_count = 1, const VkSampler *pImmutableSamplers = nullptr);
+VkDescriptorSetLayoutBinding    GetDescriptorSetLayoutBinding(uint32_t binding, VkDescriptorType type, VkShaderStageFlagBits stage_flags, uint32_t descriptor_count = 1, const VkSampler *pImmutableSamplers = nullptr);
 VkDescriptorSetLayoutCreateInfo GetDescriptorSetLayoutCI(const std::vector<VkDescriptorSetLayoutBinding> &bindings, const void *pNext = nullptr, VkDescriptorSetLayoutCreateFlags flags = 0);
 
 
 VkPipelineLayout                GetPipelineLayout(const VkDevice &device, const std::vector<VkDescriptorSetLayout> &set_layouts, const std::vector<VkPushConstantRange> &push_constant_ranges, const void *pNext = nullptr, VkDescriptorSetLayoutCreateFlags flags = 0);
 //....
+
+
 
 //********************************************************************
 VkPushConstantRange GetPushConstantRange(VkShaderStageFlags stage_flags, uint32_t size, uint32_t offset);

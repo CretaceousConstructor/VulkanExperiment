@@ -1,6 +1,6 @@
 #include "ImageParameterPack.h"
 
-DepthImgParameterPack::DepthImgParameterPack(const VkGraphicsComponent &gfx_) :
+DepthImgPP::DepthImgPP(const VkGraphicsComponent &gfx_) :
     swapchain_manager(gfx_.SwapchainMan())
 {
 	//*************************************
@@ -9,8 +9,8 @@ DepthImgParameterPack::DepthImgParameterPack(const VkGraphicsComponent &gfx_) :
 	//*************************************
 	default_image_CI.sType         = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
 	default_image_CI.imageType     = VK_IMAGE_TYPE_2D;
-	default_image_CI.mipLevels     = 1;        //mipmapping
-	default_image_CI.arrayLayers   = 1;        //cubemap
+	default_image_CI.mipLevels     = 1;        //
+	default_image_CI.arrayLayers   = 1;        //
 	default_image_CI.samples       = VK_SAMPLE_COUNT_1_BIT;
 	default_image_CI.tiling        = VK_IMAGE_TILING_OPTIMAL;        //仅仅分为是不是LINEAR的存储方式
 	default_image_CI.usage         = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
@@ -34,14 +34,14 @@ DepthImgParameterPack::DepthImgParameterPack(const VkGraphicsComponent &gfx_) :
 	//*************************************
 }
 
-std::shared_ptr<ImgParameterPack> DepthImgParameterPack::Clone() const
+std::shared_ptr<ImagePP> DepthImgPP::Clone() const
 {
-	return std::make_shared<DepthImgParameterPack>(*this);
+	return std::make_shared<DepthImgPP>(*this);
 }
 
 
 
-TexImgParameterPack::TexImgParameterPack(std::string _image_path, const VkFormat format_, const VkExtent3D &image_extend_) :
+TextureImgPP::TextureImgPP(std::string _image_path, const VkFormat format_, const VkExtent3D &image_extend_) :
     image_path(std::move(_image_path))
 {
 	//*************************************
@@ -79,8 +79,10 @@ TexImgParameterPack::TexImgParameterPack(std::string _image_path, const VkFormat
 	default_final_layout        = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
 }
 
-TexImgParameterPack::TexImgParameterPack(const VkFormat format_, const VkExtent3D &image_extend_)
+TextureImgPP::TextureImgPP(const VkFormat format_, const VkExtent3D &image_extend_)
 {
+
+	
 	//*************************************
 	default_image_format = format_;
 	default_image_extent = image_extend_;
@@ -110,22 +112,21 @@ TexImgParameterPack::TexImgParameterPack(const VkFormat format_, const VkExtent3
 	default_image_view_CI.subresourceRange.baseMipLevel   = 0;
 	default_image_view_CI.subresourceRange.levelCount     = 1;
 	default_image_view_CI.subresourceRange.baseArrayLayer = 0;
-	default_image_view_CI.subresourceRange.layerCount     = 1;        //之后会加入指定layercount的功能
-	//*************************************
+	default_image_view_CI.subresourceRange.layerCount     = 1;        	//*************************************
 	default_image_mem_prop_flag = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
 	default_final_layout        = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
 }
 
 
 
-std::shared_ptr<ImgParameterPack> TexImgParameterPack::Clone() const
+std::shared_ptr<ImagePP> TextureImgPP::Clone() const
 {
 
-	return std::make_shared<TexImgParameterPack>(*this);
+	return std::make_shared<TextureImgPP>(*this);
 
 }
 
-SwapImgParameterPack::SwapImgParameterPack()
+SwapchainImgPP::SwapchainImgPP()
 {
 
 
@@ -151,16 +152,14 @@ SwapImgParameterPack::SwapImgParameterPack()
 	//*************************************
 	default_final_layout        = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
-
-
 }
 
-std::shared_ptr<ImgParameterPack> SwapImgParameterPack::Clone() const
+std::shared_ptr<ImagePP> SwapchainImgPP::Clone() const
 {
 
 
 
-	return std::make_shared<SwapImgParameterPack>(*this);
+	return std::make_shared<SwapchainImgPP>(*this);
 
 
 

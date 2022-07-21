@@ -104,7 +104,7 @@ VkDescriptorPoolCreateInfo Vk::GetDescriptorPoolCI(const std::vector<VkDescripto
 	return descriptor_pool_CI;
 }
 
-VkDescriptorSetLayoutBinding Vk::GetDescriptorSetLayoutBinding(uint32_t binding, VkDescriptorType type, VkShaderStageFlags stage_flags, uint32_t descriptor_count, const VkSampler *pImmutableSamplers)
+VkDescriptorSetLayoutBinding Vk::GetDescriptorSetLayoutBinding(uint32_t binding, VkDescriptorType type, VkShaderStageFlagBits stage_flags, uint32_t descriptor_count, const VkSampler *pImmutableSamplers)
 {
 	VkDescriptorSetLayoutBinding setLayoutBinding{};
 	setLayoutBinding.descriptorType     = type;
@@ -118,6 +118,8 @@ VkDescriptorSetLayoutBinding Vk::GetDescriptorSetLayoutBinding(uint32_t binding,
 
 VkDescriptorSetLayoutCreateInfo Vk::GetDescriptorSetLayoutCI(const std::vector<VkDescriptorSetLayoutBinding> &bindings, const void *pNext, VkDescriptorSetLayoutCreateFlags flags)
 {
+
+	//TODO:	use perfect forwarding to check bindings is not a rvalue;
 	VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo{};
 	descriptorSetLayoutCreateInfo.sType        = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 	descriptorSetLayoutCreateInfo.pBindings    = bindings.data();

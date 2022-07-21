@@ -35,7 +35,6 @@ class App
 	VkCommandManager   command_manager;
 
 	VkGraphicsComponent gfx;
-
 	std::unique_ptr<BaseRenderer> renderer;
 
 

@@ -10,9 +10,7 @@ FirstPersonCamera::FirstPersonCamera(glm::vec3 position_) :
     movement_speed(speed_),
     mouse_sensitivity(sensitivity_)
 {
-
 	UpdateCameraVectors();
-
 }
 
 FirstPersonCamera::FirstPersonCamera(float posX, float posY, float posZ) :
@@ -25,11 +23,7 @@ FirstPersonCamera::FirstPersonCamera(float posX, float posY, float posZ) :
     movement_speed(speed_),
     mouse_sensitivity(sensitivity_)
 {
-
-
 	UpdateCameraVectors();
-
-
 }
 
 //void FirstPersonCamera::LookAt(const glm::vec3 &pos, const glm::vec3 &target, const glm::vec3 &up)
@@ -72,15 +66,13 @@ glm::mat4 FirstPersonCamera::GetViewMatrix() const
 	const glm::mat4 rot            = glm::mat4_cast(reverse_orient);
 	const glm::mat4 translation    = glm::translate(glm::mat4(1.0), -position);
 	return rot * translation;
-
-
 }
 
 void FirstPersonCamera::ProcessKeyboard(Camera_Movement direction, float deltaTime)
 {
 	const float velocity = movement_speed * deltaTime;
 
-	const auto qff =  orientation * glm::vec3(0, 0, -1)   ;
+	const auto qff = orientation * glm::vec3(0, 0, -1);
 	//const glm::vec3 front_vec = glm::rotate(orientation, glm::vec3(0.0, 0.0, -1.0));
 
 	//中间这个四元数被称为纯四元数
@@ -124,15 +116,15 @@ void FirstPersonCamera::ProcessKeyboard(Camera_Movement direction, float deltaTi
 		UpdateCameraVectors();
 	}
 
-	if (direction == Camera_Movement::ZoomIn)
-	{
-		ProcessMouseScroll(zoom_rate);
-	}
+	//if (direction == Camera_Movement::ZoomIn)
+	//{
+	//	ProcessMouseScroll(zoom_rate);
+	//}
 
-	if (direction == Camera_Movement::ZoomOut)
-	{
-		ProcessMouseScroll(-zoom_rate);
-	}
+	//if (direction == Camera_Movement::ZoomOut)
+	//{
+	//	ProcessMouseScroll(-zoom_rate);
+	//}
 }
 
 void FirstPersonCamera::ProcessMouseMovement(float xoffset, float yoffset, bool constrainPitch)
@@ -177,7 +169,6 @@ void FirstPersonCamera::UpdateCameraVectors()
 	// Roll
 	const glm::quat aroundZ = glm::angleAxis(glm::radians(roll_angle), glm::vec3(0, 0, 1));
 
+	//yxz
 	orientation = aroundY * aroundX * aroundZ;
-
-
 }

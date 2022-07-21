@@ -13,7 +13,7 @@ void VkRenderpassBase::Init()
 	ResourceInit();
 
 	CreateDescriptorSetLayout();
-	CreateDescriptorSets();
+	CreateDescriptorSetsThenUpdate();
 
 	CreateAttachments();
 

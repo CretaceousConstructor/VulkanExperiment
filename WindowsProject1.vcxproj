@@ -34,6 +34,7 @@
     <ClCompile Include="base\ImguiPipePP.cpp" />
     <ClCompile Include="base\ModelStrcture.cpp" />
     <ClCompile Include="base\NonPbrMaterial.cpp" />
+    <ClCompile Include="base\PbrMaterialMetallic.cpp" />
     <ClCompile Include="base\VkBufferBundle.cpp" />
     <ClCompile Include="base\VkBufferFactory.cpp" />
     <ClCompile Include="base\VkBufferCI.cpp" />
@@ -52,13 +53,10 @@
     <ClCompile Include="base\Vk.cpp" />
     <ClCompile Include="base\VkShaderWrapper.cpp" />
     <ClCompile Include="base\VkStagingBuffer.cpp" />
-    <ClCompile Include="base\VkStagingBufferFactory.cpp" />
     <ClCompile Include="base\VkSubpassFactory.cpp" />
-    <ClCompile Include="base\VkSwapchainImageFactory.cpp" />
     <ClCompile Include="base\VkSynObjectBundleBase.cpp" />
     <ClCompile Include="base\VkSynObjectFactory.cpp" />
     <ClCompile Include="base\VkAttachmentInfo.cpp" />
-    <ClCompile Include="base\VkDepthImageFactory.cpp" />
     <ClCompile Include="base\FirstPersonCamera.cpp" />
     <ClCompile Include="base\GltfModel.cpp" />
     <ClCompile Include="base\VkImageFactory.cpp" />
@@ -80,13 +78,12 @@
     <ClCompile Include="base\VkExtensionUtility.cpp" />
     <ClCompile Include="base\VkSwapchainImage.cpp" />
     <ClCompile Include="base\VkGeneralPurposeImage.cpp" />
-    <ClCompile Include="base\ImguiRenderpass.cpp" />
+    <ClCompile Include="base\VkImgui.cpp" />
     <ClCompile Include="base\VkInstanceWrapper.cpp" />
     <ClCompile Include="base\VkMemoryManager.cpp" />
     <ClCompile Include="base\VkBufferBase.cpp" />
     <ClCompile Include="base\VkMetaInfo.cpp" />
     <ClCompile Include="base\VkPipelineBuilder.cpp" />
-    <ClCompile Include="base\VkTexImageFactory.cpp" />
     <ClCompile Include="base\VkPipelineWrapper.cpp" />
     <ClCompile Include="base\VkRenderpassManager.cpp" />
     <ClCompile Include="base\VkRenderpassWrapper.cpp" />
@@ -96,7 +93,6 @@
     <ClCompile Include="base\VkTextureFactory.cpp" />
     <ClCompile Include="base\VkUniformBuffer.cpp" />
     <ClCompile Include="base\VkPipelinePP.cpp" />
-    <ClCompile Include="base\VkUniformBufferFactory.cpp" />
     <ClCompile Include="base\VkValidationUtility.cpp" />
     <ClCompile Include="base\VkWindows.cpp" />
     <ClCompile Include="Source.cpp" />
@@ -108,6 +104,7 @@
     <ClInclude Include="base\include\Camera.h" />
     <ClInclude Include="base\include\ForwardShadingPipelinePP.h" />
     <ClInclude Include="base\include\ImguiPipePP.h" />
+    <ClInclude Include="base\include\PbrMaterialMetallic.h" />
     <ClInclude Include="base\include\VkHeader.h" />
     <ClInclude Include="base\include\FirstPersonCamera.h" />
     <ClInclude Include="base\include\Geometry.h" />
@@ -146,28 +143,24 @@
     <ClInclude Include="base\include\Vk.h" />
     <ClInclude Include="base\include\VkShaderWrapper.h" />
     <ClInclude Include="base\include\VkStagingBuffer.h" />
-    <ClInclude Include="base\include\VkStagingBufferFactory.h" />
     <ClInclude Include="base\include\VkSubpassFactory.h" />
-    <ClInclude Include="base\include\VkSwapchainImageFactory.h" />
     <ClInclude Include="base\include\VkSynObjectBundleBase.h" />
     <ClInclude Include="base\include\VkSynObjectFactory.h" />
     <ClInclude Include="base\include\Transform.h" />
     <ClInclude Include="base\include\VkAttachmentInfo.h" />
     <ClInclude Include="base\include\VkCommandManager.h" />
-    <ClInclude Include="base\include\VkDepthImageFactory.h" />
     <ClInclude Include="base\include\VkDescriptorManager.h" />
     <ClInclude Include="base\include\VkDeviceManager.h" />
     <ClInclude Include="base\include\VkExtensionUtility.h" />
     <ClInclude Include="base\include\VkImageFactory.h" />
     <ClInclude Include="base\include\VkSwapchainImage.h" />
     <ClInclude Include="base\include\VkGeneralPurposeImage.h" />
-    <ClInclude Include="base\include\ImguiRenderpass.h" />
+    <ClInclude Include="base\include\VkImgui.h" />
     <ClInclude Include="base\include\VkInstanceWrapper.h" />
     <ClInclude Include="base\include\VkMemoryManager.h" />
     <ClInclude Include="base\include\VkMetaInfo.h" />
     <ClInclude Include="base\include\VkModel.h" />
     <ClInclude Include="base\include\VkPipelineBuilder.h" />
-    <ClInclude Include="base\include\VkTexImageFactory.h" />
     <ClInclude Include="base\include\VkPipelineWrapper.h" />
     <ClInclude Include="base\include\VkRenderpassManager.h" />
     <ClInclude Include="base\include\VkRenderpassWrapper.h" />
@@ -177,15 +170,9 @@
     <ClInclude Include="base\include\VkTextureFactory.h" />
     <ClInclude Include="base\include\VkUniformBuffer.h" />
     <ClInclude Include="base\include\VkPipelinePP.h" />
-    <ClInclude Include="base\include\VkUniformBufferFactory.h" />
     <ClInclude Include="base\include\VkValidationUtility.h" />
     <ClInclude Include="base\include\VkWindows.h" />
     <ClInclude Include="base\include\WindowsSubsys.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="base\imguishaders\generate_spv.bat" />
-    <None Include="base\imguishaders\glsl_shader.frag" />
-    <None Include="base\imguishaders\glsl_shader.vert" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
@@ -270,7 +257,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)external\ktx\include;$(SolutionDir)external\ktx\lib;$(SolutionDir)external\ktx\other_include;$(SolutionDir)external\vulkan\Include;$(SolutionDir)external\tinygltf;$(SolutionDir)external\glm;$(SolutionDir)external\glfw-3.3.3.bin.WIN64\include;$(SolutionDir)base\include;$(SolutionDir)external\tinyobjloader;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\CS\boost\boost_1_79_0;$(SolutionDir)external\ktx\include;$(SolutionDir)external\ktx\lib;$(SolutionDir)external\ktx\other_include;$(SolutionDir)external\vulkan\Include;$(SolutionDir)external\tinygltf;$(SolutionDir)external\glm;$(SolutionDir)external\glfw-3.3.3.bin.WIN64\include;$(SolutionDir)base\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
@@ -281,8 +268,8 @@
     </Link>
     <Lib>
       <TargetMachine>MachineX64</TargetMachine>
-      <AdditionalDependencies>glfw3.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)external\glfw-3.3.3.bin.WIN64\lib-vc2019;$(SolutionDir)external\vulkan\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glfw3.lib;vulkan-1.lib;dxcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>D:\CS\boost\boost_1_79_0\stage\lib;$(SolutionDir)external\glfw-3.3.3.bin.WIN64\lib-vc2019;$(SolutionDir)external\vulkan\Lib;$(SolutionDir)external\dxc\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -293,7 +280,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)external\ktx\include;$(SolutionDir)external\ktx\lib;$(SolutionDir)external\ktx\other_include;$(SolutionDir)external\vulkan\Include;$(SolutionDir)external\tinygltf;$(SolutionDir)external\glm;$(SolutionDir)external\glfw-3.3.3.bin.WIN64\include;$(SolutionDir)base\include;$(SolutionDir)external\tinyobjloader;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\CS\boost\boost_1_79_0;$(SolutionDir)external\ktx\include;$(SolutionDir)external\ktx\lib;$(SolutionDir)external\ktx\other_include;$(SolutionDir)external\vulkan\Include;$(SolutionDir)external\tinygltf;$(SolutionDir)external\glm;$(SolutionDir)external\glfw-3.3.3.bin.WIN64\include;$(SolutionDir)base\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
@@ -306,8 +293,8 @@
     </Link>
     <Lib>
       <TargetMachine>MachineX64</TargetMachine>
-      <AdditionalDependencies>glfw3.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>$(SolutionDir)external\glfw-3.3.3.bin.WIN64\lib-vc2019;$(SolutionDir)external\vulkan\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glfw3.lib;vulkan-1.lib;dxcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>D:\CS\boost\boost_1_79_0\stage\lib;$(SolutionDir)external\glfw-3.3.3.bin.WIN64\lib-vc2019;$(SolutionDir)external\vulkan\Lib;$(SolutionDir)external\dxc\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -316,7 +303,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)external\ktx\include;$(SolutionDir)external\ktx\lib;$(SolutionDir)external\ktx\other_include;$(SolutionDir)external\vulkan\Include;$(SolutionDir)external\tinygltf;$(SolutionDir)external\glm;$(SolutionDir)external\glfw-3.3.3.bin.WIN64\include;$(SolutionDir)base\include;$(SolutionDir)external\tinyobjloader;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\CS\boost\boost_1_79_0;$(SolutionDir)external\ktx\include;$(SolutionDir)external\ktx\lib;$(SolutionDir)external\ktx\other_include;$(SolutionDir)external\vulkan\Include;$(SolutionDir)external\tinygltf;$(SolutionDir)external\glm;$(SolutionDir)external\glfw-3.3.3.bin.WIN64\include;$(SolutionDir)base\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
@@ -326,10 +313,10 @@
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
     </Link>
     <Lib>
-      <AdditionalDependencies>glfw3.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glfw3.lib;vulkan-1.lib;dxcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Lib>
     <Lib>
-      <AdditionalLibraryDirectories>$(SolutionDir)external\glfw-3.3.3.bin.WIN64\lib-vc2019;$(SolutionDir)external\vulkan\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>D:\CS\boost\boost_1_79_0\stage\lib;$(SolutionDir)external\glfw-3.3.3.bin.WIN64\lib-vc2019;$(SolutionDir)external\vulkan\Lib;$(SolutionDir)external\dxc\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -340,7 +327,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)external\ktx\include;$(SolutionDir)external\ktx\lib;$(SolutionDir)external\ktx\other_include;$(SolutionDir)external\vulkan\Include;$(SolutionDir)external\tinygltf;$(SolutionDir)external\glm;$(SolutionDir)external\glfw-3.3.3.bin.WIN64\include;$(SolutionDir)base\include;$(SolutionDir)external\tinyobjloader;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>D:\CS\boost\boost_1_79_0;$(SolutionDir)external\ktx\include;$(SolutionDir)external\ktx\lib;$(SolutionDir)external\ktx\other_include;$(SolutionDir)external\vulkan\Include;$(SolutionDir)external\tinygltf;$(SolutionDir)external\glm;$(SolutionDir)external\glfw-3.3.3.bin.WIN64\include;$(SolutionDir)base\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
@@ -352,10 +339,10 @@
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
     </Link>
     <Lib>
-      <AdditionalDependencies>glfw3.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>glfw3.lib;vulkan-1.lib;dxcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Lib>
     <Lib>
-      <AdditionalLibraryDirectories>$(SolutionDir)external\glfw-3.3.3.bin.WIN64\lib-vc2019;$(SolutionDir)external\vulkan\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>D:\CS\boost\boost_1_79_0\stage\lib;$(SolutionDir)external\glfw-3.3.3.bin.WIN64\lib-vc2019;$(SolutionDir)external\vulkan\Lib;$(SolutionDir)external\dxc\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

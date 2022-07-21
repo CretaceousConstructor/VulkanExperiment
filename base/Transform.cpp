@@ -8,7 +8,7 @@ Transform::Transform(const glm::vec3 &scale, const glm::vec3 &rotation_euler, co
     quat4rotation{glm::quat(rotation_euler)}
 {
 
-
+	//assert(1 == 2);
 
 	//quat4rotation = glm::normalize(quat4rotation);
 	// Conversion from Euler angles (in radians) to Quaternion

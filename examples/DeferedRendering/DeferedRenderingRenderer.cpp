@@ -28,7 +28,7 @@ void DeferedRenderingRenderer::CreateCamera()
 	camera->SetViewPort(viewport);
 }
 
-void DeferedRenderingRenderer::CreateAttachmentImages()
+void DeferedRenderingRenderer::CreateCommomAttachmentImgs()
 {
 	//OFFSCREEN PASS
 	VkDeviceManager::QueueFamilyIndices queue_family_index = device_manager->FindQueueFamilies(device_manager->GetPhysicalDeviceRef(), window->GetSurfaceRef());
@@ -96,7 +96,7 @@ void DeferedRenderingRenderer::CreateAttachmentImages()
 	}
 }
 
-void DeferedRenderingRenderer::CreateTextureImages()
+void DeferedRenderingRenderer::CreateCommonTextureImgs()
 {
 }
 
@@ -141,7 +141,7 @@ void DeferedRenderingRenderer::CreateRenderPass()
 	CreateCompositionRenderPass();
 }
 
-void DeferedRenderingRenderer::CreateUniformBuffer()
+void DeferedRenderingRenderer::CreateCommonUniformBuffer()
 {
 	//GPU SIDE
 
@@ -274,7 +274,7 @@ void DeferedRenderingRenderer::CreateDescriptorSetLayout()
 	}
 }
 
-void DeferedRenderingRenderer::CreateDescriptorPool()
+void DeferedRenderingRenderer::CreateCommonDescriptorPool()
 {
 	// Create the global descriptor pool
 	std::array<VkDescriptorPoolSize, 2> poolSizes{};
@@ -777,7 +777,7 @@ void DeferedRenderingRenderer::InitCommandBuffers()
 	}
 }
 
-void DeferedRenderingRenderer::PrepareModels()
+void DeferedRenderingRenderer::PrepareCommonModels()
 {
 	gltf_scene_sponza = std::make_unique<GltfModel>(std::string("../../data/models/sponza/sponza.gltf"), device_manager, window, window->GetSurfaceRef(), transfer_command_pool, transfer_command_buffer, true);
 }

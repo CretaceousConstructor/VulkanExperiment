@@ -12,7 +12,8 @@ layout (location = 4) in vec2 inUV;
 
 
 
-layout (set = 0, binding = 0) uniform UBOScene 
+layout (set = 0, binding = 0) uniform 
+UBOScene 
 {
 	mat4 projection;
 	mat4 view;
@@ -20,7 +21,9 @@ layout (set = 0, binding = 0) uniform UBOScene
 	vec4 viewPos;
 } uboScene;
 
-layout(push_constant) uniform PushConsts {
+layout(push_constant) uniform 
+PushConsts
+{
 	mat4 model;
 } primitive;
 

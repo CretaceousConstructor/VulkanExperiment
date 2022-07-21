@@ -39,7 +39,7 @@
     <ClCompile Include="RenderingMetaInfo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="UIRenderpass.cpp">
+    <ClCompile Include="PreprocessPass.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -56,7 +56,7 @@
     <ClInclude Include="Renderpass0.h">
       <Filter>Header Files\Renderpasses</Filter>
     </ClInclude>
-    <ClInclude Include="UIRenderpass.h">
+    <ClInclude Include="PreprocessPass.h">
       <Filter>Header Files\Renderpasses</Filter>
     </ClInclude>
   </ItemGroup>
@@ -74,6 +74,12 @@
       <Filter>Shader Files</Filter>
     </None>
     <None Include="..\..\data\shaders\SceneLoading\LightIndicator_vertex_shader.vert">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="..\..\data\shaders\SceneLoading\PreProcessPass_vertex_shader.vert">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="..\..\data\shaders\SceneLoading\PreProcessPass_fragment_shader.frag">
       <Filter>Shader Files</Filter>
     </None>
   </ItemGroup>
