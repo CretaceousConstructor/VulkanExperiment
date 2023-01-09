@@ -33,20 +33,11 @@
     <Filter Include="Source Files\Imgui">
       <UniqueIdentifier>{fa5ab306-8b45-4cca-984c-a83671bfcc33}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Texture">
-      <UniqueIdentifier>{b3d7b1d1-bb6a-4412-87de-4c59a0f04152}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\Texture\ktx">
-      <UniqueIdentifier>{cf9a38cd-dc23-440a-b902-8aedf27f0e82}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\ClassReflection">
       <UniqueIdentifier>{7ee56ee3-1b49-4bf1-9190-52f67e549e9a}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files\VkCore">
       <UniqueIdentifier>{050df9e2-4ba4-4754-968c-a8463ad0b466}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\VkCore\Image">
-      <UniqueIdentifier>{5e429a0f-ecd8-49e1-b89e-0dc9a5735d32}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files\VkCore\Manager">
       <UniqueIdentifier>{1fa29324-aebf-40f4-875c-e4e74000d785}</UniqueIdentifier>
@@ -105,17 +96,8 @@
     <Filter Include="Header Files\Bindable">
       <UniqueIdentifier>{e93a7891-d982-45b7-8e85-9b416c4fa7c7}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\VkCore\Image\Images">
-      <UniqueIdentifier>{12c84fa1-9bd4-45ac-b3c2-d7cc31e83a6d}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\VkCore\Buffer\Useless">
       <UniqueIdentifier>{4ae0b0e4-f918-421a-87f2-cbb2946fae32}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\VkCore\Image\Useless">
-      <UniqueIdentifier>{4eac263f-6f67-40e5-8b6d-c3bdfc90625b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\VkCore\Image\Useless\ImageFactory">
-      <UniqueIdentifier>{8de3d23e-9c52-4f77-b328-710ca9b36907}</UniqueIdentifier>
     </Filter>
     <Filter Include="Header Files\VkCore\Math">
       <UniqueIdentifier>{082cb941-d1b6-4163-912b-38522e15c6ce}</UniqueIdentifier>
@@ -129,21 +111,36 @@
     <Filter Include="Header Files\VkCore\Pipeline\ParameterPack">
       <UniqueIdentifier>{faf8b4ec-19e7-46f3-b401-5c3cff444360}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\KtxTexture">
+      <UniqueIdentifier>{b3d7b1d1-bb6a-4412-87de-4c59a0f04152}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\KtxTexture\ktx">
+      <UniqueIdentifier>{cf9a38cd-dc23-440a-b902-8aedf27f0e82}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Model">
+      <UniqueIdentifier>{7ee9677d-5098-4f9a-a4b0-66a4fa7a794b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Renderer">
+      <UniqueIdentifier>{c64c5b89-4602-4c66-afc5-73a0410fba9a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Application">
+      <UniqueIdentifier>{3aa13877-619c-45ba-98f0-f7c804c78400}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\VkCore\Texture\ImageView">
+      <UniqueIdentifier>{da4ac059-6844-4be9-ae47-8843976f10aa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\VkCore\Texture\Image">
+      <UniqueIdentifier>{5e429a0f-ecd8-49e1-b89e-0dc9a5735d32}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\VkCore\Texture\Image\Images">
+      <UniqueIdentifier>{12c84fa1-9bd4-45ac-b3c2-d7cc31e83a6d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\VkCore\Texture\Sampler">
+      <UniqueIdentifier>{059ded64-b42c-4064-8f7a-8c2f77909847}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="base\App.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="base\BaseRenderer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="base\ModelLoader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="base\Transform.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="base\GltfModel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="base\VkBufferBase.cpp">
@@ -219,22 +216,22 @@
       <Filter>Source Files\Imgui</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\vulkanExample\Vulkan\external\ktx\lib\checkheader.c">
-      <Filter>Source Files\Texture\ktx</Filter>
+      <Filter>Source Files\KtxTexture\ktx</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\vulkanExample\Vulkan\external\ktx\lib\filestream.c">
-      <Filter>Source Files\Texture\ktx</Filter>
+      <Filter>Source Files\KtxTexture\ktx</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\vulkanExample\Vulkan\external\ktx\lib\hashlist.c">
-      <Filter>Source Files\Texture\ktx</Filter>
+      <Filter>Source Files\KtxTexture\ktx</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\vulkanExample\Vulkan\external\ktx\lib\memstream.c">
-      <Filter>Source Files\Texture\ktx</Filter>
+      <Filter>Source Files\KtxTexture\ktx</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\vulkanExample\Vulkan\external\ktx\lib\texture.c">
-      <Filter>Source Files\Texture\ktx</Filter>
+      <Filter>Source Files\KtxTexture\ktx</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\vulkanExample\Vulkan\external\ktx\lib\swap.c">
-      <Filter>Source Files\Texture\ktx</Filter>
+      <Filter>Source Files\KtxTexture\ktx</Filter>
     </ClCompile>
     <ClCompile Include="base\VkRenderpassManager.cpp">
       <Filter>Source Files\Vk</Filter>
@@ -344,15 +341,6 @@
     <ClCompile Include="base\VkBufferCI.cpp">
       <Filter>Source Files\Vk</Filter>
     </ClCompile>
-    <ClCompile Include="base\ImageParameterPack.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="base\VkMath.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Source.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="base\ImguiPipePP.cpp">
       <Filter>Source Files\Imgui</Filter>
     </ClCompile>
@@ -360,6 +348,36 @@
       <Filter>Source Files\Vk</Filter>
     </ClCompile>
     <ClCompile Include="base\PbrMaterialMetallic.cpp">
+      <Filter>Source Files\Vk</Filter>
+    </ClCompile>
+    <ClCompile Include="base\VkShaderFactory.cpp">
+      <Filter>Source Files\Vk</Filter>
+    </ClCompile>
+    <ClCompile Include="base\ModelLoader.cpp">
+      <Filter>Source Files\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="base\VkMath.cpp">
+      <Filter>Source Files\Vk</Filter>
+    </ClCompile>
+    <ClCompile Include="base\BaseRenderer.cpp">
+      <Filter>Source Files\Renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="base\App.cpp">
+      <Filter>Source Files\Application</Filter>
+    </ClCompile>
+    <ClCompile Include="base\GltfModel.cpp">
+      <Filter>Source Files\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="base\ImageParameterPack.cpp">
+      <Filter>Source Files\Vk</Filter>
+    </ClCompile>
+    <ClCompile Include="base\VkDescriptorManagerV0.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="base\VkSamplerFactory.cpp">
+      <Filter>Source Files\Vk</Filter>
+    </ClCompile>
+    <ClCompile Include="base\VkImgViewFactory.cpp">
       <Filter>Source Files\Vk</Filter>
     </ClCompile>
   </ItemGroup>
@@ -428,10 +446,10 @@
       <Filter>Header Files\ImGui</Filter>
     </ClInclude>
     <ClInclude Include="base\include\VkImageFactory.h">
-      <Filter>Header Files\VkCore\Image</Filter>
+      <Filter>Header Files\VkCore\Texture\Image</Filter>
     </ClInclude>
     <ClInclude Include="base\include\VkImageBase.h">
-      <Filter>Header Files\VkCore\Image</Filter>
+      <Filter>Header Files\VkCore\Texture\Image</Filter>
     </ClInclude>
     <ClInclude Include="base\include\VkSynObjectFactory.h">
       <Filter>Header Files\VkCore\SynObject</Filter>
@@ -485,7 +503,7 @@
       <Filter>Header Files\VkCore\Manager</Filter>
     </ClInclude>
     <ClInclude Include="base\include\VkImageBundle.h">
-      <Filter>Header Files\VkCore\Image</Filter>
+      <Filter>Header Files\VkCore\Texture\Image</Filter>
     </ClInclude>
     <ClInclude Include="base\include\VkTextureFactory.h">
       <Filter>Header Files\VkCore\Texture</Filter>
@@ -503,7 +521,7 @@
       <Filter>Header Files\VkCore\Buffer</Filter>
     </ClInclude>
     <ClInclude Include="base\include\VkSwapchainImage.h">
-      <Filter>Header Files\VkCore\Image\Images</Filter>
+      <Filter>Header Files\VkCore\Texture\Image\Images</Filter>
     </ClInclude>
     <ClInclude Include="base\include\VkExtensionUtility.h">
       <Filter>Header Files\VkCore\Utility</Filter>
@@ -548,7 +566,7 @@
       <Filter>Header Files\VkCore\Model</Filter>
     </ClInclude>
     <ClInclude Include="base\include\VkGeneralPurposeImage.h">
-      <Filter>Header Files\VkCore\Image\Images</Filter>
+      <Filter>Header Files\VkCore\Texture\Image\Images</Filter>
     </ClInclude>
     <ClInclude Include="base\include\VkShaderWrapper.h">
       <Filter>Header Files\VkCore\Shaders</Filter>
@@ -556,14 +574,11 @@
     <ClInclude Include="base\include\Bindable.h">
       <Filter>Header Files\Bindable</Filter>
     </ClInclude>
-    <ClInclude Include="base\include\VkBufferCI.h">
-      <Filter>Header Files\VkCore\Buffer</Filter>
-    </ClInclude>
     <ClInclude Include="base\include\VkStagingBuffer.h">
       <Filter>Header Files\VkCore\Buffer\Useless</Filter>
     </ClInclude>
     <ClInclude Include="base\include\ImageParameterPack.h">
-      <Filter>Header Files\VkCore\Image</Filter>
+      <Filter>Header Files\VkCore\Texture\Image</Filter>
     </ClInclude>
     <ClInclude Include="base\include\VkMath.h">
       <Filter>Header Files\VkCore\Math</Filter>
@@ -588,6 +603,21 @@
     </ClInclude>
     <ClInclude Include="base\include\PbrMaterialMetallic.h">
       <Filter>Header Files\VkCore\Material</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\VkShaderFactory.h">
+      <Filter>Header Files\VkCore\Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\VkDescriptorManagerV0.h">
+      <Filter>Header Files\VkCore\Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\VkImgViewFactory.h">
+      <Filter>Header Files\VkCore\Texture\ImageView</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\VkSamplerFactory.h">
+      <Filter>Header Files\VkCore\Texture\Sampler</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\VkBufferCI.h">
+      <Filter>Header Files\VkCore\Buffer\Useless</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

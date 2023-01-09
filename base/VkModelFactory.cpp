@@ -11,6 +11,15 @@ VkModelFactory::VkModelFactory(VkGraphicsComponent &gfx_, const VkTextureFactory
 {
 }
 
+VkModelFactory::GltfModelPack::GltfModelPack(std::string path_, const tinygltf::Model &input_, const LoadingOption option_) :
+    path(std::move(path_)),
+    input(input_),
+    option(option_)
+{
+	const size_t pos = path.find_last_of('/');
+	model_directory  = path.substr(0, pos);
+}
+
 bool VkModelFactory::LoadglTFFile(const std::string &path, tinygltf::Model &glTFInput)
 {
 	tinygltf::TinyGLTF gltfContext;
@@ -39,7 +48,7 @@ void VkModelFactory::LoadMaterials(GltfModelPack &model) const
 		//TODO:
 
 		std::shared_ptr<PbrMaterialMetallic> mat{std::make_shared<PbrMaterialMetallic>(gfx)};
-		const tinygltf::Material&              glTFMaterial = input.materials[i];
+		const tinygltf::Material &           glTFMaterial = input.materials[i];
 
 		//BASE COLOR TEXTURE
 		if (glTFMaterial.values.contains("baseColorFactor"))
@@ -164,23 +173,24 @@ void VkModelFactory::LoadImages(GltfModelPack &model) const
 
 		const tinygltf::Image &glTFImage = input.images[i];
 
-			//"../../data/models/FlightHelmet/FlightHelmet.gltf"
+		//"../../data/models/FlightHelmet/FlightHelmet.gltf"
 		const std::string path           = model.model_directory + "/" + glTFImage.uri;
 		const size_t      pos            = glTFImage.uri.find_last_of('.');
 		auto              file_extension = glTFImage.uri.substr(pos + 1, glTFImage.uri.size());
 
 		//tinygltf不会帮我们加载ktx文件格式
-		if ("ktx" == file_extension || (model.option & LoadingOption::LoadingImgByOurselves) || !GltfHadLoadedImg(glTFImage))
+		if ("ktx" == file_extension || (model.option & LoadingOption::LoadingImgByOurselves) || !TestIfGltfHadLoadedImg(glTFImage))
 		{
-			VkTextureFactory::SamplerPP sampler_para;
-			images[i] = texture_factory.ProduceTexture(path, format_of_image, sampler_para);
+			auto sampler_CI  = SamplerCI::PopulateTexSamplerCI();
+			auto img_view_CI = ImgViewCI::PopulateTextureImgViewCI(format_of_image);
+			images[i]        = texture_factory.ProduceTextureFromImgPath(path, format_of_image, sampler_CI, img_view_CI, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 		}
 		// 用tinygltf加载的格式。Load texture from image buffer
 		else
 		{
 			// Get the image data from the glTF loader
-			unsigned char *buffer       = nullptr;
-			VkDeviceSize   bufferSize   = 0;
+			unsigned char *buffer        = nullptr;
+			VkDeviceSize   bufferSize    = 0;
 			bool           delete_buffer = false;
 			// If it's an RGB image (3 components), we convert it to RGBA as most Vulkan implementations don't support 8-Bit RGB-only formats
 			if (glTFImage.component == 3)
@@ -208,9 +218,11 @@ void VkModelFactory::LoadImages(GltfModelPack &model) const
 			assert(glTFImage.width > 0);
 			assert(glTFImage.height > 0);
 
-			VkTextureFactory::TexturePP texture_pp{buffer, format_of_image, uint32_t(glTFImage.width), uint32_t(glTFImage.height)};
-			VkTextureFactory::SamplerPP sampler_para;
-			images[i] = texture_factory.ProduceTexture(texture_pp, sampler_para);
+			auto         sampler_CI  = SamplerCI::PopulateTexSamplerCI();
+			auto         img_view_CI = ImgViewCI::PopulateTextureImgViewCI(format_of_image);
+			TextureImgPP tex_img_pp{path, format_of_image, VkExtent3D(uint32_t(glTFImage.width), uint32_t(glTFImage.height), 1)};
+
+			images[i] = texture_factory.ProduceTextureFromBuffer(tex_img_pp, sampler_CI, img_view_CI, buffer, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
 			if (delete_buffer)
 			{
@@ -230,8 +242,9 @@ void VkModelFactory::LoadNode(const size_t current_node_index_in_glft, int paren
 
 	auto &                nodes                = model.nodes;
 	const tinygltf::Node &current_node_in_gltf = input.nodes[current_node_index_in_glft];
-	auto &                index_type           = model.index_type;
+	auto                 index_type           = model.index_type_of_cpu_buffer;
 
+	assert(model.index_type_of_cpu_buffer == VK_INDEX_TYPE_UINT32);
 	///BUGS:vector push back results in memory address changed!! solved
 	nodes.emplace_back();
 	int current_node_index = static_cast<int>(nodes.size() - 1);
@@ -336,7 +349,7 @@ void VkModelFactory::LoadNode(const size_t current_node_index_in_glft, int paren
 					vert.tangent = tangentsBuffer ? glm::make_vec4(&tangentsBuffer[v * 4]) : glm::vec4(0.0f);
 					vert.pos     = glm::vec4(glm::make_vec3(&positionBuffer[v * 3]), 1.0f);
 					vert.normal  = glm::normalize(glm::vec3(normalsBuffer ? glm::make_vec3(&normalsBuffer[v * 3]) : glm::vec3(0.0f)));
-					vert.color = glm::vec3(1.0f);
+					vert.color   = glm::vec3(1.0f);
 					vert.uv      = texCoordsBuffer ? glm::make_vec2(&texCoordsBuffer[v * 2]) : glm::vec2(0.0f);
 					//vert.color = materials[glTFPrimitive.material].baseColorFactor;
 					vertex_buffer_cpu.push_back(vert);
@@ -411,7 +424,7 @@ void VkModelFactory::LoadNode(const size_t current_node_index_in_glft, int paren
 	}
 }
 
-void VkModelFactory::LoadVertexAndIndexIntoGpuBuffer(GltfModelPack &model) const
+void VkModelFactory::LoadVertAndIndxIntoGpuBuffer(GltfModelPack &model) const
 {
 	const auto &index_buffer_cpu  = model.index_buffer_cpu;
 	const auto &vertex_buffer_cpu = model.vertex_buffer_cpu;
@@ -427,7 +440,7 @@ void VkModelFactory::LoadVertexAndIndexIntoGpuBuffer(GltfModelPack &model) const
 		constexpr VkBufferCI::StagingBuffer staging_para_pack;
 		const auto                          staging_buffer = buffer_factory.ProduceBuffer(vertex_buffer_size, staging_para_pack);
 
-		staging_buffer->CopyTo(vertex_buffer_cpu.data(), vertex_buffer_size);
+		staging_buffer->CopyFrom(vertex_buffer_cpu.data(), vertex_buffer_size);
 
 		constexpr VkBufferCI::VertexBuffer vertex_para_pack;
 		vertices_gpu.buffer = buffer_factory.ProduceBuffer(vertex_buffer_size, vertex_para_pack);
@@ -440,12 +453,11 @@ void VkModelFactory::LoadVertexAndIndexIntoGpuBuffer(GltfModelPack &model) const
 	{
 		//TODO:这里的size
 		const VkDeviceSize index_buffer_size = sizeof(uint32_t) * index_buffer_cpu.size();
-		;
 
 		constexpr VkBufferCI::StagingBuffer staging_para_pack;
 		const auto                          staging_buffer = buffer_factory.ProduceBuffer(index_buffer_size, staging_para_pack);
 
-		staging_buffer->CopyTo(index_buffer_cpu.data(), index_buffer_size);
+		staging_buffer->CopyFrom(index_buffer_cpu.data(), index_buffer_size);
 
 		constexpr VkBufferCI::IndexBuffer index_para_pack;
 		indices_gpu.buffer = buffer_factory.ProduceBuffer(index_buffer_size, index_para_pack);
@@ -455,7 +467,7 @@ void VkModelFactory::LoadVertexAndIndexIntoGpuBuffer(GltfModelPack &model) const
 	}
 }
 
-bool VkModelFactory::GltfHadLoadedImg(const tinygltf::Image &glTFImage)
+bool VkModelFactory::TestIfGltfHadLoadedImg(const tinygltf::Image &glTFImage)
 {
 	const unsigned char *buffer = glTFImage.image.data();
 

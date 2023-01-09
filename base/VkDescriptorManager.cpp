@@ -1,19 +1,24 @@
 #include "VkDescriptorManager.h"
 
-uint32_t VkDescriptorSetBundle::GetBundleCount() const
-{
-	return bundle_count;
-}
-
-const VkDescriptorSet &VkDescriptorSetBundle::operator[](size_t index) const
-{
-	return descriptor_set_bundle[index];
-}
-
-const std::vector<VkDescriptorSet> & VkDescriptorSetBundle::GetDescriptorSetArray() const
-{
-	return descriptor_set_bundle;
-}
+//uint32_t VkDescriptorSetBundle::GetBundleCount() const
+//{
+//	return bundle_count;
+//}
+//
+//const VkDescriptorSet &VkDescriptorSetBundle::operator[](size_t index) const
+//{
+//	return descriptor_set_bundle[index];
+//}
+//
+//const VkDescriptorSet &VkDescriptorSetBundle::GetOne(size_t index) const
+//{
+//	return descriptor_set_bundle[index];
+//}
+//
+//const std::vector<VkDescriptorSet> &VkDescriptorSetBundle::GetDescriptorSetArray() const
+//{
+//	return descriptor_set_bundle;
+//}
 
 VkDescriptorManager::VkDescriptorManager(VkGraphicsComponent &_gfx) :
     gfx(_gfx), device_manager(gfx.DeviceMan())
@@ -32,11 +37,6 @@ VkDescriptorManager::~VkDescriptorManager()
 		vkDestroyDescriptorSetLayout(device_manager.GetLogicalDevice(), layout.second.set_layout, nullptr);
 	}
 }
-
-
-
-
-
 
 void VkDescriptorManager::AddDescriptorPool(const DescriptorPoolMetaInfo pool_meta_info, std::vector<std::pair<VkDescriptorType, uint32_t>> info_pairs, uint32_t max_sets)
 {
@@ -65,13 +65,9 @@ void VkDescriptorManager::AddDescriptorPool(const DescriptorPoolMetaInfo pool_me
 	//max number of descriptor sets that can be allocated from this pool
 	descriptor_pool_CI.maxSets = static_cast<uint32_t>(max_sets);
 
-
-
-	VK_CHECK_RESULT(vkCreateDescriptorPool(device_manager.GetLogicalDevice(), &descriptor_pool_CI, nullptr, &result.descriptor_pool)) 
+	VK_CHECK_RESULT(vkCreateDescriptorPool(device_manager.GetLogicalDevice(), &descriptor_pool_CI, nullptr, &result.descriptor_pool))
 
 	descriptor_pools.emplace(pool_meta_info, std::move(result));
-
-
 }
 
 const VkDescriptorPool &VkDescriptorManager::GetPool(const DescriptorPoolMetaInfo pool_meta_info) const
@@ -214,9 +210,6 @@ VkDescriptorPoolSize VkDescriptorManager::GetOneDescriptorPoolSizeDescription(Vk
 	return result;
 }
 
-
-
-
 VkDescriptorPoolCreateInfo VkDescriptorManager::GetDescriptorPoolCI(const std::vector<VkDescriptorPoolSize> &pool_sizes, uint32_t max_sets)
 {
 	VkDescriptorPoolCreateInfo descriptor_pool_CI{};
@@ -226,8 +219,6 @@ VkDescriptorPoolCreateInfo VkDescriptorManager::GetDescriptorPoolCI(const std::v
 	descriptor_pool_CI.maxSets       = max_sets;
 	return descriptor_pool_CI;
 }
-
-
 
 VkDescriptorSetLayoutBinding VkDescriptorManager::GetDescriptorLayoutBindingDescriptions(uint32_t binding, VkDescriptorType type, VkShaderStageFlags stage_flags, uint32_t descriptor_count)
 {

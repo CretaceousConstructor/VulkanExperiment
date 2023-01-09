@@ -4,12 +4,7 @@ VkShaderWrapper::VkShaderWrapper(const ParameterPack &para_pack, VkGraphicsCompo
     device_manager(gfx_.DeviceMan()), binding_stage(para_pack.binding_stage), entry_point(para_pack.entry_point)
 
 {
-
-
-
-
 	const auto shader_code = ReadFile(para_pack.shader_path);
-
 	CreateShaderModule(shader_code);
 }
 
@@ -19,6 +14,13 @@ VkShaderWrapper::VkShaderWrapper(VkShaderStageFlagBits binding_stage, std::strin
 {
 	const auto shader_code = ReadFile(shader_path);
 	CreateShaderModule(shader_code);
+
+
+}
+
+VkShaderWrapper::VkShaderWrapper(VkShaderStageFlagBits binding_stage_, const std::string &shader_path_, VkShaderModule shader_module_, VkGraphicsComponent &gfx_) :
+    device_manager(gfx_.DeviceMan()), shader_module(shader_module_), binding_stage(binding_stage_), shader_path(shader_path_)
+{
 }
 
 VkShaderWrapper::~VkShaderWrapper()
@@ -60,16 +62,12 @@ void VkShaderWrapper::CreateShaderModule(const std::vector<char> &code)
 	create_info.pCode    = reinterpret_cast<const uint32_t *>(code.data());
 	//Lucky for us, the data is stored in an std::vector where the default allocator already ensures that the data satisfies the worst case ALIGNMENT requirements.
 
-	if (vkCreateShaderModule(device_manager.GetLogicalDevice(), &create_info, nullptr, &shader_module) != VK_SUCCESS)
-	{
-		throw std::runtime_error("failed to create shader module!");
-	}
+	VK_CHECK_RESULT(vkCreateShaderModule(device_manager.GetLogicalDevice(), &create_info, nullptr, &shader_module))
 }
 
 VkPipelineShaderStageCreateInfo VkShaderWrapper::GetShaderStageCI() const
 {
 	VkPipelineShaderStageCreateInfo shader_stage_create_info{};
-	shader_stage_create_info        = VkPipelineShaderStageCreateInfo{};
 	shader_stage_create_info.sType  = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 	shader_stage_create_info.stage  = binding_stage;
 	shader_stage_create_info.module = shader_module;

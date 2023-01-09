@@ -4,9 +4,14 @@
 #include "VkDescriptorManager.h"
 #include "VkImageFactory.h"
 #include "VkModelFactory.h"
-#include "VkSubpassFactory.h"
+//#include "VkSubpassFactory.h"
 #include "VkSynObjectFactory.h"
 #include "VkTextureFactory.h"
+#include "VkShaderFactory.h"
+#include  "VkSamplerFactory.h"
+#include "VkImgViewFactory.h"
+
+
 class VkFactoryBundle
 {
 	friend class VkRenderpassManager;
@@ -24,6 +29,9 @@ class VkFactoryBundle
 	VkImageFactory         image_factory;
 	VkSynObjectFactory     syn_obj_factory;
 	VkDescriptorSetFactory descriptor_set_factory;
+	VkShaderFactory        shader_factory;
+	VkImgViewFactory       img_view_factory;
+	VkSamplerFactory       sampler_factory;
 	VkTextureFactory       texture_factory;
 	VkModelFactory         model_factory;
 };

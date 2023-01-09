@@ -6,7 +6,7 @@
 class VkGeneralPurposeImage : public VkImageBase
 {
   public:
-	VkGeneralPurposeImage(VkGraphicsComponent &_gfx, const VkImage _image, const VkDeviceMemory _image_mem, const VkImageView _image_view, std::shared_ptr<ImagePP> para_pack);
+	VkGeneralPurposeImage(VkGraphicsComponent &_gfx, const VkImage _image, const VkDeviceMemory _image_mem,  std::shared_ptr<ImagePP> para_pack);
 
 	~VkGeneralPurposeImage() override;
 

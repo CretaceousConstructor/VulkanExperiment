@@ -1,125 +1,176 @@
 #include "Renderpass0.h"
-using namespace SceneLoading;
-
-Renderpass0::Renderpass0(VkGraphicsComponent &gfx_, VkRenderpassManager &renderpass_manager_, SceneLoading::CommonResources &common_resources_) :
-    VkRenderpassBase(gfx_, renderpass_manager_), pass0_pipeline_pack(gfx), swapchain_manager(gfx.SwapchainMan()), common_resources(common_resources_)
+using namespace Global;
+using namespace Vk;
+Renderpass0::Renderpass0(VkGraphicsComponent &gfx_, VkRenderpassManager &renderpass_manager_, Global::Resources &common_resources_) :
+    VkRenderpassBase(gfx_, renderpass_manager_), pass0_pipeline_PP(gfx), device_manager(gfx.DeviceMan()), swapchain_manager(gfx.SwapchainMan()), global_resources(common_resources_)
 {
-
-
 }
 
 void Renderpass0::ResourceInit()
 {
-	return;
+
+
+
+	auto test  = glm::perspectiveRH_ZO(glm::radians(90.), 0.5, 0.1, 10.);
+	/**********************************texture***********************************/
+	{
+		const auto &texture_factory = renderpass_manager.GetTextureFactory();
+
+		const auto cubemap_sampler_CI{SamplerCI::PopulateCubeTexSamplerCI()};
+
+		const auto img_view_CI = ImgViewCI::PopulateCubeMapImgViewCI(VK_FORMAT_R16G16B16A16_SFLOAT);
+
+		texture_factory.ResetTexSampler(cubemap_sampler_CI, *global_resources.cube_mapping);
+		texture_factory.ResetTexImgView(img_view_CI, *global_resources.cube_mapping);
+	}
+
+	/**********************************texture***********************************/
+	{
+		const auto &texture_factory = renderpass_manager.GetTextureFactory();
+		const std::string cube_map{"../../data/textures/cubemap_yokohama_rgba.ktx"};
+		const auto cubemap_sampler_CI{SamplerCI::PopulateCubeTexSamplerCI()};
+		const auto img_view_CI{ImgViewCI::PopulateCubeMapImgViewCI(VK_FORMAT_R8G8B8A8_SRGB)};
+		cube_mapping = texture_factory.ProduceTextureFromImgPath(cube_map, VK_FORMAT_R8G8B8A8_SRGB, cubemap_sampler_CI, img_view_CI, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+
+
+	}
+}
+
+void Renderpass0::CreateLocalCommandBuffers()
+{
+}
+
+void Renderpass0::CreateDescriptorSetPools()
+{
+	/**********************************descriptor pool***********************************/
+	const std::vector desc_pool_sizes{
+	    Vk::GetOneDescriptorPoolSizeDescription(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, Vk::DescriptorCount<1>),
+	    Vk::GetOneDescriptorPoolSizeDescription(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, Vk::DescriptorCount<1>)};
+	const auto desc_pool_CI = Vk::GetDescriptorPoolCI(desc_pool_sizes, swapchain_manager.GetSwapImageCount());
+
+	local_descriptor_pool = renderpass_manager.GetDescriptorManagerV0().ProduceDescriptorPoolUnsafe(desc_pool_CI);
 }
 
 void Renderpass0::CreateDescriptorSetLayout()
 {
-	auto &des_man = renderpass_manager.GetDescriptorManager();
 	//LAYOUT FOR SET 0
-	// Descriptor set layout for passing matrices
 	{
-		std::vector<VkDescriptorSetLayoutBinding> layout_bindings_matrix;
-		const VkDescriptorSetLayoutBinding        temp_binding{Vk::GetDescriptorSetLayoutBinding(Vk::Binding<0>, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)};
-		layout_bindings_matrix.push_back(temp_binding);
+		// Descriptor for passing matrices
+		const auto binding0{Vk::GetDescriptorSetLayoutBinding(Vk::Binding<0>, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)};
+		//cube mapping
+		const auto binding1{Vk::GetDescriptorSetLayoutBinding(Vk::Binding<1>, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)};
 
-		des_man.AddDescriptorSetLayout(Common::des_set_layout_matrices, std::move(layout_bindings_matrix));
+		const std::vector bindings{binding0, binding1};
+
+		const auto desc_set_layout_CI = Vk::GetDescriptorSetLayoutCI(bindings);
+		local_descriptor_set_layout   = renderpass_manager.GetDescriptorManagerV0().ProduceDescriptorSetLayoutUnsafe(desc_set_layout_CI);
 	}
 }
 
-void Renderpass0::CreateDescriptorSetsThenUpdate()
+void Renderpass0::CreateDescriptorSets()
 {
-	auto &des_man = renderpass_manager.GetDescriptorManager();
+	const auto &desciptor_set_factory = renderpass_manager.GetDescriptorSetFactory();
 	//set = 0
-	//Descriptor sets for vs matrix
 	{
-		des_man.AddDescriptorSetBundle(Common::des_set_matrices, swapchain_manager.GetSwapImageCount());
-		des_man.UpdateDescriptorSet(*common_resources.ubo_matrix_gpu, Common::des_set_matrices, 0);
+		descriptor_set_bundle = desciptor_set_factory.ProduceDescriptorSetBundle(local_descriptor_pool, local_descriptor_set_layout, Vk::BundleSize<SWAP_IMG_COUNT>);
 	}
+}
+
+std::vector<VkAttachmentInfo> Renderpass0::SelectAttachments(std::optional<size_t> current_image)
+{
+	return {};
+}
+
+void Renderpass0::CreateGraphicsPipeline()
+{
+	return;
 }
 
 void Renderpass0::CreateAttachments()
 {
-	//swapchain attachment index 0
-	VkAttachmentInfo color_attachment{common_resources.swapchain_images->GetImagesArray()};
-	auto &           attachment_dec_color = color_attachment.attachment_description;
-	attachment_dec_color.format           = swapchain_manager.GetSwapChainImageFormat();
-	attachment_dec_color.samples          = VK_SAMPLE_COUNT_1_BIT;
-	attachment_dec_color.loadOp           = VK_ATTACHMENT_LOAD_OP_CLEAR;
-	attachment_dec_color.storeOp          = VK_ATTACHMENT_STORE_OP_STORE;
-	attachment_dec_color.stencilLoadOp    = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-	attachment_dec_color.stencilStoreOp   = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-	attachment_dec_color.initialLayout    = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-	color_attachment.inpass_layout        = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-	attachment_dec_color.finalLayout      = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-	color_attachment.attachment_index     = 0;
-	color_attachment.type                 = VkAttachmentInfo::AttachmentType::ColorAttachment;
-	color_attachment.clear_value.color    = {0.0f, 0.0f, 0.0f, 1.0f};
+	const VkAttachmentInfo::Memento color_attachment{
+	    .format           = swapchain_manager.GetSwapChainImageFormat(),
+	    .attachment_index = Vk::AttachmentIndex<0>,
 
-	//Depth attachment index 1
-	VkAttachmentInfo depth_attachment{common_resources.depth_attachments->GetImagesArray()};
-	auto &           attachment_dec_depth = depth_attachment.attachment_description;
-	attachment_dec_depth.format           = swapchain_manager.FindDepthFormat();
-	attachment_dec_depth.samples          = VK_SAMPLE_COUNT_1_BIT;
-	attachment_dec_depth.loadOp           = VK_ATTACHMENT_LOAD_OP_CLEAR;
-	attachment_dec_depth.storeOp          = VK_ATTACHMENT_STORE_OP_STORE;
-	attachment_dec_depth.stencilLoadOp    = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-	attachment_dec_depth.stencilStoreOp   = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-	//attachment_dec_depth.initialLayout        = VK_IMAGE_LAYOUT_UNDEFINED;
-	attachment_dec_depth.initialLayout        = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-	attachment_dec_depth.finalLayout          = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-	depth_attachment.inpass_layout            = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-	depth_attachment.attachment_index         = 1;
-	depth_attachment.type                     = VkAttachmentInfo::AttachmentType::DepthAttachment;
-	depth_attachment.clear_value.depthStencil = {1.0f, 0};
+	    .loadOp  = VK_ATTACHMENT_LOAD_OP_CLEAR,
+	    .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
 
-	//TODO:COPY CONTROL
-	attachments.push_back(color_attachment);
-	attachments.push_back(depth_attachment);
+	    .layout_prepass   = VK_IMAGE_LAYOUT_UNDEFINED,
+	    .layout_inpass    = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+	    .layout_afterpass = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+
+	    .type        = VkAttachmentInfo::Type::ColorAttachment,
+	    .clear_value = VkClearValue{.color{0.0f, 0.0f, 0.0f, 1.0f}},
+	};
+	color_attachments_infos = VkAttachmentInfo::GetAttachmentInfos(color_attachment, global_resources.swapchain_attachments);
+
+	const VkAttachmentInfo::Memento depth_attachment{
+	    .format           = swapchain_manager.FindDepthFormat(),
+	    .attachment_index = Vk::AttachmentIndex<1>,
+
+	    .loadOp  = VK_ATTACHMENT_LOAD_OP_CLEAR,
+	    .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+
+	    .layout_prepass   = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+	    .layout_inpass    = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+	    .layout_afterpass = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+
+	    .type        = VkAttachmentInfo::Type::DepthAttachment,
+	    .clear_value = VkClearValue{.depthStencil{1.0f, 0}}};
+	depth_attachments_infos = VkAttachmentInfo::GetAttachmentInfos(depth_attachment, global_resources.depth_attachments);
 }
 
 void Renderpass0::CreateGraphicsPipelineLayout()
 {
-	//PIPELINELAYOUT FOR LIGHT INDICATOR
 }
 
-void Renderpass0::CompileShaders()
+void Renderpass0::CreateShaders()
 {
-	system("..\\..\\data\\shaderbat\\SceneLoadingCompile.bat");
+	const auto &shader_factory = renderpass_manager.GetShaderFactory();
 
-	model_vertex_shader   = std::make_shared<VkShaderWrapper>(VK_SHADER_STAGE_VERTEX_BIT, std::string("../../data/shaders/SceneLoading/SceneLoading_vertex_shader.spv"), gfx);
-	model_fragment_shader = std::make_shared<VkShaderWrapper>(VK_SHADER_STAGE_FRAGMENT_BIT, std::string("../../data/shaders/SceneLoading/SceneLoading_fragment_shader.spv"), gfx);
+	model_vertex_shader   = shader_factory.GetShader(std::string("../../data/shaders/SceneLoading/SkyBox_vert.hlsl"), VK_SHADER_STAGE_VERTEX_BIT);
+	model_fragment_shader = shader_factory.GetShader(std::string("../../data/shaders/SceneLoading/SkyBox_frag.hlsl"), VK_SHADER_STAGE_FRAGMENT_BIT);
 }
 
 void Renderpass0::ExecuteRenderpass(const std::vector<VkCommandBuffer> &command_buffers)
 {
-	const auto &des_man      = renderpass_manager.GetDescriptorManager();
 	const auto &pipe_builder = renderpass_manager.GetPipelineBuilder();
 
-	const auto &descriptor_sets_for_matrices = des_man.GetDescriptorSetBundle(Common::des_set_matrices);
-	const auto &descriptor_set_layout        = des_man.GetSetLayout(Common::des_set_layout_matrices);
+	//const auto &descriptor_sets_for_matrices = des_man.GetDescriptorSetBundle(Common::des_set_matrices);
+	//const auto &descriptor_set_layout        = des_man.GetSetLayout(Common::des_set_layout_matrices);
 
-	const std::vector<VkDescriptorSetLayout>           common_layouts{descriptor_set_layout};
+	const std::vector<VkDescriptorSetLayout>           common_layouts{local_descriptor_set_layout};
 	const std::vector<VkPipelineShaderStageCreateInfo> shader_stages{model_vertex_shader->GetShaderStageCI(), model_fragment_shader->GetShaderStageCI()};
-	pass0_pipeline_pack.shader_stage_CI  = shader_stages;
-	pass0_pipeline_pack.attachment_infos = attachments;
 
-	common_resources.damaged_helmet->ProcessMaterial(common_layouts, pass0_pipeline_pack, pipe_builder,{});
+	pass0_pipeline_PP.SetPipelineShaderStageCreateInfo(shader_stages);
+	pass0_pipeline_PP.SetDynamicRenderingAttachmentFormats(
+	    {color_attachments_infos.GetAttachmentFormatAndType(),
+	     depth_attachments_infos.GetAttachmentFormatAndType()}
+	);
+	pass0_pipeline_PP.rasterization_state_CI.cullMode = VK_CULL_MODE_FRONT_BIT;
+	pass0_pipeline_PP.rasterization_state_CI.frontFace = VK_FRONT_FACE_CLOCKWISE;
+
+
+
+	global_resources.sky_box->ProcessMaterial(common_layouts, pass0_pipeline_PP, pipe_builder, {});
 
 	for (size_t i = 0; i < command_buffers.size(); i++)
 	{
-		vkCmdBindDescriptorSets(command_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, common_resources.damaged_helmet->GetPipelineLayout(), 0, 1, &descriptor_sets_for_matrices[i], 0, NULL);
+		vkCmdBindDescriptorSets(command_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, global_resources.sky_box->GetPipelineLayout(), 0, 1, &descriptor_set_bundle[i], 0, NULL);
 
-		common_resources.damaged_helmet->Draw(command_buffers[i]);
+		global_resources.sky_box->DrawStatically(command_buffers[i]);
 	}
 
 	//vkCmdBindPipeline(graphics_command_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline_light_indicator);
 	//auto transform_light_indicator = light_indicator->GetTransform();
 	//auto mat_light_indicator       = transform_light_indicator.GetLocalToWorldMatrix();
 	//vkCmdPushConstants(graphics_command_buffers[i], pipeline_layout_light_indicator, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &mat_light_indicator);
-	//light_indicator->Draw(graphics_command_buffers[i]);
+	//light_indicator->DrawStatically(graphics_command_buffers[i]);
 
-	common_resources.damaged_helmet->CleanUpMaterial();
+
+
+
+
 }
 
 void Renderpass0::EndRenderpass(const std::vector<VkCommandBuffer> &command_buffers)
@@ -133,40 +184,54 @@ void Renderpass0::EndRenderpass(const std::vector<VkCommandBuffer> &command_buff
 
 void Renderpass0::UpdateResources(size_t currentImage)
 {
+
+
+
 }
 
-void Renderpass0::LayoutTransitionStartOfRendering(VkCommandBuffer cmd_buffer, size_t image_index) const
+void Renderpass0::UpdateDescriptorSets()
 {
-	auto &                     color_attachments     = attachments[0].GetImages();
-	const auto &               color_attachment_info = attachments[0];
-	const VkImageMemoryBarrier image_memory_barrier{
-	    .srcAccessMask = 0,
-	    .dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-	    .oldLayout     = color_attachment_info.attachment_description.finalLayout,
-	    .newLayout     = color_attachment_info.inpass_layout,
+	VkDescriptorManager::UpdateDescriptorSet(device_manager.GetLogicalDevice(), global_resources.matrix_buffer_gpu, descriptor_set_bundle, Vk::Binding<0>);
+	//VkDescriptorManager::UpdateDescriptorSet(device_manager.GetLogicalDevice(), *global_resources.cube_mapping, descriptor_set_bundle, Vk::Binding<1>);
+	VkDescriptorManager::UpdateDescriptorSet(device_manager.GetLogicalDevice(), *cube_mapping, descriptor_set_bundle, Vk::Binding<1>);
+}
+
+void Renderpass0::LayoutTransitionStartOfRendering(VkCommandBuffer cmd_buffer, std::optional<size_t> image_index)
+{
+	const Sync::VkImageMemoryBarrierEnhanced image_memory_barrier_enhanced{
+	    .srcAccessMask = VK_ACCESS_NONE,
+	    .srcStageMask  = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+	    .oldLayout     = color_attachments_infos[image_index.value()].GetInfo().layout_prepass,
+
+	    .dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT,
+	    .dstStageMask  = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+	    .newLayout     = color_attachments_infos[image_index.value()].GetInfo().layout_inpass,
+
+	    .subresource_range = std::nullopt,
 	};
-
-	color_attachments[image_index]->InsertImageMemoryBarrier(cmd_buffer, image_memory_barrier, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
+	color_attachments_infos[image_index.value()].GetTex().InsertImageMemoryBarrier(cmd_buffer, image_memory_barrier_enhanced);
 }
 
-void Renderpass0::LayoutTransitionEndOfRendering(VkCommandBuffer cmd_buffer, size_t image_index) const
+void Renderpass0::LayoutTransitionEndOfRendering(VkCommandBuffer cmd_buffer, std::optional<size_t> image_index)
 {
-	auto &                     color_attachments     = attachments[0].GetImages();
-	const auto &               color_attachment_info = attachments[0];
-	const VkImageMemoryBarrier image_memory_barrier{
+	const Sync::VkImageMemoryBarrierEnhanced image_memory_barrier_enhanced{
 	    .srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-	    .dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-	    .oldLayout     = color_attachment_info.inpass_layout,
-	    .newLayout     = color_attachment_info.inpass_layout,
-	    //.newLayout     = color_attachment_info.attachment_description.finalLayout,
-	};
+	    .srcStageMask  = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+	    .oldLayout     = color_attachments_infos[image_index.value()].GetInfo().layout_inpass,
 
-	color_attachments[image_index]->InsertImageMemoryBarrier(cmd_buffer, image_memory_barrier, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT);
+	    .dstAccessMask = VK_ACCESS_NONE,
+	    .dstStageMask  = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
+	    .newLayout     = color_attachments_infos[image_index.value()].GetInfo().layout_afterpass,
+
+	    .subresource_range = std::nullopt,
+	};
+	color_attachments_infos[image_index.value()].GetTex().InsertImageMemoryBarrier(cmd_buffer, image_memory_barrier_enhanced);
+
 }
 
 void Renderpass0::BeginRenderpass(const std::vector<VkCommandBuffer> &command_buffers)
 {
-	for (size_t i = 0; i < command_buffers.size(); i++)
+	for (size_t image_index = 0; image_index < command_buffers.size(); image_index++)
 	{
 		VkRenderingInfo rendering_info{};
 		rendering_info.sType             = VK_STRUCTURE_TYPE_RENDERING_INFO;
@@ -178,27 +243,15 @@ void Renderpass0::BeginRenderpass(const std::vector<VkCommandBuffer> &command_bu
 		std::vector<VkRenderingAttachmentInfo> color_attachment_infos;
 		VkRenderingAttachmentInfo              depth_attachment_info;
 		VkRenderingAttachmentInfo              stensil_attachment_info;
-		for (auto &attchment : attachments)
-		{
-			if (VkAttachmentInfo::AttachmentType::ColorAttachment == attchment.type)
-			{
-				color_attachment_infos.push_back(attchment.GetRenderingAttachmentInfo(i));
-			}
 
-			if (VkAttachmentInfo::AttachmentType::DepthAttachment == attchment.type)
-			{
-				depth_attachment_info           = attchment.GetRenderingAttachmentInfo(i);
-				rendering_info.pDepthAttachment = &depth_attachment_info;
-			}
-		}
+		VkAttachment::AddRenderingAttachmentInfo(color_attachment_infos, depth_attachment_info, stensil_attachment_info, image_index, color_attachments_infos, depth_attachments_infos);
 
 		rendering_info.colorAttachmentCount = static_cast<uint32_t>(color_attachment_infos.size());
 		rendering_info.pColorAttachments    = color_attachment_infos.data();
+		rendering_info.pDepthAttachment     = &depth_attachment_info;
+		rendering_info.pStencilAttachment   = nullptr;
 
-		LayoutTransitionStartOfRendering(command_buffers[i], i);
-		vkCmdBeginRendering(command_buffers[i], &rendering_info);
+		LayoutTransitionStartOfRendering(command_buffers[image_index], image_index);
+		vkCmdBeginRendering(command_buffers[image_index], &rendering_info);
 	}
-
-
-
 }

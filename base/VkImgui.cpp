@@ -41,7 +41,7 @@ void VkImgui::ImguiBackEndInit() const
 	init_info.Device                    = device_manager.GetLogicalDevice();
 
 	//NEEDS A SEPARATE QUEQUE?
-	init_info.QueueFamily    = queue_families.graphicsFamily.value();
+	init_info.QueueFamily    = queue_families.graphics_family.value();
 	init_info.Queue          = device_manager.GetGraphicsQueue();
 	init_info.PipelineCache  = nullptr;
 	init_info.Allocator      = nullptr;
@@ -68,7 +68,6 @@ void VkImgui::ContextInit()
 	io->ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 	io->ConfigFlags |= ImGuiConfigFlags_IsSRGB;        // 标记当前使用的是SRGB，目前对ImGui源码有修改
 
-
 	io->ConfigWindowsMoveFromTitleBarOnly = true;        // 仅允许标题拖动
 
 	// Setup Dear ImGui style
@@ -94,7 +93,7 @@ void VkImgui::InitCommandPoolAndBuffer()
 
 		VkCommandPoolCreateInfo graphics_command_pool_CI{};
 		graphics_command_pool_CI.sType            = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-		graphics_command_pool_CI.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
+		graphics_command_pool_CI.queueFamilyIndex = queueFamilyIndices.graphics_family.value();
 		graphics_command_pool_CI.flags            = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
 		VK_CHECK_RESULT(vkCreateCommandPool(device_manager.GetLogicalDevice(), &graphics_command_pool_CI, nullptr, &im_command_pools[i]))

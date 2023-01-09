@@ -1119,7 +1119,7 @@ void DeferedRenderingRenderer::OffScreenPassCommandBufferRecording()
 		//auto transform_light_indicator = light_indicator->GetTransform();
 		//auto mat_light_indicator = transform_light_indicator.GetLocalToWorldMatrix();
 		//vkCmdPushConstants(graphics_command_buffers[i], pipeline_layout_light_indicator, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &mat_light_indicator);
-		//light_indicator->Draw(graphics_command_buffers[i]);
+		//light_indicator->DrawStatically(graphics_command_buffers[i]);
 
 		vkCmdEndRenderPass(graphics_command_buffers_offscreen[i]);
 
@@ -1193,7 +1193,7 @@ void DeferedRenderingRenderer::CompositionPassCommandBufferRecording()
 		//auto transform_light_indicator = light_indicator->GetTransform();
 		//auto mat_light_indicator = transform_light_indicator.GetLocalToWorldMatrix();
 		//vkCmdPushConstants(graphics_command_buffers[i], pipeline_layout_light_indicator, VK_SHADER_STAGE_VERTEX_BIT, 0, sizeof(glm::mat4), &mat_light_indicator);
-		//light_indicator->Draw(graphics_command_buffers[i]);
+		//light_indicator->DrawStatically(graphics_command_buffers[i]);
 
 		vkCmdEndRenderPass(graphics_command_buffers_composition[i]);
 

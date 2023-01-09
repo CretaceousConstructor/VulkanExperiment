@@ -1,14 +1,15 @@
 #pragma once
 
 #include "ImageParameterPack.h"
+#include "Vk.h"
 #include "VkGraphicsComponent.h"
 class VkImageBase
 {
+	friend class VkImageFactory;
   public:
 	VkImageBase(
-	    VkGraphicsComponent &             _gfx,
-	    const VkImage                     _image,
-	    const VkImageView                 _image_view,
+	    VkGraphicsComponent &    _gfx,
+	    const VkImage            _image,
 	    std::shared_ptr<ImagePP> para_pack_);
 	virtual ~VkImageBase() = 0;
 
@@ -20,27 +21,18 @@ class VkImageBase
 
 	[[nodiscard]] VkImage  GetImage() const;
 	[[nodiscard]] VkFormat GetImageFormat() const;
+	[[nodiscard]] std::shared_ptr<ImagePP> GetPP() const;
 
-	[[nodiscard]] VkImageView GetImageView() const;
-	[[nodiscard]] VkFormat    GetImageViewFormat() const;
+  public:
 
-	void InsertImageMemoryBarrier(VkCommandBuffer      cmd_buffer,
-                                  VkImageMemoryBarrier imageMemoryBarrier,
-                                  VkPipelineStageFlags srcStageMask,
-                                  VkPipelineStageFlags dstStageMask ) const;
-	void TransitionImageLayout(VkImageLayout oldLayout, VkImageLayout newLayout, const VkDeviceManager::CommandPoolType command_type, uint32_t mip_count = 1, uint32_t layer_count = 1) const;
+
+	void TransitionImageLayout(VkImageLayout oldLayout, VkImageLayout newLayout, const VkDeviceManager::CommandPoolType command_type, std::optional<VkImageSubresourceRange> subresource_range) const;
 
   protected:
 	VkGraphicsComponent &  gfx;
 	const VkDeviceManager &device_manager;
 
   protected:
-	VkImage                           image{};
-	VkImageView                       image_view{};
+	VkImage                  image{};
 	std::shared_ptr<ImagePP> para_pack;
-
-  private:
-	static bool HasStencilComponent(VkFormat format);
-
-
 };

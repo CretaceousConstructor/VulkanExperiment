@@ -46,17 +46,19 @@ class NonPbrMaterial : public VkMaterial
 	//***********************************************************************
 	[[nodiscard]] constexpr uint32_t GetRequiredDescirpotrCount() const override;
 
-	void                             AllocateDescriptorSetAndUpdate(VkDescriptorPool descriptor_pool, VkDescriptorSetLayout desc_set_layout, const std::vector<Gltf::Texture> &textures, const std::vector<std::shared_ptr<VkTexture>> &images) override;
-	void                             ModifyPipelineCI(VkPipelinePP &pipeline_CI) override;
+	void AllocateDescriptorSetAndUpdate(VkDescriptorPool descriptor_pool, VkDescriptorSetLayout desc_set_layout, const std::vector<Gltf::Texture> &textures, const std::vector<std::shared_ptr<VkTexture>> &images) override;
+	void ModifyPipelineCI(VkPipelinePP &pipeline_CI) override;
 
-  public:
+
+
+  private:
 	static VkDescriptorSetLayout GetDescriptorSetLayout();
 	static VkPipelineLayout      GetPipelineLayout();
 
+  public:
 	static VkDescriptorSetLayout CreateDesciptorSetLayout(const VkDeviceManager &device_manager);
 	static VkPipelineLayout      CreatePipelineLayout(const VkDeviceManager &device_manager, const std::vector<VkDescriptorSetLayout> &set_layouts, const std::vector<VkPushConstantRange> &push_constant_ranges);
 
-	static void CleanUpMaterial(const VkDeviceManager &device_manager);
 
   private:
 	inline static VkDescriptorSetLayout desc_layout{nullptr};

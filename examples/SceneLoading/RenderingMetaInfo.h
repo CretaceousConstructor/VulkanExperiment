@@ -2,17 +2,18 @@
 
 #include "GltfModel.h"
 #include "NonPbrMaterial.h"
+#include "PbrMaterialMetallic.h"
 #include "VkBufferBundle.h"
 #include "VkImageBundle.h"
 #include "VkMetaInfo.h"
 #include "VkModel.h"
-#include "PbrMaterialMetallic.h"
-namespace SceneLoading
+
+namespace Global
 {
 //*****************************************RENDERING SETTING******************************************
 
 ///****************************************THREAD RELATED RESOURCES******************************************
-inline constexpr DescriptorPoolMetaInfo pool_main_thread{.thread_id = 0};
+//inline constexpr DescriptorPoolMetaInfo pool_main_thread{.thread_id = 0};
 
 //*****************************************RENDERPASS 0**********************************************
 //TODO:把底下的东西移动到模型里
@@ -41,18 +42,18 @@ inline constexpr DescriptorPoolMetaInfo pool_main_thread{.thread_id = 0};
 //	}
 //};
 
-namespace Common
+namespace Structure
 {
 //UBO DATA
 struct UboMatrix
 {
 	glm::mat4 projection{};
-	glm::mat4 model;
 	glm::mat4 view{};
-	glm::vec4 light_pos[4];
 	glm::vec3 cam_pos{};
-	float     exposure = 4.5f;
-	float     gamma    = 2.2f;
+//glm::mat4 model;
+//glm::vec4 light_pos[4];
+//float exposure = 4.5f;
+//float gamma = 2.2f;
 };
 
 //UBO LIGHT
@@ -67,46 +68,45 @@ struct UboLight
 	//void CreateLightIndicatorPipeline();
 };
 
-inline constexpr DescriptorSetLayoutMetaInfo des_set_layout_matrices{.id = 0};
-inline constexpr DescriptorSetMetaInfo       des_set_matrices{.pool = pool_main_thread, .layout = des_set_layout_matrices, .id = 0};
+//inline constexpr DescriptorSetLayoutMetaInfo des_set_layout_matrices{.id = 0};
+//inline constexpr DescriptorSetMetaInfo       des_set_matrices{.pool = pool_main_thread, .layout = des_set_layout_matrices, .id = 0};
 
+}        // namespace Structure
 
+//namespace Pass0
+//{
+////***************************************************************************************************
+//inline constexpr size_t renderpass0 = 0;
+//
+////TODO:把这些东西移动到模型里面去
+////const PipelineLayoutMetaInfo pipe_layout_light_indicator{.descriptor_layout_ids_vec{Common::des_set_layout_matrices}, .id = 0};
+////const PipelineMetaInfo       pipe_light_indicator{.pass = renderpass0, .subpass = 0, .pipelayout_id = pipe_layout_light_indicator};
+//
+//***************************************************************************************************
+//}        // namespace Pass0
 
-
-
-}        // namespace Common
-
-namespace Pass0
+struct Resources
 {
-//***************************************************************************************************
-inline constexpr size_t renderpass0 = 0;
+	//DESCRIPTOR POOL
+	VkDescriptorPool pool;
 
+	//UNIFORM BUFFER
+	Global::Structure::UboMatrix  matrix_buffer_cpu{};        //用于顶点着色器的uniform buffer object
+	VkBufferBase::BufferPtrBundle matrix_buffer_gpu;
 
-//TODO:把这些东西移动到模型里面去
-//const PipelineLayoutMetaInfo pipe_layout_light_indicator{.descriptor_layout_ids_vec{Common::des_set_layout_matrices}, .id = 0};
-//const PipelineMetaInfo       pipe_light_indicator{.pass = renderpass0, .subpass = 0, .pipelayout_id = pipe_layout_light_indicator};
+	//ATTACHMENT IMAGES
+	VkTexture::TexturePtrBundle swapchain_attachments;
+	VkTexture::TexturePtrBundle depth_attachments;
 
-//***************************************************************************************************
-}        // namespace Pass0
+	VkTexture::TexturePtr cube_mapping;
 
+	//MODELS
+	//std::unique_ptr<VkModel<Vertex>> light_indicator;
+	GltfModel<PbrMaterialMetallic>::Ptr scifi_helmet;
+	GltfModel<PbrMaterialMetallic>::Ptr sky_box;
+	//TEXTURE
+	std::shared_ptr<VkTexture> hdr_environment_map;
+};
 
-
-
-	struct CommonResources
-	{
-		//UNIFORM BUFFER
-		SceneLoading::Common::UboMatrix ubo_matrix_cpu{};        //用于顶点着色器的uniform buffer object
-		std::shared_ptr<VkBufferBundle> ubo_matrix_gpu;
-
-		//ATTACHMENT
-		std::shared_ptr<VkImageBundle> swapchain_images;
-		std::shared_ptr<VkImageBundle> depth_attachments;
-		//MODELS
-		//std::unique_ptr<VkModel<Vertex>> light_indicator;
-		std::shared_ptr<GltfModel<PbrMaterialMetallic>> damaged_helmet;
-		std::shared_ptr<GltfModel<PbrMaterialMetallic>> sky_box;
-		//TEXTURE
-		std::shared_ptr<VkTexture> hdr_environment_map;
-	};
-
-}        // namespace SceneLoading
+}        // namespace Global
+// namespace Global

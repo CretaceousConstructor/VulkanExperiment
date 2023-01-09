@@ -11,7 +11,7 @@ VkWindows::VkWindows(const VkInstance &_ins, uint32_t w, uint32_t h, std::string
 	raw_window_ptr = glfwCreateWindow(WIDTH, HEIGHT, window_name.c_str(), nullptr, nullptr);        //创建窗口
 
 	glfwSetWindowUserPointer(raw_window_ptr, nullptr);                                //第二个参数之后可以用glfwGetWindowUserPointer函数取出但是目前就没有用过
-	glfwSetFramebufferSizeCallback(raw_window_ptr, FrameBufferResizeCallback);        //framebufferResizeCallback是当用户调整窗口大小时调用的函数。
+	glfwSetFramebufferSizeCallback(raw_window_ptr, FrameBufferResizeCallback);              //framebufferResizeCallback是当用户调整窗口大小时调用的函数。
 
 	CreateSurface();
 
@@ -30,7 +30,7 @@ VkWindows::~VkWindows()
 
 void VkWindows::FrameBufferResizeCallback(GLFWwindow *window, int width, int height)
 {
-	//TODO：handle resize
+	//TODO：handle resize 
 }
 
 VkSurfaceKHR VkWindows::GetSurface() const
@@ -62,9 +62,14 @@ const GLFWwindow *VkWindows::GetWindowPtr() const
 void VkWindows::CreateSurface()
 {
 	//创建windows的表面，这个函数应当在检查物理设备之前调用，会对物理设备的选择产生影响
+	VK_CHECK_RESULT(glfwCreateWindowSurface(instance, raw_window_ptr, nullptr, &surface));
 
-	if (glfwCreateWindowSurface(instance, raw_window_ptr, nullptr, &surface) != VK_SUCCESS)
-	{
-		throw std::runtime_error("failed to create window surface!");
-	}
+
+	//if (glfwCreateWindowSurface(instance, raw_window_ptr, nullptr, &surface) != VK_SUCCESS)
+	//{
+	//	throw std::runtime_error("failed to create window surface!");
+	//}
+
+
+
 }

@@ -59,6 +59,7 @@ void PbrMaterialMetallic::ModifyPipelineCI(VkPipelinePP &pipeline_CI)
 
 	//Constant fragment shader material parameters will be set using specialization constants
 	//ENTRIEs
+	specialization_map_entries.clear();
 	VkSpecializationMapEntry specialization_map_entry_temp{};
 	specialization_map_entry_temp.constantID = 0;
 	specialization_map_entry_temp.offset     = offsetof(MaterialSpecializationData, alphaMask);

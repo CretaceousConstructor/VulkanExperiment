@@ -30,6 +30,8 @@ class VkSwapchainManager
 	[[nodiscard]] VkFormat FindDepthFormat() const;
 
 	[[nodiscard]] uint32_t GetSwapImageCount() const;
+
+
 	//std::vector<VkImageView>& GetSwapImageViews();
 
 	[[nodiscard]] VkSwapchainKHR GetSwapChain() const;

@@ -44,15 +44,21 @@ void VkDeviceManager::PickPhysicalDevice()
 		throw std::runtime_error("failed to find a suitable GPU!");
 	}
 
-	// Use an ordered map to automatically sort candidates by increasing score
 
+
+	// Use an ordered map to automatically sort candidates by increasing score
 	//目前没使用评分系统
-	std::multimap<int, VkPhysicalDevice> candidates;
-	for (const auto &device : devices)
-	{
-		int score = RateDeviceSuitability(device);
-		candidates.insert(std::make_pair(score, device));
-	}
+	/*
+		std::multimap<int, VkPhysicalDevice> candidates;
+		for (const auto &device : devices)
+		{
+			int score = RateDeviceSuitability(device);
+			candidates.insert(std::make_pair(score, device));
+		}
+	 */
+
+
+
 }
 
 int VkDeviceManager::RateDeviceSuitability(const VkPhysicalDevice &device_)
@@ -85,19 +91,19 @@ int VkDeviceManager::RateDeviceSuitability(const VkPhysicalDevice &device_)
 
 bool VkDeviceManager::QueueFamilyIndices::IsComplete() const
 {
-	return graphicsFamily.has_value() && presentFamily.has_value() && transferFamily.has_value();
+	return graphics_family.has_value() && present_family.has_value() && transfer_family.has_value();
 }
 
 VkDeviceManager::QueueFamilyIndices VkDeviceManager::FindQueueFamilies(const VkPhysicalDevice &_device, const VkSurfaceKHR &surface)
 {
 	QueueFamilyIndices indices;
 
-	uint32_t queueFamilyCount = 0;
-	vkGetPhysicalDeviceQueueFamilyProperties(_device, &queueFamilyCount, nullptr);
+	uint32_t queue_family_count = 0;
+	vkGetPhysicalDeviceQueueFamilyProperties(_device, &queue_family_count, nullptr);
 
 	//TODO:VkQueueFamilyProperties含有队列的数目queueCount
-	std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
-	vkGetPhysicalDeviceQueueFamilyProperties(_device, &queueFamilyCount, queueFamilies.data());
+	std::vector<VkQueueFamilyProperties> queue_families(queue_family_count);
+	vkGetPhysicalDeviceQueueFamilyProperties(_device, &queue_family_count, queue_families.data());
 
 	//typedef struct VkQueueFamilyProperties {
 	//	VkQueueFlags    queueFlags;
@@ -119,31 +125,32 @@ VkDeviceManager::QueueFamilyIndices VkDeviceManager::FindQueueFamilies(const VkP
 	}*/
 
 	int i = 0;
-	for (const auto &queueFamily : queueFamilies)
+	for (const auto &qf: queue_families)
 	{
 		VkBool32 presentSupport = false;
 		vkGetPhysicalDeviceSurfaceSupportKHR(_device, i, surface, &presentSupport);        //必须要支持windows surface的presentation
 
-		if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)
+		if (qf.queueFlags & VK_QUEUE_GRAPHICS_BIT)
 		{        //这个队列家族至少要支持图形操作
-			if (!indices.graphicsFamily.has_value())
+			if (!indices.graphics_family.has_value())
 			{
-				indices.graphicsFamily = i;
+				indices.graphics_family = i;
 			}
 		}
 		if (presentSupport)
 		{
-			if (!indices.presentFamily.has_value())
+			if (!indices.present_family.has_value())
 			{
-				indices.presentFamily = i;
+				indices.present_family = i;
 			}
 		}
 
-		if ((queueFamily.queueFlags & VK_QUEUE_TRANSFER_BIT) && !(queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT))
+		//找到的是专门做transfer而没法做graphics的family index，
+		if ((qf.queueFlags & VK_QUEUE_TRANSFER_BIT) && !(qf.queueFlags & VK_QUEUE_GRAPHICS_BIT))
 		{
-			if (!indices.transferFamily.has_value())
+			if (!indices.transfer_family.has_value())
 			{
-				indices.transferFamily = i;
+				indices.transfer_family = i;
 			}
 		}
 
@@ -161,17 +168,21 @@ VkDeviceManager::QueueFamilyIndices VkDeviceManager::FindQueueFamilies(const VkP
 
 bool VkDeviceManager::IsDeviceSuitable(const VkPhysicalDevice &device, const VkSurfaceKHR &surface)
 {
-	QueueFamilyIndices indices             = FindQueueFamilies(device, surface);         //
-	bool               extensionsSupported = CheckDeviceExtensionSupport(device);        //主要看看能不能用swapchain
-	bool               swapChainAdequate   = false;
+	QueueFamilyIndices indices             = FindQueueFamilies(device, surface);             //
 
-	VkPhysicalDeviceFeatures supportedFeatures;
-	vkGetPhysicalDeviceFeatures(device, &supportedFeatures);
 
-	if (extensionsSupported)
+	//检测物理设备的设备扩展支持情况
+	bool               extensions_supported = CheckIfDeviceExtensionSupported(device);        //主要看看能不能用swapchain
+	//TODO:检测物理设备的features的支持情况
+	bool               swap_chain_adequate   = false;
+
+	VkPhysicalDeviceFeatures supported_features;
+	vkGetPhysicalDeviceFeatures(device, &supported_features);
+
+	if (extensions_supported)
 	{
 		SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(device, surface);        //询问的是物理device
-		swapChainAdequate                        = !swapChainSupport.formats.empty() && !swapChainSupport.present_modes.empty();
+		swap_chain_adequate                        = !swapChainSupport.formats.empty() && !swapChainSupport.present_modes.empty();
 	}
 	/*typedef struct VkSurfaceCapabilitiesKHR {
 		uint32_t                         minImageCount; 2
@@ -195,10 +206,10 @@ bool VkDeviceManager::IsDeviceSuitable(const VkPhysicalDevice &device, const VkS
 			VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT = 0x00000080,  //可以用来制作VkImageView，然后可以被shader读取，或者作为frambuffer的附着
 	} VkSurfaceCapabilitiesKHR;*/
 	//记得各向异性采样的功能
-	return indices.IsComplete() && extensionsSupported && swapChainAdequate && supportedFeatures.samplerAnisotropy;
+	return indices.IsComplete() && extensions_supported && swap_chain_adequate && supported_features.samplerAnisotropy;
 }
 
-bool VkDeviceManager::CheckDeviceExtensionSupport(const VkPhysicalDevice &device)
+bool VkDeviceManager::CheckIfDeviceExtensionSupported(const VkPhysicalDevice &device)
 {
 	uint32_t extensionCount;
 	//请求 设备扩展功能
@@ -298,7 +309,7 @@ VkCommandPool VkDeviceManager::CreateCommandPool(CommandPoolType type)
 			VkCommandPool           graphicsCommandPool;
 			VkCommandPoolCreateInfo graphics_command_pool_CI{};
 			graphics_command_pool_CI.sType            = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-			graphics_command_pool_CI.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
+			graphics_command_pool_CI.queueFamilyIndex = queueFamilyIndices.graphics_family.value();
 			graphics_command_pool_CI.flags            = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;        // Optional
 
 			VK_CHECK_RESULT(vkCreateCommandPool(device, &graphics_command_pool_CI, nullptr, &graphicsCommandPool))
@@ -309,14 +320,13 @@ VkCommandPool VkDeviceManager::CreateCommandPool(CommandPoolType type)
 			VkCommandPool           transforCommandPool;
 			VkCommandPoolCreateInfo transfer_command_pool_CI{};
 			transfer_command_pool_CI.sType            = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-			transfer_command_pool_CI.queueFamilyIndex = queueFamilyIndices.transferFamily.value();
+			transfer_command_pool_CI.queueFamilyIndex = queueFamilyIndices.transfer_family.value();
 			//transforPoolInfo.queueFamilyIndex = queueFamilyIndices.graphicsFamily.value();
-			transfer_command_pool_CI.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;        // 仅仅用于短暂的使用 并且可以复用 
+			transfer_command_pool_CI.flags = VK_COMMAND_POOL_CREATE_TRANSIENT_BIT | VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;        // 仅仅用于短暂的使用 并且可以复用
 			VK_CHECK_RESULT(vkCreateCommandPool(device, &transfer_command_pool_CI, nullptr, &transforCommandPool))
 			command_pools.push_back(transforCommandPool);
 			return command_pools.back();
 		}
-
 
 		default: /* 可选的 */
 			throw std::runtime_error("failed to create command pool!");
@@ -327,22 +337,24 @@ void VkDeviceManager::CreateLogicalDeviceAndQueues()
 {
 	//队列家族创建信息
 	QueueFamilyIndices                   indices = FindQueueFamilies(physical_device, window.GetSurface());
-	std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
-	std::set<uint32_t>                   unique_queue_families = {indices.graphicsFamily.value(), indices.presentFamily.value(), indices.transferFamily.value()};
+	std::vector<VkDeviceQueueCreateInfo> queue_create_infos;
+	std::set<uint32_t>                   unique_queue_families = {indices.graphics_family.value(), indices.present_family.value(), indices.transfer_family.value()};
 
 	constexpr float queue_priority = 1.0f;
-
+	//队列家族创建
 	for (uint32_t queue_family : unique_queue_families)
 	{
 		//每种队列家族创建一个queue,每一种队列家族可以多创建几个queue，但是这里我们就创建一个
-		VkDeviceQueueCreateInfo queueCreateInfo{};
-		queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+		VkDeviceQueueCreateInfo queue_create_info{};
+		queue_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
 
-		queueCreateInfo.queueFamilyIndex = queue_family;
-		queueCreateInfo.queueCount       = 1;
-		queueCreateInfo.pQueuePriorities = &queue_priority;
-		queueCreateInfos.push_back(queueCreateInfo);
+		queue_create_info.queueFamilyIndex = queue_family;
+		queue_create_info.queueCount       = 1;
+		queue_create_info.pQueuePriorities = &queue_priority;
+		queue_create_infos.push_back(queue_create_info);
 	}
+
+
 
 	/***********************************************************************/
 	VkPhysicalDeviceFeatures         enabled_gpu_features   = {};        // vulkan 1.0
@@ -350,7 +362,8 @@ void VkDeviceManager::CreateLogicalDeviceAndQueues()
 	VkPhysicalDeviceVulkan12Features enabled12_gpu_features = {};        // vulkan 1.2
 	VkPhysicalDeviceVulkan13Features enabled13_gpu_features = {};        // vulkan 1.3
 
-	//这里直接硬编码是否开启一些特征，也可以通过函数质询某些feature是否被device支持。
+	//这里直接硬编码是否开启一些特征，也可以通过函数质询 某些feature是否被device支持。
+	//TODO:质询 某些feature是否被device支持。
 	//If the VkPhysicalDeviceVulkan12Features structure is included in the pNext chain of the VkPhysicalDeviceFeatures2 structure passed to vkGetPhysicalDeviceFeatures2, it is filled in to indicate whether each corresponding feature is supported. VkPhysicalDeviceVulkan12Features can also be used in the pNext chain of VkDeviceCreateInfo to selectively enable these features.
 	//
 	// Enable gpu features 1.0 here.
@@ -362,8 +375,9 @@ void VkDeviceManager::CreateLogicalDeviceAndQueues()
 	enabled_gpu_features.independentBlend                       = VK_TRUE;
 	enabled_gpu_features.multiViewport                          = VK_TRUE;
 	enabled_gpu_features.fragmentStoresAndAtomics               = VK_TRUE;
+	enabled_gpu_features.geometryShader                         = VK_TRUE;
 
-	// Enable gpu features 1.1 here.   链接的开头
+	// Enable gpu features 1.1 here.   整个chain链接的开头
 	enabled11_gpu_features.sType                = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES;
 	enabled11_gpu_features.pNext                = &enabled12_gpu_features;
 	enabled11_gpu_features.shaderDrawParameters = VK_TRUE;
@@ -371,7 +385,6 @@ void VkDeviceManager::CreateLogicalDeviceAndQueues()
 
 	// Enable gpu features 1.2 here.
 	enabled12_gpu_features.sType                                        = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
-	enabled12_gpu_features.drawIndirectCount                            = VK_TRUE;
 	enabled12_gpu_features.drawIndirectCount                            = VK_TRUE;
 	enabled12_gpu_features.imagelessFramebuffer                         = VK_TRUE;
 	enabled12_gpu_features.separateDepthStencilLayouts                  = VK_TRUE;
@@ -383,7 +396,14 @@ void VkDeviceManager::CreateLogicalDeviceAndQueues()
 	enabled12_gpu_features.descriptorBindingUpdateUnusedWhilePending    = VK_TRUE;
 	enabled12_gpu_features.descriptorBindingSampledImageUpdateAfterBind = VK_TRUE;
 	enabled12_gpu_features.timelineSemaphore                            = VK_TRUE;
-	enabled12_gpu_features.pNext                                        = &enabled13_gpu_features;
+
+	enabled12_gpu_features.shaderOutputViewportIndex = VK_TRUE;
+	enabled12_gpu_features.shaderOutputLayer         = VK_TRUE;
+
+	enabled12_gpu_features.pNext                     = &enabled13_gpu_features;
+
+
+
 
 	// Enable gpu features 1.3 here.
 	enabled13_gpu_features.sType            = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES;
@@ -398,20 +418,20 @@ void VkDeviceManager::CreateLogicalDeviceAndQueues()
 
 	VkDeviceCreateInfo device_create_info{};
 	device_create_info.sType                = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-	device_create_info.pQueueCreateInfos    = queueCreateInfos.data();
-	device_create_info.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size());
-	//device_create_info.pEnabledFeatures     = &physical_device_features;
+	device_create_info.pQueueCreateInfos    = queue_create_infos.data();
+	device_create_info.queueCreateInfoCount = static_cast<uint32_t>(queue_create_infos.size());
+
 	device_create_info.pEnabledFeatures = nullptr;
 	device_create_info.pNext            = &physicalDeviceFeatures2;
 
-	auto deviceRequiredExtensions = VkExtensionUtility::GetRequiredExtensionsForAGoodDevice();
+	auto device_required_extensions = VkExtensionUtility::GetRequiredExtensionsForAGoodDevice();
 
 	//设备的扩展 至少可以创建交换链
-	device_create_info.enabledExtensionCount   = static_cast<uint32_t>(deviceRequiredExtensions.size());
-	device_create_info.ppEnabledExtensionNames = deviceRequiredExtensions.data();
+	device_create_info.enabledExtensionCount   = static_cast<uint32_t>(device_required_extensions.size());
+	device_create_info.ppEnabledExtensionNames = device_required_extensions.data();
 
-	//createInfo.enabledLayerCount is deprecated and ignored.
-	//createInfo.ppEnabledLayerNames is deprecatedand ignored.
+	//VkDeviceCreateInfo.enabledLayerCount is deprecated and ignored.
+	//VkDeviceCreateInfo.ppEnabledLayerNames is deprecatedand ignored.
 
 	if (vkCreateDevice(physical_device, &device_create_info, nullptr, &device) != VK_SUCCESS)
 	{
@@ -420,9 +440,10 @@ void VkDeviceManager::CreateLogicalDeviceAndQueues()
 
 
 
-	vkGetDeviceQueue(device, indices.graphicsFamily.value(), 0, &graphics_queue);
-	vkGetDeviceQueue(device, indices.presentFamily.value(), 0, &present_queue);
-	vkGetDeviceQueue(device, indices.transferFamily.value(), 0, &tranfer_queue);
+	//如果queue family有重复，这里可能会出问题
+	vkGetDeviceQueue(device, indices.graphics_family.value(), 0, &graphics_queue);
+	vkGetDeviceQueue(device, indices.present_family.value(), 0, &present_queue);
+	vkGetDeviceQueue(device, indices.transfer_family.value(), 0, &tranfer_queue);
 
 
 }
@@ -497,7 +518,7 @@ void VkDeviceManager::CreateBufferAndBindToMemo(VkDeviceSize size, VkBufferUsage
 	bufferInfo.sharingMode = sharingmode;
 
 	const QueueFamilyIndices indices            = FindQueueFamilies(physical_device, surface);
-	const std::set<uint32_t> queueFamilyIndices = {indices.graphicsFamily.value(), indices.presentFamily.value(), indices.transferFamily.value()};
+	const std::set<uint32_t> queueFamilyIndices = {indices.graphics_family.value(), indices.present_family.value(), indices.transfer_family.value()};
 
 	std::vector<uint32_t> uniqueQueueFamilyIndices;
 	for (auto index : queueFamilyIndices)

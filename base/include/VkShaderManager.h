@@ -1,18 +1,15 @@
 #pragma once
-#define NOMINMAX
 #include "VkGraphicsComponent.h"
 #include "VkMetaInfo.h"
-#include <Windows.h>
-#include <dxc/dxcapi.h>
 #include <fstream>        // std::ifstream
 #include <string>
 #include <unordered_map>
 #include <vector>
-#include <wrl/client.h>
 
 class VkShaderManager
 {
   public:
+
 	VkShaderManager(VkGraphicsComponent &_gfx);
 
 	~VkShaderManager();
@@ -24,7 +21,7 @@ class VkShaderManager
 
 	[[nodiscard]] VkPipelineShaderStageCreateInfo GetShader(const ShaderMetaInfo &shader_meta_info);
 
-	[[nodiscard]] VkPipelineShaderStageCreateInfo GetShader(std::string filename_);
+	//[[nodiscard]] VkPipelineShaderStageCreateInfo GetShader(std::string filename_);
 
 	//[[nodiscard]] VkPipelineShaderStageCreateInfo GetVkPipelineShaderStageCreateInfo() const;
 
@@ -44,8 +41,4 @@ class VkShaderManager
   private:
 	std::unordered_map<ShaderMetaInfo, VkPipelineShaderStageCreateInfo> shader_stage_CI;
 	std::unordered_map<ShaderMetaInfo, VkShaderModule>                  shaders_dict;
-
-  private:
-	Microsoft::WRL::ComPtr<IDxcUtils>     dxc_utils{};
-	Microsoft::WRL::ComPtr<IDxcCompiler3> dxc_compiler;
 };

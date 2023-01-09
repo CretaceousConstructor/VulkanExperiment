@@ -55,7 +55,7 @@ void VkSwapchainManager::CreateSwapChainAndSwapImages()
 	swapchain_createInfo.imageUsage       = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;        //÷±Ω”Õ˘image‰÷»æ—’…´
 
 	const VkDeviceManager::QueueFamilyIndices indices            = VkDeviceManager::FindQueueFamilies(device_manager.GetPhysicalDevice(), window.GetSurface());
-	const std::set<uint32_t>                  queueFamilyIndices = {indices.graphicsFamily.value(), indices.presentFamily.value(), indices.transferFamily.value()};
+	const std::set<uint32_t>                  queueFamilyIndices = {indices.graphics_family.value(), indices.present_family.value(), indices.transfer_family.value()};
 
 	//If the queue families differ, then we'll be using the concurrent mode in this tutorial to avoid having to do the ownership chapters, because these involve some concepts that are better explained at a later time. Concurrent mode requires you to specify in advance between which queue families ownership will be shared using the queueFamilyIndexCount and pQueueFamilyIndices parameters.
 
@@ -70,7 +70,7 @@ void VkSwapchainManager::CreateSwapChainAndSwapImages()
 	//createInfo.queueFamilyIndexCount = static_cast<uint32_t>(uniqueQueueFamilyIndices.size());
 	//createInfo.pQueueFamilyIndices = uniqueQueueFamilyIndices.data();
 
-	if (indices.graphicsFamily.value() == indices.presentFamily.value())
+	if (indices.graphics_family.value() == indices.present_family.value())
 	{
 		swapchain_createInfo.imageSharingMode      = VK_SHARING_MODE_EXCLUSIVE;
 		swapchain_createInfo.queueFamilyIndexCount = 0;              // Optional

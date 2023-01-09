@@ -83,7 +83,7 @@ void KTXTextureRenderer::CreateCommonDescriptorPool()
 //
 //}
 
-//void KTXTextureRenderer::CreateDescriptorSetsThenUpdate()
+//void KTXTextureRenderer::CreateDescriptorSets()
 //{
 //	auto &des_man = render_pass_manager.GetDescriptorManager();
 //	{

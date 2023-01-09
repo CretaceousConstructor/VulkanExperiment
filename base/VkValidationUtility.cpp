@@ -1,6 +1,10 @@
 #include "VkValidationUtility.h"
 
-//CHECKED
+
+
+
+
+
 bool VkValidationUtility::CheckIfRequiredInstanceLayersSupported()
 {
 	//之前的版本有device（某个gpu） layer和instance（整个程序）layer的区别，不过已经不再这么区分，全部都用instance layer
@@ -10,8 +14,7 @@ bool VkValidationUtility::CheckIfRequiredInstanceLayersSupported()
 	vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
 	std::vector<VkLayerProperties> availableLayers(layerCount);
 	vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
-	/*
-		获取所有可以用的layer
+	/*  获取所有可以用的layer
 		VK_LAYER_NV_optimus
 		VK_LAYER_NV_nsight
 		VK_LAYER_RENDERDOC_Capture
@@ -25,20 +28,21 @@ bool VkValidationUtility::CheckIfRequiredInstanceLayersSupported()
 		VK_LAYER_KHRONOS_synchronization2
 		VK_LAYER_KHRONOS_validation
 		VK_LAYER_LUNARG_monitor
-		VK_LAYER_LUNARG_screenshot
-	*/
+		VK_LAYER_LUNARG_screenshot */
 	//*************************************************************
 
 	//遍历需要用到的INSTANCE LAYER，看看需要的用到的在不在可用列表中。只要有一个不能用就返回false
 	//*************************************************************
-	std::vector<const char *> RequiredInstanceValidationLayer;
+	std::vector<const char *> RequiredInstanceLayer;
 
 	if (VALIDATION_LAYERS_ENABLED)
 	{
-		RequiredInstanceValidationLayer.insert(RequiredInstanceValidationLayer.end(), required_validation_instance_layers.begin(), required_validation_instance_layers.end());
+		RequiredInstanceLayer.insert(RequiredInstanceLayer.end(), required_validation_instance_layers.begin(), required_validation_instance_layers.end());
 	}
 
-	for (const char *layerName : RequiredInstanceValidationLayer)
+
+
+	for (const char *layerName : RequiredInstanceLayer)
 	{
 		bool layerFound = false;
 		for (const auto &layerProperties : availableLayers)
@@ -55,6 +59,8 @@ bool VkValidationUtility::CheckIfRequiredInstanceLayersSupported()
 		}
 	}
 	return true;
+
+
 	//*************************************************************
 }
 
@@ -81,10 +87,10 @@ void VkValidationUtility::SetupDebugMessenger(const VkInstance &instance)
 	VkDebugUtilsMessengerCreateInfoEXT create_info{};
 
 	VkValidationUtility::PopulateDebugMessengerCreateInfo(create_info);
-	if (VkValidationUtility::CreateDebugUtilsMessengerEXT(instance, &create_info, nullptr, &VkValidationUtility::debug_messenger) != VK_SUCCESS)
-	{
-		throw std::runtime_error("failed to set up debug messenger!");
-	}
+	VK_CHECK_RESULT(VkValidationUtility::CreateDebugUtilsMessengerEXT(instance, &create_info, nullptr, &VkValidationUtility::debug_messenger))
+
+
+
 }
 
 void VkValidationUtility::DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT para_debugMessenger, const VkAllocationCallbacks *pAllocator)

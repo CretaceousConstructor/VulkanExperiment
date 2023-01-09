@@ -3,14 +3,11 @@
 #include "VkDeviceManager.h"
 #include "VkSynObjectBundleBase.h"
 
-
 class VkSemaphoreBundle : public VkSynObjectBundleBase
 {
   public:
-
 	//vkCreateSemaphore: parameter pCreateInfo->flags must be 0. The Vulkan spec states: flags must be 0
-	VkSemaphoreBundle(const VkDeviceManager &_device_manager, uint32_t _bundle_size  );
-
+	VkSemaphoreBundle(const VkDeviceManager &_device_manager, uint32_t _bundle_size);
 
 	VkSemaphoreBundle() = delete;
 
@@ -20,16 +17,12 @@ class VkSemaphoreBundle : public VkSynObjectBundleBase
 	VkSemaphoreBundle(VkSemaphoreBundle &&) = delete;
 	VkSemaphoreBundle &operator=(VkSemaphoreBundle &&) = delete;
 
-
-	VkSemaphore operator[](size_t num) const;
+	const VkSemaphore &                    operator[](size_t num)const;
 	[[nodiscard]] const VkSemaphore &GetOne(size_t num) const;
 
-	~VkSemaphoreBundle();
-
+	~VkSemaphoreBundle() override;
 
   private:
 	std::vector<VkSemaphore> syn_objects_bundle;
-	const VkDeviceManager &        device_manager;
+	const VkDeviceManager &  device_manager;
 };
-
-

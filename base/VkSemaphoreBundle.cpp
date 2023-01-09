@@ -19,7 +19,7 @@ VkSemaphoreBundle::VkSemaphoreBundle(const VkDeviceManager &_device_manager, uin
 	}
 }
 
-VkSemaphore VkSemaphoreBundle::operator[](size_t num) const
+const VkSemaphore& VkSemaphoreBundle::operator[](size_t num) const
 {
 	return syn_objects_bundle[num];
 }

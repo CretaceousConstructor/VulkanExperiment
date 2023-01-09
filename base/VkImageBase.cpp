@@ -1,13 +1,11 @@
 #include "VkImageBase.h"
 
 VkImageBase::VkImageBase(
-    VkGraphicsComponent &             _gfx,
-    const VkImage                     _image,
-    const VkImageView                 _image_view,
+    VkGraphicsComponent &    _gfx,
+    const VkImage            _image,
     std::shared_ptr<ImagePP> para_pack_) :
-    gfx(_gfx), device_manager(gfx.DeviceMan()), image(_image), image_view(_image_view), para_pack(std::move(para_pack_))
+    gfx(_gfx), device_manager(gfx.DeviceMan()), image(_image), para_pack(std::move(para_pack_))
 {
-	
 }
 
 VkImageBase::~VkImageBase() = default;
@@ -22,53 +20,12 @@ VkFormat VkImageBase::GetImageFormat() const
 	return para_pack->default_image_format;
 }
 
-VkImageView VkImageBase::GetImageView() const
+std::shared_ptr<ImagePP> VkImageBase::GetPP() const
 {
-	return image_view;
+	return para_pack;
 }
 
-VkFormat VkImageBase::GetImageViewFormat() const
-{
-	return para_pack->default_image_view_CI.format;
-}
-
-void VkImageBase::InsertImageMemoryBarrier(VkCommandBuffer      cmd_buffer,
-                                           VkImageMemoryBarrier imageMemoryBarrier,
-                                           VkPipelineStageFlags srcStageMask,
-                                           VkPipelineStageFlags dstStageMask) const
-{
-
-
-
-	imageMemoryBarrier.sType               = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-	imageMemoryBarrier.pNext               = nullptr;
-	imageMemoryBarrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	imageMemoryBarrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-	imageMemoryBarrier.image            = image;
-	//typedef struct VkImageSubresourceRange {
-	//    VkImageAspectFlags    aspectMask;
-	//    uint32_t              baseMipLevel;
-	//    uint32_t              levelCount;
-	//    uint32_t              baseArrayLayer;
-	//    uint32_t              layerCount;
-	//} VkImageSubresourceRange;
-	const VkImageSubresourceRange subresource_range{para_pack->default_image_view_CI.subresourceRange};
-	imageMemoryBarrier.subresourceRange = subresource_range;
-
-	vkCmdPipelineBarrier(
-	    cmd_buffer,
-	    srcStageMask,
-	    dstStageMask,
-	    0,
-	    0, nullptr,
-	    0, nullptr,
-	    1, &imageMemoryBarrier);
-
-
-}
-
-
-void VkImageBase::TransitionImageLayout(VkImageLayout oldLayout, VkImageLayout newLayout, const VkDeviceManager::CommandPoolType command_type, uint32_t mip_count, uint32_t layer_count) const
+void VkImageBase::TransitionImageLayout(VkImageLayout oldLayout, VkImageLayout newLayout, const VkDeviceManager::CommandPoolType command_type, std::optional<VkImageSubresourceRange> subresource_range) const
 {
 	VkCommandPool command_pool;
 	VkQueue       command_quque;
@@ -90,7 +47,7 @@ void VkImageBase::TransitionImageLayout(VkImageLayout oldLayout, VkImageLayout n
 	{
 	}
 
-	const VkCommandBuffer commandBuffer = VkCommandManager::BeginSingleTimeCommands(command_pool, device_manager.GetLogicalDevice());
+	const VkCommandBuffer command_buffer = VkCommandManager::BeginSingleTimeCommands(command_pool, device_manager.GetLogicalDevice());
 
 	VkImageMemoryBarrier barrier{};
 	barrier.sType     = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -102,12 +59,11 @@ void VkImageBase::TransitionImageLayout(VkImageLayout oldLayout, VkImageLayout n
 
 	barrier.image                       = image;
 	barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-
 	if (newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
 	{
 		barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
 
-		if (HasStencilComponent(para_pack->default_image_format))
+		if (Vk::HasStencilComponent(para_pack->default_image_format))
 		{
 			barrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
 		}
@@ -117,10 +73,22 @@ void VkImageBase::TransitionImageLayout(VkImageLayout oldLayout, VkImageLayout n
 		barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 	}
 
-	barrier.subresourceRange.baseMipLevel   = 0;
-	barrier.subresourceRange.levelCount     = mip_count;
-	barrier.subresourceRange.baseArrayLayer = 0;
-	barrier.subresourceRange.layerCount     = layer_count;
+	if (subresource_range.has_value())
+	{
+		barrier.subresourceRange.baseMipLevel   = subresource_range->baseMipLevel;
+		barrier.subresourceRange.levelCount     = subresource_range->levelCount;
+
+		barrier.subresourceRange.baseArrayLayer = subresource_range->baseMipLevel;
+		barrier.subresourceRange.layerCount     = subresource_range->layerCount;
+	}
+	else
+	{
+		barrier.subresourceRange.baseMipLevel = 0;
+		barrier.subresourceRange.levelCount   = para_pack->default_image_CI.mipLevels;
+
+		barrier.subresourceRange.baseArrayLayer = 0;
+		barrier.subresourceRange.layerCount     = para_pack->default_image_CI.arrayLayers;
+	}
 
 	VkPipelineStageFlags sourceStage;
 	VkPipelineStageFlags destinationStage;
@@ -175,8 +143,8 @@ void VkImageBase::TransitionImageLayout(VkImageLayout oldLayout, VkImageLayout n
 		barrier.dstAccessMask = 0;
 		barrier.newLayout     = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-		barrier.srcQueueFamilyIndex = queue_family_indices.transferFamily.value();
-		barrier.dstQueueFamilyIndex = queue_family_indices.graphicsFamily.value();
+		barrier.srcQueueFamilyIndex = queue_family_indices.transfer_family.value();
+		barrier.dstQueueFamilyIndex = queue_family_indices.graphics_family.value();
 
 		vkCmdPipelineBarrier(
 		    transfer_commandBuffer,
@@ -199,8 +167,8 @@ void VkImageBase::TransitionImageLayout(VkImageLayout oldLayout, VkImageLayout n
 		barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
 		barrier.newLayout     = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-		barrier.srcQueueFamilyIndex = queue_family_indices.transferFamily.value();
-		barrier.dstQueueFamilyIndex = queue_family_indices.graphicsFamily.value();
+		barrier.srcQueueFamilyIndex = queue_family_indices.transfer_family.value();
+		barrier.dstQueueFamilyIndex = queue_family_indices.graphics_family.value();
 	}
 
 	else if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_PRESENT_SRC_KHR)
@@ -211,35 +179,26 @@ void VkImageBase::TransitionImageLayout(VkImageLayout oldLayout, VkImageLayout n
 		sourceStage      = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
 		destinationStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 	}
+	else if (oldLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL)
+	{
+		barrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+		barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+		sourceStage      = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+		destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+	}
 	else
 	{
 		throw std::invalid_argument("unsupported layout transition!");
 	}
 
 	vkCmdPipelineBarrier(
-	    commandBuffer,
+	    command_buffer,
 	    sourceStage, destinationStage,
 	    0,
 	    0, nullptr,
 	    0, nullptr,
 	    1, &barrier);
 
-	VkCommandManager::EndSingleTimeCommands(command_pool, device_manager.GetLogicalDevice(), commandBuffer, command_quque);
-
-
-
-
-
-
-
-}
-
-bool VkImageBase::HasStencilComponent(VkFormat format)
-{
-
-
-	//TODO: not complete
-	return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
-
-
+	VkCommandManager::EndSingleTimeCommands(command_pool, device_manager.GetLogicalDevice(), command_buffer, command_quque);
 }

@@ -51,8 +51,21 @@ VkPipeline VkPipelineBuilder::BuildPipeline(const VkPipelinePP &para_pack, VkPip
 
 VkPipeline VkPipelineBuilder::BuildPipeline(const VkPipelinePP &para_pack_) const
 {
+
+
+
+
+
 	const auto    para_pack_ptr = para_pack_.Clone();
 	VkPipelinePP &para_pack{*para_pack_ptr};
+
+
+	//******************error detecting******************
+	if (!para_pack.attachment_formats.has_value())
+	{
+		throw std::runtime_error("no attachment formats specified!");
+	}
+
 
 	//*************************************************************
 	para_pack.color_blend_state_CI.attachmentCount = static_cast<uint32_t>(para_pack.color_blend_attachments.size());
@@ -63,16 +76,21 @@ VkPipeline VkPipelineBuilder::BuildPipeline(const VkPipelinePP &para_pack_) cons
 	para_pack.vertex_input_state_CI.vertexAttributeDescriptionCount = static_cast<uint32_t>(para_pack.vertex_input_attribute_description.size());
 	para_pack.vertex_input_state_CI.pVertexAttributeDescriptions    = para_pack.vertex_input_attribute_description.data();
 	//*************************************************************
+
+	
+
+
 	std::vector<VkFormat> color_attachments;
-	for (const auto &attchment : para_pack.attachment_infos)
+
+	for (const auto &format : *(para_pack.attachment_formats))
 	{
-		if (VkAttachmentInfo::AttachmentType::ColorAttachment == attchment.type)
+		if (VkAttachmentInfo::Type::ColorAttachment == format.attach_type)
 		{
-			color_attachments.push_back(attchment.attachment_description.format);
+			color_attachments.push_back(format.format);
 		}
-		if (VkAttachmentInfo::AttachmentType::DepthAttachment == attchment.type)
+		if (VkAttachmentInfo::Type::DepthAttachment == format.attach_type)
 		{
-			para_pack.pipeline_rendering_CI.depthAttachmentFormat = attchment.attachment_description.format;
+			para_pack.pipeline_rendering_CI.depthAttachmentFormat = format.format;
 		}
 		para_pack.pipeline_rendering_CI.stencilAttachmentFormat = VK_FORMAT_UNDEFINED;
 	}
@@ -80,6 +98,9 @@ VkPipeline VkPipelineBuilder::BuildPipeline(const VkPipelinePP &para_pack_) cons
 	para_pack.pipeline_rendering_CI.colorAttachmentCount    = static_cast<uint32_t>(color_attachments.size());
 	para_pack.pipeline_rendering_CI.pColorAttachmentFormats = color_attachments.data();
 	para_pack.pipeline_rendering_CI.viewMask                = 0;
+
+
+
 	//*************************************************************
 	for (size_t i = 0; i < para_pack.shader_stage_CI.size(); i++)
 	{
@@ -113,8 +134,6 @@ VkPipeline VkPipelineBuilder::BuildPipeline(const VkPipelinePP &para_pack_) cons
 	para_pack.viewport_state_CI.pScissors    = para_pack.view_port_scissor_pair.second.data();
 
 	//*************************************************************
-	pipeline_CI.stageCount = static_cast<uint32_t>((para_pack.shader_stage_CI.size()));
-	pipeline_CI.pStages    = para_pack.shader_stage_CI.data();
 
 	pipeline_CI.pInputAssemblyState = &para_pack.input_assembly_state_CI;
 	pipeline_CI.pRasterizationState = &para_pack.rasterization_state_CI;
@@ -132,7 +151,14 @@ VkPipeline VkPipelineBuilder::BuildPipeline(const VkPipelinePP &para_pack_) cons
 	pipeline_CI.layout             = para_pack.pipeline_layout;
 
 	VkPipeline pipeline;
-	VK_CHECK_RESULT(vkCreateGraphicsPipelines(device_manager.GetLogicalDevice(), nullptr, 1, &pipeline_CI, nullptr, &pipeline));
+
+
+
+	VK_CHECK_RESULT(vkCreateGraphicsPipelines(device_manager.GetLogicalDevice(), nullptr, 1, &pipeline_CI, nullptr, &pipeline))
+
+
+
+
 
 	return pipeline;
 }

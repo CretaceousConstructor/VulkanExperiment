@@ -2,16 +2,14 @@
 
 #include "VkPipelinePP.h"
 
-
-
-
 class ForwardShadingPipelinePP : public VkPipelinePP
 {
-
-
 public:
 	ForwardShadingPipelinePP(VkGraphicsComponent &gfx_);
 
+	[[nodiscard]] std::shared_ptr<VkPipelinePP> Clone() const override final;
+
+protected:
 	void InitInputAssemblyStateCI() override final;
 
 	void InitRasterizationStateCI() override final;
@@ -29,14 +27,6 @@ public:
 	void InitVertexInputStateCI() override final;
 
 	void InitRenderingCI() override final;
-
-	[[nodiscard]] std::shared_ptr<VkPipelinePP> Clone() const override final;
-
-
-
-
-
-
 
 
 

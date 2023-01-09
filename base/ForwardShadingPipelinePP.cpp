@@ -100,13 +100,13 @@ void ForwardShadingPipelinePP::InitViewPortStateCI()
 	viewport.minDepth                     = 0.0f;
 	viewport.maxDepth                     = 1.0f;
 
-	VkExtent2D swapChainExtent;
-	swapChainExtent.height = extend_of_swap_image.height;
-	swapChainExtent.width  = extend_of_swap_image.width;
+	VkExtent2D swap_chain_extent;
+	swap_chain_extent.height = extend_of_swap_image.height;
+	swap_chain_extent.width  = extend_of_swap_image.width;
 
 	VkRect2D scissor{};
 	scissor.offset = {0, 0};
-	scissor.extent = swapChainExtent;
+	scissor.extent = swap_chain_extent;
 
 	view_port_scissor_pair.first.push_back(viewport);
 	view_port_scissor_pair.second.push_back(scissor);

@@ -10,7 +10,7 @@ class Renderpass0 : public VkRenderpassBase
 	Renderpass0(VkGraphicsComponent &gfx_, VkRenderpassManager &renderpass_manager_, KtxRenderer::RenderpassCommonResources &common_resources_);
 
 	void CreateDescriptorSetLayout() override;
-	void CreateDescriptorSetsThenUpdate() override;
+	void CreateDescriptorSets() override;
 
 	void CreateRenderPass() override;
 
@@ -28,4 +28,7 @@ class Renderpass0 : public VkRenderpassBase
 	KtxRenderer::RenderpassCommonResources &common_resources;
 	const VkSwapchainManager &              swapchain_manager;
 	uint32_t                                pass_num{KtxRenderer::renderpass0};
+
+
+
 };

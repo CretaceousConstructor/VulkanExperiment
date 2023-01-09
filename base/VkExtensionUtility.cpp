@@ -4,28 +4,9 @@ std::vector<const char *> VkExtensionUtility::GetNeededGlobalInstanceExtensions(
 {
 	//GLFW需要的instance extension
 	uint32_t glfwExtensionCount = 0;
-	//给出所有GLFW需要的 vulkan instance extensions
+		//请求所有GLFW需要的 vulkan instance extensions
 	const char **             glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 	std::vector<const char *> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
-
-	//TODO:下面被注释的函数用来检查global extensions是否被支持，但是懒得写。
-	//实例的扩展功能，这些扩展功能分别属于某个 层(layer)
-	////获得extension的数目
-	//uint32_t extensionCount = 0;
-	//vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
-	////获得extension的细节
-	//std::vector<VkExtensionProperties> extensions1(extensionCount);
-	//vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, extensions1.data());
-	//std::cout << "available extensions:\n";
-	////输出extension的细节
-	//for (const auto& extension : extensions1) {
-	//	std::cout << '\t' << extension.extensionName << '\n';
-	//}
-
-
-
-
-
 
 	//validation layer需要的extension
 	if (ValidationLayerEnabled)
@@ -38,11 +19,23 @@ std::vector<const char *> VkExtensionUtility::GetNeededGlobalInstanceExtensions(
 
 	//dynamic rendering模块
 	extensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
-	//
-	extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 
+	//TODO:下面被注释的函数用来检查需要的global extensions是否被支持，但是懒得写。
+	//实例的扩展功能，这些扩展功能分别属于某个 层(layer)
+	////获得extension的数目
+	//uint32_t extensionCount = 0;
+	//vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
+	////获得extension的细节
+	//std::vector<VkExtensionProperties> extensions1(extensionCount);
+	//vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, extensions1.data());
+	//std::cout << "available extensions:\n";
+	////输出extension的细节
+	//for (const auto& extension : extensions1) {
+	//	std::cout << '\t' << extension.extensionName << '\n';
+	//}
 	return extensions;
 }
+
 const std::vector<const char *> &VkExtensionUtility::GetRequiredExtensionsForAGoodDevice()
 {
 	//static std::vector<const char *> extensions
@@ -57,17 +50,15 @@ const std::vector<const char *> &VkExtensionUtility::GetRequiredExtensionsForAGo
 	//    VK_KHR_MAINTENANCE2_EXTENSION_NAME,
 	//};
 
-	static std::vector<const char *> extensions
-	{
+	static std::vector<const char *> extensions{
 	    VK_KHR_SWAPCHAIN_EXTENSION_NAME,
 	    VK_KHR_MAINTENANCE1_EXTENSION_NAME,
 	    VK_KHR_MAINTENANCE2_EXTENSION_NAME,
-		VK_KHR_MAINTENANCE3_EXTENSION_NAME,
+	    VK_KHR_MAINTENANCE3_EXTENSION_NAME,
 	    VK_KHR_SHADER_NON_SEMANTIC_INFO_EXTENSION_NAME,
-		VK_EXT_MEMORY_BUDGET_EXTENSION_NAME,
-		VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME
-
-
+	    VK_EXT_MEMORY_BUDGET_EXTENSION_NAME,
+	    VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME,
+		VK_EXT_SHADER_VIEWPORT_INDEX_LAYER_EXTENSION_NAME 
 	};
 
 	return extensions;

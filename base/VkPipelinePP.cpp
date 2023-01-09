@@ -7,7 +7,6 @@ VkPipelinePP::VkPipelinePP(VkGraphicsComponent &_gfx) :
 	//RestoreToDefaultState();
 }
 
-
 void VkPipelinePP::ClearVectors()
 {
 	//INIT DEFAULT STATE
@@ -55,5 +54,14 @@ void VkPipelinePP::RestoreToDefaultState()
 	InitRenderingCI();
 
 	////*************************************************************
+}
 
-} 
+void VkPipelinePP::SetDynamicRenderingAttachmentFormats(std::vector<VkAttachmentInfo::DynamicRenderingAttachment> attachment_formats_)
+{
+	attachment_formats = std::move(attachment_formats_);
+}
+
+void VkPipelinePP::SetPipelineShaderStageCreateInfo(std::vector<VkPipelineShaderStageCreateInfo> shader_stage_CI_)
+{
+	shader_stage_CI = std::move(shader_stage_CI_);
+}

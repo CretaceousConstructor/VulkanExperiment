@@ -1,16 +1,21 @@
 #include "SceneLoadingRenderer.h"
+using namespace Vk;
+using namespace Global;
 
-using namespace SceneLoading;
+
+
+
 void SceneLoadingRenderer::PrepareCommonModels()
 {
-	const auto &model_factory = render_pass_manager.GetModelFactory();
 
-	const std::string damaged_helmet_path = "../../data/models/SciFiHelmet/SciFiHelmet.gltf";
-	common_resources.damaged_helmet       = model_factory.GetGltfModel<PbrMaterialMetallic>(damaged_helmet_path, VkModelFactory::LoadingOption::None, 0);
+	const auto &model_factory = renderpass_manager.GetModelFactory();
 
+	const std::string scifi_helmet_path = "../../data/models/SciFiHelmet/SciFiHelmet.gltf";
+	global_resources.scifi_helmet       = model_factory.GetGltfModel<PbrMaterialMetallic>(scifi_helmet_path, VkModelFactory::LoadingOption::None, 0);
 
-	const std::string box_path = "../../data/models/cube.gltf";
-	common_resources.sky_box   = model_factory.GetGltfModel<PbrMaterialMetallic>(box_path, VkModelFactory::LoadingOption::None, 0);
+	const std::string box_path = "../../data/models/cube/Cube.gltf";
+	//const std::string box_path = "../../data/models/cube.gltf";
+	global_resources.sky_box   = model_factory.GetGltfModel<PbrMaterialMetallic>(box_path, VkModelFactory::LoadingOption::None, 0);
 
 	//auto                  data = Geometry::CreateSphere(.2f, 20, 40, glm::vec4(1.f, 1.f, 1.f, 1.f));
 	//std::vector<Vertex>   vertices;
@@ -29,64 +34,97 @@ void SceneLoadingRenderer::PrepareCommonModels()
 
 
 
-
-
 }
-//
+
+
+
+
 void SceneLoadingRenderer::CommandBufferRecording()
 {
 	auto &graphics_command_buffers = command_manager.GetGraphicsCommandBuffers();
 
 	VkCommandManager::BeginCommandBuffers(graphics_command_buffers);
-
-	renderpasses[0]->BeginRenderpass(graphics_command_buffers);
-	renderpasses[0]->ExecuteRenderpass(graphics_command_buffers);
-	renderpasses[0]->EndRenderpass(graphics_command_buffers);
-
+	//============================renderpasses execution============================
+	renderpasses[0]->Execute(graphics_command_buffers);
+	//============================renderpasses execution============================
+	renderpasses[1]->Execute(graphics_command_buffers);
+	//============================frame drawing command buffers recording end
 	VkCommandManager::EndCommandBuffers(graphics_command_buffers);
 }
 
+
+
+
 void SceneLoadingRenderer::CreateCommonUniformBuffer()
 {
-	auto &buffer_factory{render_pass_manager.GetBufferFactory()};
+	auto &buffer_factory{renderpass_manager.GetBufferFactory()};
 
 	//GPU SIDE
-	constexpr VkBufferCI::UniformBuffer unim_buf_para_pack;
-	common_resources.ubo_matrix_gpu = buffer_factory.ProduceBufferBundlePtr(sizeof(Common::UboMatrix), swapchain_manager.GetSwapImageCount(), unim_buf_para_pack);
+	constexpr VkBufferCI::UniformBuffer unim_buf_PP;
+	global_resources.matrix_buffer_gpu = buffer_factory.ProduceBufferPtrArray(sizeof(Global::Structure::UboMatrix), Vk::BundleSize<SWAP_IMG_COUNT>, unim_buf_PP);
+
+
 }
 
 void SceneLoadingRenderer::CreateCommonDescriptorPool()
 {
 	// Create the global descriptor pool
 	//TODO:这里的分配数目
-	auto &des_man = render_pass_manager.GetDescriptorManager();
-	{
-		std::vector<std::pair<VkDescriptorType, uint32_t>> info_pairs{
-		    std::pair{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 3}};
-		const auto max_sets = swapchain_manager.GetSwapImageCount();
-		des_man.AddDescriptorPool(SceneLoading::pool_main_thread, std::move(info_pairs), max_sets);
-	}
+
+	//auto &des_man = renderpass_manager.GetDescriptorManager();
+	//{
+	//	std::vector<std::pair<VkDescriptorType, uint32_t>> info_pairs{
+	//	    std::pair{VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 3}};
+	//	const auto max_sets = swapchain_manager.GetSwapImageCount();
+	//	des_man.AddDescriptorPool(Global::pool_main_thread, std::move(info_pairs), max_sets);
+	//}
+
+	//	const auto max_sets = swapchain_manager.GetSwapImageCount();
+
+	const std::vector desc_pool_sizes{
+	    Vk::GetOneDescriptorPoolSizeDescription(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, Vk::DescriptorCount<SWAP_IMG_COUNT> * 20),
+	    Vk::GetOneDescriptorPoolSizeDescription(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, Vk::DescriptorCount<SWAP_IMG_COUNT> * 20),
+	};
+
+	const auto desc_pool_CI      = Vk::GetDescriptorPoolCI(desc_pool_sizes, Vk::SetCount<SWAP_IMG_COUNT>);
+	global_resources.pool = renderpass_manager.GetDescriptorManagerV0().ProduceDescriptorPoolUnsafe(desc_pool_CI);
+
+
+
+
+
+
+
+
+
+
+
 }
 
 void SceneLoadingRenderer::InitRenderpasses()
 {
-	//renderpasses.push_back(std::make_shared<Renderpass0>(gfx, render_pass_manager, common_resources));
-	//renderpasses.back()->Init();
-	renderpasses.push_back(std::make_shared<PreprocessPass>(gfx, render_pass_manager, common_resources));
+	renderpasses.push_back(std::make_shared<PreprocessPass>(gfx, renderpass_manager, global_resources));
 	renderpasses.back()->Init();
 
+	renderpasses.push_back(std::make_shared<Renderpass0>(gfx, renderpass_manager, global_resources));
+	renderpasses.back()->Init();
 
 }
 
 void SceneLoadingRenderer::InitSynObjects()
 {
-	const auto &syn_obj_factory{render_pass_manager.GetSynOjectFactory()};
+	const auto &syn_obj_factory{renderpass_manager.GetSynOjectFactory()};
 
 	image_available_semaphores = syn_obj_factory.GetSemaphoreBundle(MAX_FRAMES_IN_FLIGHT);
 	render_finished_semaphores = syn_obj_factory.GetSemaphoreBundle(MAX_FRAMES_IN_FLIGHT);
 	frame_fences               = syn_obj_factory.GetFenceBundle(MAX_FRAMES_IN_FLIGHT, VkSynObjectBundleBase::SyncObjCreateOption::Signaled);
 	image_fences.resize(swapchain_manager.GetSwapImageCount());
+
 }
+
+
+
+
 
 void SceneLoadingRenderer::UpdateUniformBuffer(size_t current_image_index)
 {
@@ -97,17 +135,20 @@ void SceneLoadingRenderer::UpdateUniformBuffer(size_t current_image_index)
 	//	glm::vec4 view_pos;
 	//} ubo_vs_scene;                   //用于顶点着色器的uniform buffer object
 
-	common_resources.ubo_matrix_cpu.projection = camera->GetProj();
-	//common_resources.ubo_matrix_cpu.view       = camera->GetView();
-	common_resources.ubo_matrix_cpu.view = camera->GetViewMatrix();
-	//common_resources.ubo_matrix_cpu.view_pos   = camera->GetPosition();
-	common_resources.ubo_matrix_cpu.cam_pos = camera->GetEyePos();
-
-	common_resources.ubo_matrix_gpu->GetOne(current_image_index).CopyTo(&common_resources.ubo_matrix_cpu, sizeof(common_resources.ubo_matrix_cpu));
+	global_resources.matrix_buffer_cpu.projection = camera->GetProj();
+	//global_resources.ubo_matrix_cpu.view       = camera->GetView();
+	global_resources.matrix_buffer_cpu.view = camera->GetViewMatrix();
+	//global_resources.ubo_matrix_cpu.view_pos   = camera->GetPosition();
+	global_resources.matrix_buffer_cpu.cam_pos = camera->GetEyePos();
+	global_resources.matrix_buffer_gpu[current_image_index]->CopyFrom(&global_resources.matrix_buffer_cpu, sizeof(global_resources.matrix_buffer_cpu));
 
 
 
 }
+
+
+
+
 
 void SceneLoadingRenderer::DrawFrame(float time_diff)
 {
@@ -127,16 +168,17 @@ void SceneLoadingRenderer::DrawFrame(float time_diff)
 
 	if (result == VK_ERROR_OUT_OF_DATE_KHR)
 	{
+		//TODO: recreation of swapchain
 		//recreateSwapChain();
 		return;
 	}
 	else if (result == VK_NOT_READY)
 	{
-		std::cout << ",rely on semophore" << std::endl;
+		std::cout << "Rely on semophore to synchronize!" << std::endl;
 	}
 	else if (result != VK_SUCCESS && result != VK_SUBOPTIMAL_KHR)
 	{
-		throw std::runtime_error("failed to acquire swap chain image!");
+		throw std::runtime_error("Failed to acquire swap-chain image!");
 	}
 
 	UpdateUniformBuffer(imageIndex);
@@ -264,7 +306,7 @@ void SceneLoadingRenderer::DrawFrame(float time_diff)
 
 	VkSubmitInfo submit_info{};
 	submit_info.sType                               = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-	const VkSemaphore              waitSemaphores[] = {image_available_semaphores->GetOne(currentFrame)};        //上面是等待imageIndex对应的image把它占用的GPU资源释放出来，这里是因为image还需要presentation，很有可能presentation engine还没有完成，所以需要等待这个semaphore
+	const VkSemaphore              waitSemaphores[] = {image_available_semaphores->GetOne(currentFrame)};        //上面是等待imageIndex对应的image把它占用的GPU资源释放出来，这里是因为image渲染完成后，即便GPU资源释放了，但是还需要进行presentation，很有可能presentation engine还没有完成，所以需要等待这个semaphore
 	constexpr VkPipelineStageFlags waitStages[]     = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
 	submit_info.waitSemaphoreCount                  = 1;
 	submit_info.pWaitSemaphores                     = waitSemaphores;
@@ -273,9 +315,10 @@ void SceneLoadingRenderer::DrawFrame(float time_diff)
 	const auto graphics_command_buffer = command_manager.GetGraphicsCommandBuffers()[imageIndex];
 	const auto UI_command_buffer       = imgui_UI.GetCommandBuffer(imageIndex);
 
-	const std::array<VkCommandBuffer, 2> submit_command_buffers = {graphics_command_buffer, UI_command_buffer};
+	//const std::array<VkCommandBuffer, 2> submit_command_buffers = {UI_command_buffer, graphics_command_buffer };
+	const std::array<VkCommandBuffer, 1> submit_command_buffers = {graphics_command_buffer};
 
-	submit_info.commandBufferCount = submit_command_buffers.size();
+	submit_info.commandBufferCount = static_cast<uint32_t>(submit_command_buffers.size());
 	//&graphics_command_buffers[imageIndex] 用的frame buffer就是swap image[imageIndex]
 	submit_info.pCommandBuffers = submit_command_buffers.data();
 
@@ -306,6 +349,8 @@ void SceneLoadingRenderer::DrawFrame(float time_diff)
 
 	if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
 	{
+
+		//TODO: recreation of swapchain
 		//recreateSwapChain();
 		return;
 	}
@@ -314,7 +359,12 @@ void SceneLoadingRenderer::DrawFrame(float time_diff)
 		throw std::runtime_error("failed to present swap chain image!");
 	}
 	currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+
+
 }
+
+
+
 
 void SceneLoadingRenderer::UpdateCamera(float dt)
 {
@@ -380,7 +430,7 @@ void SceneLoadingRenderer::UpdateCamera(float dt)
 	camera->ProcessMouseScroll(mouse->GetMouseScroll());
 }
 
-//void SceneLoadingRenderer::CreateDescriptorSetsThenUpdate()
+//void SceneLoadingRenderer::CreateDescriptorSets()
 //{
 //	descriptor_sets_for_matrices.resize(swapchain_manager->GetSwapImageCount());
 //	{
@@ -531,8 +581,8 @@ void SceneLoadingRenderer::UpdateCamera(float dt)
 //{
 //	system("..\\..\\data\\shaderbat\\SceneLoadingCompile.bat");
 //
-//	VkShaderManager vertex_shader(std::string("../../data/shaders/SceneLoading/SceneLoading_vertex_shader.spv"), std::string("main"), VK_SHADER_STAGE_VERTEX_BIT, device_manager->GetLogicalDeviceRef());
-//	VkShaderManager fragment_shader(std::string("../../data/shaders/SceneLoading/SceneLoading_fragment_shader.spv"), std::string("main"), VK_SHADER_STAGE_FRAGMENT_BIT, device_manager->GetLogicalDeviceRef());
+//	VkShaderManager vertex_shader(std::string("../../data/shaders/Global/SceneLoading_vertex_shader.spv"), std::string("main"), VK_SHADER_STAGE_VERTEX_BIT, device_manager->GetLogicalDeviceRef());
+//	VkShaderManager fragment_shader(std::string("../../data/shaders/Global/SceneLoading_fragment_shader.spv"), std::string("main"), VK_SHADER_STAGE_FRAGMENT_BIT, device_manager->GetLogicalDeviceRef());
 //
 //	std::vector<VkPipelineShaderStageCreateInfo> shader_stages_create_info = {vertex_shader.GetVkPipelineShaderStageCreateInfo(), fragment_shader.GetVkPipelineShaderStageCreateInfo()};
 //
@@ -743,7 +793,7 @@ void SceneLoadingRenderer::UpdateCamera(float dt)
 //}
 
 SceneLoadingRenderer::SceneLoadingRenderer(VkGraphicsComponent &gfx_) :
-    BaseRenderer(gfx_), render_pass_manager(gfx), imgui_UI(gfx)
+    BaseRenderer(gfx_), renderpass_manager(gfx), imgui_UI(gfx)
 {
 }
 
@@ -758,6 +808,9 @@ SceneLoadingRenderer::SceneLoadingRenderer(VkGraphicsComponent &gfx_) :
 //}
 //
 //
+
+
+
 void SceneLoadingRenderer::SetUpUserInput()
 {
 	std::vector<int> tracked_keys = {GLFW_KEY_ESCAPE, GLFW_KEY_W, GLFW_KEY_S, GLFW_KEY_A, GLFW_KEY_D, GLFW_KEY_Q, GLFW_KEY_E, GLFW_KEY_G, GLFW_KEY_UP, GLFW_KEY_DOWN};
@@ -769,31 +822,23 @@ void SceneLoadingRenderer::SetUpUserInput()
 
 void SceneLoadingRenderer::CreateCamera()
 {
-	camera = std::make_unique<FirstPersonCamera>(glm::vec3(0.f, 0.f, 1.f));
-
+	camera = std::make_unique<FirstPersonCamera>();
 	camera->SetFrustum(glm::radians(60.f), swapchain_manager.GetSwapChainImageExtent().width / (float) swapchain_manager.GetSwapChainImageExtent().height, 0.1f, 256.f);
-	//camera->LookAt(glm::vec3(0.f, 0.f, 1.f), glm::vec3(0.f, 0.f, -1.f), glm::vec3(0., 1., 0.));
 }
-//
+
 void SceneLoadingRenderer::CreateCommomAttachmentImgs()
 {
-	CreateDepthImages();
 	CreateSwapchainImages();
+	CreateDepthImages();
 }
 //
 
 void SceneLoadingRenderer::CreateCommonTextureImgs()
 {
-	//const auto &      texture_factory       = render_pass_manager.GetTextureFactory();
-
-
+	//const auto &      texture_factory       = renderpass_manager.GetTextureFactory();
 	//const std::string chiricahua_narrowPath_path = "../../data/textures/hdr/NarrowPath_3k.hdr";
 	//const VkTextureFactory::SamplerPP sampler_ppl;
-	//common_resources.hdr_environment_map = texture_factory.ProduceTexture(chiricahua_narrowPath_path,VK_FORMAT_R32G32B32A32_SFLOAT,sampler_ppl);
-
-
-
-
+	//global_resources.hdr_environment_map = texture_factory.ProduceTexture(chiricahua_narrowPath_path,VK_FORMAT_R32G32B32A32_SFLOAT,sampler_ppl);
 
 
 
@@ -801,12 +846,18 @@ void SceneLoadingRenderer::CreateCommonTextureImgs()
 //
 void SceneLoadingRenderer::CreateDepthImages()
 {
-	const DepthImgPP depth_para_pack{gfx};
-	common_resources.depth_attachments = render_pass_manager.GetImageFactory().ProduceImageBundlePtr(depth_para_pack, swapchain_manager.GetSwapImageCount());
+	const DepthImgPP depth_img_PP{gfx};
+	auto             img_view_CI = ImgViewCI::PopulateDepthImgViewCI(gfx.SwapchainMan());
+
+	global_resources.depth_attachments = renderpass_manager.GetTextureFactory().ProduceEmptyTextureArray(depth_img_PP, std::nullopt, img_view_CI, SWAP_IMG_COUNT);
 }
 
 void SceneLoadingRenderer::CreateSwapchainImages()
 {
-	const SwapchainImgPP parameter_pack;
-	common_resources.swapchain_images = render_pass_manager.GetImageFactory().ProduceImageBundlePtr(parameter_pack);
+	const SwapchainImgPP swap_img_PP;
+	auto                 img_view_CI  = ImgViewCI::PopulateSwapchainImgViewCI(gfx.SwapchainMan());
+	global_resources.swapchain_attachments = renderpass_manager.GetTextureFactory().ProduceEmptyTextureArray(swap_img_PP, std::nullopt, img_view_CI);
+
+
+
 }

@@ -2,7 +2,6 @@
 #include "BaseRenderer.h"
 #include "VkGraphicsComponent.h"
 #include "VkInstanceWrapper.h"
-
 #include "VkMath.h"
 
 #include <memory>

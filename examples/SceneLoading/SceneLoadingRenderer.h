@@ -7,7 +7,7 @@
 #include "KeyBoardInputManager.h"
 #include "MouseInputManager.h"
 #include "RenderingMetaInfo.h"
-
+#include "VkRenderpassManager.h"
 #include "PreprocessPass.h"
 #include "Renderpass0.h"
 #include "VkImgui.h"
@@ -59,19 +59,20 @@ class SceneLoadingRenderer : public BaseRenderer
 	//========================================
 	void DrawFrame(float time_diff) override;
 	void UpdateCamera(float dt) override;
-	//void UIRendering() override ;
 
   private:
-	static constexpr int MAX_FRAMES_IN_FLIGHT = 2;
+
 
   private:
 	//void CreatePipelineCache();
 	void CreateDepthImages();
 	void CreateSwapchainImages();
 
+
+private:
   private:
 	//RENDERPASS MAN
-	VkRenderpassManager render_pass_manager;
+	VkRenderpassManager renderpass_manager;
 	//RENDERPASS
 	std::vector<std::shared_ptr<VkRenderpassBase>> renderpasses;
 
@@ -88,6 +89,8 @@ class SceneLoadingRenderer : public BaseRenderer
 	std::vector<VkFence> image_fences;
 	//UI
 	VkImgui imgui_UI;
+	//GLOBAL RESOURCES
+	Global::Resources global_resources;
 
-	SceneLoading::CommonResources common_resources;
+
 };

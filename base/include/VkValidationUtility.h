@@ -40,8 +40,12 @@ const std::vector<VkValidationFeatureDisableEXT> disabled_features{
     //VK_VALIDATION_FEATURE_DISABLE_CORE_CHECKS_EXT
 };
 
-//需要用到的VALIDATION INSTANCE LAYER
-const std::vector<const char *> required_validation_instance_layers{
+
+
+
+//需要用到的和VALIDATION相关的INSTANCE LAYER
+const std::vector<const char *> required_validation_instance_layers
+{
     "VK_LAYER_KHRONOS_validation"
     //"VK_LAYER_RENDERDOC_Capture"
 };

@@ -1,8 +1,8 @@
 #include "VkGeneralPurposeImage.h"
 
 
-VkGeneralPurposeImage::VkGeneralPurposeImage(VkGraphicsComponent &_gfx, const VkImage _image, const VkDeviceMemory _image_mem, const VkImageView _image_view, std::shared_ptr<ImagePP> para_pack_) :
-    VkImageBase(_gfx, _image, _image_view, std::move(para_pack_)),
+VkGeneralPurposeImage::VkGeneralPurposeImage(VkGraphicsComponent &_gfx, const VkImage _image, const VkDeviceMemory _image_mem,  std::shared_ptr<ImagePP> para_pack_) :
+    VkImageBase(_gfx, _image,  std::move(para_pack_)),
     command_manager(gfx.CommandMan()),
     window(gfx.Window()),
     image_mem(_image_mem)
@@ -10,7 +10,8 @@ VkGeneralPurposeImage::VkGeneralPurposeImage(VkGraphicsComponent &_gfx, const Vk
 }
 VkGeneralPurposeImage::~VkGeneralPurposeImage()
 {
-	vkDestroyImageView(device_manager.GetLogicalDevice(), image_view, nullptr);
+	//vkDestroyImageView(device_manager.GetLogicalDevice(), image_view, nullptr);
+
 	vkDestroyImage(device_manager.GetLogicalDevice(), image, nullptr);
 	vkFreeMemory(device_manager.GetLogicalDevice(), image_mem, nullptr);
 }
@@ -84,17 +85,17 @@ void VkGeneralPurposeImage::CopyBufferToImage(VkBuffer buffer, const std::vector
 	{
 	}
 
-	const VkCommandBuffer commandBuffer = VkCommandManager::BeginSingleTimeCommands(command_pool, device_manager.GetLogicalDevice());
+	const VkCommandBuffer command_buffer = VkCommandManager::BeginSingleTimeCommands(command_pool, device_manager.GetLogicalDevice());
 
 	vkCmdCopyBufferToImage(
-	    commandBuffer,
+	    command_buffer,
 	    buffer,
 	    image,
 	    VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 	    uint32_t(bufferCopyRegions.size()),
 	    bufferCopyRegions.data());
 
-	VkCommandManager::EndSingleTimeCommands(command_pool, device_manager.GetLogicalDevice(), commandBuffer, command_quque);
+	VkCommandManager::EndSingleTimeCommands(command_pool, device_manager.GetLogicalDevice(), command_buffer, command_quque);
 }
 
 

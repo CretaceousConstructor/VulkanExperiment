@@ -12,9 +12,15 @@
 class VkTexture
 {
   public:
-	VkTexture(VkGraphicsComponent &gfx_, std::string image_path, std::shared_ptr<VkGeneralPurposeImage> image_, VkSampler texture_sampler_, VkImageLayout imageLayout_);
+	using TexturePtrBundle = std::vector<std::shared_ptr<VkTexture>>;
+	using TextureBundle    = std::vector<VkTexture>;
+	using TexturePtr       = std::shared_ptr<VkTexture>;
 
-	~VkTexture();
+  public:
+	friend class VkTextureFactory;
+	VkTexture(VkGraphicsComponent &gfx_, std::string image_path, std::shared_ptr<VkImageBase> image_, VkImageLayout imageLayout_);
+	VkTexture()  = delete;
+	~VkTexture() = default;
 
 	VkTexture(const VkTexture &) = delete;
 	VkTexture &operator=(const VkTexture &) = delete;
@@ -24,24 +30,45 @@ class VkTexture
 
   public:
 	[[nodiscard]] VkWriteDescriptorSet GetWriteDescriptorSetInfo(uint32_t dstbinding, uint32_t dstArrayElement = 0);
-	[[nodiscard]] VkWriteDescriptorSet GetWriteDescriptorSetInfo(VkDescriptorSet set, uint32_t dstbinding, uint32_t dstArrayElement = 0 );
+	[[nodiscard]] VkWriteDescriptorSet GetWriteDescriptorSetInfo(VkDescriptorSet set, uint32_t dstbinding, uint32_t dstArrayElement = 0);
 
   public:
-	[[nodiscard]] VkImage       GetTextureImage() const;
-	[[nodiscard]] VkImageView   GetTextureImageView() const;
-	[[nodiscard]] VkSampler     GetTextureSampler() const;
-	[[nodiscard]] VkImageLayout GetImageLayout() const;
+	[[nodiscard]] std::shared_ptr<VkImageBase> GetTextureImage() const;
+	[[nodiscard]] VkImage                      GetTextureRawImage() const;
+	[[nodiscard]] VkImageView                  GetTextureImageView() const;
+	[[nodiscard]] VkSampler                    GetTextureSampler() const;
+	[[nodiscard]] VkImageLayout                GetImageLayout() const;
+
+  public:
+
+	void InsertImageMemoryBarrier(VkCommandBuffer cmd_buffer, const Sync::VkImageMemoryBarrierEnhanced &img_mem_barrier);
+	void InsertImageMemoryBarrier(const Sync::VkImageMemoryBarrierEnhanced &img_mem_barrier, const VkDeviceManager::CommandPoolType command_type);
 
   private:
+	std::optional<VkSamplerCreateInfo>   sampler_CI;
+	std::optional<VkImageViewCreateInfo> img_view_CI;
+
+  private:
+	void SetCISamplerAndImgView(std::optional<VkSamplerCreateInfo> sampler_CI_, std::optional<VkImageViewCreateInfo> img_view_CI_);
+
+	void SetImgViewCI(VkImageViewCreateInfo image_view_);
+	void SetSamplerCI(VkSamplerCreateInfo texture_sampler_);
+
+  private:
+	std::string                  tex_name;
+	std::shared_ptr<VkImageBase> tex_image;
+
+	VkImageView tex_image_view{};
+	VkSampler   tex_sampler{};
+
+	VkDescriptorImageInfo image_info{};
+	VkImageLayout         image_layout{};
+	VkBool32              ktx_use_staging = true;
+
+  private:
+
 	VkGraphicsComponent &  gfx;
 	const VkDeviceManager &device_manager;
 
-  private:
-	std::string                            tex_name;
-	std::shared_ptr<VkGeneralPurposeImage> texture_image;
-	VkDescriptorImageInfo                  imageInfo{};
 
-	VkSampler     texture_sampler{};
-	VkImageLayout image_layout{};
-	VkBool32      ktx_use_staging = true;
 };

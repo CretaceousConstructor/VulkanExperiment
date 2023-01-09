@@ -7,12 +7,10 @@
 #include "WindowsSubsys.h"
 
 #include <memory>
-#include <string>
 #include <stdexcept>
+#include <string>
 
-
-
-//这里需要创建singleton class，否则在析构函数中调用glfwTerminate会使得其他任何窗口都没法继续使用。但是暂时先懒得管
+//这里需要创建singleton class，否则在析构函数中调用glfwTerminate会使得其他任何窗口objects都没法继续使用。但是暂时先懒得管
 class VkWindows
 {
   public:
@@ -23,17 +21,16 @@ class VkWindows
 	VkWindows(const VkWindows &) = delete;
 	VkWindows &operator=(const VkWindows &) = delete;
 
-	VkWindows(VkWindows&&) = delete;
-	VkWindows &operator=(VkWindows&&) = delete;
-
+	VkWindows(VkWindows &&) = delete;
+	VkWindows &operator=(VkWindows &&) = delete;
 
   public:
-	[[nodiscard]]VkSurfaceKHR GetSurface() const;
+	[[nodiscard]] VkSurfaceKHR GetSurface() const;
 	//[[nodiscard]] VkFormat     GetSurfaceFormat() const;
 
 	//const VkSurfaceKHR &GetSurfaceRef() const;
 	//VkSurfaceKHR &      GetSurfaceRef();
-	[[nodiscard]] const GLFWwindow * GetWindowPtr() const;
+	[[nodiscard]] const GLFWwindow *GetWindowPtr() const;
 
   public:
 	const uint32_t    WIDTH;
@@ -50,6 +47,4 @@ class VkWindows
 	const VkInstance &instance;
 	GLFWwindow *      raw_window_ptr = nullptr;
 	VkSurfaceKHR      surface;
-
-
 };

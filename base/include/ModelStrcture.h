@@ -1,8 +1,8 @@
 #pragma once
 
 #include "VkBufferBase.h"
-#include "VkTexture.h"
 #include "VkMath.h"
+#include "VkTexture.h"
 
 namespace Gltf
 {
@@ -30,8 +30,8 @@ struct Mesh
 
 struct Node
 {
-	int              parent_index;        //index of  std::vector<GltfModel::Node> nodes vector
-	std::vector<int> children_indices;
+	int              parent_index;        //index ito the std::vector<GltfModel::Node> nodes vector
+	std::vector<int> children_indices;   
 	Mesh             mesh;
 	glm::mat4        matrix;
 	bool             visible{true};
@@ -44,21 +44,19 @@ struct Texture
 	uint32_t imageIndex;
 };
 
+
+
 // Single vertex buffer for all primitives
-struct VertexBuffer
+struct VertexBufferGpu
 {
-	size_t count;
-	//VkBuffer       buffer;
-	//VkDeviceMemory memory;
+	size_t                        count;
 	std::shared_ptr<VkBufferBase> buffer;
 };
 
 // Single index buffer for all primitives
-struct IndexBuffer
+struct IndexBufferGpu
 {
-	size_t count;
-	//VkBuffer       buffer;
-	//VkDeviceMemory memory;
+	size_t                        count;
 	std::shared_ptr<VkBufferBase> buffer;
 };
 }        // namespace Gltf

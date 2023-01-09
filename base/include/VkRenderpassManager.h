@@ -1,4 +1,5 @@
 #pragma once
+#include "VkDescriptorManagerV0.h"
 #include "VkFactoryBundle.h"
 #include "VkManagerBundle.h"
 
@@ -33,22 +34,34 @@ class VkRenderpassManager
 	[[nodiscard]] const std::vector<VkDescriptorSet> &GetDescriptorSetBundle(DescriptorSetMetaInfo meta_info) const;
 
   public:
-	VkDescriptorManager &GetDescriptorManager();
-	VkPipelineManager &  GetPipelineManager();
+
+
+	
+
+
+
+
+  public:
+	VkDescriptorManager &  GetDescriptorManager();
+	VkDescriptorManagerV0 &GetDescriptorManagerV0();
+	VkPipelineManager &    GetPipelineManager();
 
 	/**
 	 * \brief 返回没有状态记忆的工厂类对象
 	 * \return stateless factory
 	 */
 	//const VkSubPassFacotry &       GetSubPassFactory();
-	const VkBufferFactory &   GetBufferFactory();
-	const VkTextureFactory &  GetTextureFactory();
+	const VkBufferFactory &GetBufferFactory();
+
+	const VkTextureFactory &GetTextureFactory();
+
 	const VkSynObjectFactory &GetSynOjectFactory();
 
 	const VkImageFactory &GetImageFactory();
 	const VkModelFactory &GetModelFactory();
 
 	const VkDescriptorSetFactory &GetDescriptorSetFactory();
+	const VkShaderFactory &       GetShaderFactory();
 
   public:
 	VkManagerBundle &GetManagerBundle();
@@ -63,7 +76,6 @@ class VkRenderpassManager
 
   private:
 	//VkRenderpassWrapper &                             GetRenderpass(uint32_t pass);
-
 	//std::unordered_map<uint32_t, VkRenderpassWrapper> render_passes;
 	//std::unordered_map<uint32_t, std::string>         render_passes_names;
 };

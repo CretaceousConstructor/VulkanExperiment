@@ -2,6 +2,7 @@
 
 #include "VkPipelineManager.h"
 #include "VkShaderManager.h"
+#include "VkDescriptorManagerV0.h"
 
 class VkManagerBundle
 {
@@ -12,7 +13,7 @@ class VkManagerBundle
 	//DESCRIPTOR MANs(layouts and pools and sets)
 	VkDescriptorManager descriptor_manager;
 	VkPipelineManager   pipeline_manager;
-
+	VkDescriptorManagerV0 descriptor_managerv0;
 
 
 };

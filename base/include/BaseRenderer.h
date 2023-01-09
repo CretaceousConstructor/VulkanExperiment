@@ -30,7 +30,7 @@ class BaseRenderer
 	BaseRenderer &operator=(BaseRenderer &&) = delete;
 
   protected:
-	void MaterialRegister();
+	void MaterialRegistration();
 
 	virtual void SetUpUserInput() = 0;
 	virtual void CreateCamera()   = 0;

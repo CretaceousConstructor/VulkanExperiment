@@ -9,8 +9,13 @@ BaseRenderer::BaseRenderer(VkGraphicsComponent &gfx_) :
 {
 }
 
-void BaseRenderer::MaterialRegister()
+void BaseRenderer::MaterialRegistration()
 {
+
+
+
+
+
 }
 
 void BaseRenderer::RenderingPreparation()

@@ -35,7 +35,6 @@ void NonPbrMaterial::AllocateDescriptorSetAndUpdate(VkDescriptorPool descriptor_
 	/*
 				Binding 1: normal mapping 
 	*/
-
 	auto binding1   = images[normal_image_index]->GetWriteDescriptorSetInfo(1);
 	binding1.dstSet = descriptor_set;
 	write_descriptor_sets.push_back(binding1);
@@ -76,22 +75,19 @@ void NonPbrMaterial::ModifyPipelineCI(VkPipelinePP &pipeline_CI)
 
 	const VkPipelinePP::VkSpecializationInfoPack result{.sp_info = specialization_info, .shader_stage = VK_SHADER_STAGE_FRAGMENT_BIT};
 
-
 	//shader_stages_create_info[1].pSpecializationInfo = &specializationInfo;
 	// For double sided materials, culling will be disabled
 	//pipeline_CI.specialization_infos.clear();
-
 
 	pipeline_CI.specialization_infos.push_back(result);
 
 	pipeline_CI.rasterization_state_CI.cullMode = doubleSided ? VK_CULL_MODE_NONE : VK_CULL_MODE_BACK_BIT;
 }
 
-void NonPbrMaterial::CleanUpMaterial(const VkDeviceManager &device_manager)
-{
-	vkDestroyPipelineLayout(device_manager.GetLogicalDevice(), pipe_layout, nullptr);
-	vkDestroyDescriptorSetLayout(device_manager.GetLogicalDevice(), desc_layout, nullptr);
-}
+//void NonPbrMaterial::CleanUpMaterial(const VkDeviceManager &device_manager) {
+//	vkDestroyPipelineLayout(device_manager.GetLogicalDevice(), pipe_layout, nullptr);
+//	vkDestroyDescriptorSetLayout(device_manager.GetLogicalDevice(), desc_layout, nullptr);
+//}
 
 VkDescriptorSetLayout NonPbrMaterial::GetDescriptorSetLayout()
 {
@@ -105,7 +101,6 @@ VkPipelineLayout NonPbrMaterial::GetPipelineLayout()
 
 VkDescriptorSetLayout NonPbrMaterial::CreateDesciptorSetLayout(const VkDeviceManager &device_manager)
 {
-	vkDestroyDescriptorSetLayout(device_manager.GetLogicalDevice(), desc_layout, nullptr);
 	//LAYOUT FOR  THIS MATERIAL
 	// Descriptor set layout for passing material :binding 0 for color,binding 1 for normal mappings
 	{
@@ -131,10 +126,7 @@ VkDescriptorSetLayout NonPbrMaterial::CreateDesciptorSetLayout(const VkDeviceMan
 		layout_bindingCI.bindingCount = (uint32_t) layout_bindings_texture.size();        //the amount of VkDescriptorSetLayoutBinding
 		layout_bindingCI.pBindings    = layout_bindings_texture.data();
 
-		if (vkCreateDescriptorSetLayout(device_manager.GetLogicalDevice(), &layout_bindingCI, nullptr, &desc_layout) != VK_SUCCESS)
-		{
-			throw std::runtime_error("failed to create descriptor set layout!");
-		}
+		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(device_manager.GetLogicalDevice(), &layout_bindingCI, nullptr, &desc_layout))
 	}
 
 	return desc_layout;
@@ -142,7 +134,11 @@ VkDescriptorSetLayout NonPbrMaterial::CreateDesciptorSetLayout(const VkDeviceMan
 
 VkPipelineLayout NonPbrMaterial::CreatePipelineLayout(const VkDeviceManager &device_manager, const std::vector<VkDescriptorSetLayout> &set_layouts, const std::vector<VkPushConstantRange> &push_constant_ranges)
 {
-	vkDestroyPipelineLayout(device_manager.GetLogicalDevice(), pipe_layout, nullptr);
+	//vkDestroyPipelineLayout(device_manager.GetLogicalDevice(), pipe_layout, nullptr);
+
+
 	pipe_layout = Vk::GetPipelineLayout(device_manager.GetLogicalDevice(), set_layouts, push_constant_ranges);
 	return pipe_layout;
+
+
 }

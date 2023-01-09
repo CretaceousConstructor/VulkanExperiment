@@ -22,7 +22,7 @@ VkFenceBundle::VkFenceBundle(const VkDeviceManager &_device_manager, uint32_t _b
 	}
 }
 
-VkFence VkFenceBundle::operator[](size_t num) const
+const VkFence &VkFenceBundle::operator[](size_t num) const
 {
 	return syn_objects_bundle[num];
 }

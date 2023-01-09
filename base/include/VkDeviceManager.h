@@ -7,6 +7,9 @@
 #include <map>
 #include <optional>
 #include <set>
+
+
+
 class VkDeviceManager
 {
   public:
@@ -19,6 +22,7 @@ class VkDeviceManager
 	VkDeviceManager(VkDeviceManager &&) = delete;
 	VkDeviceManager &operator=(VkDeviceManager &&) = delete;
 
+
   public:
 	struct SwapChainSupportDetails
 	{
@@ -29,20 +33,21 @@ class VkDeviceManager
 	enum class CommandPoolType
 	{
 		graphics_command_pool,
-		transfor_command_pool
+		transfor_command_pool,
+		unknown
 	};
 	struct QueueFamilyIndices
 	{
-		std::optional<uint32_t> graphicsFamily;
-		std::optional<uint32_t> presentFamily;
-		std::optional<uint32_t> transferFamily;
+		std::optional<uint32_t> graphics_family;
+		std::optional<uint32_t> present_family;
+		std::optional<uint32_t> transfer_family;
 		[[nodiscard]] bool      IsComplete() const;
 	};
 
   public:
 	static QueueFamilyIndices      FindQueueFamilies(const VkPhysicalDevice &device, const VkSurfaceKHR &surface);
 	static bool                    IsDeviceSuitable(const VkPhysicalDevice &device, const VkSurfaceKHR &surface);
-	static bool                    CheckDeviceExtensionSupport(const VkPhysicalDevice &device);
+	static bool                    CheckIfDeviceExtensionSupported(const VkPhysicalDevice &device);
 	static SwapChainSupportDetails QuerySwapChainSupport(const VkPhysicalDevice &device, const VkSurfaceKHR &surface);
 	static uint32_t                FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties, const VkPhysicalDevice &para_physical_device);
 

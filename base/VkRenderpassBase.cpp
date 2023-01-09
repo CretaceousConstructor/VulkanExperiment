@@ -8,19 +8,29 @@ VkRenderpassBase::VkRenderpassBase(VkGraphicsComponent &gfx_,
 
 void VkRenderpassBase::Init()
 {
-
-
 	ResourceInit();
 
+	CreateLocalCommandBuffers();
+
+	CreateDescriptorSetPools();
 	CreateDescriptorSetLayout();
-	CreateDescriptorSetsThenUpdate();
+	CreateDescriptorSets();
 
 	CreateAttachments();
-
 	CreateGraphicsPipelineLayout();
-	CompileShaders();
-
-
-
+	CreateShaders();
+	CreateGraphicsPipeline();
 }
 
+void VkRenderpassBase::Execute(const std::vector<VkCommandBuffer> &command_buffers)
+{
+	BeginRenderpass(command_buffers);
+	UpdateDescriptorSets();
+	ExecuteRenderpass(command_buffers);
+	EndRenderpass(command_buffers);
+}
+
+std::vector<VkAttachmentInfo> VkRenderpassBase::SelectAttachments(std::optional<size_t> current_image)
+{
+	return {};
+}

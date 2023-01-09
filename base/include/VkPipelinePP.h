@@ -45,7 +45,6 @@ class VkPipelinePP
 	};
 
   public:
-	std::vector<VkPipelineShaderStageCreateInfo> shader_stage_CI;
 	std::vector<VkSpecializationInfoPack>        specialization_infos;
 
 	std::vector<VkVertexInputBindingDescription>   vertex_input_binding_descriptions;
@@ -69,6 +68,17 @@ class VkPipelinePP
 	VkPipelineRenderingCreateInfo pipeline_rendering_CI{};
 
 	VkPipelineLayout pipeline_layout{nullptr};
+
+	void SetDynamicRenderingAttachmentFormats(std::vector<VkAttachmentInfo::DynamicRenderingAttachment> attachment_formats_);
+	void SetPipelineShaderStageCreateInfo(std::vector<VkPipelineShaderStageCreateInfo> shader_stage_CI_);
+
+
+
+
+protected:
+	std::optional<std::vector<VkAttachmentInfo::DynamicRenderingAttachment>> attachment_formats;
+	std::vector<VkPipelineShaderStageCreateInfo> shader_stage_CI;
+
 
   protected:
 	VkGraphicsComponent &     gfx;

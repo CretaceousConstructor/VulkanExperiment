@@ -1,5 +1,5 @@
 #pragma once
-#include "VkBufferBundle.h"
+#include "VkBufferBase.h"
 #include "VkImageBundle.h"
 #include "VkMetaInfo.h"
 #include "VkModel.h"
@@ -62,8 +62,9 @@ class RenderpassCommonResources
 {
   public:
 	//UNIFORM BUFFER
-	UboData                         ubo{};
-	std::shared_ptr<VkBufferBundle> uniform_buffers;
+	UboData                       ubo{};
+	VkBufferBase::BufferPtrBundle uniform_buffers;
+
 	//TEXTURE
 	std::shared_ptr<VkTexture> ktx_texure;
 

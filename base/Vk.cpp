@@ -27,8 +27,6 @@ VkPipelineLayout Vk::GetPipelineLayout(const VkDevice &device, const std::vector
 	return result;
 }
 
-
-
 VkPushConstantRange Vk::GetPushConstantRange(VkShaderStageFlags stage_flags, uint32_t size, uint32_t offset)
 {
 	return {stage_flags, offset, size};
@@ -118,15 +116,14 @@ VkDescriptorSetLayoutBinding Vk::GetDescriptorSetLayoutBinding(uint32_t binding,
 
 VkDescriptorSetLayoutCreateInfo Vk::GetDescriptorSetLayoutCI(const std::vector<VkDescriptorSetLayoutBinding> &bindings, const void *pNext, VkDescriptorSetLayoutCreateFlags flags)
 {
-
 	//TODO:	use perfect forwarding to check bindings is not a rvalue;
-	VkDescriptorSetLayoutCreateInfo descriptorSetLayoutCreateInfo{};
-	descriptorSetLayoutCreateInfo.sType        = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-	descriptorSetLayoutCreateInfo.pBindings    = bindings.data();
-	descriptorSetLayoutCreateInfo.bindingCount = static_cast<uint32_t>(bindings.size());
-	descriptorSetLayoutCreateInfo.pNext        = pNext;
-	descriptorSetLayoutCreateInfo.flags        = flags;
-	return descriptorSetLayoutCreateInfo;
+	VkDescriptorSetLayoutCreateInfo descriptor_set_layout_create_info{};
+	descriptor_set_layout_create_info.sType        = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+	descriptor_set_layout_create_info.pBindings    = bindings.data();
+	descriptor_set_layout_create_info.bindingCount = static_cast<uint32_t>(bindings.size());
+	descriptor_set_layout_create_info.pNext        = pNext;
+	descriptor_set_layout_create_info.flags        = flags;
+	return descriptor_set_layout_create_info;
 }
 
 VkDescriptorSetAllocateInfo Vk::GetDescriptorAllocateInfo(VkDescriptorPool descriptorPool, const VkDescriptorSetLayout &SetLayout)
@@ -149,10 +146,23 @@ VkDescriptorSetAllocateInfo Vk::GetDescriptorAllocateInfo(VkDescriptorPool descr
 	return descriptorSetAllocateInfo;
 }
 
-
-
-
 size_t Vk::GetSamplerUUID_unsafe()
 {
 	return ++UUID_safe<Vk::Type::Sampler>;
+}
+
+
+
+std::string Vk::GetFileExtensionName(const std::string &filename)
+{
+	const size_t pos            = filename.find_last_of('.');
+	auto   file_extension = filename.substr(pos + 1, filename.size());
+
+	return file_extension;
+}
+
+bool Vk::HasStencilComponent(VkFormat format)
+{
+	//TODO: not complete
+	return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
 }

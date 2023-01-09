@@ -9,6 +9,7 @@
   <PropertyGroup>
     <OutDir>$(ProjectDir)$(Bin)$(Configuration)\</OutDir>
     <IntDir>$(Intermediate)$(Configuration)\</IntDir>
+    <CodeAnalysisRuleSet>..\..\codeanalysisruleset.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>

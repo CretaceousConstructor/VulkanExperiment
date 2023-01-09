@@ -49,6 +49,11 @@ VkDescriptorManager &VkRenderpassManager::GetDescriptorManager()
 	return managers.descriptor_manager;
 }
 
+VkDescriptorManagerV0 &VkRenderpassManager::GetDescriptorManagerV0()
+{
+	return managers.descriptor_managerv0;
+}
+
 VkPipelineManager &VkRenderpassManager::GetPipelineManager()
 {
 	return managers.pipeline_manager;
@@ -74,10 +79,9 @@ const VkSynObjectFactory &VkRenderpassManager::GetSynOjectFactory()
 	return factories.syn_obj_factory;
 }
 
-const VkImageFactory & VkRenderpassManager::GetImageFactory()
+const VkImageFactory &VkRenderpassManager::GetImageFactory()
 {
 	return factories.image_factory;
-
 }
 
 //const VkDepthImageFactory &VkRenderpassManager::GetDepthImageFactory()
@@ -91,17 +95,14 @@ const VkImageFactory & VkRenderpassManager::GetImageFactory()
 //}
 //
 
-
 const VkModelFactory &VkRenderpassManager::GetModelFactory()
 {
 	return factories.model_factory;
 }
 
-const VkDescriptorSetFactory & VkRenderpassManager::GetDescriptorSetFactory()
+const VkDescriptorSetFactory &VkRenderpassManager::GetDescriptorSetFactory()
 {
-
 	return factories.descriptor_set_factory;
-
 }
 
 VkManagerBundle &VkRenderpassManager::GetManagerBundle()
@@ -112,4 +113,9 @@ VkManagerBundle &VkRenderpassManager::GetManagerBundle()
 VkFactoryBundle &VkRenderpassManager::GetFactoryBundl()
 {
 	return factories;
+}
+
+const VkShaderFactory &VkRenderpassManager::GetShaderFactory()
+{
+	return factories.shader_factory;
 }

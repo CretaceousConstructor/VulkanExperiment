@@ -32,16 +32,9 @@ class VkModelFactory
 
 
 	class GltfModelPack
-		{
+	{
 	  public:
-		GltfModelPack(std::string path_, const tinygltf::Model &input_, const LoadingOption option_) :
-		    path(std::move(path_)),
-		    input(input_),
-		    option(option_)
-		{
-			const size_t pos = path.find_last_of('/');
-			model_directory  = path.substr(0, pos);
-		}
+		GltfModelPack(std::string path_, const tinygltf::Model &input_, const LoadingOption option_);
 
 		const std::string      path{};
 		const tinygltf::Model &input;
@@ -59,13 +52,14 @@ class VkModelFactory
 		std::vector<VkFormat>        image_formats;
 		std::vector<Gltf::Node>      nodes;
 
-		VkIndexType index_type{};
+		VkIndexType index_type_of_cpu_buffer{VK_INDEX_TYPE_UINT32};//default constructed to be unit 32
 		/********************GPU side********************/
 		// Single vertex buffer for all primitives
-		Gltf::VertexBuffer vertices_gpu{};
+		Gltf::VertexBufferGpu vertices_gpu{};
 		// Single index buffer for all primitives
-		Gltf::IndexBuffer indices_gpu{};
+		Gltf::IndexBufferGpu indices_gpu{};
 		/********************CPU side********************/
+		// use biggest element-size
 		std::vector<uint32_t>     index_buffer_cpu;
 		std::vector<Gltf::Vertex> vertex_buffer_cpu;
 	};
@@ -77,9 +71,9 @@ class VkModelFactory
 	void LoadImages(GltfModelPack &model) const;
 	//void LoadNode(const tinygltf::Node &inputNode, const tinygltf::Model &input, int parent, std::vector<uint32_t> &indexBuffer, std::vector<GltfModel::Vertex> &vertexBuffer);
 	void LoadNode(const size_t current_node_index_in_glft, int parent, GltfModelPack &model) const;
-	void LoadVertexAndIndexIntoGpuBuffer(GltfModelPack &model) const;
+	void LoadVertAndIndxIntoGpuBuffer(GltfModelPack &model) const;
 private:
-	static bool GltfHadLoadedImg(const tinygltf::Image &glTFImage) ;
+	static bool TestIfGltfHadLoadedImg(const tinygltf::Image &glTFImage) ;
   private:
 	VkGraphicsComponent &   gfx;
 	const VkDeviceManager & device_manager;
@@ -87,6 +81,9 @@ private:
 	const VkCommandManager &command_manager;
 	const VkTextureFactory &texture_factory;
 	const VkBufferFactory & buffer_factory;
+
+
+
 };
 
 
@@ -111,7 +108,7 @@ std::shared_ptr<GltfModel<M>> VkModelFactory::GetGltfModel(const std::string &mo
 		{
 			LoadNode(scene.nodes[i], -1, model);
 		}
-		LoadVertexAndIndexIntoGpuBuffer(model);
+		LoadVertAndIndxIntoGpuBuffer(model);
 	}
 	else
 	{
@@ -128,6 +125,6 @@ std::shared_ptr<GltfModel<M>> VkModelFactory::GetGltfModel(const std::string &mo
 	        model.vertices_gpu,
 	        model.indices_gpu,
 	        gfx);
-	result->index_type = model.index_type;
+	result->index_type= model.index_type_of_cpu_buffer;
 	return result;
 }
