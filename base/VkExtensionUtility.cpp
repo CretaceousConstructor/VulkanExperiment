@@ -38,17 +38,9 @@ std::vector<const char *> VkExtensionUtility::GetNeededGlobalInstanceExtensions(
 
 const std::vector<const char *> &VkExtensionUtility::GetRequiredExtensionsForAGoodDevice()
 {
-	//static std::vector<const char *> extensions
-	//{
-	//    VK_KHR_SWAPCHAIN_EXTENSION_NAME,
-	//    VK_KHR_MAINTENANCE1_EXTENSION_NAME,
-	//    VK_KHR_SHADER_NON_SEMANTIC_INFO_EXTENSION_NAME,
-	//    VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME,
-	//    VK_KHR_DEPTH_STENCIL_RESOLVE_EXTENSION_NAME,
-	//    VK_KHR_CREATE_RENDERPASS_2_EXTENSION_NAME,
-	//    VK_KHR_MULTIVIEW_EXTENSION_NAME,
-	//    VK_KHR_MAINTENANCE2_EXTENSION_NAME,
-	//};
+
+
+	
 
 	static std::vector<const char *> extensions{
 	    VK_KHR_SWAPCHAIN_EXTENSION_NAME,
@@ -58,7 +50,10 @@ const std::vector<const char *> &VkExtensionUtility::GetRequiredExtensionsForAGo
 	    VK_KHR_SHADER_NON_SEMANTIC_INFO_EXTENSION_NAME,
 	    VK_EXT_MEMORY_BUDGET_EXTENSION_NAME,
 	    VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME,
-		VK_EXT_SHADER_VIEWPORT_INDEX_LAYER_EXTENSION_NAME 
+		VK_EXT_SHADER_VIEWPORT_INDEX_LAYER_EXTENSION_NAME,
+		VK_KHR_SHADER_NON_SEMANTIC_INFO_EXTENSION_NAME,
+		"VK_EXT_shader_demote_to_helper_invocation"
+
 	};
 
 	return extensions;

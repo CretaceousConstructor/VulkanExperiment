@@ -49,11 +49,12 @@ struct UboMatrix
 {
 	glm::mat4 projection{};
 	glm::mat4 view{};
+	glm::vec3 light_pos{0.f, 2.5f, 2.5f};
+	uint8_t   padding_0{0};
+	glm::vec3 light_color{23.47f, 21.31f, 20.79f};
+	uint8_t   padding_1{0};
 	glm::vec3 cam_pos{};
-//glm::mat4 model;
-//glm::vec4 light_pos[4];
-//float exposure = 4.5f;
-//float gamma = 2.2f;
+	float     exposure{4.5f};
 };
 
 //UBO LIGHT
@@ -98,14 +99,15 @@ struct Resources
 	VkTexture::TexturePtrBundle swapchain_attachments;
 	VkTexture::TexturePtrBundle depth_attachments;
 
-	VkTexture::TexturePtr cube_mapping;
+	VkTexture::TexturePtr irradiance_map;
+	VkTexture::TexturePtr prefiltered_map;
+	VkTexture::TexturePtr LUT_map;
 
 	//MODELS
 	//std::unique_ptr<VkModel<Vertex>> light_indicator;
 	GltfModel<PbrMaterialMetallic>::Ptr scifi_helmet;
 	GltfModel<PbrMaterialMetallic>::Ptr sky_box;
 	//TEXTURE
-	std::shared_ptr<VkTexture> hdr_environment_map;
 };
 
 }        // namespace Global

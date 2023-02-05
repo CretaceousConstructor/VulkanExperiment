@@ -36,7 +36,8 @@ std::shared_ptr<VkShaderWrapper> VkShaderFactory::GetShader(const std::string &p
 
 	//GET FILE NAME
 	const size_t start_pos = path_.find_last_of('/');
-	const auto   file_name = path_.substr(start_pos + 1, path_.size());
+	//const auto   file_name = path_.substr(start_pos + 1, path_.size());
+	const auto file_name = path_;
 
 	//CONVERT TO WSTRING
 	const int            wchars_num = MultiByteToWideChar(CP_UTF8, 0, file_name.c_str(), -1, nullptr, 0);
@@ -47,16 +48,7 @@ std::shared_ptr<VkShaderWrapper> VkShaderFactory::GetShader(const std::string &p
 	//COMPILATION ARGUMENTS
 	arguments.push_back(L"-spirv");
 	arguments.push_back(L"-fspv-target-env=vulkan1.3");
-
-	//put your shader name here
-	arguments.push_back(wstr.data());
-
-	arguments.push_back(DXC_ARG_WARNINGS_ARE_ERRORS);             //-WX
-	arguments.push_back(DXC_ARG_DEBUG);                           //-Zi
-	arguments.push_back(DXC_ARG_PACK_MATRIX_COLUMN_MAJOR);        //-Zpc
-
-	arguments.push_back(L"-HV");        //hlsl version
-	arguments.push_back(L"2021");
+	arguments.push_back(L"-fspv-debug=vulkan-with-source");
 
 	arguments.push_back(L"-T");        //target stage
 	switch (stage)
@@ -73,6 +65,21 @@ std::shared_ptr<VkShaderWrapper> VkShaderFactory::GetShader(const std::string &p
 
 	arguments.push_back(L"-E");        //entry point
 	arguments.push_back(L"main");
+
+	arguments.push_back(L"-HV");        //hlsl version
+	arguments.push_back(L"2021");
+
+	//arguments.push_back(DXC_ARG_DEBUG);        //-Zi选项会被-fspv-debug覆盖。
+	//arguments.push_back(L"-Qembed_debug");
+	//arguments.push_back(DXC_ARG_DEBUG_NAME_FOR_SOURCE);           
+
+	arguments.push_back(DXC_ARG_SKIP_OPTIMIZATIONS);              //为了更好的调试体验
+	arguments.push_back(DXC_ARG_WARNINGS_ARE_ERRORS);             //-WX
+	arguments.push_back(DXC_ARG_PACK_MATRIX_COLUMN_MAJOR);        //-Zpc
+
+
+	//put your shader name here
+	arguments.push_back(wstr.data());
 
 	ComPtr<IDxcResult> compile_result;
 
@@ -101,22 +108,27 @@ std::shared_ptr<VkShaderWrapper> VkShaderFactory::GetShader(const std::string &p
 
 		throw std::runtime_error("compile error!");
 	}
+
+	VkShaderModuleCreateInfo shader_module_CI{};
+	shader_module_CI.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+
+
+
 	//static std::vector<std::uint32_t> spriv_buffer;
 	//spriv_buffer.resize(shader_obj->GetBufferSize() / sizeof(std::uint32_t));
 
 	//for (size_t i = 0; i < spriv_buffer.size(); ++i)
 	//{
 	//	const std::uint32_t spv_uint = static_cast<std::uint32_t *>(shader_obj->GetBufferPointer())[i];        //
-	//	spriv_buffer[i]        = spv_uint;
+	//	spriv_buffer[i]              = spv_uint;
 	//}
 	//shader_module_CI.codeSize = shader_obj->GetBufferSize();
 	//shader_module_CI.pCode    = spriv_buffer.data();
 
-	// Create a Vulkan shader module from the compilation result
-	VkShaderModuleCreateInfo shader_module_CI{};
-	shader_module_CI.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+	//Create a Vulkan shader module from the compilation result
 	shader_module_CI.codeSize = shader_obj->GetBufferSize();
 	shader_module_CI.pCode    = static_cast<uint32_t *>(shader_obj->GetBufferPointer());
+
 	VkShaderModule shader_module;
 	VK_CHECK_RESULT(vkCreateShaderModule(device_manager.GetLogicalDevice(), &shader_module_CI, nullptr, &shader_module))
 

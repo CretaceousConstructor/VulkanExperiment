@@ -145,7 +145,7 @@ VkDeviceManager::QueueFamilyIndices VkDeviceManager::FindQueueFamilies(const VkP
 			}
 		}
 
-		//找到的是专门做transfer而没法做graphics的family index，
+		//找到的是专门做transfer而没法做graphics的family index，增加编程难度。
 		if ((qf.queueFlags & VK_QUEUE_TRANSFER_BIT) && !(qf.queueFlags & VK_QUEUE_GRAPHICS_BIT))
 		{
 			if (!indices.transfer_family.has_value())
@@ -409,6 +409,7 @@ void VkDeviceManager::CreateLogicalDeviceAndQueues()
 	enabled13_gpu_features.sType            = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES;
 	enabled13_gpu_features.pNext            = nullptr;        // todo: vulkan 1.4
 	enabled13_gpu_features.dynamicRendering = VK_TRUE;
+	enabled13_gpu_features.shaderDemoteToHelperInvocation = VK_TRUE;
 
 	//*********************************************************************
 	VkPhysicalDeviceFeatures2 physicalDeviceFeatures2{};

@@ -14,15 +14,22 @@ VkPipelineLayout Vk::GetPipelineLayout(const VkDevice &device, const std::vector
 	pipeline_layoutCI.pNext = pNext;
 	pipeline_layoutCI.flags = flags;
 
-	pipeline_layoutCI.setLayoutCount = uint32_t(set_layouts.size());
+	pipeline_layoutCI.setLayoutCount = static_cast<uint32_t>(set_layouts.size());
 	pipeline_layoutCI.pSetLayouts    = set_layouts.data();
 
 	//TODO: testing multiple push constants and how to access it
 	// We will use push constants to push the local matrices of a primitive to the vertex shader
-	pipeline_layoutCI.pushConstantRangeCount = uint32_t(push_constant_ranges.size());
-	pipeline_layoutCI.pPushConstantRanges    = push_constant_ranges.data();
+	pipeline_layoutCI.pushConstantRangeCount = static_cast<uint32_t>(push_constant_ranges.size());
+	if (push_constant_ranges.empty())
+	{
+		pipeline_layoutCI.pPushConstantRanges = VK_NULL_HANDLE;
+	}
+	else
+	{
+		pipeline_layoutCI.pPushConstantRanges = push_constant_ranges.data();
+	}
 
-	VK_CHECK_RESULT(vkCreatePipelineLayout(device, &pipeline_layoutCI, nullptr, &result));
+	VK_CHECK_RESULT(vkCreatePipelineLayout(device, &pipeline_layoutCI, nullptr, &result))
 
 	return result;
 }
@@ -102,7 +109,7 @@ VkDescriptorPoolCreateInfo Vk::GetDescriptorPoolCI(const std::vector<VkDescripto
 	return descriptor_pool_CI;
 }
 
-VkDescriptorSetLayoutBinding Vk::GetDescriptorSetLayoutBinding(uint32_t binding, VkDescriptorType type, VkShaderStageFlagBits stage_flags, uint32_t descriptor_count, const VkSampler *pImmutableSamplers)
+VkDescriptorSetLayoutBinding Vk::GetDescriptorSetLayoutBinding(uint32_t binding, VkDescriptorType type, VkShaderStageFlags stage_flags, uint32_t descriptor_count, const VkSampler *pImmutableSamplers)
 {
 	VkDescriptorSetLayoutBinding setLayoutBinding{};
 	setLayoutBinding.descriptorType     = type;
@@ -151,12 +158,10 @@ size_t Vk::GetSamplerUUID_unsafe()
 	return ++UUID_safe<Vk::Type::Sampler>;
 }
 
-
-
 std::string Vk::GetFileExtensionName(const std::string &filename)
 {
 	const size_t pos            = filename.find_last_of('.');
-	auto   file_extension = filename.substr(pos + 1, filename.size());
+	auto         file_extension = filename.substr(pos + 1, filename.size());
 
 	return file_extension;
 }

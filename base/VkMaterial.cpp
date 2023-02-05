@@ -17,17 +17,17 @@ VkMaterial::VkMaterial(VkGraphicsComponent &gfx_) :
 //}
 
 
-void VkMaterial::SetPipeline(VkPipeline pipeline_)
-{
-	pipeline = pipeline_;
-}
+//void VkMaterial::SetPipeline(VkPipeline pipeline_)
+//{
+//	pipeline = pipeline_;
+//}
 
-const VkDescriptorSet &VkMaterial::GetDescriptorSet() const
-{
-	return descriptor_set;
-}
+//const VkDescriptorSet &VkMaterial::GetDescriptorSet() const
+//{
+//	return descriptor_set;
+//}
 
-const VkPipeline &VkMaterial::GetPipeline() const
-{
-	return pipeline;
-}
+//const VkPipeline &VkMaterial::GetPipeline() const
+//{
+//	return pipeline;
+//}

@@ -74,6 +74,7 @@ void VkBufferBase::Invalidate(VkDeviceSize size, VkDeviceSize offset_in_whole_me
 	mappedRange.offset              = offset_in_whole_mem;
 	mappedRange.size                = size;
 	VK_CHECK_RESULT(vkInvalidateMappedMemoryRanges(device_manager.GetLogicalDevice(), 1, &mappedRange))
+
 }
 
 void *VkBufferBase::GetPtrToMappedRegion() const
@@ -81,7 +82,7 @@ void *VkBufferBase::GetPtrToMappedRegion() const
 	return mapped_ptr_to_GPU_memory;
 }
 
-const VkBuffer &VkBufferBase::GetRawBuffer() const
+const VkBuffer &VkBufferBase::GetGPUBuffer() const
 
 {
 	return buffer;

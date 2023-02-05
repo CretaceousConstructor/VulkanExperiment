@@ -66,7 +66,7 @@ class ImagePP
 class DepthImgPP final : public ImagePP 
 {
   public:
-	DepthImgPP(const VkGraphicsComponent &gfx_, VkImageCreateFlags flags = Vk::NillFlags);
+	DepthImgPP(const VkGraphicsComponent &gfx_, VkImageCreateFlags flags = Vk::ImgCINillFlag);
 	[[nodiscard]] std::shared_ptr<ImagePP> Clone() const override;
 
   private:
@@ -76,13 +76,12 @@ class DepthImgPP final : public ImagePP
 class TextureImgPP final : public ImagePP
 {
   public:
-	TextureImgPP(std::string _image_path, const VkFormat format_, const VkExtent3D &image_extend_, VkImageCreateFlags flags = Vk::NillFlags);
-	TextureImgPP(const VkFormat format_, const VkExtent3D &image_extend_, VkImageCreateFlags flags = Vk::NillFlags);
+	TextureImgPP(std::string _image_path, const VkFormat format_, const VkExtent3D &image_extend_, VkImageCreateFlags flags = Vk::ImgCINillFlag);
+	TextureImgPP(const VkFormat format_, const VkExtent3D &image_extend_, VkImageCreateFlags flags = Vk::ImgCINillFlag);
 
 	[[nodiscard]] std::shared_ptr<ImagePP> Clone() const override;
 
   private:
-	void              SetToDefault();
 	std::string image_path{};
 };
 

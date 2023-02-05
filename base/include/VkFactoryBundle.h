@@ -5,16 +5,18 @@
 #include "VkImageFactory.h"
 #include "VkModelFactory.h"
 //#include "VkSubpassFactory.h"
+#include "VkImgViewFactory.h"
+#include "VkSamplerFactory.h"
+#include "VkShaderFactory.h"
 #include "VkSynObjectFactory.h"
 #include "VkTextureFactory.h"
-#include "VkShaderFactory.h"
-#include  "VkSamplerFactory.h"
-#include "VkImgViewFactory.h"
 
+#include "ForwardShadingPipelinePP.h"
 
 class VkFactoryBundle
 {
 	friend class VkRenderpassManager;
+
 
   private:
 	VkFactoryBundle(VkGraphicsComponent &gfx);
@@ -34,4 +36,9 @@ class VkFactoryBundle
 	VkSamplerFactory       sampler_factory;
 	VkTextureFactory       texture_factory;
 	VkModelFactory         model_factory;
+  public:
+	//There will be a lot of different pipeline pp factories in the future, so simply make them public
+	ForawdShadingPipelinePPFactory forward_shading_PP_factory;
+
+
 };

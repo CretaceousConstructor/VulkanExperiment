@@ -53,7 +53,7 @@ class VkDescriptorSetFactory
 		VkDescriptorSet result;
 		//ALLOCATE DESCRIPTORS
 		const VkDescriptorSetAllocateInfo alloc_info = Vk::GetDescriptorAllocateInfo(descriptor_pool, set_layout);
-		VK_CHECK_RESULT(vkAllocateDescriptorSets(device_manager.GetLogicalDevice(), &alloc_info, &result));
+		VK_CHECK_RESULT(vkAllocateDescriptorSets(device_manager.GetLogicalDevice(), &alloc_info, &result))
 		return result;
 	}
 

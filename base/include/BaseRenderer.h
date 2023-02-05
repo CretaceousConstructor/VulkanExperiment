@@ -1,8 +1,12 @@
 #pragma once
 
 #include "VkGraphicsComponent.h"
-#include "VkModel.h"
+
+#include "NonPbrMaterial.h"
+#include "PbrMaterialMetallic.h"
+#include "VkMaterial.h"
 #include "VkSwapchainManager.h"
+
 #include "VkTexture.h"
 #include "VkUniformBuffer.h"
 
@@ -19,7 +23,7 @@ class BaseRenderer
 {
   public:
 	BaseRenderer(VkGraphicsComponent &gfx_);
-	virtual ~BaseRenderer() = default;
+	virtual ~BaseRenderer();
 
 	BaseRenderer() = delete;
 
@@ -30,8 +34,6 @@ class BaseRenderer
 	BaseRenderer &operator=(BaseRenderer &&) = delete;
 
   protected:
-	void MaterialRegistration();
-
 	virtual void SetUpUserInput() = 0;
 	virtual void CreateCamera()   = 0;
 
@@ -55,6 +57,10 @@ class BaseRenderer
   public:
 	virtual void DrawFrame(float time_diff) = 0;
 	//virtual void UIRendering() = 0;
+
+  private:
+	void MaterialRegistration() const;
+	void MaterialUnRegistration() const;
 
   public:
 	void RenderingPreparation();

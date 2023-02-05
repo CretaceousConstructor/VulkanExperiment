@@ -52,12 +52,7 @@ VkPipeline VkPipelineBuilder::BuildPipeline(const VkPipelinePP &para_pack, VkPip
 VkPipeline VkPipelineBuilder::BuildPipeline(const VkPipelinePP &para_pack_) const
 {
 
-
-
-
-
-	const auto    para_pack_ptr = para_pack_.Clone();
-	VkPipelinePP &para_pack{*para_pack_ptr};
+	auto  para_pack = para_pack_;
 
 
 	//******************error detecting******************

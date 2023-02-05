@@ -40,29 +40,34 @@ class NonPbrMaterial : public VkMaterial
 	};
 
 	AlphaMode alphaMode{AlphaMode::ALPHAMODE_OPAQUE};
-	float     alphaCutoff{};
+	float     alphaCutoff{0.};
 	bool      doubleSided{false};
 
 	//***********************************************************************
 	[[nodiscard]] constexpr uint32_t GetRequiredDescirpotrCount() const override;
 
-	void AllocateDescriptorSetAndUpdate(VkDescriptorPool descriptor_pool, VkDescriptorSetLayout desc_set_layout, const std::vector<Gltf::Texture> &textures, const std::vector<std::shared_ptr<VkTexture>> &images) override;
+	VkDescriptorSet AllocateDescriptorSetAndUpdate(VkDescriptorPool descriptor_pool, VkDescriptorSetLayout desc_set_layout, const std::vector<Gltf::Texture> &textures, const std::vector<std::shared_ptr<VkTexture>> &images) override;
 	void ModifyPipelineCI(VkPipelinePP &pipeline_CI) override;
 
 
 
   private:
 	static VkDescriptorSetLayout GetDescriptorSetLayout();
-	static VkPipelineLayout      GetPipelineLayout();
+	//static VkPipelineLayout      GetPipelineLayout();
 
   public:
 	static VkDescriptorSetLayout CreateDesciptorSetLayout(const VkDeviceManager &device_manager);
 	static VkPipelineLayout      CreatePipelineLayout(const VkDeviceManager &device_manager, const std::vector<VkDescriptorSetLayout> &set_layouts, const std::vector<VkPushConstantRange> &push_constant_ranges);
 
 
+	static void Register(VkGraphicsComponent &gfx);
+	static void UnRegister(VkGraphicsComponent &gfx);
+
+
+
   private:
 	inline static VkDescriptorSetLayout desc_layout{nullptr};
-	inline static VkPipelineLayout      pipe_layout{nullptr};
+	//inline static VkPipelineLayout      pipe_layout{nullptr};
 
   private:
 	struct MaterialSpecializationData

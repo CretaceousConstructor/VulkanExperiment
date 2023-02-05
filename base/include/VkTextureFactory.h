@@ -109,7 +109,7 @@ std::shared_ptr<VkGeneralPurposeImage> VkTextureFactory::InitImgFromHostBuffer(c
 	//vkUnmapMemory(device_manager.GetLogicalDevice(), stagingBufferMemory);
 	//========================================================================================================================
 
-	texture_image->CopyBufferToImage1mip1level(staging_buffer->GetRawBuffer(), texture_img_PP.default_image_extent.width, texture_img_PP.default_image_extent.height, VkDeviceManager::CommandPoolType::transfor_command_pool);
+	texture_image->CopyBufferToImage1mip1level(staging_buffer->GetGPUBuffer(), texture_img_PP.default_image_extent.width, texture_img_PP.default_image_extent.height, VkDeviceManager::CommandPoolType::transfor_command_pool);
 	texture_image->TransitionImageLayout(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, target_layout, VkDeviceManager::CommandPoolType::graphics_command_pool,std::nullopt);
 
 	return texture_image;

@@ -110,7 +110,7 @@ VkManagerBundle &VkRenderpassManager::GetManagerBundle()
 	return managers;
 }
 
-VkFactoryBundle &VkRenderpassManager::GetFactoryBundl()
+VkFactoryBundle &VkRenderpassManager::GetFactoryBundle()
 {
 	return factories;
 }

@@ -9,6 +9,11 @@ VkFactoryBundle::VkFactoryBundle(VkGraphicsComponent &gfx) :
     img_view_factory(gfx),
     sampler_factory(gfx),
     texture_factory(gfx, image_factory, buffer_factory, sampler_factory, img_view_factory),
-    model_factory(gfx, texture_factory, buffer_factory)
+    model_factory(gfx, texture_factory, buffer_factory),
+    forward_shading_PP_factory(gfx)
 {
+
+
+
+
 }

@@ -8,7 +8,7 @@
 #include "VkSynObjectFactory.h"
 #include "RenderingMetaInfo.h"
 #include "VkRenderpassBase.h"
-#include "Renderpass0.h"
+#include "PbrRenderingPass.h"
 
 //#include "VkTexture.h"
 //#include  "VkRenderpassBase.h"

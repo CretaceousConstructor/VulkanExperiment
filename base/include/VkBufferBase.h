@@ -18,7 +18,7 @@ class VkBufferBase
 	VkBufferBase(VkBufferBase &&)                 = delete;
 	VkBufferBase &operator=(VkBufferBase &&) = delete;
 
-	[[nodiscard]] const VkBuffer &GetRawBuffer() const;
+	[[nodiscard]] const VkBuffer &GetGPUBuffer() const;
 	[[nodiscard]] VkWriteDescriptorSet          GetWriteDescriptorSetInfo(uint32_t dstbinding, uint32_t dstArrayElement = 0, VkDeviceSize size = VK_WHOLE_SIZE, VkDeviceSize offset = 0);
 
 

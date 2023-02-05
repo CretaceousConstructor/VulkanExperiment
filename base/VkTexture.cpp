@@ -7,7 +7,7 @@ VkTexture::VkTexture(VkGraphicsComponent &gfx_, std::string image_path, std::sha
 
     tex_name(std::move(image_path)),
     tex_image(std::move(image_)),
-    image_layout(imageLayout_),
+    current_image_layout(imageLayout_),
     gfx(gfx_),
     device_manager(gfx_.DeviceMan())
 {
@@ -27,7 +27,7 @@ VkWriteDescriptorSet VkTexture::GetWriteDescriptorSetInfo(uint32_t dstbinding, u
 {
 	image_info.imageView   = GetTextureImageView();
 	image_info.sampler     = GetTextureSampler();
-	image_info.imageLayout = image_layout;
+	image_info.imageLayout = current_image_layout;
 
 	VkWriteDescriptorSet temp_write_descriptor_set{};
 	temp_write_descriptor_set.sType           = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -44,7 +44,7 @@ VkWriteDescriptorSet VkTexture::GetWriteDescriptorSetInfo(VkDescriptorSet set, u
 {
 	image_info.imageView   = GetTextureImageView();
 	image_info.sampler     = GetTextureSampler();
-	image_info.imageLayout = image_layout;
+	image_info.imageLayout = current_image_layout;
 
 	VkWriteDescriptorSet temp_write_descriptor_set{};
 	temp_write_descriptor_set.sType          = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -81,7 +81,7 @@ VkSampler VkTexture::GetTextureSampler() const
 
 VkImageLayout VkTexture::GetImageLayout() const
 {
-	return image_layout;
+	return current_image_layout;
 }
 
 void VkTexture::InsertImageMemoryBarrier(VkCommandBuffer                           cmd_buffer,
@@ -90,7 +90,6 @@ void VkTexture::InsertImageMemoryBarrier(VkCommandBuffer                        
 	VkImageMemoryBarrier image_memory_barrier{};
 	image_memory_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
 	image_memory_barrier.pNext = nullptr;
-	//TODO: srcQueueFamilyIndex and dstQueueFamilyIndex
 
 	image_memory_barrier.srcQueueFamilyIndex = img_mem_barrier_enhanced.srcQueueFamilyIndex;
 	image_memory_barrier.dstQueueFamilyIndex = img_mem_barrier_enhanced.dstQueueFamilyIndex;
@@ -109,9 +108,9 @@ void VkTexture::InsertImageMemoryBarrier(VkCommandBuffer                        
 	//    uint32_t              baseArrayLayer;
 	//    uint32_t              layerCount;
 	//} VkImageSubresourceRange;
-
 	const auto para_pack = tex_image->GetPP();
 
+	//SUBRESOURCES RANGES
 	if (img_mem_barrier_enhanced.subresource_range.has_value())
 	{
 		//Determine by user
@@ -126,6 +125,7 @@ void VkTexture::InsertImageMemoryBarrier(VkCommandBuffer                        
 		image_memory_barrier.subresourceRange.baseArrayLayer = 0;
 		image_memory_barrier.subresourceRange.layerCount     = para_pack->default_image_CI.arrayLayers;
 
+		//TODO:aspectMask的判断要用image_format（还是image_view_format?)
 		if (img_mem_barrier_enhanced.newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
 		{
 			image_memory_barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
@@ -136,10 +136,70 @@ void VkTexture::InsertImageMemoryBarrier(VkCommandBuffer                        
 		}
 		else
 		{
+			//aspectMask must be only VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_ASPECT_DEPTH_BIT or VK_IMAGE_ASPECT_STENCIL_BIT if format is a color, depth-only or stencil-only format, respectively
+			//If using a depth/stencil format with both depth and stencil components, aspectMask must include at least one of VK_IMAGE_ASPECT_DEPTH_BIT and VK_IMAGE_ASPECT_STENCIL_BIT, and can include both.
 			image_memory_barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 		}
 	}
 
+
+
+
+	//这里的queue ownership transfer应该由用户负责
+	//*****************************release operation*****************************
+	//const auto transfer_command_quque = device_manager.GetTransferQueue();
+	//const auto transfer_command_pool  = gfx.CommandMan().transfer_command_pool;
+
+	//const VkCommandBuffer transfer_commandBuffer = VkCommandManager::BeginSingleTimeCommands(transfer_command_pool, device_manager.GetLogicalDevice());
+
+	//sourceStage           = VK_PIPELINE_STAGE_TRANSFER_BIT;
+	//barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+	//barrier.oldLayout     = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+	////dstAccessMask is ignored for such a barrier,
+	////Whilst it is not invalid to provide destination or source access masks for memory
+	////barriers used for release or acquire operations, respectively, they have no practical effect.
+	////destinationStage      = VK_PIPELINE_STAGE_TRANSFER_BIT;
+	//destinationStage      = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+	//barrier.dstAccessMask = 0;
+	//barrier.newLayout     = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+	//barrier.srcQueueFamilyIndex = queue_family_indices.transfer_family.value();
+	//barrier.dstQueueFamilyIndex = queue_family_indices.graphics_family.value();
+
+	//vkCmdPipelineBarrier(
+	//    transfer_commandBuffer,
+	//    sourceStage, destinationStage,
+	//    0,
+	//    0, nullptr,
+	//    0, nullptr,
+	//    1, &barrier);
+
+	////VkCommandManager::EndSingleTimeCommands(transfer_command_pool, device_manager.GetLogicalDevice(), transfer_commandBuffer, transfer_command_quque);
+	///
+	///
+	///
+	////**************************acquire operation*****************************
+	//sourceStage           = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+	//barrier.srcAccessMask = 0;
+	//barrier.oldLayout     = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+	////dstAccessMask is ignored for such a barrier,
+	////Whilst it is not invalid to provide destination or source access masks for memory
+	////barriers used for release or acquire operations, respectively, they have no practical
+	////effect.
+	//destinationStage      = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+	//barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+	//barrier.newLayout     = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+	//barrier.srcQueueFamilyIndex = queue_family_indices.transfer_family.value();
+	//barrier.dstQueueFamilyIndex = queue_family_indices.graphics_family.value();
+
+	//vkCmdPipelineBarrier(
+	//    command_buffer,
+	//    sourceStage, destinationStage,
+	//    0,
+	//    0, nullptr,
+	//    0, nullptr,
+	//    1, &barrier);
 
 	vkCmdPipelineBarrier(
 	    cmd_buffer,
@@ -150,15 +210,8 @@ void VkTexture::InsertImageMemoryBarrier(VkCommandBuffer                        
 	    0, nullptr,
 	    1, &image_memory_barrier);
 
-	image_layout = image_memory_barrier.newLayout;
+	current_image_layout = image_memory_barrier.newLayout;
 }
-
-
-
-
-
-
-
 
 void VkTexture::InsertImageMemoryBarrier(const Sync::VkImageMemoryBarrierEnhanced &img_mem_barrier_enhanced, const VkDeviceManager::CommandPoolType command_type)
 {
@@ -231,13 +284,13 @@ void VkTexture::InsertImageMemoryBarrier(const Sync::VkImageMemoryBarrierEnhance
 	VkPipelineStageFlags sourceStage      = img_mem_barrier_enhanced.srcStageMask;
 	VkPipelineStageFlags destinationStage = img_mem_barrier_enhanced.dstStageMask;
 
-	//check situations where queue ownership transfer may happend.
-	if (
-	    (img_mem_barrier_enhanced.oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && img_mem_barrier_enhanced.newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) &&
-	    (VK_QUEUE_FAMILY_IGNORED == img_mem_barrier_enhanced.srcQueueFamilyIndex || VK_QUEUE_FAMILY_IGNORED == img_mem_barrier_enhanced.dstQueueFamilyIndex))
-	{
-		throw std::runtime_error("queue owner ship transfer operation may be required, but queue families are not specified.");
-	}
+	////check situations where queue ownership transfer may happend.
+	//if (
+	//    (img_mem_barrier_enhanced.oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && img_mem_barrier_enhanced.newLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL) &&
+	//    (VK_QUEUE_FAMILY_IGNORED == img_mem_barrier_enhanced.srcQueueFamilyIndex || VK_QUEUE_FAMILY_IGNORED == img_mem_barrier_enhanced.dstQueueFamilyIndex))
+	//{
+	//	throw std::runtime_error("queue owner ship transfer operation may be required, but queue families are not specified.");
+	//}
 
 	if (VK_QUEUE_FAMILY_IGNORED == img_mem_barrier_enhanced.srcQueueFamilyIndex && VK_QUEUE_FAMILY_IGNORED == img_mem_barrier_enhanced.dstQueueFamilyIndex)
 	{
@@ -250,10 +303,6 @@ void VkTexture::InsertImageMemoryBarrier(const Sync::VkImageMemoryBarrierEnhance
 		    1, &barrier);
 
 		VkCommandManager::EndSingleTimeCommands(command_pool, device_manager.GetLogicalDevice(), command_buffer, command_quque);
-	}
-	else if (VK_QUEUE_FAMILY_IGNORED == img_mem_barrier_enhanced.srcQueueFamilyIndex || VK_QUEUE_FAMILY_IGNORED == img_mem_barrier_enhanced.dstQueueFamilyIndex)
-	{
-		throw std::runtime_error("queue families are not specified in a correct way.");
 	}
 	//*****************************ownership transfer operation*****************************
 	else if (img_mem_barrier_enhanced.srcQueueFamilyIndex != img_mem_barrier_enhanced.dstQueueFamilyIndex)
@@ -319,15 +368,10 @@ void VkTexture::InsertImageMemoryBarrier(const Sync::VkImageMemoryBarrierEnhance
 	}
 	else
 	{
-		
 	}
 
-	image_layout = img_mem_barrier_enhanced.newLayout;
-
+	current_image_layout = img_mem_barrier_enhanced.newLayout;
 }
-
-
-
 
 void VkTexture::SetCISamplerAndImgView(std::optional<VkSamplerCreateInfo> sampler_CI_, std::optional<VkImageViewCreateInfo> img_view_CI_)
 {

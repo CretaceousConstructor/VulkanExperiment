@@ -97,16 +97,14 @@ VkSamplerCreateInfo SamplerCI::PopulateCubeTexSamplerCI()
 	sampler_CI.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
 
 	sampler_CI.mipLodBias       = 0.f;
-	sampler_CI.anisotropyEnable = VK_FALSE;
 	//The maxAnisotropy field limits the amount of texel samples that can be used to calculate the final color.
+	sampler_CI.anisotropyEnable = VK_FALSE;
 	sampler_CI.maxAnisotropy    = 1.f;
 
 	sampler_CI.compareEnable = VK_FALSE;
 	sampler_CI.compareOp     = VK_COMPARE_OP_NEVER;
 	//VkPhysicalDeviceProperties properties{};
 	//vkGetPhysicalDeviceProperties(device_manager.GetPhysicalDevice(), &properties);
-
-;
 
 	sampler_CI.borderColor             = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
 	sampler_CI.unnormalizedCoordinates = VK_FALSE;

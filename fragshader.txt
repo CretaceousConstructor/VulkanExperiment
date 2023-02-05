@@ -1,0 +1,203 @@
+
+
+
+//施密特正交化：T向量在经过插值以后，可能不再和N向量相互垂直
+//kD *= 1.0 - metallic; //金属性越强，diffuse light被吸收的越多
+
+struct UBOScene
+{
+    float4x4 projection;
+    float4x4 view;
+
+    float3 light_pos;
+    float3 light_color;
+
+    float3 cam_pos;
+};
+
+
+
+
+struct VSOutput
+{
+    float4 pos_h : SV_POSITION;
+    [[vk::location(0)]] float3 world_pos : POSITION0;
+    [[vk::location(1)]] float3 normal : NORMAL0;
+    [[vk::location(2)]] float3 tangent : TANGENT0;
+    [[vk::location(3)]] float3 color : COLOR0;
+
+    [[vk::location(4)]] float3 view_vec : VIEWVEC0;
+    [[vk::location(5)]] float3 light_vec : LIGHTVEC0;
+
+    [[vk::location(6)]] float2 uv : TEXCOORD0;
+    [[vk::location(7)]] float handness : HANDNESS;
+};
+
+
+
+//set 1,binding 0
+[[vk::combinedImageSampler]][[vk::binding(0,1)]]
+Texture2D albedo;
+[[vk::combinedImageSampler]][[vk::binding(0,1)]]
+SamplerState samplerAlbedo;
+
+
+//set 1,binding 1
+[[vk::combinedImageSampler]][[vk::binding(1,1)]]
+Texture2D normalMap;
+[[vk::combinedImageSampler]][[vk::binding(1,1)]]
+SamplerState samplerNormalMap;
+
+
+//set 1,binding 2
+[[vk::combinedImageSampler]][[vk::binding(2,1)]]
+Texture2D aoMap;
+[[vk::combinedImageSampler]][[vk::binding(2,1)]]
+SamplerState samplerAoMap;
+
+
+//set 1,binding 3
+[[vk::combinedImageSampler]][[vk::binding(3,1)]]
+Texture2D metallicRoughness;
+[[vk::combinedImageSampler]][[vk::binding(3,1)]]
+SamplerState samplerMetallicRoughness;
+
+
+
+[[vk::binding(0, 0)]] ConstantBuffer<UBOScene> ubo;
+
+
+//[[vk::constant_id(0)]] const bool ALPHA_MASK = false;
+//[[vk::constant_id(1)]] const float ALPHA_MASK_CUTOFF = 0.f;
+
+
+
+
+
+float DistributionGGX(float3 N, float3 H, float roughness)
+{
+
+	const float PI = 3.14159265359;
+    const float a = roughness * roughness;
+    const float a2 = a * a;
+    const float NdotH = max(dot(N, H), 0.0);
+    const float NdotH2 = NdotH * NdotH;
+	
+    const float num = a2;
+    float denom = (NdotH2 * (a2 - 1.0) + 1.0);
+    denom = PI * denom * denom;
+	
+    return num / denom;
+}
+
+
+float GeometrySchlickGGX(float NdotV, float roughness)
+{
+    const float r = (roughness + 1.0);
+    const float k = (r * r) / 8.0;
+
+    const float num = NdotV;
+    const float denom = NdotV * (1.0 - k) + k;
+	
+    return num / denom;
+}
+
+float GeometrySmith(float3 N, float3 V, float3 L, float roughness)
+{
+    const float NdotV = max(dot(N, V), 0.0);
+    const float NdotL = max(dot(N, L), 0.0);
+    const float ggx2 = GeometrySchlickGGX(NdotV, roughness);
+    const float ggx1 = GeometrySchlickGGX(NdotL, roughness);
+	
+    return ggx1 * ggx2;
+}
+
+
+
+
+float3 fresnelSchlick(float cosTheta, float3 F0)
+{
+    return F0 + (1.0 - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
+}
+
+
+
+float4 main(VSOutput pIn) : SV_Target
+{
+
+    float4 albedo_color = albedo.Sample(samplerAlbedo, pIn.uv);
+    /*if (ALPHA_MASK)
+    {
+        if (albedo_color.a < ALPHA_MASK_CUTOFF)
+        {
+            discard;
+        }
+    }*/
+
+	const float PI = 3.14159265359;
+
+    //SAMPLING
+    float4 sampled_metallic_roughness = metallicRoughness.Sample(samplerMetallicRoughness, pIn.uv);
+    const float roughness = sampled_metallic_roughness.g;
+    const float metallic = sampled_metallic_roughness.b; //smaller
+    const float4 ao = aoMap.Sample(samplerAlbedo, pIn.uv);
+
+
+	//CALCULATE NORMAL
+    float3 N = normalize(pIn.normal);
+    float3 T = normalize(pIn.tangent - dot(pIn.tangent, N) * N);
+    float3 B = cross(N, T) * pIn.handness;
+    const float3x3 TBN = float3x3(T, B, N);
+    N = mul(TBN, normalize(normalMap.Sample(samplerNormalMap, pIn.uv).xyz * 2.0 - float3(1.0, 1.0, 1.0)));
+
+
+
+    float3 F0 = float3(0.04, 0.04, 0.04);
+    F0 = lerp(F0, albedo_color.xyz, metallic);
+
+
+    float3 Lo = float3(0.0, 0.0, 0.0);
+
+
+
+    const float3 Wi = normalize(pIn.light_vec); //light
+    const float3 Wo = normalize(pIn.view_vec);  //view
+    const float3 R = normalize(reflect(-Wi, N));
+    const float3 H = normalize(Wo + Wi);
+
+
+    const float distance = length(ubo.light_pos - pIn.world_pos);
+    const float attenuation = 1.0 / (distance * distance);
+    const float3 radiance = ubo.light_color * attenuation;
+
+
+
+  	// cook-torrance brdf
+    const float NDF = DistributionGGX(N, H, roughness);
+    const float G = GeometrySmith(N, Wo, Wi, roughness);
+    const float3 F = fresnelSchlick(max(dot(H, Wo), 0.0), F0);
+
+    const float3 kS = F;
+
+    float3 kD = float3(1.0, 1.0, 1.0) - kS;
+  
+    kD *= 1.0 - metallic; 
+
+    const float3 numerator = NDF * G * F;
+    const float denominator = 4.0 * max(dot(N, Wo), 0.0) * max(dot(N, Wi), 0.0) + 0.0001;
+    const float3 specular = numerator / denominator;
+
+
+    const float NdotL = max(dot(N, Wi), 0.0);
+    Lo += (kD * albedo_color.xyz / PI + specular) * radiance * NdotL;
+	
+    const float3 ambient = float3(0.03, 0.03, 0.03) * albedo_color.xyz * ao.xyz;//will be replaced by indirect illumination
+    float3 color = ambient + Lo;
+
+    //tone mapping
+    color = color / (color + float3(1.0, 1.0, 1.0));
+
+    //needless to do gamma correction because framebuffer is in srgb space
+    return float4(color, 1.0);
+
+}

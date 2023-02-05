@@ -74,6 +74,9 @@ std::shared_ptr<VkTexture> VkTextureFactory::ProduceEmptyTexture(const ImagePP &
 	return result;
 }
 
+
+
+
 std::vector<std::shared_ptr<VkTexture>> VkTextureFactory::ProduceEmptyTextureArray(const ImagePP &texture_img_PP, std::optional<VkSamplerCreateInfo> sampler_CI_, std::optional<VkImageViewCreateInfo> img_view_CI_, uint32_t bundle_size) const
 {
 	std::vector<std::shared_ptr<VkTexture>> result;
@@ -155,6 +158,12 @@ std::shared_ptr<VkTexture> VkTextureFactory::ProduceTextureFromImgPath(const std
 		{
 			img_view_CI_->subresourceRange.levelCount = info_from_file.numLevels;
 			img_view_CI_->subresourceRange.layerCount = info_from_file.numArrayLayers;
+		}
+
+
+		if (sampler_CI_)
+		{
+			sampler_CI_->maxLod = static_cast<float>(info_from_file.numLevels);
 		}
 	}
 	else if (stbi_is_hdr(image_path.c_str()))
@@ -348,7 +357,7 @@ std::shared_ptr<VkGeneralPurposeImage> VkTextureFactory::InitKTXImgFromFile(cons
 			}
 		}
 
-		VkImageCreateFlags tex_img_CI_flags = Vk::NillFlags;
+		VkImageCreateFlags tex_img_CI_flags = Vk::ImgCINillFlag;
 
 		if (ktxTexture->numFaces > 1)
 		{
@@ -362,7 +371,7 @@ std::shared_ptr<VkGeneralPurposeImage> VkTextureFactory::InitKTXImgFromFile(cons
 
 		texture_image = std::dynamic_pointer_cast<VkGeneralPurposeImage>(img_factory.ProduceImage(para_pack));
 
-		texture_image->CopyBufferToImage(staging_buffer->GetRawBuffer(), bufferCopyRegions, VkDeviceManager::CommandPoolType::transfor_command_pool);
+		texture_image->CopyBufferToImage(staging_buffer->GetGPUBuffer(), bufferCopyRegions, VkDeviceManager::CommandPoolType::transfor_command_pool);
 
 		VkImageSubresourceRange subresource_range;
 		subresource_range.baseMipLevel   = 0;

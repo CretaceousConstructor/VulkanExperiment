@@ -50,6 +50,7 @@
     <ClCompile Include="base\VkMath.cpp" />
     <ClCompile Include="base\VkModelFactory.cpp" />
     <ClCompile Include="base\VkPipelineManager.cpp" />
+    <ClCompile Include="base\VkPipelinePPFactory.cpp" />
     <ClCompile Include="base\VkRenderpassBase.cpp" />
     <ClCompile Include="base\VkSamplerFactory.cpp" />
     <ClCompile Include="base\VkSemaphoreBundle.cpp" />
@@ -133,6 +134,7 @@
     <ClInclude Include="base\include\VkManagerBundle.h" />
     <ClInclude Include="base\include\VkMaterial.h" />
     <ClInclude Include="base\include\VkMath.h" />
+    <ClInclude Include="base\include\VkPipelinePPFactory.h" />
     <ClInclude Include="base\include\VkRenderpassBase.h" />
     <ClInclude Include="base\include\VkSamplerFactory.h" />
     <ClInclude Include="base\include\VkShaderFactory.h" />

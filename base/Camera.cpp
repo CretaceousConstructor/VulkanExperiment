@@ -2,8 +2,6 @@
 
 Camera::~Camera() = default;
 
-
-
 glm::vec3 Camera::GetPosition() const
 {
 	return m_Transform.GetPosition();
@@ -17,8 +15,6 @@ void Camera::SetPosition(const glm::vec3 &pos)
 {
 	m_Transform.SetPosition(pos);
 }
-
-
 
 float Camera::GetRotationX() const
 {
@@ -50,7 +46,6 @@ glm::vec3 Camera::GetLookAxis() const
 	return m_Transform.GetForwardAxis();
 }
 
-
 glm::mat4x4 Camera::GetView() const
 {
 	return m_Transform.GetWorldToLocalMatrix();
@@ -68,8 +63,7 @@ glm::mat4x4 Camera::GetProj() const
 
 glm::mat4x4 Camera::GetInverseProj() const
 {
-	return glm::inverse(glm::perspectiveRH_ZO(m_FovY, m_Aspect, m_NearZ, m_FarZ));
-
+	return glm::inverse(GetProj());
 }
 
 glm::mat4x4 Camera::GetViewProj() const
@@ -130,21 +124,3 @@ void Camera::SetViewPort(float X, float Y, float width, float height, float minD
 	m_ViewPort.minDepth = minDepth;
 	m_ViewPort.maxDepth = maxDepth;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -1,10 +1,10 @@
 #include <iostream>
-#include "SceneLoadingApp.h"
+#include "GraphicsApp.h"
 
 int main() {
 
 
-	SceneLoadingApp app_instance{};
+	GraphicsApp app_instance{};
 	try {
 		app_instance.Run();
 	}

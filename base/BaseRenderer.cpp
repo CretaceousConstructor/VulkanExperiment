@@ -9,17 +9,26 @@ BaseRenderer::BaseRenderer(VkGraphicsComponent &gfx_) :
 {
 }
 
-void BaseRenderer::MaterialRegistration()
+BaseRenderer::~BaseRenderer()
 {
+	MaterialUnRegistration();
+}
 
+void BaseRenderer::MaterialRegistration() const
+{
+	VkMaterial::Register<PbrMaterialMetallic>(gfx);
+	VkMaterial::Register<NonPbrMaterial>(gfx);
+}
 
-
-
-
+void BaseRenderer::MaterialUnRegistration() const
+{
+	VkMaterial::UnRegister<PbrMaterialMetallic>(gfx);
+	VkMaterial::UnRegister<NonPbrMaterial>(gfx);
 }
 
 void BaseRenderer::RenderingPreparation()
 {
+	MaterialRegistration();
 	//***************USER INPUT***************
 	this->SetUpUserInput();
 	//Init Camera

@@ -1,31 +1,62 @@
 #pragma once
 
-#include "VkPipelinePP.h"
+//#include "VkPipelinePP.h"
+//
+//class ImguiPipePP : public VkPipelinePP
+//
+//{
+//public:
+//	ImguiPipePP(VkGraphicsComponent &gfx_);
+//
+//	void InitInputAssemblyStateCI() override final;
+//
+//	void InitRasterizationStateCI() override final;
+//
+//	void InitDepthStencilStateCI() override final;
+//
+//	void InitMultisampleStateCI() override final;
+//
+//	void InitDynamicState() override final;
+//
+//	void InitColorBlendStateCI() override final;
+//
+//	void InitViewPortStateCI() override final;
+//
+//	void InitVertexInputStateCI() override final;
+//
+//	void InitRenderingCI() override final;
+//
+//	[[nodiscard]]std::shared_ptr<VkPipelinePP> Clone() const override final;
+//
+//};
 
-class ImguiPipePP : public VkPipelinePP
 
+
+#include "VkPipelinePPFactory.h"
+
+class ImguiPipePPFactory : public VkPipelinePPFactory
 {
 public:
-	ImguiPipePP(VkGraphicsComponent &gfx_);
+	ImguiPipePPFactory(VkGraphicsComponent &gfx_);
+	~ImguiPipePPFactory() override = default;
 
-	void InitInputAssemblyStateCI() override final;
+	ImguiPipePPFactory(const ImguiPipePPFactory &) = delete;
+	ImguiPipePPFactory(ImguiPipePPFactory &&)      = delete;
 
-	void InitRasterizationStateCI() override final;
+	ImguiPipePPFactory &operator=(const ImguiPipePPFactory &) = delete;
+	ImguiPipePPFactory &operator=(ImguiPipePPFactory &&) = delete;
 
-	void InitDepthStencilStateCI() override final;
+  protected:
+	void ConstructInputAssemblyStateCI(VkPipelinePP &pp) final override;
+	void ConstructRasterizationStateCI(VkPipelinePP &pp) final override;
+	void ConstructDepthStencilStateCI(VkPipelinePP &pp) final override;
+	void ConstructMultisampleStateCI(VkPipelinePP &pp) final override;
+	void ConstructDynamicState(VkPipelinePP &pp) final override;
+	void ConstructColorBlendStateCI(VkPipelinePP &pp) final override;
+	void ConstructVertexInputStateCI(VkPipelinePP &pp) final override;
+	void ConstructViewPortStateCI(VkPipelinePP &pp) final override;
+	void ConstructRenderingCI(VkPipelinePP &pp) final override;
 
-	void InitMultisampleStateCI() override final;
 
-	void InitDynamicState() override final;
-
-	void InitColorBlendStateCI() override final;
-
-	void InitViewPortStateCI() override final;
-
-	void InitVertexInputStateCI() override final;
-
-	void InitRenderingCI() override final;
-
-	[[nodiscard]]std::shared_ptr<VkPipelinePP> Clone() const override final;
 
 };

@@ -459,7 +459,7 @@ void KTXTextureRenderer::InitSynObjects()
 void KTXTextureRenderer::InitRenderpasses()
 {
 
-	renderpasses.push_back(std::make_shared<Renderpass0>(gfx, render_pass_manager, common_resources));
+	renderpasses.push_back(std::make_shared<PbrRenderingPass>(gfx, render_pass_manager, common_resources));
 
 }
 

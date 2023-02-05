@@ -138,6 +138,9 @@
     <Filter Include="Header Files\VkCore\Texture\Sampler">
       <UniqueIdentifier>{059ded64-b42c-4064-8f7a-8c2f77909847}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\VkCore\Memory">
+      <UniqueIdentifier>{aaaf6cfe-0db4-4b54-8f78-5eb2cc6b21aa}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="base\Transform.cpp">
@@ -380,6 +383,9 @@
     <ClCompile Include="base\VkImgViewFactory.cpp">
       <Filter>Source Files\Vk</Filter>
     </ClCompile>
+    <ClCompile Include="base\VkPipelinePPFactory.cpp">
+      <Filter>Source Files\Vk</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="base\include\Camera.h">
@@ -408,9 +414,6 @@
     </ClInclude>
     <ClInclude Include="base\include\VkShaderManager.h">
       <Filter>Header Files\VkCore\Shaders</Filter>
-    </ClInclude>
-    <ClInclude Include="base\include\VkMemoryManager.h">
-      <Filter>Header Files\VkCore</Filter>
     </ClInclude>
     <ClInclude Include="base\include\GltfModel.h">
       <Filter>Header Files\VkCore\Model</Filter>
@@ -618,6 +621,12 @@
     </ClInclude>
     <ClInclude Include="base\include\VkBufferCI.h">
       <Filter>Header Files\VkCore\Buffer\Useless</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\VkMemoryManager.h">
+      <Filter>Header Files\VkCore\Memory</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\VkPipelinePPFactory.h">
+      <Filter>Header Files\VkCore\Pipeline\ParameterPack</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -9,20 +9,17 @@ PbrMaterialMetallic::PbrMaterialMetallic(VkGraphicsComponent &gfx_) :
 {
 }
 
-void PbrMaterialMetallic::AllocateDescriptorSetAndUpdate(VkDescriptorPool descriptor_pool, VkDescriptorSetLayout desc_set_layout, const std::vector<Gltf::Texture> &textures, const std::vector<std::shared_ptr<VkTexture>> &images)
+VkDescriptorSet PbrMaterialMetallic::AllocateDescriptorSetAndUpdate(VkDescriptorPool descriptor_pool, VkDescriptorSetLayout desc_set_layout, const std::vector<Gltf::Texture> &textures, const std::vector<std::shared_ptr<VkTexture>> &images)
 {
-
-
 	//ALLOCATE DESCRIPTORS
+	VkDescriptorSet                   descriptor_set;
 	const VkDescriptorSetAllocateInfo allocInfoWrite = VkDescriptorManager::GetDescriptorAllocateInfo(descriptor_pool, desc_set_layout);
 	VK_CHECK_RESULT(vkAllocateDescriptorSets(device_manager.GetLogicalDevice(), &allocInfoWrite, &descriptor_set))
 
-
-	if ((textures.empty()))
+	if (textures.empty())
 	{
-		return;
+		assert(false);
 	}
-
 
 	//UPDATE DESCRIPTORS INFO
 	const auto albedo_image_index             = textures[baseColorTextureIndex].imageIndex;
@@ -50,8 +47,13 @@ void PbrMaterialMetallic::AllocateDescriptorSetAndUpdate(VkDescriptorPool descri
 
 	//UPDATE DESCRIPTOR SET
 	vkUpdateDescriptorSets(device_manager.GetLogicalDevice(), static_cast<uint32_t>(write_descriptor_sets.size()), write_descriptor_sets.data(), 0, nullptr);
+
+	return descriptor_set;
 }
 
+
+
+//push specialization data to a specific shader.
 void PbrMaterialMetallic::ModifyPipelineCI(VkPipelinePP &pipeline_CI)
 {
 	material_specialization_data.alphaMask       = (alphaMode == AlphaMode::ALPHAMODE_MASK);
@@ -89,8 +91,57 @@ void PbrMaterialMetallic::ModifyPipelineCI(VkPipelinePP &pipeline_CI)
 
 void PbrMaterialMetallic::CleanUpMaterial(const VkDeviceManager &device_manager)
 {
-	vkDestroyPipelineLayout(device_manager.GetLogicalDevice(), pipe_layout, nullptr);
-	vkDestroyDescriptorSetLayout(device_manager.GetLogicalDevice(), desc_layout, nullptr);
+	//vkDestroyPipelineLayout(device_manager.GetLogicalDevice(), pipe_layout, nullptr);
+	//vkDestroyDescriptorSetLayout(device_manager.GetLogicalDevice(), desc_layout, nullptr);
+}
+
+void PbrMaterialMetallic::Register(VkGraphicsComponent &gfx)
+{
+	assert(nullptr == desc_layout);
+
+	//LAYOUT FOR  THIS MATERIAL
+	// Descriptor set layout for passing material :binding 0 for color,binding 1 for normal mappings
+	{
+		std::vector<VkDescriptorSetLayoutBinding> layout_bindings_texture;
+		VkDescriptorSetLayoutBinding              temp_binding{};
+		//材质的texture map和normal map会在set = 1中使用，set 1中的binding 0 还没有被使用，所以当然不会和之前的matrix UB发生冲突
+		temp_binding.binding            = Vk::Binding<0>;        //albedo mapping
+		temp_binding.descriptorType     = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		temp_binding.descriptorCount    = 1;
+		temp_binding.stageFlags         = VK_SHADER_STAGE_FRAGMENT_BIT;
+		temp_binding.pImmutableSamplers = nullptr;        // Optional
+		layout_bindings_texture.push_back(temp_binding);
+
+		temp_binding.binding            = Vk::Binding<1>;        //normal mapping
+		temp_binding.descriptorType     = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		temp_binding.descriptorCount    = 1;
+		temp_binding.stageFlags         = VK_SHADER_STAGE_FRAGMENT_BIT;
+		temp_binding.pImmutableSamplers = nullptr;        // Optional
+		layout_bindings_texture.push_back(temp_binding);
+
+		temp_binding.binding            = Vk::Binding<2>;        //ambient occlution mapping
+		temp_binding.descriptorType     = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		temp_binding.descriptorCount    = 1;
+		temp_binding.stageFlags         = VK_SHADER_STAGE_FRAGMENT_BIT;
+		temp_binding.pImmutableSamplers = nullptr;        // Optional
+		layout_bindings_texture.push_back(temp_binding);
+
+		temp_binding.binding            = Vk::Binding<3>;        //metallic roughness mapping
+		temp_binding.descriptorType     = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		temp_binding.descriptorCount    = 1;
+		temp_binding.stageFlags         = VK_SHADER_STAGE_FRAGMENT_BIT;
+		temp_binding.pImmutableSamplers = nullptr;        // Optional
+		layout_bindings_texture.push_back(temp_binding);
+
+		const VkDescriptorSetLayoutCreateInfo layout_bindingCI{Vk::GetDescriptorSetLayoutCI(layout_bindings_texture)};
+
+		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(gfx.DeviceMan().GetLogicalDevice(), &layout_bindingCI, nullptr, &desc_layout))
+	}
+}
+
+void PbrMaterialMetallic::UnRegister(VkGraphicsComponent &gfx)
+{
+	vkDestroyDescriptorSetLayout(gfx.DeviceMan().GetLogicalDevice(), desc_layout, nullptr);
 }
 
 VkDescriptorSetLayout PbrMaterialMetallic::GetDescriptorSetLayout()
@@ -98,14 +149,20 @@ VkDescriptorSetLayout PbrMaterialMetallic::GetDescriptorSetLayout()
 	return desc_layout;
 }
 
-VkPipelineLayout PbrMaterialMetallic::GetPipelineLayout()
-{
-	return pipe_layout;
-}
+//VkPipelineLayout PbrMaterialMetallic::GetPipelineLayout()
+//{
+//	return pipe_layout;
+//}
 
 VkDescriptorSetLayout PbrMaterialMetallic::CreateDesciptorSetLayout(const VkDeviceManager &device_manager)
 {
-	vkDestroyDescriptorSetLayout(device_manager.GetLogicalDevice(), desc_layout, nullptr);
+	//	vkDestroyDescriptorSetLayout(device_manager.GetLogicalDevice(), desc_layout, nullptr);
+
+	//if (desc_layout_established)
+	//{
+	//	return desc_layout;
+	//}
+
 	//LAYOUT FOR  THIS MATERIAL
 	// Descriptor set layout for passing material :binding 0 for color,binding 1 for normal mappings
 	{
@@ -143,6 +200,7 @@ VkDescriptorSetLayout PbrMaterialMetallic::CreateDesciptorSetLayout(const VkDevi
 		const VkDescriptorSetLayoutCreateInfo layout_bindingCI{Vk::GetDescriptorSetLayoutCI(layout_bindings_texture)};
 
 		VK_CHECK_RESULT(vkCreateDescriptorSetLayout(device_manager.GetLogicalDevice(), &layout_bindingCI, nullptr, &desc_layout))
+		//desc_layout_established = true;
 	}
 
 	return desc_layout;
@@ -150,20 +208,8 @@ VkDescriptorSetLayout PbrMaterialMetallic::CreateDesciptorSetLayout(const VkDevi
 
 VkPipelineLayout PbrMaterialMetallic::CreatePipelineLayout(const VkDeviceManager &device_manager, const std::vector<VkDescriptorSetLayout> &set_layouts, const std::vector<VkPushConstantRange> &push_constant_ranges)
 {
-	vkDestroyPipelineLayout(device_manager.GetLogicalDevice(), pipe_layout, nullptr);
-	pipe_layout = Vk::GetPipelineLayout(device_manager.GetLogicalDevice(), set_layouts, push_constant_ranges);
-	return pipe_layout;
+	//vkDestroyPipelineLayout(device_manager.GetLogicalDevice(), pipe_layout, nullptr);
+	//pipe_layout =
+	return Vk::GetPipelineLayout(device_manager.GetLogicalDevice(), set_layouts, push_constant_ranges);
+	//return pipe_layout;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-

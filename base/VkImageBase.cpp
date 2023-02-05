@@ -75,8 +75,8 @@ void VkImageBase::TransitionImageLayout(VkImageLayout oldLayout, VkImageLayout n
 
 	if (subresource_range.has_value())
 	{
-		barrier.subresourceRange.baseMipLevel   = subresource_range->baseMipLevel;
-		barrier.subresourceRange.levelCount     = subresource_range->levelCount;
+		barrier.subresourceRange.baseMipLevel = subresource_range->baseMipLevel;
+		barrier.subresourceRange.levelCount   = subresource_range->levelCount;
 
 		barrier.subresourceRange.baseArrayLayer = subresource_range->baseMipLevel;
 		barrier.subresourceRange.layerCount     = subresource_range->layerCount;
@@ -96,8 +96,8 @@ void VkImageBase::TransitionImageLayout(VkImageLayout oldLayout, VkImageLayout n
 	//unchecked
 	if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)
 	{
-		barrier.srcAccessMask = 0;
-		barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+		barrier.srcAccessMask = VK_ACCESS_NONE;
+		barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
 
 		sourceStage      = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
 		destinationStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
@@ -106,7 +106,7 @@ void VkImageBase::TransitionImageLayout(VkImageLayout oldLayout, VkImageLayout n
 	//checked
 	else if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
 	{
-		barrier.srcAccessMask = 0;
+		barrier.srcAccessMask = VK_ACCESS_NONE;
 		barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
 		//VK_PIPELINE_STAGE_HOST_BIT
 		sourceStage      = VK_PIPELINE_STAGE_HOST_BIT;
@@ -201,4 +201,94 @@ void VkImageBase::TransitionImageLayout(VkImageLayout oldLayout, VkImageLayout n
 	    1, &barrier);
 
 	VkCommandManager::EndSingleTimeCommands(command_pool, device_manager.GetLogicalDevice(), command_buffer, command_quque);
+}
+
+void VkImageBase::TransitionImageLayout(Sync::VkImageMemoryBarrierEnhanced mem_barrier_enhanced, const VkDeviceManager::CommandPoolType command_type) const
+{
+	VkQueue       command_quque;
+	VkCommandPool command_pool;
+
+	const VkDeviceManager::QueueFamilyIndices queue_family_indices = VkDeviceManager::FindQueueFamilies(device_manager.GetPhysicalDevice(), gfx.Window().GetSurface());
+
+	if (command_type == VkDeviceManager::CommandPoolType::graphics_command_pool)
+	{
+		command_quque = device_manager.GetGraphicsQueue();
+		command_pool  = gfx.CommandMan().graphics_command_pool;
+	}
+
+	else if (command_type == VkDeviceManager::CommandPoolType::transfor_command_pool)
+	{
+		command_quque = device_manager.GetTransferQueue();
+		command_pool  = gfx.CommandMan().transfer_command_pool;
+	}
+	else
+	{
+	}
+
+
+
+
+	const VkCommandBuffer command_buffer = VkCommandManager::BeginSingleTimeCommands(command_pool, device_manager.GetLogicalDevice());
+
+	VkImageMemoryBarrier barrier{};
+	barrier.sType     = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+	barrier.pNext     = VK_NULL_HANDLE;
+	barrier.oldLayout = mem_barrier_enhanced.oldLayout;
+	barrier.newLayout = mem_barrier_enhanced.newLayout;
+
+	barrier.srcQueueFamilyIndex = mem_barrier_enhanced.srcQueueFamilyIndex;
+	barrier.dstQueueFamilyIndex = mem_barrier_enhanced.dstQueueFamilyIndex;
+
+
+	barrier.srcAccessMask = mem_barrier_enhanced.srcAccessMask;
+	barrier.dstAccessMask = mem_barrier_enhanced.dstAccessMask;
+
+	barrier.image = image;
+
+
+	if (mem_barrier_enhanced.newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
+	{
+		barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+
+		if (Vk::HasStencilComponent(para_pack->default_image_format))
+		{
+			barrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+		}
+	}
+	else
+	{
+		barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	}
+
+	if (mem_barrier_enhanced.subresource_range.has_value())
+	{
+		barrier.subresourceRange.baseMipLevel = mem_barrier_enhanced.subresource_range->baseMipLevel;
+		barrier.subresourceRange.levelCount   = mem_barrier_enhanced.subresource_range->levelCount;
+
+		barrier.subresourceRange.baseArrayLayer = mem_barrier_enhanced.subresource_range->baseMipLevel;
+		barrier.subresourceRange.layerCount     = mem_barrier_enhanced.subresource_range->layerCount;
+	}
+	else
+	{
+		barrier.subresourceRange.baseMipLevel = 0;
+		barrier.subresourceRange.levelCount   = para_pack->default_image_CI.mipLevels;
+
+		barrier.subresourceRange.baseArrayLayer = 0;
+		barrier.subresourceRange.layerCount     = para_pack->default_image_CI.arrayLayers;
+	}
+
+	//checked
+
+	vkCmdPipelineBarrier(
+	    command_buffer,
+	    mem_barrier_enhanced.srcStageMask, mem_barrier_enhanced.dstStageMask,
+	    0,
+	    0, nullptr,
+	    0, nullptr,
+	    1, &barrier);
+
+	VkCommandManager::EndSingleTimeCommands(command_pool, device_manager.GetLogicalDevice(), command_buffer, command_quque);
+
+
+
 }

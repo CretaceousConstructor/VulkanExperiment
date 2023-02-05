@@ -71,12 +71,6 @@ std::shared_ptr<ImagePP> TextureImgPP::Clone() const
 	return std::make_shared<TextureImgPP>(*this);
 }
 
-void TextureImgPP::SetToDefault()
-{
-
-
-
-}
 
 SwapchainImgPP::SwapchainImgPP()
 {

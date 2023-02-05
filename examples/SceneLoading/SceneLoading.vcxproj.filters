@@ -16,85 +16,124 @@
     <Filter Include="Shader Files">
       <UniqueIdentifier>{0f69ade3-ec7e-43c5-9b8e-4ae703ef3baa}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Shaderbat Files">
-      <UniqueIdentifier>{c663c0ae-dff1-42c0-a575-4b7138b8c207}</UniqueIdentifier>
+    <Filter Include="Shader Files\glsl">
+      <UniqueIdentifier>{b3dbd6d4-72f7-431a-a822-b3450057d5e6}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\Renderpasses">
-      <UniqueIdentifier>{9af3ab35-8b5b-40d5-b3b7-0c7a41381b87}</UniqueIdentifier>
+    <Filter Include="Shader Files\PbrRendering">
+      <UniqueIdentifier>{8c91664f-4dd4-4373-a84f-73509d4f21cf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\PbrRenderpasses">
+      <UniqueIdentifier>{e835c074-9882-4bc8-b595-5bff523ec1f6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\App">
+      <UniqueIdentifier>{50ddea24-6256-4d6d-892e-7dbcb1edaef0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Renderer">
+      <UniqueIdentifier>{9f2d9b4d-cc63-4c7b-956e-49f7c88063fc}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="SceneLoadingApp.cpp">
+    <ClCompile Include="GraphicsApp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SceneLoadingRenderer.cpp">
+    <ClCompile Include="Renderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Renderpass0.cpp">
+    <ClCompile Include="PbrRenderingPass.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="RenderingMetaInfo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="PreprocessPass.cpp">
+    <ClCompile Include="IrradianceMapGenPass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PrefilterAndLUTMapGenPass.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="SceneLoadingApp.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SceneLoadingRenderer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="RenderingMetaInfo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Renderpass0.h">
-      <Filter>Header Files\Renderpasses</Filter>
+    <ClInclude Include="IrradianceMapGenPass.h">
+      <Filter>Header Files\PbrRenderpasses</Filter>
     </ClInclude>
-    <ClInclude Include="PreprocessPass.h">
-      <Filter>Header Files\Renderpasses</Filter>
+    <ClInclude Include="PbrRenderingPass.h">
+      <Filter>Header Files\PbrRenderpasses</Filter>
+    </ClInclude>
+    <ClInclude Include="PrefilterAndLUTMapGenPass.h">
+      <Filter>Header Files\PbrRenderpasses</Filter>
+    </ClInclude>
+    <ClInclude Include="GraphicsApp.h">
+      <Filter>Header Files\App</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderer.h">
+      <Filter>Header Files\Renderer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\data\shaderbat\SceneLoadingCompile.bat">
-      <Filter>Shaderbat Files</Filter>
-    </None>
-    <None Include="..\..\data\shaders\SceneLoading\SceneLoading_vertex_shader.vert">
-      <Filter>Shader Files</Filter>
-    </None>
-    <None Include="..\..\data\shaders\SceneLoading\SceneLoading_fragment_shader.frag">
-      <Filter>Shader Files</Filter>
-    </None>
-    <None Include="..\..\data\shaders\SceneLoading\LightIndicator_fragment_shader.frag">
-      <Filter>Shader Files</Filter>
-    </None>
-    <None Include="..\..\data\shaders\SceneLoading\LightIndicator_vertex_shader.vert">
-      <Filter>Shader Files</Filter>
+    <None Include="..\..\data\shaders\SceneLoading\PreProcessPass_fragment_shader.frag">
+      <Filter>Shader Files\glsl</Filter>
     </None>
     <None Include="..\..\data\shaders\SceneLoading\PreProcessPass_vertex_shader.vert">
-      <Filter>Shader Files</Filter>
+      <Filter>Shader Files\glsl</Filter>
     </None>
-    <None Include="..\..\data\shaders\SceneLoading\PreProcessPass_fragment_shader.frag">
-      <Filter>Shader Files</Filter>
+    <None Include="..\..\data\shaders\SceneLoading\SceneLoading_fragment_shader.frag">
+      <Filter>Shader Files\glsl</Filter>
+    </None>
+    <None Include="..\..\data\shaders\SceneLoading\SceneLoading_vertex_shader.vert">
+      <Filter>Shader Files\glsl</Filter>
+    </None>
+    <None Include="..\..\data\shaders\SceneLoading\LightIndicator_fragment_shader.frag">
+      <Filter>Shader Files\glsl</Filter>
+    </None>
+    <None Include="..\..\data\shaders\SceneLoading\LightIndicator_vertex_shader.vert">
+      <Filter>Shader Files\glsl</Filter>
+    </None>
+    <None Include="..\..\data\shaderbat\SceneLoadingCompile.bat">
+      <Filter>Shader Files\glsl</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="..\..\data\shaders\SceneLoading\PreProcess_vert.hlsl">
-      <Filter>Shader Files</Filter>
+    <FxCompile Include="..\..\data\shaders\SceneLoading\ConvolutedIrradiance_frag.hlsl">
+      <Filter>Shader Files\PbrRendering</Filter>
     </FxCompile>
-    <FxCompile Include="..\..\data\shaders\SceneLoading\PreProcess_frag.hlsl">
-      <Filter>Shader Files</Filter>
+    <FxCompile Include="..\..\data\shaders\SceneLoading\ConvolutedIrradiance_vert.hlsl">
+      <Filter>Shader Files\PbrRendering</Filter>
     </FxCompile>
-    <FxCompile Include="..\..\data\shaders\SceneLoading\SkyBox_vert.hlsl">
-      <Filter>Shader Files</Filter>
+    <FxCompile Include="..\..\data\shaders\SceneLoading\EquiToCubeMap_frag.hlsl">
+      <Filter>Shader Files\PbrRendering</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\data\shaders\SceneLoading\EquiToCubeMap_vert.hlsl">
+      <Filter>Shader Files\PbrRendering</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\data\shaders\SceneLoading\LUT_frag.hlsl">
+      <Filter>Shader Files\PbrRendering</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\data\shaders\SceneLoading\LUT_vert.hlsl">
+      <Filter>Shader Files\PbrRendering</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\data\shaders\SceneLoading\PbrShading_frag.hlsl">
+      <Filter>Shader Files\PbrRendering</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\data\shaders\SceneLoading\PbrShading_vert.hlsl">
+      <Filter>Shader Files\PbrRendering</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\data\shaders\SceneLoading\Prefiltering_frag.hlsl">
+      <Filter>Shader Files\PbrRendering</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\data\shaders\SceneLoading\Prefiltering_vert.hlsl">
+      <Filter>Shader Files\PbrRendering</Filter>
     </FxCompile>
     <FxCompile Include="..\..\data\shaders\SceneLoading\SkyBox_frag.hlsl">
-      <Filter>Shader Files</Filter>
+      <Filter>Shader Files\PbrRendering</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\data\shaders\SceneLoading\SkyBox_vert.hlsl">
+      <Filter>Shader Files\PbrRendering</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

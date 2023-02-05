@@ -40,9 +40,13 @@ class VkTexture
 	[[nodiscard]] VkImageLayout                GetImageLayout() const;
 
   public:
-
 	void InsertImageMemoryBarrier(VkCommandBuffer cmd_buffer, const Sync::VkImageMemoryBarrierEnhanced &img_mem_barrier);
+
+	//这个函数目前需要修改，修改的目的是让用户去解决具体该怎么写image barrier，而不是通过一堆if else去假设。
 	void InsertImageMemoryBarrier(const Sync::VkImageMemoryBarrierEnhanced &img_mem_barrier, const VkDeviceManager::CommandPoolType command_type);
+
+
+
 
   private:
 	std::optional<VkSamplerCreateInfo>   sampler_CI;
@@ -51,6 +55,7 @@ class VkTexture
   private:
 	void SetCISamplerAndImgView(std::optional<VkSamplerCreateInfo> sampler_CI_, std::optional<VkImageViewCreateInfo> img_view_CI_);
 
+  private:
 	void SetImgViewCI(VkImageViewCreateInfo image_view_);
 	void SetSamplerCI(VkSamplerCreateInfo texture_sampler_);
 
@@ -62,13 +67,13 @@ class VkTexture
 	VkSampler   tex_sampler{};
 
 	VkDescriptorImageInfo image_info{};
-	VkImageLayout         image_layout{};
+	VkImageLayout         current_image_layout{};
 	VkBool32              ktx_use_staging = true;
 
   private:
-
 	VkGraphicsComponent &  gfx;
 	const VkDeviceManager &device_manager;
+
 
 
 };

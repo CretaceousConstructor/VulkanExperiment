@@ -10,7 +10,7 @@ namespace Vk
 
 
 
-	constexpr VkImageCreateFlags NillFlags{0};
+	constexpr VkImageCreateFlags ImgCINillFlag{0};
 
 	enum class Type
 	{
@@ -92,7 +92,7 @@ VkDescriptorPoolSize            GetOneDescriptorPoolSizeDescription(VkDescriptor
 //make those functions accept universal ref, to prevent rvalue being passed in.
 VkDescriptorPoolCreateInfo      GetDescriptorPoolCI(const std::vector<VkDescriptorPoolSize> &pool_sizes, uint32_t max_sets, const void *pNext = nullptr, VkDescriptorPoolCreateFlags flags = 0);
 //make those functions accept universal ref, to prevent rvalue being passed in.
-VkDescriptorSetLayoutBinding    GetDescriptorSetLayoutBinding(uint32_t binding, VkDescriptorType type, VkShaderStageFlagBits stage_flags, uint32_t descriptor_count = 1, const VkSampler *pImmutableSamplers = nullptr);
+VkDescriptorSetLayoutBinding    GetDescriptorSetLayoutBinding(uint32_t binding, VkDescriptorType type, VkShaderStageFlags     stage_flags, uint32_t descriptor_count = 1, const VkSampler *pImmutableSamplers = nullptr);
 //make those functions accept universal ref, to prevent rvalue being passed in.
 VkDescriptorSetLayoutCreateInfo GetDescriptorSetLayoutCI(const std::vector<VkDescriptorSetLayoutBinding> &bindings, const void *pNext = nullptr, VkDescriptorSetLayoutCreateFlags flags = 0);
 

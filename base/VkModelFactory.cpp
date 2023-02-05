@@ -34,106 +34,111 @@ bool VkModelFactory::LoadglTFFile(const std::string &path, tinygltf::Model &glTF
 
 	return file_loaded;
 }
-void VkModelFactory::LoadMaterials(GltfModelPack &model) const
-{
-	auto &      materials     = model.materials;
-	auto &      image_formats = model.image_formats;
-	const auto &input         = model.input;
-	materials.reserve(input.materials.size());
-
-	image_formats.resize(input.images.size(), VK_FORMAT_R8G8B8A8_SRGB);
-
-	for (size_t i = 0; i < input.materials.size(); i++)
-	{
-		//TODO:
-
-		std::shared_ptr<PbrMaterialMetallic> mat{std::make_shared<PbrMaterialMetallic>(gfx)};
-		const tinygltf::Material &           glTFMaterial = input.materials[i];
-
-		//BASE COLOR TEXTURE
-		if (glTFMaterial.values.contains("baseColorFactor"))
-		{
-			mat->baseColorFactor = glm::make_vec4(glTFMaterial.values.at("baseColorFactor").ColorFactor().data());
-		}
-		if (glTFMaterial.values.contains("baseColorTexture"))
-		{
-			mat->baseColorTextureIndex = glTFMaterial.values.at("baseColorTexture").TextureIndex();
-		}
-
-		// METALLIC ROUGHNESS WORKFLOW
-		if (glTFMaterial.values.contains("metallicRoughnessTexture"))
-		{
-			mat->metallicRoughnessTextureIndex                = glTFMaterial.values.at("metallicRoughnessTexture").TextureIndex();
-			image_formats[mat->metallicRoughnessTextureIndex] = VK_FORMAT_R8G8B8A8_UNORM;        //这里的format对应的是texture 数组
-		}
-		if (glTFMaterial.values.contains("metallicFactor"))
-		{
-			mat->metallicFactor = static_cast<float>(glTFMaterial.values.at("metallicFactor").Factor());
-		}
-		if (glTFMaterial.values.contains("roughnessFactor"))
-		{
-			mat->roughnessFactor = static_cast<float>(glTFMaterial.values.at("roughnessFactor").Factor());
-		}
-
-		//NORMAL MAP TEXTURE
-		if (glTFMaterial.additionalValues.contains("normalTexture"))
-		{
-			mat->normalTextureIndex                = glTFMaterial.additionalValues.at("normalTexture").TextureIndex();
-			image_formats[mat->normalTextureIndex] = VK_FORMAT_R8G8B8A8_UNORM;        //这里的format对应的是texture 数组
-		}
-
-		//EMISSIVE TEXTURE
-		if (glTFMaterial.additionalValues.contains("emissiveTexture"))
-		{
-			mat->emissiveTextureIndex                = glTFMaterial.additionalValues.at("emissiveTexture").TextureIndex();
-			image_formats[mat->emissiveTextureIndex] = VK_FORMAT_R8G8B8A8_UNORM;        //这里的format对应的是texture 数组
-		}
-
-		//OCCLUSION TEXTURE
-		if (glTFMaterial.additionalValues.contains("occlusionTexture"))
-		{
-			mat->occlusionTextureIndex                = glTFMaterial.additionalValues.at("occlusionTexture").TextureIndex();
-			image_formats[mat->occlusionTextureIndex] = VK_FORMAT_R8G8B8A8_UNORM;        //这里的format对应的是texture 数组
-		}
-
-		//ALPHA MODE
-		if (glTFMaterial.additionalValues.contains("alphaMode"))
-		{
-			tinygltf::Parameter param = glTFMaterial.additionalValues.at("alphaMode");
-
-			if (param.string_value == "BLEND")
-			{
-				mat->alphaMode = PbrMaterialMetallic::AlphaMode::ALPHAMODE_BLEND;
-			}
-			if (param.string_value == "MASK")
-			{
-				mat->alphaMode = PbrMaterialMetallic::AlphaMode::ALPHAMODE_MASK;
-			}
-			else
-			{
-				mat->alphaMode = PbrMaterialMetallic::AlphaMode::ALPHAMODE_OPAQUE;
-			}
-		}
-		else
-		{
-			mat->alphaMode = PbrMaterialMetallic::AlphaMode::ALPHAMODE_OPAQUE;
-		}
-
-		//ALPHA CUTOFF
-		if (glTFMaterial.additionalValues.contains("alphaCutoff"))
-		{
-			mat->alphaCutoff = static_cast<float>(glTFMaterial.additionalValues.at("alphaCutoff").Factor());
-		}
-
-		//DOUBLE SIDED
-		if (glTFMaterial.additionalValues.contains("doubleSided"))
-		{
-			mat->doubleSided = glTFMaterial.doubleSided;
-		}
-
-		materials.push_back(mat);
-	}
-}
+//void VkModelFactory::LoadMaterials(GltfModelPack &model) const
+//{
+//	auto &      materials     = model.materials;
+//	auto &      image_formats = model.image_formats;
+//	const auto &input         = model.input;
+//	materials.reserve(input.materials.size());
+//
+//	image_formats.resize(input.images.size(), VK_FORMAT_R8G8B8A8_SRGB);
+//
+//
+//	//这里的image_formats实际上是每个一texture应该有的format，但是每一个texture对应的image又不一定index相同，所以之后还需要处理，转换成image的formats
+//
+//	for (size_t i = 0; i < input.materials.size(); i++)
+//	{
+//
+//
+//		//TODO:
+//
+//		std::shared_ptr<PbrMaterialMetallic> mat{std::make_shared<PbrMaterialMetallic>(gfx)};
+//		const tinygltf::Material &           glTFMaterial = input.materials[i];
+//
+//		//BASE COLOR TEXTURE
+//		if (glTFMaterial.values.contains("baseColorFactor"))
+//		{
+//			mat->baseColorFactor = glm::make_vec4(glTFMaterial.values.at("baseColorFactor").ColorFactor().data());
+//		}
+//		if (glTFMaterial.values.contains("baseColorTexture"))
+//		{
+//			mat->baseColorTextureIndex = glTFMaterial.values.at("baseColorTexture").TextureIndex();
+//		}
+//
+//		// METALLIC ROUGHNESS WORKFLOW
+//		if (glTFMaterial.values.contains("metallicRoughnessTexture"))
+//		{
+//			mat->metallicRoughnessTextureIndex                = glTFMaterial.values.at("metallicRoughnessTexture").TextureIndex();
+//			image_formats[mat->metallicRoughnessTextureIndex] = VK_FORMAT_R8G8B8A8_UNORM;        //这里的format对应的是texture 数组
+//		}
+//		if (glTFMaterial.values.contains("metallicFactor"))
+//		{
+//			mat->metallicFactor = static_cast<float>(glTFMaterial.values.at("metallicFactor").Factor());
+//		}
+//		if (glTFMaterial.values.contains("roughnessFactor"))
+//		{
+//			mat->roughnessFactor = static_cast<float>(glTFMaterial.values.at("roughnessFactor").Factor());
+//		}
+//
+//		//NORMAL MAP TEXTURE
+//		if (glTFMaterial.additionalValues.contains("normalTexture"))
+//		{
+//			mat->normalTextureIndex                = glTFMaterial.additionalValues.at("normalTexture").TextureIndex();
+//			image_formats[mat->normalTextureIndex] = VK_FORMAT_R8G8B8A8_UNORM;        //这里的format对应的是texture 数组
+//		}
+//
+//		//EMISSIVE TEXTURE
+//		if (glTFMaterial.additionalValues.contains("emissiveTexture"))
+//		{
+//			mat->emissiveTextureIndex                = glTFMaterial.additionalValues.at("emissiveTexture").TextureIndex();
+//			image_formats[mat->emissiveTextureIndex] = VK_FORMAT_R8G8B8A8_UNORM;        //这里的format对应的是texture 数组
+//		}
+//
+//		//OCCLUSION TEXTURE
+//		if (glTFMaterial.additionalValues.contains("occlusionTexture"))
+//		{
+//			mat->occlusionTextureIndex                = glTFMaterial.additionalValues.at("occlusionTexture").TextureIndex();
+//			image_formats[mat->occlusionTextureIndex] = VK_FORMAT_R8G8B8A8_UNORM;        //这里的format对应的是texture 数组
+//		}
+//
+//		//ALPHA MODE
+//		if (glTFMaterial.additionalValues.contains("alphaMode"))
+//		{
+//			tinygltf::Parameter param = glTFMaterial.additionalValues.at("alphaMode");
+//
+//			if (param.string_value == "BLEND")
+//			{
+//				mat->alphaMode = PbrMaterialMetallic::AlphaMode::ALPHAMODE_BLEND;
+//			}
+//			if (param.string_value == "MASK")
+//			{
+//				mat->alphaMode = PbrMaterialMetallic::AlphaMode::ALPHAMODE_MASK;
+//			}
+//			else
+//			{
+//				mat->alphaMode = PbrMaterialMetallic::AlphaMode::ALPHAMODE_OPAQUE;
+//			}
+//		}
+//		else
+//		{
+//			mat->alphaMode = PbrMaterialMetallic::AlphaMode::ALPHAMODE_OPAQUE;
+//		}
+//
+//		//ALPHA CUTOFF
+//		if (glTFMaterial.additionalValues.contains("alphaCutoff"))
+//		{
+//			mat->alphaCutoff = static_cast<float>(glTFMaterial.additionalValues.at("alphaCutoff").Factor());
+//		}
+//
+//		//DOUBLE SIDED
+//		if (glTFMaterial.additionalValues.contains("doubleSided"))
+//		{
+//			mat->doubleSided = glTFMaterial.doubleSided;
+//		}
+//
+//		materials.push_back(mat);
+//	}
+//}
 
 void VkModelFactory::LoadTextures(GltfModelPack &model) const
 {
@@ -149,11 +154,7 @@ void VkModelFactory::LoadTextures(GltfModelPack &model) const
 	for (size_t i = 0; i < input.textures.size(); i++)
 	{
 		textures[i].imageIndex = input.textures[i].source;
-
-		//if (image_formats[i] != VK_FORMAT_R8G8B8A8_SRGB)
-		//{
 		temp_image_formats[textures[i].imageIndex] = image_formats[i];
-		//}
 	}
 
 	image_formats.swap(temp_image_formats);
@@ -203,7 +204,7 @@ void VkModelFactory::LoadImages(GltfModelPack &model) const
 				for (size_t i = 0; i < glTFImage.width * glTFImage.height; ++i)
 				{
 					memcpy(rgba, rgb, sizeof(unsigned char) * 3);
-					rgba[3] = 0xff;
+					rgba[3] = 0xff;//默认A为1.0
 					rgba += 4;
 					rgb += 3;
 				}
@@ -232,7 +233,7 @@ void VkModelFactory::LoadImages(GltfModelPack &model) const
 	}
 }
 
-void VkModelFactory::LoadNode(const size_t current_node_index_in_glft, int parent, GltfModelPack &model) const
+void VkModelFactory::LoadNode(const size_t current_node_index_in_glft, const int parent, GltfModelPack &model) const
 {
 	//NODE TREE
 	const auto &input = model.input;
@@ -271,14 +272,15 @@ void VkModelFactory::LoadNode(const size_t current_node_index_in_glft, int paren
 		//X* glm::scale(Identity, vec3)
 
 		node_matrix = glm::scale(node_matrix, glm::vec3(glm::make_vec3(current_node_in_gltf.scale.data())));
+		
 	}
 	if (current_node_in_gltf.matrix.size() == 16)
 	{
 		node_matrix = glm::make_mat4x4(current_node_in_gltf.matrix.data());
 	};
 
-	Gltf::Node &current_node = nodes[current_node_index];
-	current_node.matrix      = node_matrix;
+	//Gltf::Node &current_node = nodes[current_node_index];
+	nodes[current_node_index].matrix      = node_matrix;
 
 	// Load node's children
 	if (!current_node_in_gltf.children.empty())
@@ -298,6 +300,7 @@ void VkModelFactory::LoadNode(const size_t current_node_index_in_glft, int paren
 		for (size_t i = 0; i < mesh.primitives.size(); i++)
 		{
 			const tinygltf::Primitive &glTFPrimitive = mesh.primitives[i];
+
 			uint32_t                   firstIndex    = static_cast<uint32_t>(index_buffer_cpu.size());
 			uint32_t                   vertexStart   = static_cast<uint32_t>(vertex_buffer_cpu.size());
 			uint32_t                   indexCount    = 0;
@@ -351,7 +354,7 @@ void VkModelFactory::LoadNode(const size_t current_node_index_in_glft, int paren
 					vert.normal  = glm::normalize(glm::vec3(normalsBuffer ? glm::make_vec3(&normalsBuffer[v * 3]) : glm::vec3(0.0f)));
 					vert.color   = glm::vec3(1.0f);
 					vert.uv      = texCoordsBuffer ? glm::make_vec2(&texCoordsBuffer[v * 2]) : glm::vec2(0.0f);
-					//vert.color = materials[glTFPrimitive.material].baseColorFactor;
+					//vert.color = model.materials[glTFPrimitive.material].baseColorFactor;
 					vertex_buffer_cpu.push_back(vert);
 				}
 			}
@@ -408,19 +411,19 @@ void VkModelFactory::LoadNode(const size_t current_node_index_in_glft, int paren
 			primitive.firstIndex    = firstIndex;
 			primitive.indexCount    = indexCount;
 			primitive.materialIndex = glTFPrimitive.material;
-			current_node.mesh.primitives.push_back(primitive);
+			nodes[current_node_index].mesh.primitives.push_back(primitive);
 		}
 	}
 
 	if (parent >= 0)
 	{
-		current_node.parent_index = parent;
+		nodes[current_node_index].parent_index = parent;
 		auto &parent_children     = nodes[parent].children_indices;
 		parent_children.push_back(current_node_index);
 	}
 	else
 	{
-		current_node.parent_index = -1;
+		nodes[current_node_index].parent_index = -1;
 	}
 }
 
@@ -446,7 +449,7 @@ void VkModelFactory::LoadVertAndIndxIntoGpuBuffer(GltfModelPack &model) const
 		vertices_gpu.buffer = buffer_factory.ProduceBuffer(vertex_buffer_size, vertex_para_pack);
 		vertices_gpu.count  = static_cast<uint32_t>(vertex_buffer_cpu.size());
 
-		device_manager.CopyBuffer(staging_buffer->GetRawBuffer(), vertices_gpu.buffer->GetRawBuffer(), vertex_buffer_size, command_manager.GetTransferCommandBuffers()[0]);
+		device_manager.CopyBuffer(staging_buffer->GetGPUBuffer(), vertices_gpu.buffer->GetGPUBuffer(), vertex_buffer_size, command_manager.GetTransferCommandBuffers()[0]);
 	}
 
 	//index
@@ -463,7 +466,7 @@ void VkModelFactory::LoadVertAndIndxIntoGpuBuffer(GltfModelPack &model) const
 		indices_gpu.buffer = buffer_factory.ProduceBuffer(index_buffer_size, index_para_pack);
 		indices_gpu.count  = static_cast<uint32_t>(index_buffer_cpu.size());
 
-		device_manager.CopyBuffer(staging_buffer->GetRawBuffer(), indices_gpu.buffer->GetRawBuffer(), index_buffer_size, command_manager.GetTransferCommandBuffers()[0]);
+		device_manager.CopyBuffer(staging_buffer->GetGPUBuffer(), indices_gpu.buffer->GetGPUBuffer(), index_buffer_size, command_manager.GetTransferCommandBuffers()[0]);
 	}
 }
 

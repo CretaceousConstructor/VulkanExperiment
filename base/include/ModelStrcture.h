@@ -20,7 +20,7 @@ struct Primitive
 {
 	uint32_t firstIndex;
 	uint32_t indexCount;
-	int32_t  materialIndex;
+	uint32_t materialIndex;
 };
 
 struct Mesh
@@ -31,7 +31,7 @@ struct Mesh
 struct Node
 {
 	int              parent_index;        //index ito the std::vector<GltfModel::Node> nodes vector
-	std::vector<int> children_indices;   
+	std::vector<int> children_indices;
 	Mesh             mesh;
 	glm::mat4        matrix;
 	bool             visible{true};
@@ -43,8 +43,6 @@ struct Texture
 {
 	uint32_t imageIndex;
 };
-
-
 
 // Single vertex buffer for all primitives
 struct VertexBufferGpu

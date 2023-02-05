@@ -34,13 +34,6 @@ class VkRenderpassManager
 	[[nodiscard]] const std::vector<VkDescriptorSet> &GetDescriptorSetBundle(DescriptorSetMetaInfo meta_info) const;
 
   public:
-
-
-	
-
-
-
-
   public:
 	VkDescriptorManager &  GetDescriptorManager();
 	VkDescriptorManagerV0 &GetDescriptorManagerV0();
@@ -51,6 +44,8 @@ class VkRenderpassManager
 	 * \return stateless factory
 	 */
 	//const VkSubPassFacotry &       GetSubPassFactory();
+
+
 	const VkBufferFactory &GetBufferFactory();
 
 	const VkTextureFactory &GetTextureFactory();
@@ -65,7 +60,7 @@ class VkRenderpassManager
 
   public:
 	VkManagerBundle &GetManagerBundle();
-	VkFactoryBundle &GetFactoryBundl();
+	VkFactoryBundle &GetFactoryBundle();
 
   private:
 	VkGraphicsComponent &gfx;

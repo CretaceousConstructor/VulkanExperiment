@@ -30,7 +30,7 @@
     <ClCompile Include="KTXTextureRenderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Renderpass0.cpp">
+    <ClCompile Include="PbrRenderingPass.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -41,7 +41,7 @@
     <ClInclude Include="KTXTextureRenderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Renderpass0.h">
+    <ClInclude Include="PbrRenderingPass.h">
       <Filter>Header Files\Renderpasses</Filter>
     </ClInclude>
     <ClInclude Include="RenderingMetaInfo.h">

@@ -63,6 +63,26 @@ void VkShaderWrapper::CreateShaderModule(const std::vector<char> &code)
 	//Lucky for us, the data is stored in an std::vector where the default allocator already ensures that the data satisfies the worst case ALIGNMENT requirements.
 
 	VK_CHECK_RESULT(vkCreateShaderModule(device_manager.GetLogicalDevice(), &create_info, nullptr, &shader_module))
+
+
+
+	//const std::string pathName = "D:/CS/ComputerGraphics/vulkan/WindowsProject1/data/shaderdebuginfo/blob.dxbc"; // path name is in UTF-8
+	//auto func_ptr_to_vkSetDebugUtilsObjectTagEXTo = reinterpret_cast<PFN_vkSetDebugUtilsObjectTagEXT>(vkGetDeviceProcAddr(device_manager.GetLogicalDevice(), "vkSetDebugUtilsObjectTagEXT"));
+	//// Both EXT_debug_marker and EXT_debug_utils can be used, this example uses
+	//// EXT_debug_utils as EXT_debug_marker is deprecated
+	//VkDebugUtilsObjectTagInfoEXT tagInfo = {VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_TAG_INFO_EXT};
+	//tagInfo.objectType = VK_OBJECT_TYPE_SHADER_MODULE;
+	//tagInfo.objectHandle = reinterpret_cast<uint64_t>(shader_module);
+	//// tag value in renderdoc_app.h
+	////RENDERDOC_ShaderDebugMagicValue_truncated 
+	//tagInfo.tagName = 0x48656670eab25520ULL;
+	//tagInfo.pTag = pathName.c_str();
+	//tagInfo.tagSize = pathName.length();
+
+	////vkSetDebugUtilsObjectTagEXT(device_manager.GetLogicalDevice(), &tagInfo);
+	//func_ptr_to_vkSetDebugUtilsObjectTagEXTo(device_manager.GetLogicalDevice(), &tagInfo);
+
+
 }
 
 VkPipelineShaderStageCreateInfo VkShaderWrapper::GetShaderStageCI() const

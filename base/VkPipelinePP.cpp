@@ -1,11 +1,11 @@
 #include "VkPipelinePP.h"
 
-VkPipelinePP::VkPipelinePP(VkGraphicsComponent &_gfx) :
-    gfx(_gfx),
-    swapchain_manager(gfx.SwapchainMan())
+VkPipelinePP::VkPipelinePP()
 {
-	//RestoreToDefaultState();
+	ClearVectors();
+	InitStype();
 }
+
 
 void VkPipelinePP::ClearVectors()
 {
@@ -38,23 +38,9 @@ void VkPipelinePP::InitStype()
 	pipeline_rendering_CI.sType   = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
 }
 
-void VkPipelinePP::RestoreToDefaultState()
-{
-	ClearVectors();
-	InitStype();
 
-	InitInputAssemblyStateCI();
-	InitRasterizationStateCI();
-	InitDepthStencilStateCI();
-	InitMultisampleStateCI();
-	InitDynamicState();
-	InitColorBlendStateCI();
-	InitVertexInputStateCI();
-	InitViewPortStateCI();
-	InitRenderingCI();
 
-	////*************************************************************
-}
+
 
 void VkPipelinePP::SetDynamicRenderingAttachmentFormats(std::vector<VkAttachmentInfo::DynamicRenderingAttachment> attachment_formats_)
 {

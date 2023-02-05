@@ -30,7 +30,11 @@ struct UBOScene
 {
     float4x4 projection;
     float4x4 view;
+
+    float3 light_pos;
+    float3 light_color;
     float3 cam_pos;
+    float exposure;
 };
 
 
@@ -44,9 +48,9 @@ VSOutput main(VSInput input)
 {
     VSOutput output = (VSOutput) 0;
 
-	float4x4 viewCancelTranslation = ubo.view;
-	viewCancelTranslation[0][3] = 0.0;
-	viewCancelTranslation[1][3] = 0.0;
+    float4x4 viewCancelTranslation = ubo.view;
+    viewCancelTranslation[0][3] = 0.0;
+    viewCancelTranslation[1][3] = 0.0;
     viewCancelTranslation[2][3] = 0.0;
     viewCancelTranslation[3][3] = 1.0;
 
@@ -54,16 +58,16 @@ VSOutput main(VSInput input)
     const float4x4 MVP = mul(ubo.projection, mul(viewCancelTranslation, push_consts.model));
     float4 posH = mul(MVP, float4(input.pos, 1.0f));
 
-    output.pos_h = posH.xyww;  //保持在最远
+    output.pos_h = posH.xyww; //保持在最远
     output.pos_l = mul(push_consts.model, float4(input.pos, 1.0f)).xyz;
 
+
 	// Convert cubemap coordinates into Vulkan coordinate space
-    //y不用flip是因为viewport做了处理
-    output.pos_l.x *= -1.0f;
+    output.pos_l.xy *= -1.0f;
 
     return output;
 
-
-
-
 }
+
+
+

@@ -10,8 +10,8 @@ class VkPipelinePP
 	friend class VkPipelineBuilder;
 
   public:
-	VkPipelinePP(VkGraphicsComponent &_gfx);
-	virtual ~VkPipelinePP() = default;
+	VkPipelinePP();
+	~VkPipelinePP() = default;
 
 	VkPipelinePP(const VkPipelinePP &) = default;
 	VkPipelinePP(VkPipelinePP &&)      = default;
@@ -19,23 +19,10 @@ class VkPipelinePP
 	VkPipelinePP &operator=(const VkPipelinePP &) = delete;
 	VkPipelinePP &operator=(VkPipelinePP &&) = delete;
 
-	//void SetShaderInfo(const std::vector<ShaderMetaInfo> &shader_infos_);
 	void ClearVectors();
+
+  private:
 	void InitStype();
-	void RestoreToDefaultState();
-
-	[[nodiscard]] virtual std::shared_ptr<VkPipelinePP> Clone() const = 0;
-
-  protected:
-	virtual void InitInputAssemblyStateCI() = 0;
-	virtual void InitRasterizationStateCI() = 0;
-	virtual void InitDepthStencilStateCI()  = 0;
-	virtual void InitMultisampleStateCI()   = 0;
-	virtual void InitDynamicState()         = 0;
-	virtual void InitColorBlendStateCI()    = 0;
-	virtual void InitVertexInputStateCI()   = 0;
-	virtual void InitViewPortStateCI()      = 0;
-	virtual void InitRenderingCI()          = 0;
 
   public:
 	struct VkSpecializationInfoPack
@@ -45,7 +32,7 @@ class VkPipelinePP
 	};
 
   public:
-	std::vector<VkSpecializationInfoPack>        specialization_infos;
+	std::vector<VkSpecializationInfoPack> specialization_infos;
 
 	std::vector<VkVertexInputBindingDescription>   vertex_input_binding_descriptions;
 	std::vector<VkVertexInputAttributeDescription> vertex_input_attribute_description;
@@ -67,22 +54,49 @@ class VkPipelinePP
 
 	VkPipelineRenderingCreateInfo pipeline_rendering_CI{};
 
-	VkPipelineLayout pipeline_layout{nullptr};
+	VkPipelineLayout pipeline_layout{};
 
+  public:
 	void SetDynamicRenderingAttachmentFormats(std::vector<VkAttachmentInfo::DynamicRenderingAttachment> attachment_formats_);
 	void SetPipelineShaderStageCreateInfo(std::vector<VkPipelineShaderStageCreateInfo> shader_stage_CI_);
 
 
+	template<typename First,typename ... Rest>
+	void AddDynamicState(First&& first,Rest &&...rest);
+
+	template<typename T>
+	void AddDynamicState(T&& ds);
 
 
-protected:
+
+  private:
+	std::vector<VkDynamicState>                                              dynamic_states_enabled;
 	std::optional<std::vector<VkAttachmentInfo::DynamicRenderingAttachment>> attachment_formats;
-	std::vector<VkPipelineShaderStageCreateInfo> shader_stage_CI;
+	std::vector<VkPipelineShaderStageCreateInfo>                             shader_stage_CI;
 
 
-  protected:
-	VkGraphicsComponent &     gfx;
-	const VkSwapchainManager &swapchain_manager;
-
-  protected:
 };
+
+
+
+
+template <typename First, typename ... Rest>
+void VkPipelinePP::AddDynamicState(First &&first, Rest &&... rest)
+{
+	dynamic_states_enabled.push_back(first);
+	AddDynamicState(std::forward<Rest>(rest)...);
+}
+
+template <typename T>
+void VkPipelinePP::AddDynamicState(T&& ds)
+{
+
+	dynamic_states_enabled.push_back(ds);
+	dynamic_state_CI.pDynamicStates = dynamic_states_enabled.data();
+	dynamic_state_CI.dynamicStateCount= static_cast<uint32_t>(dynamic_states_enabled.size());
+	return;
+
+}
+
+
+
