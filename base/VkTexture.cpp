@@ -233,6 +233,8 @@ void VkTexture::InsertImageMemoryBarrier(const Sync::VkImageMemoryBarrierEnhance
 	}
 	else
 	{
+
+		throw std::runtime_error("unknown type of command buffer.");
 	}
 
 	const VkCommandBuffer command_buffer = VkCommandManager::BeginSingleTimeCommands(command_pool, device_manager.GetLogicalDevice());

@@ -112,3 +112,17 @@ struct Resources
 
 }        // namespace Global
 // namespace Global
+
+
+namespace DeferedRendering
+{
+
+
+
+
+
+
+
+
+
+}

@@ -215,7 +215,6 @@ void VkImageBase::TransitionImageLayout(Sync::VkImageMemoryBarrierEnhanced mem_b
 		command_quque = device_manager.GetGraphicsQueue();
 		command_pool  = gfx.CommandMan().graphics_command_pool;
 	}
-
 	else if (command_type == VkDeviceManager::CommandPoolType::transfor_command_pool)
 	{
 		command_quque = device_manager.GetTransferQueue();
@@ -223,6 +222,8 @@ void VkImageBase::TransitionImageLayout(Sync::VkImageMemoryBarrierEnhanced mem_b
 	}
 	else
 	{
+
+		throw std::runtime_error("unknown type of command buffer.");
 	}
 
 
@@ -233,6 +234,10 @@ void VkImageBase::TransitionImageLayout(Sync::VkImageMemoryBarrierEnhanced mem_b
 	VkImageMemoryBarrier barrier{};
 	barrier.sType     = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
 	barrier.pNext     = VK_NULL_HANDLE;
+
+
+	barrier.image = image;
+
 	barrier.oldLayout = mem_barrier_enhanced.oldLayout;
 	barrier.newLayout = mem_barrier_enhanced.newLayout;
 
@@ -243,7 +248,6 @@ void VkImageBase::TransitionImageLayout(Sync::VkImageMemoryBarrierEnhanced mem_b
 	barrier.srcAccessMask = mem_barrier_enhanced.srcAccessMask;
 	barrier.dstAccessMask = mem_barrier_enhanced.dstAccessMask;
 
-	barrier.image = image;
 
 
 	if (mem_barrier_enhanced.newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
@@ -259,6 +263,9 @@ void VkImageBase::TransitionImageLayout(Sync::VkImageMemoryBarrierEnhanced mem_b
 	{
 		barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 	}
+
+
+
 
 	if (mem_barrier_enhanced.subresource_range.has_value())
 	{
@@ -277,7 +284,6 @@ void VkImageBase::TransitionImageLayout(Sync::VkImageMemoryBarrierEnhanced mem_b
 		barrier.subresourceRange.layerCount     = para_pack->default_image_CI.arrayLayers;
 	}
 
-	//checked
 
 	vkCmdPipelineBarrier(
 	    command_buffer,
@@ -288,7 +294,6 @@ void VkImageBase::TransitionImageLayout(Sync::VkImageMemoryBarrierEnhanced mem_b
 	    1, &barrier);
 
 	VkCommandManager::EndSingleTimeCommands(command_pool, device_manager.GetLogicalDevice(), command_buffer, command_quque);
-
 
 
 }

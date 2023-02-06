@@ -27,7 +27,7 @@ class VkImageBase
   public:
 	void TransitionImageLayout(VkImageLayout oldLayout, VkImageLayout newLayout, const VkDeviceManager::CommandPoolType command_type, std::optional<VkImageSubresourceRange> subresource_range) const;
 
-	//这个函数目前没有被使用，但是基本上是为了让用户取解决具体该怎么写image barrier，而不是通过一堆if else去假设。
+	//这个函数目前没有被使用，是为了让用户取解决具体该怎么写image barrier，而不是通过一堆if else去假设。
 	void TransitionImageLayout(Sync::VkImageMemoryBarrierEnhanced mem_barrier_enhanced, const VkDeviceManager::CommandPoolType command_type) const;
 
 

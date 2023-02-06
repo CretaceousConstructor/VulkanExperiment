@@ -141,6 +141,12 @@
     <Filter Include="Header Files\VkCore\Memory">
       <UniqueIdentifier>{aaaf6cfe-0db4-4b54-8f78-5eb2cc6b21aa}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\RenderGraph">
+      <UniqueIdentifier>{bf0c6c07-2d43-4f6d-b4af-bf75b5f7cac4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\RenderGraph">
+      <UniqueIdentifier>{45c0b827-dc0a-4c74-8d57-09c0d00cb864}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="base\Transform.cpp">
@@ -386,6 +392,9 @@
     <ClCompile Include="base\VkPipelinePPFactory.cpp">
       <Filter>Source Files\Vk</Filter>
     </ClCompile>
+    <ClCompile Include="base\RenderGraph.cpp">
+      <Filter>Source Files\RenderGraph</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="base\include\Camera.h">
@@ -627,6 +636,9 @@
     </ClInclude>
     <ClInclude Include="base\include\VkPipelinePPFactory.h">
       <Filter>Header Files\VkCore\Pipeline\ParameterPack</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\RenderGraph.h">
+      <Filter>Header Files\RenderGraph</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

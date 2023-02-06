@@ -35,6 +35,7 @@
     <ClCompile Include="base\ModelStrcture.cpp" />
     <ClCompile Include="base\NonPbrMaterial.cpp" />
     <ClCompile Include="base\PbrMaterialMetallic.cpp" />
+    <ClCompile Include="base\RenderGraph.cpp" />
     <ClCompile Include="base\VkBufferBundle.cpp" />
     <ClCompile Include="base\VkBufferFactory.cpp" />
     <ClCompile Include="base\VkBufferCI.cpp" />
@@ -109,6 +110,7 @@
     <ClInclude Include="base\include\ForwardShadingPipelinePP.h" />
     <ClInclude Include="base\include\ImguiPipePP.h" />
     <ClInclude Include="base\include\PbrMaterialMetallic.h" />
+    <ClInclude Include="base\include\RenderGraph.h" />
     <ClInclude Include="base\include\VkDescriptorManagerV0.h" />
     <ClInclude Include="base\include\VkHeader.h" />
     <ClInclude Include="base\include\FirstPersonCamera.h" />

@@ -13,15 +13,6 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Shader Files">
-      <UniqueIdentifier>{0f69ade3-ec7e-43c5-9b8e-4ae703ef3baa}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Shader Files\glsl">
-      <UniqueIdentifier>{b3dbd6d4-72f7-431a-a822-b3450057d5e6}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Shader Files\PbrRendering">
-      <UniqueIdentifier>{8c91664f-4dd4-4373-a84f-73509d4f21cf}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\PbrRenderpasses">
       <UniqueIdentifier>{e835c074-9882-4bc8-b595-5bff523ec1f6}</UniqueIdentifier>
     </Filter>
@@ -30,6 +21,15 @@
     </Filter>
     <Filter Include="Header Files\Renderer">
       <UniqueIdentifier>{9f2d9b4d-cc63-4c7b-956e-49f7c88063fc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\Shader Files">
+      <UniqueIdentifier>{0f69ade3-ec7e-43c5-9b8e-4ae703ef3baa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\Shader Files\glsl">
+      <UniqueIdentifier>{b3dbd6d4-72f7-431a-a822-b3450057d5e6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\Shader Files\PbrRendering">
+      <UniqueIdentifier>{8c91664f-4dd4-4373-a84f-73509d4f21cf}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -77,63 +77,63 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\data\shaders\SceneLoading\PreProcessPass_fragment_shader.frag">
-      <Filter>Shader Files\glsl</Filter>
+      <Filter>Resource Files\Shader Files\glsl</Filter>
     </None>
     <None Include="..\..\data\shaders\SceneLoading\PreProcessPass_vertex_shader.vert">
-      <Filter>Shader Files\glsl</Filter>
+      <Filter>Resource Files\Shader Files\glsl</Filter>
     </None>
     <None Include="..\..\data\shaders\SceneLoading\SceneLoading_fragment_shader.frag">
-      <Filter>Shader Files\glsl</Filter>
+      <Filter>Resource Files\Shader Files\glsl</Filter>
     </None>
     <None Include="..\..\data\shaders\SceneLoading\SceneLoading_vertex_shader.vert">
-      <Filter>Shader Files\glsl</Filter>
+      <Filter>Resource Files\Shader Files\glsl</Filter>
     </None>
     <None Include="..\..\data\shaders\SceneLoading\LightIndicator_fragment_shader.frag">
-      <Filter>Shader Files\glsl</Filter>
+      <Filter>Resource Files\Shader Files\glsl</Filter>
     </None>
     <None Include="..\..\data\shaders\SceneLoading\LightIndicator_vertex_shader.vert">
-      <Filter>Shader Files\glsl</Filter>
+      <Filter>Resource Files\Shader Files\glsl</Filter>
     </None>
     <None Include="..\..\data\shaderbat\SceneLoadingCompile.bat">
-      <Filter>Shader Files\glsl</Filter>
+      <Filter>Resource Files\Shader Files\glsl</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\..\data\shaders\SceneLoading\ConvolutedIrradiance_frag.hlsl">
-      <Filter>Shader Files\PbrRendering</Filter>
+      <Filter>Resource Files\Shader Files\PbrRendering</Filter>
     </FxCompile>
     <FxCompile Include="..\..\data\shaders\SceneLoading\ConvolutedIrradiance_vert.hlsl">
-      <Filter>Shader Files\PbrRendering</Filter>
+      <Filter>Resource Files\Shader Files\PbrRendering</Filter>
     </FxCompile>
     <FxCompile Include="..\..\data\shaders\SceneLoading\EquiToCubeMap_frag.hlsl">
-      <Filter>Shader Files\PbrRendering</Filter>
+      <Filter>Resource Files\Shader Files\PbrRendering</Filter>
     </FxCompile>
     <FxCompile Include="..\..\data\shaders\SceneLoading\EquiToCubeMap_vert.hlsl">
-      <Filter>Shader Files\PbrRendering</Filter>
+      <Filter>Resource Files\Shader Files\PbrRendering</Filter>
     </FxCompile>
     <FxCompile Include="..\..\data\shaders\SceneLoading\LUT_frag.hlsl">
-      <Filter>Shader Files\PbrRendering</Filter>
+      <Filter>Resource Files\Shader Files\PbrRendering</Filter>
     </FxCompile>
     <FxCompile Include="..\..\data\shaders\SceneLoading\LUT_vert.hlsl">
-      <Filter>Shader Files\PbrRendering</Filter>
+      <Filter>Resource Files\Shader Files\PbrRendering</Filter>
     </FxCompile>
     <FxCompile Include="..\..\data\shaders\SceneLoading\PbrShading_frag.hlsl">
-      <Filter>Shader Files\PbrRendering</Filter>
+      <Filter>Resource Files\Shader Files\PbrRendering</Filter>
     </FxCompile>
     <FxCompile Include="..\..\data\shaders\SceneLoading\PbrShading_vert.hlsl">
-      <Filter>Shader Files\PbrRendering</Filter>
+      <Filter>Resource Files\Shader Files\PbrRendering</Filter>
     </FxCompile>
     <FxCompile Include="..\..\data\shaders\SceneLoading\Prefiltering_frag.hlsl">
-      <Filter>Shader Files\PbrRendering</Filter>
+      <Filter>Resource Files\Shader Files\PbrRendering</Filter>
     </FxCompile>
     <FxCompile Include="..\..\data\shaders\SceneLoading\Prefiltering_vert.hlsl">
-      <Filter>Shader Files\PbrRendering</Filter>
+      <Filter>Resource Files\Shader Files\PbrRendering</Filter>
     </FxCompile>
     <FxCompile Include="..\..\data\shaders\SceneLoading\SkyBox_frag.hlsl">
-      <Filter>Shader Files\PbrRendering</Filter>
+      <Filter>Resource Files\Shader Files\PbrRendering</Filter>
     </FxCompile>
     <FxCompile Include="..\..\data\shaders\SceneLoading\SkyBox_vert.hlsl">
-      <Filter>Shader Files\PbrRendering</Filter>
+      <Filter>Resource Files\Shader Files\PbrRendering</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

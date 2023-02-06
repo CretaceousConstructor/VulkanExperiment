@@ -26,9 +26,7 @@ std::shared_ptr<VkImageBase> VkImageFactory::ProduceImage(const ImagePP &para_pa
 
 	const auto image     = BuildImage(*para_pack_ptr);
 	const auto image_mem = CreateAndBindMemory(*para_pack_ptr, image);
-	//const auto image_view = BuildImageView(*para_pack_ptr, image);
 
-	//auto result = std::make_shared<VkGeneralPurposeImage>(gfx, image, image_mem, image_view, para_pack_ptr);
 	auto result = std::make_shared<VkGeneralPurposeImage>(gfx, image, image_mem, para_pack_ptr);
 
 	TransitionImageLayout(*para_pack_ptr, result);

@@ -74,9 +74,6 @@ std::shared_ptr<VkTexture> VkTextureFactory::ProduceEmptyTexture(const ImagePP &
 	return result;
 }
 
-
-
-
 std::vector<std::shared_ptr<VkTexture>> VkTextureFactory::ProduceEmptyTextureArray(const ImagePP &texture_img_PP, std::optional<VkSamplerCreateInfo> sampler_CI_, std::optional<VkImageViewCreateInfo> img_view_CI_, uint32_t bundle_size) const
 {
 	std::vector<std::shared_ptr<VkTexture>> result;
@@ -150,7 +147,8 @@ std::shared_ptr<VkTexture> VkTextureFactory::ProduceTextureFromImgPath(const std
 	std::shared_ptr<VkGeneralPurposeImage> tex_img;
 
 	const auto file_extension = Vk::GetFileExtensionName(image_path);
-	if (std::string("ktx") == file_extension)        // ktx.h can process both hdr and ldr imges.
+	// ktx.h can process both hdr and ldr imges.
+	if (std::string("ktx") == file_extension)
 	{
 		InfoFromFile info_from_file{};
 		tex_img = InitKTXImgFromFile(image_path, format_of_image_, image_layout_, info_from_file);
@@ -160,16 +158,17 @@ std::shared_ptr<VkTexture> VkTextureFactory::ProduceTextureFromImgPath(const std
 			img_view_CI_->subresourceRange.layerCount = info_from_file.numArrayLayers;
 		}
 
-
 		if (sampler_CI_)
 		{
 			sampler_CI_->maxLod = static_cast<float>(info_from_file.numLevels);
 		}
 	}
+	//HDR images
 	else if (stbi_is_hdr(image_path.c_str()))
 	{
 		tex_img = InitHdrImgFromFile(image_path, format_of_image_, image_layout_);
 	}
+	//Non HDR images
 	else
 	{
 		tex_img = InitOtherFormatImgFromFile(image_path, format_of_image_, image_layout_);
@@ -185,6 +184,7 @@ std::shared_ptr<VkTexture> VkTextureFactory::ProduceTextureFromImgPath(const std
 std::shared_ptr<VkGeneralPurposeImage> VkTextureFactory::InitOtherFormatImgFromFile(const std::string &image_path, const VkFormat format_of_image_, const VkImageLayout image_layout_) const
 {
 	//TODO: mipmap info and layer info
+
 	// Get the image data from the stbi loader
 	int            width, height, nrChannels;
 	unsigned char *data = stbi_load(image_path.c_str(), &width, &height, &nrChannels, 0);
@@ -282,9 +282,8 @@ std::shared_ptr<VkGeneralPurposeImage> VkTextureFactory::InitKTXImgFromFile(cons
 	std::shared_ptr<VkGeneralPurposeImage> texture_image;
 	const auto                             tex_name = image_path.substr(image_path.find_last_of("\\/") + 1, image_path.length());
 	//========================================================================================================================
-
 	ktxTexture *ktxTexture;
-	//ktxTexture has a   ktx_uint32_t glFormat field representing the image's format
+	//ktxTexture struct has a ktx_uint32_t glFormat field representing the image's format
 
 	const ktxResult result = ktxTexture_CreateFromNamedFile(image_path.c_str(), KTX_TEXTURE_CREATE_LOAD_IMAGE_DATA_BIT, &ktxTexture);
 
@@ -296,12 +295,12 @@ std::shared_ptr<VkGeneralPurposeImage> VkTextureFactory::InitKTXImgFromFile(cons
 
 	const VkExtent3D temp_image_extent{.width = ktxTexture->baseWidth, .height = ktxTexture->baseHeight, .depth = ktxTexture->baseDepth};
 
-	constexpr bool forceLinearTiling = false;
-	VkBool32       ktx_use_staging   = true;
+	constexpr bool force_linear_tiling = false;
+	VkBool32       ktx_use_staging     = true;
 
-	if (forceLinearTiling)
+	if (force_linear_tiling)
 	{
-		// Don't use linear if format is not supported for (linear) shader sampling
+		// Don't use linear tiling if format is not supported for (linear) shader sampling
 		// Get device properties for the requested texture format
 		VkFormatProperties formatProperties;
 		vkGetPhysicalDeviceFormatProperties(device_manager.GetPhysicalDevice(), format_of_image, &formatProperties);
@@ -320,20 +319,15 @@ std::shared_ptr<VkGeneralPurposeImage> VkTextureFactory::InitKTXImgFromFile(cons
 		VkBufferCI::StagingBuffer staging_para;
 		auto                      staging_buffer = buffer_factory.ProduceBuffer(ktxTextureSize, staging_para);
 
-		//创建完staging buffer以后，把cpu中的texture中的数据拷贝进staging buffer
-		////TODO: whether to use memReqs.size or just ktxTexureSize
+		//创建完staging buffer以后，把cpu-side中的texture中的数据拷贝进staging buffer
+		//TODO: whether to use memReqs.size or just ktxTexureSize 用ktxTexturesSize是对的。
 		staging_buffer->CopyFrom((void const *) ktxTextureData, ktxTextureSize);
-
-		//void *data;
-		////VK_CHECK_RESULT(vkMapMemory(device, stagingMemory, 0, memReqs.size, 0, (void **) &data));
-		//vkMapMemory(device_manager.GetLogicalDevice(), stagingBufferMemory, 0, ktxTextureSize, static_cast<VkMemoryMapFlags>(0), (void **) &data);
-		//memcpy(data, ktxTextureData, static_cast<size_t>(ktxTextureSize));
-		//vkUnmapMemory(device_manager.GetLogicalDevice(), stagingBufferMemory);
 		//========================================================================================================================
 
-		//Setup buffer copy regions for each mip level
 		//TODO:这里没有考虑3维材质的问题,，
-		std::vector<VkBufferImageCopy> bufferCopyRegions;
+		//Setup buffer copy regions for each mip level
+
+		std::vector<VkBufferImageCopy> buffer_copy_regions;
 
 		for (uint32_t face = 0; face < ktxTexture->numFaces; face++)
 		{
@@ -353,7 +347,7 @@ std::shared_ptr<VkGeneralPurposeImage> VkTextureFactory::InitKTXImgFromFile(cons
 				bufferCopyRegion.imageExtent.height              = (ktxTexture->baseHeight) >> level;
 				bufferCopyRegion.imageExtent.depth               = 1;
 				bufferCopyRegion.bufferOffset                    = offset;
-				bufferCopyRegions.push_back(bufferCopyRegion);
+				buffer_copy_regions.push_back(bufferCopyRegion);
 			}
 		}
 
@@ -371,7 +365,7 @@ std::shared_ptr<VkGeneralPurposeImage> VkTextureFactory::InitKTXImgFromFile(cons
 
 		texture_image = std::dynamic_pointer_cast<VkGeneralPurposeImage>(img_factory.ProduceImage(para_pack));
 
-		texture_image->CopyBufferToImage(staging_buffer->GetGPUBuffer(), bufferCopyRegions, VkDeviceManager::CommandPoolType::transfor_command_pool);
+		texture_image->CopyBufferToImage(staging_buffer->GetGPUBuffer(), buffer_copy_regions, VkDeviceManager::CommandPoolType::transfor_command_pool);
 
 		VkImageSubresourceRange subresource_range;
 		subresource_range.baseMipLevel   = 0;
