@@ -33,7 +33,8 @@ class FirstPersonCamera : public Camera
 	//void MoveForward(float d);
 
 	[[nodiscard]] glm::mat4 GetViewMatrix() const;
-	[[nodiscard]] glm::vec3 GetEyePos() const;
+	[[nodiscard]] glm::mat4 GetInverseViewMatrix() const;
+	[[nodiscard]] glm::vec3& GetEyePos() ;
 	void                    ProcessKeyboard(Camera_Movement direction, float deltaTime);
 	void                    ProcessMouseMovement(float xoffset, float yoffset, bool constrainPitch = true);
 	void                    ProcessMouseScroll(float scroll_offset);

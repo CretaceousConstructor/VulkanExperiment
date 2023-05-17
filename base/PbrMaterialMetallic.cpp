@@ -43,7 +43,7 @@ VkDescriptorSet PbrMaterialMetallic::AllocateDescriptorSetAndUpdate(VkDescriptor
 	*/
 	const auto binding3 = images[metallic_roughness_image_index]->GetWriteDescriptorSetInfo(descriptor_set, Vk::Binding<3>);
 
-	const std::vector<VkWriteDescriptorSet> write_descriptor_sets{binding0, binding1, binding2, binding3};
+	const std::vector write_descriptor_sets{binding0, binding1, binding2, binding3};
 
 	//UPDATE DESCRIPTOR SET
 	vkUpdateDescriptorSets(device_manager.GetLogicalDevice(), static_cast<uint32_t>(write_descriptor_sets.size()), write_descriptor_sets.data(), 0, nullptr);
@@ -89,11 +89,14 @@ void PbrMaterialMetallic::ModifyPipelineCI(VkPipelinePP &pipeline_CI)
 	pipeline_CI.rasterization_state_CI.cullMode = doubleSided ? VK_CULL_MODE_NONE : VK_CULL_MODE_BACK_BIT;
 }
 
-void PbrMaterialMetallic::CleanUpMaterial(const VkDeviceManager &device_manager)
-{
-	//vkDestroyPipelineLayout(device_manager.GetLogicalDevice(), pipe_layout, nullptr);
-	//vkDestroyDescriptorSetLayout(device_manager.GetLogicalDevice(), desc_layout, nullptr);
-}
+//void PbrMaterialMetallic::CleanUpMaterial(const VkDeviceManager &device_manager)
+//{
+//	//vkDestroyPipelineLayout(device_manager.GetLogicalDevice(), pipe_layout, nullptr);
+//	//vkDestroyDescriptorSetLayout(device_manager.GetLogicalDevice(), desc_layout, nullptr);
+//}
+
+
+
 
 void PbrMaterialMetallic::Register(VkGraphicsComponent &gfx)
 {

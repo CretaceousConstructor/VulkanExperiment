@@ -51,17 +51,13 @@ VkPipeline VkPipelineBuilder::BuildPipeline(const VkPipelinePP &para_pack, VkPip
 
 VkPipeline VkPipelineBuilder::BuildPipeline(const VkPipelinePP &para_pack_) const
 {
-
-	auto  para_pack = para_pack_;
-
+	auto para_pack = para_pack_;
 
 	//******************error detecting******************
 	if (!para_pack.attachment_formats.has_value())
 	{
-		throw std::runtime_error("no attachment formats specified!");
+		throw std::runtime_error("no attachment formats are specified!");
 	}
-
-
 	//*************************************************************
 	para_pack.color_blend_state_CI.attachmentCount = static_cast<uint32_t>(para_pack.color_blend_attachments.size());
 	para_pack.color_blend_state_CI.pAttachments    = para_pack.color_blend_attachments.data();
@@ -72,10 +68,8 @@ VkPipeline VkPipelineBuilder::BuildPipeline(const VkPipelinePP &para_pack_) cons
 	para_pack.vertex_input_state_CI.pVertexAttributeDescriptions    = para_pack.vertex_input_attribute_description.data();
 	//*************************************************************
 
-	
-
-
 	std::vector<VkFormat> color_attachments;
+	//TODO: test if attachment_formats is empty.
 
 	for (const auto &format : *(para_pack.attachment_formats))
 	{
@@ -83,18 +77,38 @@ VkPipeline VkPipelineBuilder::BuildPipeline(const VkPipelinePP &para_pack_) cons
 		{
 			color_attachments.push_back(format.format);
 		}
+
 		if (VkAttachmentInfo::Type::DepthAttachment == format.attach_type)
 		{
-			para_pack.pipeline_rendering_CI.depthAttachmentFormat = format.format;
+			para_pack.pipeline_rendering_CI.depthAttachmentFormat   = format.format;
+			para_pack.pipeline_rendering_CI.stencilAttachmentFormat = VK_FORMAT_UNDEFINED;
 		}
-		para_pack.pipeline_rendering_CI.stencilAttachmentFormat = VK_FORMAT_UNDEFINED;
+
+		if (VkAttachmentInfo::Type::DepthStencilAttachment == format.attach_type)
+		{
+			para_pack.pipeline_rendering_CI.depthAttachmentFormat   = format.format;
+			para_pack.pipeline_rendering_CI.stencilAttachmentFormat = format.format;
+		}
 	}
 
 	para_pack.pipeline_rendering_CI.colorAttachmentCount    = static_cast<uint32_t>(color_attachments.size());
 	para_pack.pipeline_rendering_CI.pColorAttachmentFormats = color_attachments.data();
 	para_pack.pipeline_rendering_CI.viewMask                = 0;
 
+	if (para_pack.pipeline_rendering_CI.colorAttachmentCount != para_pack.color_blend_state_CI.attachmentCount && para_pack.color_blend_state_CI.attachmentCount == 1)
+	{
+		const auto first_color_blend_attachment = para_pack.color_blend_attachments.front();
+		para_pack.color_blend_attachments.resize(para_pack.pipeline_rendering_CI.colorAttachmentCount, first_color_blend_attachment);
 
+		para_pack.color_blend_state_CI.attachmentCount = static_cast<uint32_t>(para_pack.color_blend_attachments.size());
+		para_pack.color_blend_state_CI.pAttachments    = para_pack.color_blend_attachments.data();
+		assert(para_pack.pipeline_rendering_CI.colorAttachmentCount == para_pack.color_blend_state_CI.attachmentCount);
+	}
+	else
+	{
+		//The spec says: VkPipelineRenderingCreateInfoKHR::colorAttachmentCount (3) must equal pColorBlendState->attachmentCount (1)
+		assert(para_pack.pipeline_rendering_CI.colorAttachmentCount == para_pack.color_blend_state_CI.attachmentCount);
+	}
 
 	//*************************************************************
 	for (size_t i = 0; i < para_pack.shader_stage_CI.size(); i++)
@@ -115,11 +129,11 @@ VkPipeline VkPipelineBuilder::BuildPipeline(const VkPipelinePP &para_pack_) cons
 	pipeline_CI.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
 	pipeline_CI.flags = 0;
 
-	pipeline_CI.renderPass = nullptr;        //use dynamic rendering
-	pipeline_CI.subpass    = 0;              //use dynamic rendering
+	pipeline_CI.renderPass = VK_NULL_HANDLE;        //use dynamic rendering
+	pipeline_CI.subpass    = 0;                     //use dynamic rendering
 
 	pipeline_CI.basePipelineIndex  = -1;
-	pipeline_CI.basePipelineHandle = nullptr;
+	pipeline_CI.basePipelineHandle = VK_NULL_HANDLE;
 	//*************************************************************
 
 	para_pack.viewport_state_CI.viewportCount = static_cast<uint32_t>(para_pack.view_port_scissor_pair.first.size());
@@ -147,13 +161,12 @@ VkPipeline VkPipelineBuilder::BuildPipeline(const VkPipelinePP &para_pack_) cons
 
 	VkPipeline pipeline;
 
-
-
 	VK_CHECK_RESULT(vkCreateGraphicsPipelines(device_manager.GetLogicalDevice(), nullptr, 1, &pipeline_CI, nullptr, &pipeline))
-
-
-
-
 
 	return pipeline;
 }
+
+//VkFormat VkPipelineBuilder::GetStencilPart(VkFormat f)
+//{
+//	return VK_FORMAT_S8_UINT;
+//}

@@ -48,6 +48,7 @@ void VkImgui::ImguiBackEndInit() const
 	init_info.DescriptorPool = im_descriptor_pool;
 	init_info.MinImageCount  = swapchain_manager.GetMinImageCount();
 	init_info.ImageCount     = swapchain_manager.GetSwapImageCount();
+	init_info.MSAASamples    = VK_SAMPLE_COUNT_1_BIT;
 
 	//init_info.Subpass         = 0;
 	//init_info.MSAASamples     = VK_SAMPLE_COUNT_1_BIT;
@@ -63,12 +64,12 @@ void VkImgui::ContextInit()
 	ImGui::CreateContext();
 	io = &ImGui::GetIO();
 
-	io->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;        // 允许键盘控制
-	io->ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;         // Enable Gamepad Controls
+	//io->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;        // 允许键盘控制
+	//io->ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;         // Enable Gamepad Controls
 	io->ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
-	io->ConfigFlags |= ImGuiConfigFlags_IsSRGB;        // 标记当前使用的是SRGB，目前对ImGui源码有修改
-
-	io->ConfigWindowsMoveFromTitleBarOnly = true;        // 仅允许标题拖动
+	io->ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+	io->ConfigFlags |= ImGuiConfigFlags_IsSRGB;                   // 标记当前使用的是SRGB，目前对ImGui源码有修改
+	io->ConfigWindowsMoveFromTitleBarOnly = true;                 // 仅允许标题拖动
 
 	// Setup Dear ImGui style
 	ImGui::StyleColorsDark();
@@ -81,6 +82,9 @@ void VkImgui::RegisterFronts() const
 	ImGui_ImplVulkan_CreateFontsTexture(command_buffer);
 
 	VkCommandManager::EndSingleTimeCommands(command_manager.graphics_command_pool, device_manager.GetLogicalDevice(), command_buffer, device_manager.GetGraphicsQueue());
+
+	//clear font textures from cpu data
+	ImGui_ImplVulkan_DestroyFontUploadObjects();
 }
 
 void VkImgui::InitCommandPoolAndBuffer()
@@ -105,11 +109,6 @@ void VkImgui::ResetCommandPoolAndBeginCommandBuffer(uint32_t image_index) const
 {
 	//UI Reset command buffers
 	VK_CHECK_RESULT(vkResetCommandPool(device_manager.GetLogicalDevice(), im_command_pools[image_index], 0))
-
-	VkCommandBufferBeginInfo command_buffer_begin_info = {};
-	command_buffer_begin_info.sType                    = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-	command_buffer_begin_info.flags |= VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-	VK_CHECK_RESULT(vkBeginCommandBuffer(im_command_buffers[image_index], &command_buffer_begin_info))
 }
 
 void VkImgui::DescribingUI()
@@ -119,10 +118,10 @@ void VkImgui::DescribingUI()
 	ImGui::NewFrame();
 
 	// 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
-	if (show_demo_window)
-	{
-		ImGui::ShowDemoWindow(&show_demo_window);
-	}
+	//if (show_demo_window) {
+	//	ImGui::ShowDemoWindow(&show_demo_window);
+	//}
+
 	{
 		static float f       = 0.0f;
 		static int   counter = 0;
@@ -145,6 +144,12 @@ void VkImgui::DescribingUI()
 		ImGui::End();
 	}
 
+}
+
+void VkImgui::TestDescribingUI(glm::vec3 &v3)
+{
+
+
 	// 3. Show another simple window.
 	if (show_another_window)
 	{
@@ -152,8 +157,17 @@ void VkImgui::DescribingUI()
 		ImGui::Text("Hello from another window!");
 		if (ImGui::Button("Close Me"))
 			show_another_window = false;
+
+		ImGui::SliderFloat("cam_pos_x", &v3.x, -5.0f, 5.0f);                     // Edit 1 float using a slider from 0.0f to 1.0f
+		ImGui::SliderFloat("cam_pos_y", &v3.y, -5.0f, 5.0f);                     // Edit 1 float using a slider from 0.0f to 1.0f
+		ImGui::SliderFloat("cam_pos_z", &v3.z, -5.0f, 5.0f);                     // Edit 1 float using a slider from 0.0f to 1.0f
+
 		ImGui::End();
 	}
+
+
+
+	
 }
 
 void VkImgui::RenderingCommandRecord(uint32_t image_index) const
@@ -166,23 +180,29 @@ void VkImgui::RenderingCommandRecord(uint32_t image_index) const
 	info.renderArea.extent.width  = swapchain_manager.GetSwapChainImageExtent().width;
 	info.renderArea.extent.height = swapchain_manager.GetSwapChainImageExtent().height;
 
-	static VkClearValue clear_value{};
-	clear_value.color.float32[0] = 0.0;
-	clear_value.color.float32[1] = 0.0;
-	clear_value.color.float32[2] = 0.0;
-	clear_value.color.float32[3] = 1.0;
+	//static VkClearValue clear_value{};
+	//clear_value.color.float32[0] = 0.0;
+	//clear_value.color.float32[1] = 0.0;
+	//clear_value.color.float32[2] = 0.0;
+	//clear_value.color.float32[3] = 1.0;
 
-	info.clearValueCount = 1;
-	info.pClearValues    = &clear_value;
+	//info.clearValueCount = 1;
+	//info.pClearValues    = &clear_value;
 
-	//info.clearValueCount = 0;
-	//info.pClearValues    = nullptr;
+	info.clearValueCount = 0;
+	info.pClearValues    = nullptr;
+
+	VkCommandBufferBeginInfo command_buffer_begin_info = {};
+	command_buffer_begin_info.sType                    = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+	command_buffer_begin_info.flags |= VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+	VK_CHECK_RESULT(vkBeginCommandBuffer(im_command_buffers[image_index], &command_buffer_begin_info))
+
 	vkCmdBeginRenderPass(im_command_buffers[image_index], &info, VK_SUBPASS_CONTENTS_INLINE);
 
 	ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), im_command_buffers[image_index]);
 
-	// Submit command buffer
 	vkCmdEndRenderPass(im_command_buffers[image_index]);
+	//end command buffer
 	VK_CHECK_RESULT(vkEndCommandBuffer(im_command_buffers[image_index]))
 
 	ImGui::UpdatePlatformWindows();
@@ -222,8 +242,6 @@ VkImgui::~VkImgui()
 void VkImgui::InitDescriptorPool()
 {
 	// Pool
-	//const VkDescriptorPoolSize              pool_size = VkDescriptorManager::GetOneDescriptorPoolSizeDescription(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, image_count);
-
 	const std::vector<VkDescriptorPoolSize> pool_sizes{
 	    {VK_DESCRIPTOR_TYPE_SAMPLER, 20},
 	    {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 20},
@@ -255,23 +273,48 @@ void VkImgui::CreateRenderpass()
 	attachment.initialLayout  = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 	attachment.finalLayout    = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
-	const VkAttachmentReference color_attachment{
-	    Vk::GetAttachmentReference(Vk::AttachmentRef<0>, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL)};
+	constexpr VkAttachmentReference color_attachment{Vk::AttachmentRef<0>, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL};
 
 	VkSubpassDescription subpass = {};
 	subpass.pipelineBindPoint    = VK_PIPELINE_BIND_POINT_GRAPHICS;
 	subpass.colorAttachmentCount = 1;
 	subpass.pColorAttachments    = &color_attachment;
 
-	VkSubpassDependency dependency = {};
-	dependency.srcSubpass          = VK_SUBPASS_EXTERNAL;
-	dependency.dstSubpass          = 0;
+	VkSubpassDependency dependency_0 = {};
+	dependency_0.srcSubpass          = VK_SUBPASS_EXTERNAL;
+	dependency_0.dstSubpass          = 0;
 
-	dependency.srcStageMask    = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-	dependency.dstStageMask    = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-	dependency.srcAccessMask   = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-	dependency.dstAccessMask   = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-	dependency.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+	dependency_0.srcStageMask    = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	dependency_0.dstStageMask    = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	dependency_0.srcAccessMask   = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
+	dependency_0.dstAccessMask   = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
+	dependency_0.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+
+	VkSubpassDependency dependency_1 = {};
+	dependency_1.srcSubpass          = 0;
+	dependency_1.dstSubpass          = VK_SUBPASS_EXTERNAL;
+
+	dependency_1.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	dependency_1.dstStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+
+	dependency_1.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
+	dependency_1.dstAccessMask = VK_ACCESS_NONE;
+
+	dependency_1.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+
+	std::vector dependencies{dependency_0, dependency_1};
+	//const Sync::VkImageMemoryBarrierEnhanced image_memory_barrier_enhanced{
+	//    .srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+	//    .srcStageMask  = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+	//    .oldLayout     = color_attachments_infos[image_index.value()].GetInfo().layout_inpass,
+
+	//    .dstAccessMask = VK_ACCESS_NONE,
+	//    .dstStageMask  = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
+	//    .newLayout     = color_attachments_infos[image_index.value()].GetInfo().layout_afterpass,
+
+	//    .subresource_range = std::nullopt,
+	//};
+	//color_attachments_infos[image_index.value()].GetTex().InsertImageMemoryBarrier(cmd_buffer, image_memory_barrier_enhanced);
 
 	VkRenderPassCreateInfo info = {};
 	info.sType                  = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
@@ -279,8 +322,9 @@ void VkImgui::CreateRenderpass()
 	info.pAttachments           = &attachment;
 	info.subpassCount           = 1;
 	info.pSubpasses             = &subpass;
-	info.dependencyCount        = 1;
-	info.pDependencies          = &dependency;
+
+	info.dependencyCount = static_cast<uint32_t>(dependencies.size());
+	info.pDependencies   = dependencies.data();
 
 	VK_CHECK_RESULT(vkCreateRenderPass(device_manager.GetLogicalDevice(), &info, nullptr, &im_renderpass))
 

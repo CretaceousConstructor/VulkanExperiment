@@ -55,7 +55,7 @@ class PbrMaterialMetallic : public VkMaterial
 	static VkDescriptorSetLayout CreateDesciptorSetLayout(const VkDeviceManager &device_manager);
 	static VkPipelineLayout      CreatePipelineLayout(const VkDeviceManager &device_manager, const std::vector<VkDescriptorSetLayout> &set_layouts, const std::vector<VkPushConstantRange> &push_constant_ranges);
 
-	static void CleanUpMaterial(const VkDeviceManager &device_manager);
+	//static void CleanUpMaterial(const VkDeviceManager &device_manager);
 
 	static void Register(VkGraphicsComponent &gfx);
 	static void UnRegister(VkGraphicsComponent &gfx);

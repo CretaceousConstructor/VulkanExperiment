@@ -12,7 +12,6 @@ NonPbrMaterial::NonPbrMaterial(VkGraphicsComponent &gfx_) :
 
 VkDescriptorSet NonPbrMaterial::AllocateDescriptorSetAndUpdate(VkDescriptorPool descriptor_pool, VkDescriptorSetLayout desc_set_layout, const std::vector<Gltf::Texture> &textures, const std::vector<std::shared_ptr<VkTexture>> &images)
 {
-
 	VkDescriptorSet descriptor_set;
 	//ALLOCATE DESCRIPTORS
 	const VkDescriptorSetAllocateInfo allocInfoWrite = VkDescriptorManager::GetDescriptorAllocateInfo(descriptor_pool, desc_set_layout);
@@ -24,23 +23,18 @@ VkDescriptorSet NonPbrMaterial::AllocateDescriptorSetAndUpdate(VkDescriptorPool 
 	}
 
 	//UPDATE DESCRIPTORS INFO
-	const auto                        color_image_index  = textures[baseColorTextureIndex].imageIndex;
-	const auto                        normal_image_index = textures[normalTextureIndex].imageIndex;
-	std::vector<VkWriteDescriptorSet> write_descriptor_sets;
+	const auto color_image_index  = textures[baseColorTextureIndex].imageIndex;
+	const auto normal_image_index = textures[normalTextureIndex].imageIndex;
 	/*
 				Binding 0: color mapping 
 	*/
-	auto binding0   = images[color_image_index]->GetWriteDescriptorSetInfo(0);
-	binding0.dstSet = descriptor_set;
-	write_descriptor_sets.push_back(binding0);
+	const auto binding0 = images[color_image_index]->GetWriteDescriptorSetInfo(descriptor_set, Vk::Binding<0>);
 	/*
 				Binding 1: normal mapping 
 	*/
-	auto binding1   = images[normal_image_index]->GetWriteDescriptorSetInfo(1);
-	binding1.dstSet = descriptor_set;
-	write_descriptor_sets.push_back(binding1);
+	const auto binding1 = images[normal_image_index]->GetWriteDescriptorSetInfo(descriptor_set, Vk::Binding<1>);
 
-
+	const std::vector write_descriptor_sets{binding0, binding1};
 
 	//UPDATE DESCRIPTOR SET
 	vkUpdateDescriptorSets(device_manager.GetLogicalDevice(), uint32_t(write_descriptor_sets.size()), write_descriptor_sets.data(), 0, nullptr);
@@ -80,12 +74,8 @@ void NonPbrMaterial::ModifyPipelineCI(VkPipelinePP &pipeline_CI)
 
 	const VkPipelinePP::VkSpecializationInfoPack result{.sp_info = specialization_info, .shader_stage = VK_SHADER_STAGE_FRAGMENT_BIT};
 
-	//shader_stages_create_info[1].pSpecializationInfo = &specializationInfo;
-	// For double sided materials, culling will be disabled
-	//pipeline_CI.specialization_infos.clear();
-
+	pipeline_CI.specialization_infos.clear();
 	pipeline_CI.specialization_infos.push_back(result);
-
 	pipeline_CI.rasterization_state_CI.cullMode = doubleSided ? VK_CULL_MODE_NONE : VK_CULL_MODE_BACK_BIT;
 }
 
@@ -141,13 +131,9 @@ VkPipelineLayout NonPbrMaterial::CreatePipelineLayout(const VkDeviceManager &dev
 {
 	//vkDestroyPipelineLayout(device_manager.GetLogicalDevice(), pipe_layout, nullptr);
 	return Vk::GetPipelineLayout(device_manager.GetLogicalDevice(), set_layouts, push_constant_ranges);
-	//pipe_layout = 
+	//pipe_layout =
 	//return pipe_layout;
 }
-
-
-
-
 
 void NonPbrMaterial::Register(VkGraphicsComponent &gfx)
 {

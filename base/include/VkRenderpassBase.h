@@ -17,21 +17,33 @@ class VkRenderpassBase
 
   public:
 	void Init();
-	void Execute(const std::vector<VkCommandBuffer> &command_buffers);
+	void ExecuteStatically(const std::vector<VkCommandBuffer> &command_buffers);
+
+  public:
+	//template <typename First, typename... Rest>
+	//static std::shared_ptr<First> ProduceRenderpass(Rest &&...rest);
+
+  public:
+	enum class Type
+	{
+		Graphics,
+		Compute,
+		Transfor,
+		Unknown
+	};
 
   protected:
-	virtual void BeginRenderpass(const std::vector<VkCommandBuffer> &command_buffers)   = 0;
-	virtual void UpdateDescriptorSets()                                                 = 0;
-	virtual void ExecuteRenderpass(const std::vector<VkCommandBuffer> &command_buffers) = 0;
-	virtual void EndRenderpass(const std::vector<VkCommandBuffer> &command_buffers)     = 0;
+	virtual void BeginRenderpass(const std::vector<VkCommandBuffer> &command_buffers)             = 0;
+	virtual void UpdateDescriptorSets()                                                           = 0;
+	virtual void RecordRenderpassCommandStatically(const std::vector<VkCommandBuffer> &command_buffers) = 0;
+	virtual void EndRenderpass(const std::vector<VkCommandBuffer> &command_buffers)               = 0;
 
   public:
 	virtual void UpdateResources(size_t current_image) = 0;
 
   protected:
-	virtual void                          LayoutTransitionStartOfRendering(VkCommandBuffer cmd_buffer, std::optional<size_t> image_index) = 0;
-	virtual std::vector<VkAttachmentInfo> SelectAttachments(std::optional<size_t> current_image);
-	virtual void                          LayoutTransitionEndOfRendering(VkCommandBuffer cmd_buffer, std::optional<size_t> image_index) = 0;
+	virtual void LayoutTransitionStartOfRendering(VkCommandBuffer cmd_buffer, std::optional<size_t> image_index) = 0;
+	virtual void LayoutTransitionEndOfRendering(VkCommandBuffer cmd_buffer, std::optional<size_t> image_index)   = 0;
 
   protected:
 	virtual void ResourceInit() = 0;
@@ -50,3 +62,15 @@ class VkRenderpassBase
 	VkGraphicsComponent &gfx;
 	VkRenderpassManager &renderpass_manager;
 };
+
+
+
+
+
+//template <typename First, typename... Rest>
+//std::shared_ptr<First> VkRenderpassBase::ProduceRenderpass(Rest &&...rest)
+//{
+//	std::shared_ptr<First> result = std::make_shared<First>(rest...);
+//	result->Init();
+//	return result;
+//}

@@ -21,6 +21,8 @@ class VkPipelineBuilder
   public:
 	VkPipeline BuildPipeline(const VkPipelinePP &para_pack, VkPipelineLayout pipeline_layout, const PipelineMetaInfo &pipe_meta_info) const;
 	[[nodiscard]] VkPipeline BuildPipeline(const VkPipelinePP &para_pack_) const;
+private:
+	//[[nodiscard]] static VkFormat GetStencilPart(VkFormat f);
 
   private:
 	VkGraphicsComponent &  gfx;

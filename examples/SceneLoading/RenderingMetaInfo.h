@@ -4,16 +4,85 @@
 #include "NonPbrMaterial.h"
 #include "PbrMaterialMetallic.h"
 #include "VkBufferBundle.h"
+#include "VkEventBundle.h"
 #include "VkImageBundle.h"
 #include "VkMetaInfo.h"
 #include "VkModel.h"
+namespace DeferedRendering
+{
+constexpr VkFormat G_position_format{VK_FORMAT_R16G16B16A16_SFLOAT};
+constexpr VkFormat G_normal_format{VK_FORMAT_R16G16B16A16_SFLOAT};
+constexpr VkFormat G_albedo_format{VK_FORMAT_R8G8B8A8_SRGB};
+constexpr VkFormat G_depth_format{VK_FORMAT_D32_SFLOAT};
+constexpr VkFormat G_posZGrad_format{VK_FORMAT_R16G16_SFLOAT};
+
+constexpr VkFormat depth_stencil_format{VK_FORMAT_D32_SFLOAT_S8_UINT};
+
+constexpr VkSampleCountFlagBits MSAA_sample_count{VK_SAMPLE_COUNT_4_BIT};
+
+
+
+
+
+
+
+struct UBO
+{
+	struct Light
+	{
+		glm::float4 position;
+		glm::float3 color;
+		float       radius;
+	};
+	glm::mat4 projection{};
+	glm::mat4 view{};
+	glm::mat4 view_inverse{};
+	Light     lights[6];
+	glm::vec3 cam_pos{};
+};
+
+}        // namespace DeferedRendering
+
+namespace PbrRendering
+{
+constexpr VkFormat irradiance_map_format{VK_FORMAT_R16G16B16A16_SFLOAT};
+
+struct UBO
+{
+	glm::mat4 projection{};
+	glm::mat4 view{};
+	glm::vec3 light_pos{0.f, 5.f, 3.f};
+	uint8_t   padding_0{0};
+	glm::vec3 light_color{23.47f, 21.31f, 20.79f};
+	uint8_t   padding_1{0};
+	glm::vec3 cam_pos{};
+	float     exposure{4.5f};
+};
+
+}        // namespace PbrRendering
+
+namespace MSAA
+{
+struct UBO
+{
+	struct Light
+	{
+		glm::float4 position;
+		glm::float3 color;
+		float       radius;
+	};
+	glm::mat4 projection{};
+	glm::mat4 view{};
+	glm::mat4 view_inverse{};
+	Light     lights[6];
+	glm::vec3 cam_pos{};
+};
+
+}        // namespace MSAA
 
 namespace Global
 {
 //*****************************************RENDERING SETTING******************************************
-
-///****************************************THREAD RELATED RESOURCES******************************************
-//inline constexpr DescriptorPoolMetaInfo pool_main_thread{.thread_id = 0};
 
 //*****************************************RENDERPASS 0**********************************************
 //TODO:把底下的东西移动到模型里
@@ -49,7 +118,7 @@ struct UboMatrix
 {
 	glm::mat4 projection{};
 	glm::mat4 view{};
-	glm::vec3 light_pos{0.f, 2.5f, 2.5f};
+	glm::vec3 light_pos{0.f, 5.f, 3.f};
 	uint8_t   padding_0{0};
 	glm::vec3 light_color{23.47f, 21.31f, 20.79f};
 	uint8_t   padding_1{0};
@@ -92,12 +161,26 @@ struct Resources
 	VkDescriptorPool pool;
 
 	//UNIFORM BUFFER
+	//*******************************
 	Global::Structure::UboMatrix  matrix_buffer_cpu{};        //用于顶点着色器的uniform buffer object
 	VkBufferBase::BufferPtrBundle matrix_buffer_gpu;
 
-	//ATTACHMENT IMAGES
+	DeferedRendering::UBO         matrix_buffer_cpu_defered_rendering;
+	VkBufferBase::BufferPtrBundle matrix_buffer_gpu_defered_rendering;
+
+	MSAA::UBO                     matrix_buffer_cpu_MSAA;
+	VkBufferBase::BufferPtrBundle matrix_buffer_gpu_MSAA;
+
+	//ATTACHMENT TEXTURES
 	VkTexture::TexturePtrBundle swapchain_attachments;
 	VkTexture::TexturePtrBundle depth_attachments;
+
+	VkTexture::TexturePtrBundle G_buffer_position;
+	VkTexture::TexturePtrBundle G_buffer_normal;
+	VkTexture::TexturePtrBundle G_buffer_albedo;
+	VkTexture::TexturePtrBundle G_buffer_depth;
+	VkTexture::TexturePtrBundle G_buffer_posZGradient;
+	VkTexture::TexturePtrBundle G_buffer_specular;
 
 	VkTexture::TexturePtr irradiance_map;
 	VkTexture::TexturePtr prefiltered_map;
@@ -107,22 +190,7 @@ struct Resources
 	//std::unique_ptr<VkModel<Vertex>> light_indicator;
 	GltfModel<PbrMaterialMetallic>::Ptr scifi_helmet;
 	GltfModel<PbrMaterialMetallic>::Ptr sky_box;
-	//TEXTURE
+	GltfModel<NonPbrMaterial>::Ptr      sponza;
 };
 
 }        // namespace Global
-// namespace Global
-
-
-namespace DeferedRendering
-{
-
-
-
-
-
-
-
-
-
-}

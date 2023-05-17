@@ -1,14 +1,11 @@
 #pragma once
-//#include "EngineMarco.h"
-//#include "EngineHeader.h"
+#include "Vk.h"
 #include "VkExtensionUtility.h"
 #include "VkWindows.h"
 #include <list>
 #include <map>
 #include <optional>
 #include <set>
-
-
 
 class VkDeviceManager
 {
@@ -21,7 +18,6 @@ class VkDeviceManager
 
 	VkDeviceManager(VkDeviceManager &&) = delete;
 	VkDeviceManager &operator=(VkDeviceManager &&) = delete;
-
 
   public:
 	struct SwapChainSupportDetails
@@ -45,11 +41,16 @@ class VkDeviceManager
 	};
 
   public:
-	static QueueFamilyIndices      FindQueueFamilies(const VkPhysicalDevice &device, const VkSurfaceKHR &surface);
-	static bool                    IsDeviceSuitable(const VkPhysicalDevice &device, const VkSurfaceKHR &surface);
-	static bool                    CheckIfDeviceExtensionSupported(const VkPhysicalDevice &device);
+	static QueueFamilyIndices FindQueueFamilies(const VkPhysicalDevice &device, const VkSurfaceKHR &surface);
+	static bool               IsDeviceSuitable(const VkPhysicalDevice &device, const VkSurfaceKHR &surface);
+	static bool               CheckIfDeviceExtensionSupported(const VkPhysicalDevice &device);
+	static bool               CheckIfRequiredDepthFomatAndFeaturesSupported(const VkPhysicalDevice &device);
+
 	static SwapChainSupportDetails QuerySwapChainSupport(const VkPhysicalDevice &device, const VkSurfaceKHR &surface);
 	static uint32_t                FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties, const VkPhysicalDevice &para_physical_device);
+
+  public:
+	static bool CheckIfMSAACountSupported(const VkPhysicalDevice &para_physical_device);
 
   public:
 	[[nodiscard]] VkBool32 FormatIsFilterable(VkFormat format, VkImageTiling tiling) const;
@@ -73,6 +74,7 @@ class VkDeviceManager
 	void       PickPhysicalDevice();
 	static int RateDeviceSuitability(const VkPhysicalDevice &device_);
 
+  private:
 	std::list<VkCommandPool> command_pools;
 
   private:

@@ -156,7 +156,7 @@ float3 calculateNormal(float3 pIn_normal, float3 pIn_tangent, float2 pIn_uv, flo
     float3 N = normalize(pIn_normal);
 	//施密特正交化：T向量在经过插值以后，可能不再和N向量相互垂直
     float3 T = normalize(pIn_tangent - dot(pIn_tangent, N) * N);
-    float3 B = cross(N, T) * handness;
+    float3 B = normalize(cross(N, T) * handness);
     const float3x3 TBN = transpose(float3x3(T, B, N));
     N = mul(TBN, normalize(normalMap.Sample(samplerNormalMap, pIn_uv).xyz * 2.0 - float3(1.0, 1.0, 1.0)));
     return N;
@@ -254,11 +254,11 @@ float4 main(VSOutput pIn) : SV_Target
     const float3 irradiance = irradianceMap.Sample(samplerIrradianceMap, sampled_N).xyz;
     const float3 diffuse = irradiance * albedo_color.xyz;
 	//specular part
-    float2 brdf = BRDFLUTMap.Sample(samplerBRDFLUTMap, float2(max(dot(N, Wo), 0.0), roughness)).rg;
+    float2 brdf = BRDFLUTMap.Sample(samplerBRDFLUTMap, float2(max(dot(N, Wo), 0.0), (1. - roughness))).rg;
     const float3 left_part = prefilteredMap.SampleLevel(samplerPrefilteredMap, sampled_R, roughness).rgb;
     const float3 specular = left_part * (F * brdf.x + brdf.y);
 	//ambient part
-    const float3 LoIndirect = (kD * diffuse + specular) * aoMap.Sample(samplerAoMap, pIn.uv).rrr;
+    const float3 LoIndirect = (kD * diffuse + specular) * ao.xyz;
 //FIANL COLOR
     float3 color = LoIndirect + Lo;
 

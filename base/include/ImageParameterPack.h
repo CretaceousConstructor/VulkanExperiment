@@ -1,6 +1,6 @@
 #pragma once
-#include "VkGraphicsComponent.h"
 #include "Vk.h"
+#include "VkGraphicsComponent.h"
 //use prototype pattern
 class ImagePP
 {
@@ -17,7 +17,7 @@ class ImagePP
 
 	VkImageCreateInfo        default_image_CI{};
 	VkImageLayout            default_final_layout{};
-	VkMemoryPropertyFlagBits default_image_mem_prop_flag{};
+	VkMemoryPropertyFlags default_image_mem_prop_flag{};
 
 	VkExtent3D default_image_extent{};
 	VkFormat   default_image_format{};
@@ -60,18 +60,23 @@ class ImagePP
 //
 //};
 
-
-
-
-class DepthImgPP final : public ImagePP 
+class DepthImgPP final : public ImagePP
 {
   public:
+
+	//常用的format
+	//VK_FORMAT_D32_SFLOAT,  VK_FORMAT_D32_SFLOAT_S8_UINT(这里的S8应该是stencil的?),  VK_FORMAT_D24_UNORM_S8_UINT
 	DepthImgPP(const VkGraphicsComponent &gfx_, VkImageCreateFlags flags = Vk::ImgCINillFlag);
+	DepthImgPP(const VkGraphicsComponent &gfx_, const VkFormat format_, const VkExtent3D &image_extend_, VkImageCreateFlags flags = Vk::ImgCINillFlag);
+
 	[[nodiscard]] std::shared_ptr<ImagePP> Clone() const override;
 
   private:
 	const VkSwapchainManager &swapchain_manager;
 };
+
+
+
 
 class TextureImgPP final : public ImagePP
 {
@@ -85,7 +90,7 @@ class TextureImgPP final : public ImagePP
 	std::string image_path{};
 };
 
-class SwapchainImgPP final: public ImagePP
+class SwapchainImgPP final : public ImagePP
 {
   public:
 	SwapchainImgPP();

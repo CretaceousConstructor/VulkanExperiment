@@ -1,20 +1,21 @@
 #pragma once
 
-#include <glm/fwd.hpp>
+#include <cstdint>
 
 class VkSynObjectBundleBase
 {
-public:
+  public:
 	enum SyncObjCreateOption
 	{
-		Signaled = 0x1,
+		Signaled   = 0x1,
 		Unsignaled = 0x2,
 	};
+
   public:
-	VkSynObjectBundleBase(glm::uint32_t _bundle_size);
+	VkSynObjectBundleBase(uint32_t _bundle_size);
 	virtual ~VkSynObjectBundleBase() = 0;
 
-	VkSynObjectBundleBase()                       = delete;
+	VkSynObjectBundleBase()                              = delete;
 	VkSynObjectBundleBase(const VkSynObjectBundleBase &) = delete;
 	VkSynObjectBundleBase &operator=(const VkSynObjectBundleBase &) = delete;
 	VkSynObjectBundleBase(VkSynObjectBundleBase &&)                 = delete;
@@ -24,10 +25,4 @@ public:
 
   protected:
 	uint32_t bundle_size;
-
-
-
-
-
-
 };

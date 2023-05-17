@@ -55,9 +55,9 @@ VSOutput main(VSInput input)
     output.world_pos = mul(push_consts.model, float4(input.pos, 1.0f)).xyz;
 
 	//normal    向量需要用model矩阵的 转置逆 来转换（但如果只是用了uniform scaling，则不需要转置逆）
-    output.normal = mul(push_consts.model, float4(input.normal, 1.0)).xyz;
+    output.normal = input.normal;
 	//tangent   向量只需要用model矩阵转换?
-    output.tangent = mul(push_consts.model, float4(input.tangent.xyz, 1.0)).xyz;
+    output.tangent = input.tangent.xyz;
  
 //    output.color_factor = input.color;
 

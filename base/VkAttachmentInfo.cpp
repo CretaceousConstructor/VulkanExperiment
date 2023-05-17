@@ -10,6 +10,13 @@
 //	return attachment_tex;
 //}
 
+VkAttachmentInfo::DynamicRenderingAttachment::DynamicRenderingAttachment(Type attach_type_, VkFormat format_, uint32_t index_) :
+    attach_type(attach_type_),
+    format(format_),
+    index(index_)
+{
+}
+
 VkAttachmentInfo::Bundle::Bundle(std::vector<VkAttachmentInfo> info_array_, DynamicRenderingAttachment attachment_format_) :
     info_array(std::move(info_array_)),
     attachment_format(attachment_format_)
@@ -21,7 +28,7 @@ VkAttachmentInfo::DynamicRenderingAttachment VkAttachmentInfo::Bundle::GetAttach
 	return attachment_format;
 }
 
-VkAttachmentInfo &VkAttachmentInfo::Bundle::operator[](size_t index) 
+VkAttachmentInfo &VkAttachmentInfo::Bundle::operator[](size_t index)
 {
 	return info_array[index];
 }
@@ -32,7 +39,14 @@ VkAttachmentInfo::VkAttachmentInfo(Memento meme_, std::shared_ptr<VkTexture> tex
 {
 }
 
-VkAttachmentInfo::Bundle VkAttachmentInfo::GetAttachmentInfos(const Memento &meme_ ,const VkTexture::TexturePtrBundle &textures_)
+VkAttachmentInfo::VkAttachmentInfo(Memento meme_, std::shared_ptr<VkTexture> tex_, std::shared_ptr<VkTexture> resolve_tex_) :
+    meme(meme_),
+    tex(tex_),
+    resolve_tex(resolve_tex_)
+{
+}
+
+VkAttachmentInfo::Bundle VkAttachmentInfo::GetAttachmentInfos(const Memento &meme_, const VkTexture::TexturePtrBundle &textures_)
 {
 	std::vector<VkAttachmentInfo> result;
 
@@ -40,10 +54,24 @@ VkAttachmentInfo::Bundle VkAttachmentInfo::GetAttachmentInfos(const Memento &mem
 	{
 		result.emplace_back(meme_, tex);
 	}
-	return {result, {meme_.type, meme_.format}};
+	return {result, {meme_.type, meme_.format, meme_.attachment_index}};
 }
 
+VkAttachmentInfo::Bundle VkAttachmentInfo::GetAttachmentInfos(const Memento &meme_, const VkTexture::TexturePtrBundle &textures_, const VkTexture::TexturePtrBundle &resolve_textures_)
+{
+	std::vector<VkAttachmentInfo> result;
 
+	assert(textures_.size() == resolve_textures_.size());
+
+	auto tex_itr         = textures_.begin();
+	auto resolve_tex_itr = resolve_textures_.begin();
+	for (; (tex_itr != textures_.end()) && (resolve_tex_itr != resolve_textures_.end()); (++tex_itr, ++resolve_tex_itr))
+	{
+		result.emplace_back(meme_, *tex_itr, *resolve_tex_itr);
+	}
+
+	return {result, {meme_.type, meme_.format, meme_.attachment_index}};
+}
 
 const VkAttachmentInfo::Memento &VkAttachmentInfo::GetInfo() const
 {
@@ -57,7 +85,7 @@ VkAttachmentInfo::DynamicRenderingAttachment VkAttachmentInfo::GetAttachmentForm
 	{
 		throw std::runtime_error("incomplete attachment info!");
 	}
-	return {meme->type, meme->format};
+	return {meme->type, meme->format, meme->attachment_index};
 }
 
 void VkAttachmentInfo::SetMemento(Memento meme_)
@@ -75,13 +103,12 @@ const VkTexture &VkAttachmentInfo::GetTex() const
 	return *tex;
 }
 
-VkTexture &VkAttachmentInfo::GetTex() 
+VkTexture &VkAttachmentInfo::GetTex()
 {
 	return *tex;
 }
 
-
-VkRenderingAttachmentInfo VkAttachmentInfo::GetRenderingAttachmentInfo() 
+VkRenderingAttachmentInfo VkAttachmentInfo::GetRenderingAttachmentInfo()
 {
 	if (!meme || !tex)
 	{
@@ -95,22 +122,13 @@ VkRenderingAttachmentInfo VkAttachmentInfo::GetRenderingAttachmentInfo()
 	rendering_attachment_info.storeOp     = meme->storeOp;
 	rendering_attachment_info.clearValue  = meme->clear_value;
 
+	rendering_attachment_info.resolveMode = meme->resolveMode;
+
+	if (resolve_tex)
+	{
+		rendering_attachment_info.resolveImageView = resolve_tex->GetTextureImageView();
+	}
+	rendering_attachment_info.resolveImageLayout = meme->resolveImageLayout;
+
 	return rendering_attachment_info;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

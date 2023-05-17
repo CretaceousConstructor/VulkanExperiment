@@ -68,6 +68,12 @@ glm::mat4 FirstPersonCamera::GetViewMatrix() const
 	return rot * translation;
 }
 
+glm::mat4 FirstPersonCamera::GetInverseViewMatrix() const
+{
+	return glm::inverse(GetViewMatrix());
+
+}
+
 void FirstPersonCamera::ProcessKeyboard(Camera_Movement direction, float deltaTime)
 {
 	const float velocity = movement_speed * deltaTime;
@@ -155,7 +161,7 @@ void FirstPersonCamera::ProcessMouseScroll(float scroll_offset)
 	}
 }
 
-glm::vec3 FirstPersonCamera::GetEyePos() const
+glm::vec3& FirstPersonCamera::GetEyePos() 
 {
 	return position;
 }

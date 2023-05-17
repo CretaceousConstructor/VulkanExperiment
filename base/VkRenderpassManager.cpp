@@ -74,10 +74,12 @@ const VkTextureFactory &VkRenderpassManager::GetTextureFactory()
 	return factories.texture_factory;
 }
 
-const VkSynObjectFactory &VkRenderpassManager::GetSynOjectFactory()
+VkSynObjectFactory &VkRenderpassManager::GetSynOjectFactory()
 {
 	return factories.syn_obj_factory;
 }
+
+
 
 const VkImageFactory &VkRenderpassManager::GetImageFactory()
 {

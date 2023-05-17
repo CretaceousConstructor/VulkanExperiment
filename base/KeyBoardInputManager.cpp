@@ -67,5 +67,4 @@ void KeyBoardInputManager::SetIsKeyDown(int key, bool isDown)
 void KeyBoardInputManager::SetupKeyInputs(const GLFWwindow *window)
 {
 	glfwSetKeyCallback(const_cast<GLFWwindow *>(window), KeyBoardInputManager::KeyBoardCallback);
-
 }

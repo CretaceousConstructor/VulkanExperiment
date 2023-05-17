@@ -22,15 +22,11 @@ void VkRenderpassBase::Init()
 	CreateGraphicsPipeline();
 }
 
-void VkRenderpassBase::Execute(const std::vector<VkCommandBuffer> &command_buffers)
+void VkRenderpassBase::ExecuteStatically(const std::vector<VkCommandBuffer> &command_buffers)
 {
 	BeginRenderpass(command_buffers);
 	UpdateDescriptorSets();
-	ExecuteRenderpass(command_buffers);
+	RecordRenderpassCommandStatically(command_buffers);
 	EndRenderpass(command_buffers);
 }
 
-std::vector<VkAttachmentInfo> VkRenderpassBase::SelectAttachments(std::optional<size_t> current_image)
-{
-	return {};
-}

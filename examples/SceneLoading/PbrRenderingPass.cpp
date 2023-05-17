@@ -1,6 +1,8 @@
 #include "PbrRenderingPass.h"
 using namespace Global;
 using namespace Vk;
+
+
 PbrRenderingPass::PbrRenderingPass(VkGraphicsComponent &gfx_, VkRenderpassManager &renderpass_manager_, Global::Resources &common_resources_) :
     VkRenderpassBase(gfx_, renderpass_manager_), device_manager(gfx.DeviceMan()), swapchain_manager(gfx.SwapchainMan()), global_resources(common_resources_)
 {
@@ -32,12 +34,18 @@ void PbrRenderingPass::ResourceInit()
 
 	{
 		const auto &      texture_factory = renderpass_manager.GetTextureFactory();
-		const std::string hdr_env_map_name{"../../data/textures/hdr/gcanyon_cube.ktx"};
+		//const std::string hdr_env_map_name{"../../data/textures/hdr/gcanyon_cube.ktx"};
+		const std::string hdr_env_map_name{"../../data/textures/hdr/pisa_cube.ktx"};
 
 		const auto hdr_env_map_sampler_CI{SamplerCI::PopulateCubeTexSamplerCI()};
 		const auto img_view_CI{ImgViewCI::PopulateCubeMapImgViewCI(VK_FORMAT_R16G16B16A16_SFLOAT)};
 		hdr_env_map = texture_factory.ProduceTextureFromImgPath(hdr_env_map_name, VK_FORMAT_R16G16B16A16_SFLOAT, hdr_env_map_sampler_CI, img_view_CI, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 	}
+
+
+
+
+
 }
 
 void PbrRenderingPass::CreateLocalCommandBuffers()
@@ -84,11 +92,6 @@ void PbrRenderingPass::CreateDescriptorSets()
 	{
 		descriptor_set_bundle = desciptor_set_factory.ProduceDescriptorSetBundle(local_descriptor_pool, local_descriptor_set_layout, Vk::BundleSize<SWAP_IMG_COUNT>);
 	}
-}
-
-std::vector<VkAttachmentInfo> PbrRenderingPass::SelectAttachments(std::optional<size_t> current_image)
-{
-	return {};
 }
 
 void PbrRenderingPass::CreateGraphicsPipeline()
@@ -145,7 +148,48 @@ void PbrRenderingPass::CreateShaders()
 	pbr_frag_shader = shader_factory.GetShader(std::string("../../data/shaders/SceneLoading/PbrShading_frag.hlsl"), VK_SHADER_STAGE_FRAGMENT_BIT);
 }
 
-void PbrRenderingPass::ExecuteRenderpass(const std::vector<VkCommandBuffer> &command_buffers)
+
+
+void PbrRenderingPass::BeginRenderpass(const std::vector<VkCommandBuffer> &command_buffers)
+{
+	for (size_t image_index = 0; image_index < command_buffers.size(); image_index++)
+	{
+
+		LayoutTransitionStartOfRendering(command_buffers[image_index], image_index);
+		VkRenderingInfo rendering_info{};
+		rendering_info.sType             = VK_STRUCTURE_TYPE_RENDERING_INFO;
+		rendering_info.renderArea.offset = {0, 0};
+		rendering_info.renderArea.extent = VkExtent2D{swapchain_manager.GetSwapChainImageExtent().width, swapchain_manager.GetSwapChainImageExtent().height};
+		rendering_info.layerCount        = 1;
+		rendering_info.pNext             = nullptr;
+
+		std::vector<VkRenderingAttachmentInfo> color_attachment_infos;
+		VkRenderingAttachmentInfo              depth_attachment_info;
+		VkRenderingAttachmentInfo              stensil_attachment_info;
+
+		VkAttachment::AddRenderingAttachmentInfo(color_attachment_infos, depth_attachment_info, stensil_attachment_info, image_index, color_attachments_infos, depth_attachments_infos);
+
+		rendering_info.colorAttachmentCount = static_cast<uint32_t>(color_attachment_infos.size());
+		rendering_info.pColorAttachments    = color_attachment_infos.data();
+		rendering_info.pDepthAttachment     = &depth_attachment_info;
+		rendering_info.pStencilAttachment   = nullptr;
+
+		vkCmdBeginRendering(command_buffers[image_index], &rendering_info);
+	}
+}
+
+
+void PbrRenderingPass::UpdateDescriptorSets()
+{
+	VkDescriptorManager::UpdateDescriptorSet(device_manager.GetLogicalDevice(), global_resources.matrix_buffer_gpu, descriptor_set_bundle, Vk::Binding<0>);
+	VkDescriptorManager::UpdateDescriptorSet(device_manager.GetLogicalDevice(), *hdr_env_map, descriptor_set_bundle, Vk::Binding<1>);
+	VkDescriptorManager::UpdateDescriptorSet(device_manager.GetLogicalDevice(), *global_resources.irradiance_map, descriptor_set_bundle, Vk::Binding<2>);
+	VkDescriptorManager::UpdateDescriptorSet(device_manager.GetLogicalDevice(), *global_resources.prefiltered_map, descriptor_set_bundle, Vk::Binding<3>);
+	VkDescriptorManager::UpdateDescriptorSet(device_manager.GetLogicalDevice(), *global_resources.LUT_map, descriptor_set_bundle, Vk::Binding<4>);
+}
+
+
+void PbrRenderingPass::RecordRenderpassCommandStatically(const std::vector<VkCommandBuffer> &command_buffers)
 {
 	auto &      forward_shading_PP_factory = renderpass_manager.GetFactoryBundle().forward_shading_PP_factory;
 	const auto &pipe_builder               = renderpass_manager.GetPipelineBuilder();
@@ -221,14 +265,6 @@ void PbrRenderingPass::UpdateResources(size_t currentImage)
 {
 }
 
-void PbrRenderingPass::UpdateDescriptorSets()
-{
-	VkDescriptorManager::UpdateDescriptorSet(device_manager.GetLogicalDevice(), global_resources.matrix_buffer_gpu, descriptor_set_bundle, Vk::Binding<0>);
-	VkDescriptorManager::UpdateDescriptorSet(device_manager.GetLogicalDevice(), *hdr_env_map, descriptor_set_bundle, Vk::Binding<1>);
-	VkDescriptorManager::UpdateDescriptorSet(device_manager.GetLogicalDevice(), *global_resources.irradiance_map, descriptor_set_bundle, Vk::Binding<2>);
-	VkDescriptorManager::UpdateDescriptorSet(device_manager.GetLogicalDevice(), *global_resources.prefiltered_map, descriptor_set_bundle, Vk::Binding<3>);
-	VkDescriptorManager::UpdateDescriptorSet(device_manager.GetLogicalDevice(), *global_resources.LUT_map, descriptor_set_bundle, Vk::Binding<4>);
-}
 
 void PbrRenderingPass::LayoutTransitionStartOfRendering(VkCommandBuffer cmd_buffer, std::optional<size_t> image_index)
 {
@@ -244,47 +280,26 @@ void PbrRenderingPass::LayoutTransitionStartOfRendering(VkCommandBuffer cmd_buff
 	    .subresource_range = std::nullopt,
 	};
 	color_attachments_infos[image_index.value()].GetTex().InsertImageMemoryBarrier(cmd_buffer, image_memory_barrier_enhanced);
+
+
 }
 
 void PbrRenderingPass::LayoutTransitionEndOfRendering(VkCommandBuffer cmd_buffer, std::optional<size_t> image_index)
 {
-	const Sync::VkImageMemoryBarrierEnhanced image_memory_barrier_enhanced{
-	    .srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-	    .srcStageMask  = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-	    .oldLayout     = color_attachments_infos[image_index.value()].GetInfo().layout_inpass,
 
-	    .dstAccessMask = VK_ACCESS_NONE,
-	    .dstStageMask  = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
-	    .newLayout     = color_attachments_infos[image_index.value()].GetInfo().layout_afterpass,
+	//这里不用转换了是因为UIpass最后会进行转换
+	//const Sync::VkImageMemoryBarrierEnhanced image_memory_barrier_enhanced{
+	//    .srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+	//    .srcStageMask  = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+	//    .oldLayout     = color_attachments_infos[image_index.value()].GetInfo().layout_inpass,
 
-	    .subresource_range = std::nullopt,
-	};
-	color_attachments_infos[image_index.value()].GetTex().InsertImageMemoryBarrier(cmd_buffer, image_memory_barrier_enhanced);
+	//    .dstAccessMask = VK_ACCESS_NONE,
+	//    .dstStageMask  = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
+	//    .newLayout     = color_attachments_infos[image_index.value()].GetInfo().layout_afterpass,
+
+	//    .subresource_range = std::nullopt,
+	//};
+	//color_attachments_infos[image_index.value()].GetTex().InsertImageMemoryBarrier(cmd_buffer, image_memory_barrier_enhanced);
+
 }
 
-void PbrRenderingPass::BeginRenderpass(const std::vector<VkCommandBuffer> &command_buffers)
-{
-	for (size_t image_index = 0; image_index < command_buffers.size(); image_index++)
-	{
-		VkRenderingInfo rendering_info{};
-		rendering_info.sType             = VK_STRUCTURE_TYPE_RENDERING_INFO;
-		rendering_info.renderArea.offset = {0, 0};
-		rendering_info.renderArea.extent = VkExtent2D{swapchain_manager.GetSwapChainImageExtent().width, swapchain_manager.GetSwapChainImageExtent().height};
-		rendering_info.layerCount        = 1;
-		rendering_info.pNext             = nullptr;
-
-		std::vector<VkRenderingAttachmentInfo> color_attachment_infos;
-		VkRenderingAttachmentInfo              depth_attachment_info;
-		VkRenderingAttachmentInfo              stensil_attachment_info;
-
-		VkAttachment::AddRenderingAttachmentInfo(color_attachment_infos, depth_attachment_info, stensil_attachment_info, image_index, color_attachments_infos, depth_attachments_infos);
-
-		rendering_info.colorAttachmentCount = static_cast<uint32_t>(color_attachment_infos.size());
-		rendering_info.pColorAttachments    = color_attachment_infos.data();
-		rendering_info.pDepthAttachment     = &depth_attachment_info;
-		rendering_info.pStencilAttachment   = nullptr;
-
-		LayoutTransitionStartOfRendering(command_buffers[image_index], image_index);
-		vkCmdBeginRendering(command_buffers[image_index], &rendering_info);
-	}
-}

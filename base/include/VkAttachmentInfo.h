@@ -2,8 +2,8 @@
 #include "VkGraphicsComponent.h"
 #include "VkTexture.h"
 #include <memory>
+#include <ranges>
 #include <vector>
-
 class VkAttachmentInfo
 {
   public:
@@ -12,16 +12,24 @@ class VkAttachmentInfo
 		Unknown,
 		ColorAttachment,
 		DepthAttachment,
-		StencilAttachment,
 		DepthStencilAttachment,
+		//StencilAttachment, // reserved for future use
 		NotUsedWithinPass
 
 	};
 
 	struct DynamicRenderingAttachment
 	{
+	  public:
+		DynamicRenderingAttachment() = default;
+		DynamicRenderingAttachment(
+		    Type     attach_type_,
+		    VkFormat format_,
+		    uint32_t index_);
 		Type     attach_type;
 		VkFormat format;
+		//index ONLY use to sort DynamicRenderingAttachmentFormats, no other usages.
+		uint32_t index;
 	};
 
 	struct Memento
@@ -35,6 +43,10 @@ class VkAttachmentInfo
 		VkImageLayout       layout_afterpass{};
 		Type                type{Type::Unknown};
 		VkClearValue        clear_value{};
+
+		VkResolveModeFlagBits resolveMode{VK_RESOLVE_MODE_NONE};
+		//VkImageView              resolveImageView{};
+		VkImageLayout resolveImageLayout{};
 	};
 
 	class Bundle
@@ -52,6 +64,7 @@ class VkAttachmentInfo
 
   public:
 	VkAttachmentInfo(Memento meme_, std::shared_ptr<VkTexture> tex_);
+	VkAttachmentInfo(Memento meme_, std::shared_ptr<VkTexture> tex_, std::shared_ptr<VkTexture> resolve_tex_);
 	VkAttachmentInfo() = default;
 
 	[[nodiscard]] const Memento &GetInfo() const;
@@ -65,11 +78,13 @@ class VkAttachmentInfo
 
   public:
 	static Bundle GetAttachmentInfos(const Memento &meme_, const VkTexture::TexturePtrBundle &textures_);
+	static Bundle GetAttachmentInfos(const Memento &meme_, const VkTexture::TexturePtrBundle &textures_, const VkTexture::TexturePtrBundle &resolve_textures_);
 
   private:
 	VkRenderingAttachmentInfo  rendering_attachment_info{};
 	std::optional<Memento>     meme;
 	std::shared_ptr<VkTexture> tex;
+	std::shared_ptr<VkTexture> resolve_tex;
 };
 
 namespace VkAttachment
@@ -95,7 +110,8 @@ inline void Process(
 	{
 		color_attachment_infos.push_back(attach.GetRenderingAttachmentInfo());
 	}
-	if (VkAttachmentInfo::Type::DepthAttachment == attach_format_and_type.attach_type)
+	if (VkAttachmentInfo::Type::DepthAttachment == attach_format_and_type.attach_type || VkAttachmentInfo::Type::DepthStencilAttachment == attach_format_and_type.attach_type
+	)
 	{
 		depth_attachment_info = attach.GetRenderingAttachmentInfo();
 	}
@@ -116,14 +132,11 @@ inline void Process(
 		color_attachment_infos.push_back(attachment_bundle[img_index.value()].GetRenderingAttachmentInfo());
 	}
 
-	if (VkAttachmentInfo::Type::DepthAttachment == attach_format_and_type.attach_type)
+	if (VkAttachmentInfo::Type::DepthAttachment == attach_format_and_type.attach_type || VkAttachmentInfo::Type::DepthStencilAttachment == attach_format_and_type.attach_type)
 	{
 		depth_attachment_info = attachment_bundle[img_index.value()].GetRenderingAttachmentInfo();
 	}
 }
-
-
-
 
 //recursion base
 template <typename T>
@@ -150,11 +163,6 @@ void AddRenderingAttachmentInfo(
 	Process(color_attachment_infos, depth_attachment_info, stensil_attachment_info, img_index, std::forward<First>(first));
 	return AddRenderingAttachmentInfo(color_attachment_infos, depth_attachment_info, stensil_attachment_info, img_index, std::forward<Rest>(rest)...);
 }
-
-
-
-
-
 
 //recursion base
 template <typename T>

@@ -44,7 +44,7 @@ class IrradianceMapGenPass : public VkRenderpassBase
   protected:
 	void BeginRenderpass(const std::vector<VkCommandBuffer> &command_buffers) override final;
 	void UpdateDescriptorSets() override final;
-	void ExecuteRenderpass(const std::vector<VkCommandBuffer> &command_buffers) override final;
+	void RecordRenderpassCommandStatically(const std::vector<VkCommandBuffer> &command_buffers) override final;
 	void EndRenderpass(const std::vector<VkCommandBuffer> &command_buffers) override final;
 
   public:
@@ -74,7 +74,7 @@ class IrradianceMapGenPass : public VkRenderpassBase
 	std::shared_ptr<VkTexture> depth_attachment;        //depth attach
 
   private:
-	//VkAttachmentInfo::Bundle color_attachments_infos{};
+	//VkAttachmentInfo::Bundle MS_color_attachments_infos{};
 	VkAttachmentInfo color_attachment_info{};
 	VkAttachmentInfo depth_attachment_info{};
 

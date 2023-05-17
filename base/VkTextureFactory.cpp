@@ -121,6 +121,14 @@ void VkTextureFactory::ResetTexSampler(VkSamplerCreateInfo sampler_CI_, VkTextur
 	return;
 }
 
+void VkTextureFactory::ResetTexSampler(VkSamplerCreateInfo sampler_CI_, VkTexture::TexturePtrBundle &tex_ptr_bundle) const
+{
+	for (auto& tex : tex_ptr_bundle)
+	{
+		ResetTexSampler(sampler_CI_, *tex);
+	}
+}
+
 void VkTextureFactory::ResetTexImgView(VkImageViewCreateInfo img_view_CI_, VkTexture &result_tex) const
 {
 	img_view_CI_.image         = result_tex.GetTextureRawImage();
@@ -163,12 +171,14 @@ std::shared_ptr<VkTexture> VkTextureFactory::ProduceTextureFromImgPath(const std
 			sampler_CI_->maxLod = static_cast<float>(info_from_file.numLevels);
 		}
 	}
+
+	//TODO: Non-ktx texture mipmap generation
 	//HDR images
 	else if (stbi_is_hdr(image_path.c_str()))
 	{
 		tex_img = InitHdrImgFromFile(image_path, format_of_image_, image_layout_);
 	}
-	//Non HDR images
+	//LDR images
 	else
 	{
 		tex_img = InitOtherFormatImgFromFile(image_path, format_of_image_, image_layout_);
@@ -231,7 +241,7 @@ std::shared_ptr<VkGeneralPurposeImage> VkTextureFactory::InitOtherFormatImgFromF
 
 std::shared_ptr<VkGeneralPurposeImage> VkTextureFactory::InitHdrImgFromFile(const std::string &image_path, const VkFormat format_of_image_, const VkImageLayout image_layout_) const
 {
-	stbi_set_flip_vertically_on_load(true);
+	//stbi_set_flip_vertically_on_load(true);
 	int width, height, nrComponents;
 
 	//Get the image data from the stbi loader

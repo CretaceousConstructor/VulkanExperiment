@@ -49,11 +49,7 @@ class NonPbrMaterial : public VkMaterial
 	VkDescriptorSet AllocateDescriptorSetAndUpdate(VkDescriptorPool descriptor_pool, VkDescriptorSetLayout desc_set_layout, const std::vector<Gltf::Texture> &textures, const std::vector<std::shared_ptr<VkTexture>> &images) override;
 	void ModifyPipelineCI(VkPipelinePP &pipeline_CI) override;
 
-
-
-  private:
 	static VkDescriptorSetLayout GetDescriptorSetLayout();
-	//static VkPipelineLayout      GetPipelineLayout();
 
   public:
 	static VkDescriptorSetLayout CreateDesciptorSetLayout(const VkDeviceManager &device_manager);

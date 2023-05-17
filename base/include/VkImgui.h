@@ -18,8 +18,14 @@ class VkImgui
 
   public:
 	void ResetCommandPoolAndBeginCommandBuffer(uint32_t image_index) const;
+
+
 	void DescribingUI();
+	void TestDescribingUI(glm::vec3& v3);
+
+
 	void RenderingCommandRecord(uint32_t image_index) const;
+
 
   public:
 	[[nodiscard]] VkCommandBuffer GetCommandBuffer(uint32_t image_index) const;
@@ -35,6 +41,7 @@ class VkImgui
 	void RegisterFronts() const;
 	void InitCommandPoolAndBuffer();
 
+  private:
 	bool   show_demo_window    = true;
 	bool   show_another_window = false;
 	ImVec4 clear_color         = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
@@ -52,7 +59,7 @@ class VkImgui
 	const VkInstanceWrapper & instance;
 	const VkDeviceManager &   device_manager;
 	const VkSwapchainManager &swapchain_manager;
-	const VkWindows &         window;
+	const VkWindows &         window; 
 	const VkCommandManager &  command_manager;
 
   private:

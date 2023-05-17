@@ -72,9 +72,6 @@
     <Filter Include="Header Files\VkCore\Graphics">
       <UniqueIdentifier>{0036ff2e-7b97-4a3b-a3ff-6bbb27fb9e21}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\VkCore\ManagerBundle">
-      <UniqueIdentifier>{3e228370-f60b-41c1-870d-221fae526eea}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\VkCore\FactoryBundle">
       <UniqueIdentifier>{48027839-4b07-4d3b-8654-21e488ac2b10}</UniqueIdentifier>
     </Filter>
@@ -146,6 +143,12 @@
     </Filter>
     <Filter Include="Source Files\RenderGraph">
       <UniqueIdentifier>{45c0b827-dc0a-4c74-8d57-09c0d00cb864}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\VkCore\Manager\ManagerBundle">
+      <UniqueIdentifier>{3e228370-f60b-41c1-870d-221fae526eea}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\VkCore\Resources">
+      <UniqueIdentifier>{8600cb10-7337-447d-8e4a-c7d2a4974a1e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -395,6 +398,9 @@
     <ClCompile Include="base\RenderGraph.cpp">
       <Filter>Source Files\RenderGraph</Filter>
     </ClCompile>
+    <ClCompile Include="base\VkEventBundle.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="base\include\Camera.h">
@@ -556,9 +562,6 @@
     <ClInclude Include="base\include\VkGraphicsComponent.h">
       <Filter>Header Files\VkCore\Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="base\include\VkManagerBundle.h">
-      <Filter>Header Files\VkCore\ManagerBundle</Filter>
-    </ClInclude>
     <ClInclude Include="base\include\VkInstanceWrapper.h">
       <Filter>Header Files\VkCore\Instance</Filter>
     </ClInclude>
@@ -639,6 +642,12 @@
     </ClInclude>
     <ClInclude Include="base\include\RenderGraph.h">
       <Filter>Header Files\RenderGraph</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\VkManagerBundle.h">
+      <Filter>Header Files\VkCore\Manager\ManagerBundle</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\VkEventBundle.h">
+      <Filter>Header Files\VkCore\SynObject</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

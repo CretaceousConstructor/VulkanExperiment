@@ -184,10 +184,11 @@ void GltfModel<M>::ProcessMaterial(const std::vector<VkDescriptorSetLayout> &com
 	//TODO:应该是模型的push constant range配合外面，而不是外面配合模型。
 	//TODO:better way to pass model matrix
 	std::vector<VkPushConstantRange> push_constant_ranges{};
-	VkPushConstantRange              model_constant_range{};
-	model_constant_range.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
-	model_constant_range.size       = sizeof(glm::mat4);
-	model_constant_range.offset     = 0;
+	constexpr VkPushConstantRange              model_constant_range{
+	    .stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+	    .offset     = 0,
+	    .size       = sizeof(glm::mat4),
+	};
 
 	if (push_constant_ranges_outside.has_value())
 	{
@@ -294,7 +295,6 @@ void GltfModel<M>::DrawNode(VkCommandBuffer commandBuffer, const int node_index)
 				//注意这里的参数first set数值为1,因为我们已经把binding = 0让给了VP矩阵组成的UBO
 				//vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, material->GetPipeline());
 				vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, GetPipeline(primitive.materialIndex));
-
 
 				//MODIFY
 				vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, GetPipelineLayout(), 1, 1, &GetDescSet(primitive.materialIndex), 0, nullptr);

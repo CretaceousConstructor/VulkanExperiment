@@ -40,6 +40,7 @@
     <ClCompile Include="base\VkBufferFactory.cpp" />
     <ClCompile Include="base\VkBufferCI.cpp" />
     <ClCompile Include="base\VkDescriptorManagerV0.cpp" />
+    <ClCompile Include="base\VkEventBundle.cpp" />
     <ClCompile Include="base\VkFactoryBundle.cpp" />
     <ClCompile Include="base\VkFenceBundle.cpp" />
     <ClCompile Include="base\VkGraphicsComponent.cpp" />
@@ -112,6 +113,7 @@
     <ClInclude Include="base\include\PbrMaterialMetallic.h" />
     <ClInclude Include="base\include\RenderGraph.h" />
     <ClInclude Include="base\include\VkDescriptorManagerV0.h" />
+    <ClInclude Include="base\include\VkEventBundle.h" />
     <ClInclude Include="base\include\VkHeader.h" />
     <ClInclude Include="base\include\FirstPersonCamera.h" />
     <ClInclude Include="base\include\Geometry.h" />

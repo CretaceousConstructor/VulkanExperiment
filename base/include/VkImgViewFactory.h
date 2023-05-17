@@ -8,6 +8,7 @@ namespace ImgViewCI
 {
 	[[nodiscard]] VkImageViewCreateInfo PopulateSwapchainImgViewCI(const VkSwapchainManager &swapchain_manager);
 	[[nodiscard]] VkImageViewCreateInfo PopulateDepthImgViewCI(const VkSwapchainManager &swapchain_manager);
+	[[nodiscard]] VkImageViewCreateInfo PopulateDepthImgViewCI(const VkFormat depth_format);
 	[[nodiscard]] VkImageViewCreateInfo PopulateTextureImgViewCI(VkFormat image_view_fomat_);
 	[[nodiscard]] VkImageViewCreateInfo PopulateCubeMapImgViewCI(VkFormat image_view_fomat_);
 

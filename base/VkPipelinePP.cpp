@@ -6,7 +6,6 @@ VkPipelinePP::VkPipelinePP()
 	InitStype();
 }
 
-
 void VkPipelinePP::ClearVectors()
 {
 	//INIT DEFAULT STATE
@@ -38,16 +37,29 @@ void VkPipelinePP::InitStype()
 	pipeline_rendering_CI.sType   = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
 }
 
-
-
-
-
 void VkPipelinePP::SetDynamicRenderingAttachmentFormats(std::vector<VkAttachmentInfo::DynamicRenderingAttachment> attachment_formats_)
 {
+	//TODO: debug this piece of
+	SortingDynamicRenderingAttachment(attachment_formats_);
 	attachment_formats = std::move(attachment_formats_);
 }
 
 void VkPipelinePP::SetPipelineShaderStageCreateInfo(std::vector<VkPipelineShaderStageCreateInfo> shader_stage_CI_)
 {
 	shader_stage_CI = std::move(shader_stage_CI_);
+}
+
+void VkPipelinePP::ClearDynamicState()
+{
+	dynamic_states_enabled.clear();
+}
+
+void VkPipelinePP::SortingDynamicRenderingAttachment(std::vector<VkAttachmentInfo::DynamicRenderingAttachment> &attachment_formats_)
+{
+	std::sort(attachment_formats_.begin(), attachment_formats_.end(),
+	          [](const VkAttachmentInfo::DynamicRenderingAttachment &a,
+	             const VkAttachmentInfo::DynamicRenderingAttachment &b) -> bool {
+		          assert(a.index != b.index);
+		          return a.index < b.index;
+	          });
 }

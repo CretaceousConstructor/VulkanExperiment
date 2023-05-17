@@ -12,14 +12,11 @@ VkSemaphoreBundle::VkSemaphoreBundle(const VkDeviceManager &_device_manager, uin
 	syn_objects_bundle.resize(bundle_size);
 	for (auto &semaphore : syn_objects_bundle)
 	{
-		if (vkCreateSemaphore(device_manager.GetLogicalDevice(), &semaphore_CI, nullptr, &semaphore) != VK_SUCCESS)
-		{
-			throw std::runtime_error("failed to create synchronization objects for a frame!");
-		}
+		VK_CHECK_RESULT(vkCreateSemaphore(device_manager.GetLogicalDevice(), &semaphore_CI, nullptr, &semaphore))
 	}
 }
 
-const VkSemaphore& VkSemaphoreBundle::operator[](size_t num) const
+const VkSemaphore &VkSemaphoreBundle::operator[](size_t num) const
 {
 	return syn_objects_bundle[num];
 }

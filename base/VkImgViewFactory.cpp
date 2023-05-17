@@ -85,12 +85,48 @@ VkImageViewCreateInfo ImgViewCI::PopulateDepthImgViewCI(const VkSwapchainManager
 {
 	VkImageViewCreateInfo default_image_view_CI{};
 	default_image_view_CI.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+
 	default_image_view_CI.pNext = nullptr;
 	default_image_view_CI.flags = 0;
 	default_image_view_CI.image = nullptr;
 
 	default_image_view_CI.viewType = VK_IMAGE_VIEW_TYPE_2D;
 	default_image_view_CI.format   = swapchain_manager.FindDepthFormat();        //
+
+	//default_image_view_CI.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+	//default_image_view_CI.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+	//default_image_view_CI.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+	//default_image_view_CI.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+
+	default_image_view_CI.components = {VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY};
+
+	default_image_view_CI.subresourceRange.aspectMask     = VK_IMAGE_ASPECT_DEPTH_BIT;
+	default_image_view_CI.subresourceRange.baseMipLevel   = 0;
+	default_image_view_CI.subresourceRange.levelCount     = 1;
+	default_image_view_CI.subresourceRange.baseArrayLayer = 0;
+	default_image_view_CI.subresourceRange.layerCount     = 1;
+
+	return default_image_view_CI;
+}
+
+
+
+
+
+
+
+VkImageViewCreateInfo ImgViewCI::PopulateDepthImgViewCI(const VkFormat depth_format)
+{
+	
+	VkImageViewCreateInfo default_image_view_CI{};
+	default_image_view_CI.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+
+	default_image_view_CI.pNext = nullptr;
+	default_image_view_CI.flags = 0;
+	default_image_view_CI.image = nullptr;
+
+	default_image_view_CI.viewType = VK_IMAGE_VIEW_TYPE_2D;
+	default_image_view_CI.format   = depth_format;        //
 
 	//default_image_view_CI.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
 	//default_image_view_CI.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;

@@ -17,10 +17,12 @@ void IrradianceMapGenPass::ResourceInit()
 	/**********************************texture***********************************/
 	//hdr env map
 	{
-		const auto &      texture_factory = renderpass_manager.GetTextureFactory();
-		const std::string hdr_env_map_name{"../../data/textures/hdr/gcanyon_cube.ktx"};
-		const auto        hdr_env_map_sampler_CI{SamplerCI::PopulateCubeTexSamplerCI()};
-		const auto        img_view_CI{ImgViewCI::PopulateCubeMapImgViewCI(hdr_env_map_img_format)};
+		const auto &texture_factory = renderpass_manager.GetTextureFactory();
+		//const std::string hdr_env_map_name{"../../data/textures/hdr/gcanyon_cube.ktx"};
+		const std::string hdr_env_map_name{"../../data/textures/hdr/pisa_cube.ktx"};
+
+		const auto hdr_env_map_sampler_CI{SamplerCI::PopulateCubeTexSamplerCI()};
+		const auto img_view_CI{ImgViewCI::PopulateCubeMapImgViewCI(hdr_env_map_img_format)};
 		hdr_env_map = texture_factory.ProduceTextureFromImgPath(hdr_env_map_name, hdr_env_map_img_format, hdr_env_map_sampler_CI, img_view_CI, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 	}
 
@@ -54,8 +56,8 @@ void IrradianceMapGenPass::CreateDescriptorSetPools()
 {
 	/**********************************descriptor pool***********************************/
 	const std::vector desc_pool_sizes{
-	    Vk::GetOneDescriptorPoolSizeDescription(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, Vk::DescriptorCount<1> ),
-	    Vk::GetOneDescriptorPoolSizeDescription(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, Vk::DescriptorCount<1> )};
+	    Vk::GetOneDescriptorPoolSizeDescription(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, Vk::DescriptorCount<1>),
+	    Vk::GetOneDescriptorPoolSizeDescription(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, Vk::DescriptorCount<1>)};
 	const auto desc_pool_CI = Vk::GetDescriptorPoolCI(desc_pool_sizes, Vk::SetCount<1> * 2);
 
 	local_descriptor_pool = renderpass_manager.GetDescriptorManagerV0().ProduceDescriptorPoolUnsafe(desc_pool_CI);
@@ -81,12 +83,6 @@ void IrradianceMapGenPass::CreateDescriptorSets()
 
 void IrradianceMapGenPass::CreateAttachments()
 {
-
-
-
-
-
-
 	const VkAttachmentInfo::Memento color_attachment_info_meme{
 	    .format           = VK_FORMAT_R32G32B32A32_SFLOAT,
 	    .attachment_index = Vk::AttachmentIndex<0>,
@@ -101,8 +97,6 @@ void IrradianceMapGenPass::CreateAttachments()
 	    .type        = VkAttachmentInfo::Type::ColorAttachment,
 	    .clear_value = VkClearValue{.color{0.0f, 0.0f, 0.0f, 1.0f}},
 	};
-
-	//color_attachments_infos = VkAttachmentInfo::GetAttachmentInfos(color_attachment_info_meme, global_resources.irradiance_map);
 
 	color_attachment_info = VkAttachmentInfo(color_attachment_info_meme, global_resources.irradiance_map);
 
@@ -143,7 +137,7 @@ void IrradianceMapGenPass::CreateGraphicsPipeline()
 	return;
 }
 
-void IrradianceMapGenPass::ExecuteRenderpass(const std::vector<VkCommandBuffer> &command_buffers)
+void IrradianceMapGenPass::RecordRenderpassCommandStatically(const std::vector<VkCommandBuffer> &command_buffers)
 {
 	const auto &pipe_builder = renderpass_manager.GetPipelineBuilder();
 
@@ -351,7 +345,6 @@ void IrradianceMapGenPass::ResourcesInitIrradianceMapGen() const
 		global_resources.irradiance_map = renderpass_manager.GetTextureFactory().ProduceEmptyTexture(texture_img_PP, std::nullopt, img_view_CI);
 	}
 }
-
 
 void IrradianceMapGenPass::UpdateResources(size_t current_image)
 {

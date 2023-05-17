@@ -236,3 +236,23 @@ inline void VkDescriptorManager::UpdateDescriptorSet<VkTexture>(const VkDevice d
 	write_set.dstSet = set;
 	vkUpdateDescriptorSets(device, static_cast<uint32_t>(1), &write_set, 0, nullptr);
 }
+
+
+
+//n to n update texture
+template <>
+inline void VkDescriptorManager::UpdateDescriptorSet<VkTexture::TexturePtrBundle>(const VkDevice device, VkTexture::TexturePtrBundle &resource, const std::vector<VkDescriptorSet> &set_bundle, uint32_t dstbinding, uint32_t dstArrayElement)
+{
+
+
+	assert(resource.size() == set_bundle.size());
+
+
+	for (size_t img_indx = 0; img_indx < set_bundle.size(); img_indx++)
+	{
+		auto write_set   = resource[img_indx]->GetWriteDescriptorSetInfo(dstbinding);
+		write_set.dstSet = set_bundle[img_indx];
+		vkUpdateDescriptorSets(device, static_cast<uint32_t>(1), &write_set, 0, nullptr);
+	}
+}
+

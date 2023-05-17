@@ -174,14 +174,18 @@ void ForawdShadingPipelinePPFactory::ConstructDepthStencilStateCI(VkPipelinePP &
 	pp.depth_stencil_CI.depthTestEnable       = VK_TRUE;
 	pp.depth_stencil_CI.depthWriteEnable      = VK_TRUE;
 	pp.depth_stencil_CI.depthCompareOp        = VK_COMPARE_OP_LESS_OR_EQUAL;
-	pp.depth_stencil_CI.back.compareOp        = VK_COMPARE_OP_ALWAYS;
+
+
 	pp.depth_stencil_CI.depthBoundsTestEnable = VK_FALSE;
-	pp.depth_stencil_CI.minDepthBounds        = 0.0f;        // Optional
-	pp.depth_stencil_CI.maxDepthBounds        = 1.0f;        // Optional
+	//pp.depth_stencil_CI.minDepthBounds        = 0.0f;        // Optional
+	//pp.depth_stencil_CI.maxDepthBounds        = 1.0f;        // Optional
 	pp.depth_stencil_CI.stencilTestEnable     = VK_FALSE;
 
-	//depth_stencil_CI.front = {}; // Optional
-	//depth_stencil_CI.back = {}; // Optional
+	//front and back control the parameters of the stencil test.
+	//pp.front = {}; // Optional
+	//pp.back = {}; // Optional
+
+
 }
 
 void ForawdShadingPipelinePPFactory::ConstructMultisampleStateCI(VkPipelinePP &pp)
@@ -193,6 +197,8 @@ void ForawdShadingPipelinePPFactory::ConstructMultisampleStateCI(VkPipelinePP &p
 	pp.multisample_state_CI.alphaToCoverageEnable = VK_FALSE;        // Optional
 	pp.multisample_state_CI.alphaToOneEnable      = VK_FALSE;        // Optional
 }
+
+
 
 void ForawdShadingPipelinePPFactory::ConstructDynamicState(VkPipelinePP &pp)
 {
@@ -211,6 +217,7 @@ void ForawdShadingPipelinePPFactory::ConstructColorBlendStateCI(VkPipelinePP &pp
 	default_color_blend_attachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;         // Optional
 	default_color_blend_attachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;        // Optional
 	default_color_blend_attachment.alphaBlendOp        = VK_BLEND_OP_ADD;             // Optional
+
 	pp.color_blend_attachments.push_back(default_color_blend_attachment);
 
 	pp.color_blend_state_CI.logicOpEnable     = VK_FALSE;

@@ -2,18 +2,20 @@
 
 #include "BaseRenderer.h"
 #include "FirstPersonCamera.h"
-#include "Geometry.h"
 #include "GltfModel.h"
 #include "KeyBoardInputManager.h"
 #include "MouseInputManager.h"
 #include "RenderingMetaInfo.h"
 #include "VkRenderpassManager.h"
+#include "VkImgui.h"
+#include "Geometry.h"
 
 #include "IrradianceMapGenPass.h"
 #include "PrefilterAndLUTMapGenPass.h"
-
 #include "PbrRenderingPass.h"
-#include "VkImgui.h"
+#include "DeferedGeometryPass.h"
+#include "DeferedCompositionPass.h"
+#include "MSAAPass.h"
 
 #include "VkMath.h"
 #include "VkRenderpassBase.h"
@@ -68,8 +70,8 @@ class Renderer : public BaseRenderer
 
   private:
 	//void CreatePipelineCache();
-	void CreateDepthImages();
-	void CreateSwapchainImages();
+	void CreateDepthTextures();
+	void CreateSwapchainTextures();
 
 
 private:
@@ -86,7 +88,8 @@ private:
 	std::unique_ptr<FirstPersonCamera> camera;
 	//SYN OBJECTS
 	std::shared_ptr<VkSemaphoreBundle> image_available_semaphores;
-	std::shared_ptr<VkSemaphoreBundle> render_finished_semaphores;
+	std::shared_ptr<VkSemaphoreBundle> graphics_render_finished_semaphores;
+	std::shared_ptr<VkSemaphoreBundle> UI_render_finished_semaphores;
 	std::shared_ptr<VkFenceBundle>     frame_fences;
 	//-----------------------------------------------------------
 	std::vector<VkFence> image_fences;

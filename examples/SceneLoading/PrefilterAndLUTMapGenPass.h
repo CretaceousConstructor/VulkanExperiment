@@ -45,7 +45,7 @@ class PrefilterAndLUTMapGenPass : public VkRenderpassBase
   protected:
 	void BeginRenderpass(const std::vector<VkCommandBuffer> &command_buffers) override final;
 	void UpdateDescriptorSets() override final;
-	void ExecuteRenderpass(const std::vector<VkCommandBuffer> &command_buffers) override final;
+	void RecordRenderpassCommandStatically(const std::vector<VkCommandBuffer> &command_buffers) override final;
 	void EndRenderpass(const std::vector<VkCommandBuffer> &command_buffers) override final;
 
   public:
@@ -66,6 +66,7 @@ class PrefilterAndLUTMapGenPass : public VkRenderpassBase
 	const VkFormat prefiltered_img_format = VK_FORMAT_R16G16B16A16_SFLOAT;
 	const VkFormat LUT_img_format         = VK_FORMAT_R16G16_SFLOAT;
 	const VkFormat hdr_env_map_img_format = VK_FORMAT_R16G16B16A16_SFLOAT;
+
 
   private:
 	void ExecutePrefilteredMapGen();

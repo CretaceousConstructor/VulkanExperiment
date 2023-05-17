@@ -6,11 +6,14 @@ void Renderer::PrepareCommonModels()
 {
 	const auto &model_factory = renderpass_manager.GetModelFactory();
 
-	const std::string scifi_helmet_path = "../../data/models/SciFiHelmet/SciFiHelmet.gltf";
-	global_resources.scifi_helmet       = model_factory.GetGltfModel<PbrMaterialMetallic>(scifi_helmet_path, VkModelFactory::LoadingOption::None, 0);
+	//const std::string scifi_helmet_path = "../../data/models/SciFiHelmet/SciFiHelmet.gltf";
+	//global_resources.scifi_helmet       = model_factory.GetGltfModel<PbrMaterialMetallic>(scifi_helmet_path, VkModelFactory::LoadingOption::None, 0);
 
-	const std::string box_path = "../../data/models/cube/Cube.gltf";
-	global_resources.sky_box   = model_factory.GetGltfModel<PbrMaterialMetallic>(box_path, VkModelFactory::LoadingOption::None, 1);
+	//const std::string box_path = "../../data/models/cube/Cube.gltf";
+	//global_resources.sky_box   = model_factory.GetGltfModel<PbrMaterialMetallic>(box_path, VkModelFactory::LoadingOption::None, 1);
+
+	const std::string sponza_path = "../../data/models/sponza/sponza.gltf";
+	global_resources.sponza       = model_factory.GetGltfModel<NonPbrMaterial>(sponza_path, VkModelFactory::LoadingOption::None, 2);
 
 	//auto                  data = Geometry::CreateSphere(.2f, 20, 40, glm::vec4(1.f, 1.f, 1.f, 1.f));
 	//std::vector<Vertex>   vertices;
@@ -24,6 +27,9 @@ void Renderer::PrepareCommonModels()
 
 	//light_indicator = std::make_unique<VkModel<Vertex>>(vertices, indices, device_manager, window->GetSurfaceRef(), transfer_command_buffer);
 	//light_indicator->GetTransform().SetPosition(ubo_vs_scene.light_pos);
+
+
+
 }
 
 void Renderer::CommandBufferRecording()
@@ -31,13 +37,11 @@ void Renderer::CommandBufferRecording()
 	auto &graphics_command_buffers = command_manager.GetGraphicsCommandBuffers();
 
 	VkCommandManager::BeginCommandBuffers(graphics_command_buffers);
-	//============================renderpasses execution============================
-	renderpasses[0]->Execute(graphics_command_buffers);
-	//============================renderpasses execution============================
-	renderpasses[1]->Execute(graphics_command_buffers);
-	//============================renderpasses execution============================
-	renderpasses[2]->Execute(graphics_command_buffers);
-	//============================frame drawing command buffers recording end
+
+	for (size_t i = 0; i < renderpasses.size(); i++)
+	{
+		renderpasses[i]->ExecuteStatically(graphics_command_buffers);
+	}
 
 	VkCommandManager::EndCommandBuffers(graphics_command_buffers);
 }
@@ -47,8 +51,28 @@ void Renderer::CreateCommonUniformBuffer()
 	auto &buffer_factory{renderpass_manager.GetBufferFactory()};
 
 	//GPU SIDE
-	constexpr VkBufferCI::UniformBuffer unim_buf_PP;
-	global_resources.matrix_buffer_gpu = buffer_factory.ProduceBufferPtrArray(sizeof(Global::Structure::UboMatrix), Vk::BundleSize<SWAP_IMG_COUNT>, unim_buf_PP);
+	//FLLOWING SHIT IS USED BY PBR
+	//{
+	//	constexpr VkBufferCI::UniformBuffer unim_buf_PP;
+	//	global_resources.matrix_buffer_gpu = buffer_factory.ProduceBufferPtrArray(sizeof(Global::Structure::UboMatrix), Vk::BundleSize<SWAP_IMG_COUNT>, unim_buf_PP);
+	//}
+
+	//GPU SIDE
+	//{
+	//	constexpr VkBufferCI::UniformBuffer unim_buf_PP;
+	//	global_resources.matrix_buffer_gpu_MSAA = buffer_factory.ProduceBufferPtrArray(sizeof(MSAA::UBO), Vk::BundleSize<SWAP_IMG_COUNT>, unim_buf_PP);
+	//}
+
+
+	//GPU SIDE
+	{
+		constexpr VkBufferCI::UniformBuffer unim_buf_PP;
+		global_resources.matrix_buffer_gpu_defered_rendering = buffer_factory.ProduceBufferPtrArray(sizeof(DeferedRendering::UBO), Vk::BundleSize<SWAP_IMG_COUNT>, unim_buf_PP);
+	}
+
+
+
+
 }
 
 void Renderer::CreateCommonDescriptorPool()
@@ -77,23 +101,39 @@ void Renderer::CreateCommonDescriptorPool()
 
 void Renderer::InitRenderpasses()
 {
-	renderpasses.push_back(std::make_shared<PrefilterAndLUTMapGenPass>(gfx, renderpass_manager, global_resources));
-	renderpasses.back()->Init();
+	//use factory mode to optimize
+	//renderpasses.push_back(std::make_shared<PrefilterAndLUTMapGenPass>(gfx, renderpass_manager, global_resources));
+	//renderpasses.back()->Init();
 
-	renderpasses.push_back(std::make_shared<IrradianceMapGenPass>(gfx, renderpass_manager, global_resources));
-	renderpasses.back()->Init();
+	//renderpasses.push_back(std::make_shared<IrradianceMapGenPass>(gfx, renderpass_manager, global_resources));
+	//renderpasses.back()->Init();
 
-	renderpasses.push_back(std::make_shared<PbrRenderingPass>(gfx, renderpass_manager, global_resources));
-	renderpasses.back()->Init();
+	//renderpasses.push_back(std::make_shared<PbrRenderingPass>(gfx, renderpass_manager, global_resources));
+	//renderpasses.back()->Init();
+
+	//VkRenderpassBase::ProduceRenderpass<DeferedGeometryPass>(gfx, renderpass_manager, global_resources);
+
+	//renderpasses.push_back(std::make_shared<DeferedGeometryPass>(gfx, renderpass_manager, global_resources));
+	//renderpasses.back()->Init();
+
+
+	renderpasses.push_back(VkRenderpassManager::ProduceRenderpass<DeferedGeometryPass>(gfx, renderpass_manager, global_resources));
+	renderpasses.push_back(VkRenderpassManager::ProduceRenderpass<DeferedCompositionPass>(gfx, renderpass_manager, global_resources));
+
+
+
+
+	//renderpasses.push_back(VkRenderpassManager::ProduceRenderpass<MSAAPass>(gfx, renderpass_manager, global_resources));
 }
 
 void Renderer::InitSynObjects()
 {
 	const auto &syn_obj_factory{renderpass_manager.GetSynOjectFactory()};
 
-	image_available_semaphores = syn_obj_factory.GetSemaphoreBundle(MAX_FRAMES_IN_FLIGHT);
-	render_finished_semaphores = syn_obj_factory.GetSemaphoreBundle(MAX_FRAMES_IN_FLIGHT);
-	frame_fences               = syn_obj_factory.GetFenceBundle(MAX_FRAMES_IN_FLIGHT, VkSynObjectBundleBase::SyncObjCreateOption::Signaled);
+	image_available_semaphores          = syn_obj_factory.GetSemaphoreBundle(MAX_FRAMES_IN_FLIGHT);
+	graphics_render_finished_semaphores = syn_obj_factory.GetSemaphoreBundle(MAX_FRAMES_IN_FLIGHT);
+	UI_render_finished_semaphores       = syn_obj_factory.GetSemaphoreBundle(MAX_FRAMES_IN_FLIGHT);
+	frame_fences                        = syn_obj_factory.GetFenceBundle(MAX_FRAMES_IN_FLIGHT, VkSynObjectBundleBase::SyncObjCreateOption::Signaled);
 	image_fences.resize(swapchain_manager.GetSwapImageCount());
 }
 
@@ -106,12 +146,52 @@ void Renderer::UpdateUniformBuffer(size_t current_image_index)
 	//	glm::vec4 view_pos;
 	//} ubo_vs_scene;                   //用于顶点着色器的uniform buffer object
 
-	global_resources.matrix_buffer_cpu.projection = camera->GetProj();
-	//global_resources.ubo_matrix_cpu.view       = camera->GetView();
-	global_resources.matrix_buffer_cpu.view = camera->GetViewMatrix();
-	//global_resources.ubo_matrix_cpu.view_pos   = camera->GetPosition();
-	global_resources.matrix_buffer_cpu.cam_pos = camera->GetEyePos();
-	global_resources.matrix_buffer_gpu[current_image_index]->CopyFrom(&global_resources.matrix_buffer_cpu, sizeof(global_resources.matrix_buffer_cpu));
+	////FLLOWING SHIT IS USED BY PBR
+	//global_resources.matrix_buffer_cpu.projection = camera->GetProjMatrix();
+	//global_resources.matrix_buffer_cpu.view = camera->GetViewMatrix();
+	//global_resources.matrix_buffer_cpu.cam_pos = camera->GetEyePos();
+	//global_resources.matrix_buffer_gpu[current_image_index]->CopyFrom(&global_resources.matrix_buffer_cpu, sizeof(global_resources.matrix_buffer_cpu));
+
+	global_resources.matrix_buffer_cpu_defered_rendering.projection = camera->GetProjMatrix(Camera::ProjectionMtxSetting::ReversedZ); //for revered Z
+	global_resources.matrix_buffer_cpu_defered_rendering.view       = camera->GetViewMatrix();
+	global_resources.matrix_buffer_cpu_defered_rendering.view_inverse = camera->GetInverseViewMatrix();
+	global_resources.matrix_buffer_cpu_defered_rendering.cam_pos    = camera->GetEyePos();
+
+	//COPY
+	global_resources.matrix_buffer_gpu_defered_rendering[current_image_index]->CopyFrom(&global_resources.matrix_buffer_cpu_defered_rendering, sizeof(global_resources.matrix_buffer_cpu_defered_rendering));
+
+	//global_resources.matrix_buffer_cpu_MSAA.projection   = camera->GetProjMatrix(Camera::ProjectionMtxSetting::ReversedZ);        //for revered Z
+	//global_resources.matrix_buffer_cpu_MSAA.view         = camera->GetViewMatrix();
+	//global_resources.matrix_buffer_cpu_MSAA.view_inverse = camera->GetInverseViewMatrix();
+	//global_resources.matrix_buffer_cpu_MSAA.cam_pos      = camera->GetEyePos();
+
+	////COPY
+	//global_resources.matrix_buffer_gpu_MSAA[current_image_index]->CopyFrom(&global_resources.matrix_buffer_cpu_MSAA, sizeof(global_resources.matrix_buffer_cpu_MSAA));
+
+
+
+
+
+
+
+
+
+
+
+
+	//global_resources.matrix_buffer_cpu_defered_rendering.projection   = camera->GetProjMatrix(Camera::ProjectionMtxSetting::ReversedZ);        //for revered Z
+	//global_resources.matrix_buffer_cpu_defered_rendering.view         = camera->GetViewMatrix();
+	//global_resources.matrix_buffer_cpu_defered_rendering.view_inverse = camera->GetInverseViewMatrix();
+	//global_resources.matrix_buffer_cpu_defered_rendering.cam_pos      = camera->GetEyePos();
+
+	////COPY
+	//global_resources.matrix_buffer_gpu_defered_rendering[current_image_index]->CopyFrom(&global_resources.matrix_buffer_cpu_defered_rendering, sizeof(global_resources.matrix_buffer_cpu_defered_rendering));
+
+
+
+
+
+
 }
 
 void Renderer::DrawFrame(float time_diff)
@@ -262,40 +342,63 @@ void Renderer::DrawFrame(float time_diff)
 
 	//UI Describing UI
 	imgui_UI.DescribingUI();
+	imgui_UI.TestDescribingUI(camera->GetEyePos());
 
 	UpdateCamera(time_diff);
 
 	//UI command buffer recording
 	imgui_UI.RenderingCommandRecord(imageIndex);
 
-	VkSubmitInfo submit_info{};
-	submit_info.sType                               = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-	const VkSemaphore              waitSemaphores[] = {image_available_semaphores->GetOne(currentFrame)};        //上面是等待imageIndex对应的image把它占用的GPU资源释放出来，这里是因为image渲染完成后，即便GPU资源释放了，但是还需要进行presentation，很有可能presentation engine还没有完成，所以需要等待这个semaphore
-	constexpr VkPipelineStageFlags waitStages[]     = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
-	submit_info.waitSemaphoreCount                  = 1;
-	submit_info.pWaitSemaphores                     = waitSemaphores;
-	submit_info.pWaitDstStageMask                   = waitStages;
+	//**********************************************************************************************************************
+	//Graphics Rendering command buffer submitting.
+	VkSubmitInfo gfx_submit_info{};
+	gfx_submit_info.sType                                = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	const VkSemaphore              gfx_wait_semaphores[] = {image_available_semaphores->GetOne(currentFrame)};        //上面是等待imageIndex对应的image把它占用的GPU资源释放出来，这里是因为image渲染完成后，即便GPU资源释放了，但是还需要进行presentation，很有可能presentation engine还没有完成，所以需要等待这个semaphore
+	constexpr VkPipelineStageFlags gfx_wait_stages[]     = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+	gfx_submit_info.waitSemaphoreCount                   = 1;
+	gfx_submit_info.pWaitSemaphores                      = gfx_wait_semaphores;
+	gfx_submit_info.pWaitDstStageMask                    = gfx_wait_stages;
 
-	const auto graphics_command_buffer = command_manager.GetGraphicsCommandBuffers()[imageIndex];
-	const auto UI_command_buffer       = imgui_UI.GetCommandBuffer(imageIndex);
+	const auto                           graphics_command_buffer = command_manager.GetGraphicsCommandBuffers()[imageIndex];
+	const std::array<VkCommandBuffer, 1> submit_command_buffers  = {graphics_command_buffer};
 
-	//const std::array<VkCommandBuffer, 2> submit_command_buffers = {UI_command_buffer, graphics_command_buffer };
-	const std::array<VkCommandBuffer, 1> submit_command_buffers = {graphics_command_buffer};
-
-	submit_info.commandBufferCount = static_cast<uint32_t>(submit_command_buffers.size());
+	gfx_submit_info.commandBufferCount = static_cast<uint32_t>(submit_command_buffers.size());
 	//&graphics_command_buffers[imageIndex] 用的frame buffer就是swap image[imageIndex]
-	submit_info.pCommandBuffers = submit_command_buffers.data();
+	gfx_submit_info.pCommandBuffers = submit_command_buffers.data();
 
-	const VkSemaphore signalSemaphores[] = {render_finished_semaphores->GetOne(currentFrame)};        //graphics_command_buffers执行完以后会signal这里，随后presentation engine知道渲染完成可以展示了。
-	submit_info.signalSemaphoreCount     = 1;
-	submit_info.pSignalSemaphores        = signalSemaphores;
+	const VkSemaphore gfx_signal_semaphores[] = {graphics_render_finished_semaphores->GetOne(currentFrame)};        //graphics_command_buffers执行完以后会signal这里，随后ui_command_buffer就知道可以开始渲染UI了。
+	gfx_submit_info.signalSemaphoreCount      = 1;
+	gfx_submit_info.pSignalSemaphores         = gfx_signal_semaphores;
 
-	VK_CHECK_RESULT(vkQueueSubmit(device_manager.GetGraphicsQueue(), 1, &submit_info, frame_fences->GetOne(currentFrame)))
+	//VK_CHECK_RESULT(vkQueueSubmit(device_manager.GetGraphicsQueue(), 1, &gfx_submit_info, frame_fences->GetOne(currentFrame)))
+	VK_CHECK_RESULT(vkQueueSubmit(device_manager.GetGraphicsQueue(), 1, &gfx_submit_info, VK_NULL_HANDLE))
+	//**********************************************************************************************************************
+	//UI Rendering command buffer submitting.
+	VkSubmitInfo ui_submit_info{};
+	const auto   UI_command_buffer                      = imgui_UI.GetCommandBuffer(imageIndex);
+	ui_submit_info.sType                                = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	const VkSemaphore              ui_wait_semaphores[] = {graphics_render_finished_semaphores->GetOne(currentFrame)};
+	constexpr VkPipelineStageFlags ui_wait_stages[]     = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+	ui_submit_info.waitSemaphoreCount                   = 1;
+	ui_submit_info.pWaitSemaphores                      = ui_wait_semaphores;
+	ui_submit_info.pWaitDstStageMask                    = ui_wait_stages;
+
+	const std::array<VkCommandBuffer, 1> ui_submit_command_buffers = {UI_command_buffer};
+
+	ui_submit_info.commandBufferCount = static_cast<uint32_t>(ui_submit_command_buffers.size());
+	ui_submit_info.pCommandBuffers    = ui_submit_command_buffers.data();
+
+	const VkSemaphore ui_signal_semaphores[] = {UI_render_finished_semaphores->GetOne(currentFrame)};        //ui_command_buffers执行完以后会signal这里，随后presentation engine知道渲染完成可以展示了。
+	ui_submit_info.signalSemaphoreCount      = 1;
+	ui_submit_info.pSignalSemaphores         = ui_signal_semaphores;
+
+	VK_CHECK_RESULT(vkQueueSubmit(device_manager.GetGraphicsQueue(), 1, &ui_submit_info, frame_fences->GetOne(currentFrame)))
+	//**********************************************************************************************************************
 
 	VkPresentInfoKHR presentInfo{};
 	presentInfo.sType              = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
 	presentInfo.waitSemaphoreCount = 1;
-	presentInfo.pWaitSemaphores    = signalSemaphores;
+	presentInfo.pWaitSemaphores    = ui_signal_semaphores;
 
 	const VkSwapchainKHR swapChains[] = {swapchain_manager.GetSwapChain()};
 	presentInfo.pSwapchains           = swapChains;
@@ -326,7 +429,7 @@ void Renderer::DrawFrame(float time_diff)
 
 void Renderer::UpdateCamera(float dt)
 {
-	////TODO:用命令模式优化
+	//TODO:用命令模式优化
 	static bool stop_cam = false;
 
 	if (keyboard->GetIsKeyDown(GLFW_KEY_G))
@@ -388,384 +491,10 @@ void Renderer::UpdateCamera(float dt)
 	camera->ProcessMouseScroll(mouse->GetMouseScroll());
 }
 
-//void Renderer::CreateDescriptorSets()
-//{
-//	descriptor_sets_for_matrices.resize(swapchain_manager->GetSwapImageCount());
-//	{
-//		//set = 0
-//		//Descriptor sets for vs matrix
-//		for (size_t i = 0; i < swapchain_manager->GetSwapImageCount(); i++)
-//		{
-//			//ALLOCATE DESCRIPTORS
-//			VkDescriptorSetAllocateInfo allocInfoWrite{};
-//			allocInfoWrite.sType              = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-//			allocInfoWrite.descriptorPool     = descriptor_pool;
-//			allocInfoWrite.descriptorSetCount = 1;
-//			allocInfoWrite.pSetLayouts        = &descriptor_set_layout_matrices;
-//
-//			if (vkAllocateDescriptorSets(device_manager->GetLogicalDeviceRef(), &allocInfoWrite, &descriptor_sets_for_matrices[i]) != VK_SUCCESS)
-//			{
-//				throw std::runtime_error("failed to allocate descriptor sets!");
-//			}
-//			//DESCRIPTORS INFOS
-//			VkDescriptorBufferInfo buffer_info_write_subpass0{};
-//			buffer_info_write_subpass0.buffer = uniform_buffers[i].buffer;
-//			buffer_info_write_subpass0.offset = 0;
-//			buffer_info_write_subpass0.range  = sizeof(ubo_vs_scene);
-//
-//			//UPDATE DESCRIPTORS
-//			std::vector<VkWriteDescriptorSet> writeDescriptorSets;
-//			VkWriteDescriptorSet              temp_writeDescriptorSet{};
-//			/*
-//				Binding 0: VS Object matrices Uniform buffer
-//			*/
-//			temp_writeDescriptorSet.sType          = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-//			temp_writeDescriptorSet.dstSet         = descriptor_sets_for_matrices[i];
-//			temp_writeDescriptorSet.dstBinding     = 0;
-//			temp_writeDescriptorSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-//			//Otherwise, descriptorCount is one of the number of elements in pImageInfo or the number of elements in pBufferInfo
-//			temp_writeDescriptorSet.descriptorCount = 1;
-//			temp_writeDescriptorSet.pBufferInfo     = &buffer_info_write_subpass0;
-//			temp_writeDescriptorSet.dstArrayElement = 0;
-//
-//			writeDescriptorSets.push_back(temp_writeDescriptorSet);
-//
-//			vkUpdateDescriptorSets(device_manager->GetLogicalDeviceRef(), static_cast<uint32_t>(writeDescriptorSets.size()), writeDescriptorSets.data(), 0, nullptr);
-//		}
-//		// set=1
-//		// Descriptor sets for materials of models
-//
-//		for (auto &material : gltf_scene_sponza->materials)
-//		{
-//			//ALLOCATE DESCRIPTORS
-//			VkDescriptorSetAllocateInfo allocInfoWrite{};
-//			allocInfoWrite.sType              = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-//			allocInfoWrite.descriptorPool     = descriptor_pool;
-//			allocInfoWrite.descriptorSetCount = 1;
-//			allocInfoWrite.pSetLayouts        = &descriptor_set_layout_textures;
-//
-//			if (vkAllocateDescriptorSets(device_manager->GetLogicalDeviceRef(), &allocInfoWrite, &material.descriptorSet) != VK_SUCCESS)
-//			{
-//				throw std::runtime_error("failed to allocate descriptor sets!");
-//			}
-//			//DESCRIPTOR INFOS
-//
-//			//UPDATE DESCRIPTORS
-//			std::vector<VkWriteDescriptorSet> writeDescriptorSets;
-//			VkWriteDescriptorSet              temp_writeDescriptorSet{};
-//
-//			VkDescriptorImageInfo colorMapInfo  = gltf_scene_sponza->GetTextureDescriptorInfo(material.baseColorTextureIndex);
-//			VkDescriptorImageInfo normalMapInfo = gltf_scene_sponza->GetTextureDescriptorInfo(material.normalTextureIndex);
-//			/*
-//				Binding 0: color mapping
-//			*/
-//
-//			temp_writeDescriptorSet.sType           = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-//			temp_writeDescriptorSet.dstSet          = material.descriptorSet;
-//			temp_writeDescriptorSet.dstBinding      = 0;
-//			temp_writeDescriptorSet.descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-//			temp_writeDescriptorSet.pImageInfo      = &colorMapInfo;
-//			temp_writeDescriptorSet.descriptorCount = 1;
-//			temp_writeDescriptorSet.dstArrayElement = 0;
-//
-//			writeDescriptorSets.push_back(temp_writeDescriptorSet);
-//
-//			/*
-//				Binding 1: normal mapping
-//			*/
-//			temp_writeDescriptorSet.sType           = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-//			temp_writeDescriptorSet.dstSet          = material.descriptorSet;
-//			temp_writeDescriptorSet.dstBinding      = 1;
-//			temp_writeDescriptorSet.descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-//			temp_writeDescriptorSet.pImageInfo      = &normalMapInfo;
-//			temp_writeDescriptorSet.descriptorCount = 1;
-//			temp_writeDescriptorSet.dstArrayElement = 0;
-//
-//			writeDescriptorSets.push_back(temp_writeDescriptorSet);
-//
-//			//UPDATE DESCRIPTOR SET
-//			vkUpdateDescriptorSets(device_manager->GetLogicalDeviceRef(), writeDescriptorSets.size(), writeDescriptorSets.data(), 0, nullptr);
-//		}
-//	}
-//}
-//
-//void Renderer::CreateGraphicsPipelineLayout()
-//{
-//	{
-//		std::vector<VkDescriptorSetLayout> setLayouts = {descriptor_set_layout_matrices, descriptor_set_layout_textures};
-//		VkPipelineLayoutCreateInfo         pipelineLayoutInfo_subpass0{};
-//		pipelineLayoutInfo_subpass0.sType          = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-//		pipelineLayoutInfo_subpass0.setLayoutCount = setLayouts.size();
-//		pipelineLayoutInfo_subpass0.pSetLayouts    = setLayouts.data();
-//
-//		//TODO: testing multiple push constants and how to access it
-//		// We will use push constants to push the local matrices of a primitive to the vertex shader
-//		VkPushConstantRange pushConstantRange{};
-//		pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-//		pushConstantRange.size       = sizeof(glm::mat4);
-//		pushConstantRange.offset     = 0;
-//
-//		pipelineLayoutInfo_subpass0.pushConstantRangeCount = 1;                         // Optional
-//		pipelineLayoutInfo_subpass0.pPushConstantRanges    = &pushConstantRange;        // Optional
-//
-//		if (vkCreatePipelineLayout(device_manager->GetLogicalDeviceRef(), &pipelineLayoutInfo_subpass0, nullptr, &pipeline_layout) != VK_SUCCESS)
-//		{
-//			throw std::runtime_error("failed to create pipeline layout!");
-//		}
-//	}
-//
-//	{
-//		std::vector<VkDescriptorSetLayout> setLayouts = {descriptor_set_layout_matrices};
-//		VkPipelineLayoutCreateInfo         pipelineLayoutInfo_subpass0{};
-//		pipelineLayoutInfo_subpass0.sType          = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-//		pipelineLayoutInfo_subpass0.setLayoutCount = setLayouts.size();
-//		pipelineLayoutInfo_subpass0.pSetLayouts    = setLayouts.data();
-//
-//		VkPushConstantRange pushConstantRange{};
-//		pushConstantRange.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-//		pushConstantRange.size       = sizeof(glm::mat4);
-//		pushConstantRange.offset     = 0;
-//
-//		pipelineLayoutInfo_subpass0.pushConstantRangeCount = 1;                         // Optional
-//		pipelineLayoutInfo_subpass0.pPushConstantRanges    = &pushConstantRange;        // Optional
-//
-//		if (vkCreatePipelineLayout(device_manager->GetLogicalDeviceRef(), &pipelineLayoutInfo_subpass0, nullptr, &pipeline_layout_light_indicator) != VK_SUCCESS)
-//		{
-//			throw std::runtime_error("failed to create pipeline layout!");
-//		}
-//	}
-//}
-//void Renderer::CreateGraphicsPipeline()
-//{
-//	system("..\\..\\data\\shaderbat\\SceneLoadingCompile.bat");
-//
-//	VkShaderManager vertex_shader(std::string("../../data/shaders/Global/SceneLoading_vertex_shader.spv"), std::string("main"), VK_SHADER_STAGE_VERTEX_BIT, device_manager->GetLogicalDeviceRef());
-//	VkShaderManager fragment_shader(std::string("../../data/shaders/Global/SceneLoading_fragment_shader.spv"), std::string("main"), VK_SHADER_STAGE_FRAGMENT_BIT, device_manager->GetLogicalDeviceRef());
-//
-//	std::vector<VkPipelineShaderStageCreateInfo> shader_stages_create_info = {vertex_shader.GetVkPipelineShaderStageCreateInfo(), fragment_shader.GetVkPipelineShaderStageCreateInfo()};
-//
-//	//TODO:需要更多的abstraction
-//	VkVertexInputBindingDescription bindingDescription0{};
-//
-//	bindingDescription0.binding   = 0;
-//	bindingDescription0.stride    = sizeof(GltfModel::Vertex);
-//	bindingDescription0.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
-//
-//	std::vector<VkVertexInputBindingDescription> VIBDS = {bindingDescription0};
-//
-//	auto attributeDescriptions = GltfModel::Vertex::GetAttributeDescriptions();
-//
-//	VkPipelineVertexInputStateCreateInfo vertex_input_info{};
-//	vertex_input_info.sType                           = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-//	vertex_input_info.vertexBindingDescriptionCount   = (uint32_t) VIBDS.size();
-//	vertex_input_info.pVertexBindingDescriptions      = VIBDS.data();
-//	vertex_input_info.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
-//	vertex_input_info.pVertexAttributeDescriptions    = attributeDescriptions.data();
-//
-//	VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
-//	inputAssembly.sType                  = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-//	inputAssembly.topology               = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-//	inputAssembly.flags                  = 0;
-//	inputAssembly.primitiveRestartEnable = VK_FALSE;
-//
-//	VkViewport       viewport{};
-//	const VkExtent3D extend_of_swap_image = swapchain_manager->GetSwapChainImageExtent();
-//	viewport.x                            = 0.0f;
-//	viewport.y                            = (float) extend_of_swap_image.height;
-//	viewport.width                        = (float) extend_of_swap_image.width;
-//	viewport.height                       = -(float) extend_of_swap_image.height;
-//	viewport.minDepth                     = 0.0f;
-//	viewport.maxDepth                     = 1.0f;
-//
-//	VkExtent2D swapChainExtent;
-//	swapChainExtent.height = extend_of_swap_image.height;
-//	swapChainExtent.width  = extend_of_swap_image.width;
-//
-//	VkRect2D scissor{};
-//	scissor.offset = {0, 0};
-//	scissor.extent = swapChainExtent;
-//
-//	VkPipelineViewportStateCreateInfo viewportState{};
-//	viewportState.sType         = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
-//	viewportState.viewportCount = 1;
-//	viewportState.pViewports    = &viewport;
-//	viewportState.scissorCount  = 1;
-//	viewportState.pScissors     = &scissor;
-//
-//	VkPipelineRasterizationStateCreateInfo rasterizer{};
-//	rasterizer.sType                   = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
-//	rasterizer.depthClampEnable        = VK_FALSE;
-//	rasterizer.rasterizerDiscardEnable = VK_FALSE;
-//	rasterizer.polygonMode             = VK_POLYGON_MODE_FILL;
-//	rasterizer.lineWidth               = 1.f;
-//	rasterizer.cullMode                = VK_CULL_MODE_BACK_BIT;
-//	rasterizer.frontFace               = VK_FRONT_FACE_COUNTER_CLOCKWISE;
-//	rasterizer.depthBiasEnable         = VK_FALSE;
-//	rasterizer.depthBiasConstantFactor = 0.0f;        // Optional
-//	rasterizer.depthBiasClamp          = 0.0f;        // Optional
-//	rasterizer.depthBiasSlopeFactor    = 0.0f;        // Optional
-//	rasterizer.flags                   = 0;
-//
-//	VkPipelineMultisampleStateCreateInfo multisampling{};
-//	multisampling.sType                 = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
-//	multisampling.sampleShadingEnable   = VK_FALSE;
-//	multisampling.rasterizationSamples  = VK_SAMPLE_COUNT_1_BIT;
-//	multisampling.minSampleShading      = 1.0f;            // Optional
-//	multisampling.pSampleMask           = nullptr;         // Optional
-//	multisampling.alphaToCoverageEnable = VK_FALSE;        // Optional
-//	multisampling.alphaToOneEnable      = VK_FALSE;        // Optional
-//
-//	VkPipelineColorBlendAttachmentState colorBlendAttachment{};
-//	colorBlendAttachment.colorWriteMask      = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-//	colorBlendAttachment.blendEnable         = VK_FALSE;
-//	colorBlendAttachment.srcColorBlendFactor = VK_BLEND_FACTOR_ONE;         // Optional
-//	colorBlendAttachment.dstColorBlendFactor = VK_BLEND_FACTOR_ZERO;        // Optional
-//	colorBlendAttachment.colorBlendOp        = VK_BLEND_OP_ADD;             // Optional
-//	colorBlendAttachment.srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;         // Optional
-//	colorBlendAttachment.dstAlphaBlendFactor = VK_BLEND_FACTOR_ZERO;        // Optional
-//	colorBlendAttachment.alphaBlendOp        = VK_BLEND_OP_ADD;             // Optional
-//
-//	VkPipelineColorBlendStateCreateInfo colorBlending{};
-//	colorBlending.sType             = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
-//	colorBlending.logicOpEnable     = VK_FALSE;
-//	colorBlending.logicOp           = VK_LOGIC_OP_COPY;        // Optional
-//	colorBlending.attachmentCount   = 1;
-//	colorBlending.pAttachments      = &colorBlendAttachment;
-//	colorBlending.blendConstants[0] = 0.0f;        // Optional
-//	colorBlending.blendConstants[1] = 0.0f;        // Optional
-//	colorBlending.blendConstants[2] = 0.0f;        // Optional
-//	colorBlending.blendConstants[3] = 0.0f;        // Optional
-//
-//	//VkDynamicState dynamicStates[] = {
-//	//	VK_DYNAMIC_STATE_VIEWPORT,
-//	//	VK_DYNAMIC_STATE_LINE_WIDTH
-//	//};
-//
-//	//
-//	VkPipelineDynamicStateCreateInfo dynamicState{};
-//	dynamicState.sType             = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
-//	dynamicState.dynamicStateCount = 0;
-//	dynamicState.pDynamicStates    = VK_NULL_HANDLE;
-//
-//	VkPipelineDepthStencilStateCreateInfo depthStencil_supass0{};
-//	depthStencil_supass0.sType                 = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-//	depthStencil_supass0.depthTestEnable       = VK_TRUE;
-//	depthStencil_supass0.depthWriteEnable      = VK_TRUE;
-//	depthStencil_supass0.depthCompareOp        = VK_COMPARE_OP_LESS;
-//	depthStencil_supass0.back.compareOp        = VK_COMPARE_OP_LESS_OR_EQUAL;
-//	depthStencil_supass0.depthBoundsTestEnable = VK_FALSE;
-//	depthStencil_supass0.minDepthBounds        = 0.0f;        // Optional
-//	depthStencil_supass0.maxDepthBounds        = 1.0f;        // Optional
-//	depthStencil_supass0.stencilTestEnable     = VK_FALSE;
-//	//depthStencil_supass0.front = {}; // Optional
-//	//depthStencil_supass0.back = {}; // Optional
-//
-//	//typedef struct VkGraphicsPipelineCreateInfo {
-//	//	VkStructureType                                  sType;
-//	//	const void* pNext;
-//	//	VkPipelineCreateFlags                            flags;
-//	//	uint32_t                                         stageCount;
-//	//	const VkPipelineShaderStageCreateInfo* pStages;
-//	//	const VkPipelineVertexInputStateCreateInfo* pVertexInputState;
-//	//	const VkPipelineInputAssemblyStateCreateInfo* pInputAssemblyState;
-//	//	const VkPipelineTessellationStateCreateInfo* pTessellationState;
-//	//	const VkPipelineViewportStateCreateInfo* pViewportState;
-//	//	const VkPipelineRasterizationStateCreateInfo* pRasterizationState;
-//	//	const VkPipelineMultisampleStateCreateInfo* pMultisampleState;
-//	//	const VkPipelineDepthStencilStateCreateInfo* pDepthStencilState;
-//	//	const VkPipelineColorBlendStateCreateInfo* pColorBlendState;
-//	//	const VkPipelineDynamicStateCreateInfo* pDynamicState;
-//	//	VkPipelineLayout                                 layout;
-//	//	VkRenderPass                                     renderPass;
-//	//	uint32_t                                         subpass;
-//	//	VkPipeline                                       basePipelineHandle;
-//	//	int32_t                                          basePipelineIndex;
-//	//} VkGraphicsPipelineCreateInfo;
-//
-//	VkGraphicsPipelineCreateInfo pipeline_subpass0_CI{};
-//
-//	pipeline_subpass0_CI.sType      = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-//	pipeline_subpass0_CI.stageCount = (uint32_t) shader_stages_create_info.size();
-//	pipeline_subpass0_CI.pStages    = shader_stages_create_info.data();
-//
-//	pipeline_subpass0_CI.pVertexInputState   = &vertex_input_info;
-//	pipeline_subpass0_CI.pInputAssemblyState = &inputAssembly;
-//	pipeline_subpass0_CI.pViewportState      = &viewportState;
-//	pipeline_subpass0_CI.pRasterizationState = &rasterizer;
-//	pipeline_subpass0_CI.pMultisampleState   = &multisampling;
-//	pipeline_subpass0_CI.pDepthStencilState  = &depthStencil_supass0;
-//
-//	pipeline_subpass0_CI.pColorBlendState = &colorBlending;
-//	pipeline_subpass0_CI.pDynamicState    = nullptr;        // Optional
-//
-//	pipeline_subpass0_CI.layout = pipeline_layout;
-//
-//	pipeline_subpass0_CI.renderPass = render_pass;
-//	pipeline_subpass0_CI.subpass    = 0;        // index
-//
-//	pipeline_subpass0_CI.basePipelineIndex  = -1;
-//	pipeline_subpass0_CI.basePipelineHandle = VK_NULL_HANDLE;
-//
-//	for (auto &material : gltf_scene_sponza->materials)
-//	{
-//		struct MaterialSpecializationData
-//		{
-//			bool  alphaMask;
-//			float alphaMaskCutoff;
-//		} material_specialization_data;
-//
-//		material_specialization_data.alphaMask       = material.alphaMode == "MASK";
-//		material_specialization_data.alphaMaskCutoff = material.alphaCutOff;
-//
-//		//Constant fragment shader material parameters will be set using specialization constants
-//		//ENTRIEs
-//		std::vector<VkSpecializationMapEntry> specialization_map_entries;
-//		VkSpecializationMapEntry              specialization_map_entry_temp{};
-//		specialization_map_entry_temp.constantID = 0;
-//		specialization_map_entry_temp.offset     = offsetof(MaterialSpecializationData, alphaMask);
-//		specialization_map_entry_temp.size       = sizeof(MaterialSpecializationData::alphaMask);
-//		specialization_map_entries.push_back(specialization_map_entry_temp);
-//		specialization_map_entry_temp.constantID = 1;
-//		specialization_map_entry_temp.offset     = offsetof(MaterialSpecializationData, alphaMaskCutoff);
-//		specialization_map_entry_temp.size       = sizeof(MaterialSpecializationData::alphaMaskCutoff);
-//		specialization_map_entries.push_back(specialization_map_entry_temp);
-//
-//		//INFOs
-//		VkSpecializationInfo specializationInfo{};
-//		specializationInfo.mapEntryCount = static_cast<uint32_t>(specialization_map_entries.size());
-//		specializationInfo.pMapEntries   = specialization_map_entries.data();
-//		specializationInfo.dataSize      = sizeof(material_specialization_data);
-//		specializationInfo.pData         = &material_specialization_data;
-//
-//		shader_stages_create_info[1].pSpecializationInfo = &specializationInfo;
-//		// For double sided materials, culling will be disabled
-//		rasterizer.cullMode = material.doubleSided ? VK_CULL_MODE_NONE : VK_CULL_MODE_BACK_BIT;
-//
-//		if (vkCreateGraphicsPipelines(device_manager->GetLogicalDeviceRef(), pipeline_cache, 1, &pipeline_subpass0_CI, nullptr, &material.pipeline) != VK_SUCCESS)
-//		{
-//			throw std::runtime_error("failed to create graphics pipeline!");
-//		}
-//	}
-//
-//	CreateLightIndicatorPipeline();
-//}
-
 Renderer::Renderer(VkGraphicsComponent &gfx_) :
     BaseRenderer(gfx_), renderpass_manager(gfx), imgui_UI(gfx)
 {
 }
-
-//void Renderer::CreatePipelineCache()
-//{
-//	VkPipelineCacheCreateInfo pipelineCacheCreateInfo = {};
-//	pipelineCacheCreateInfo.sType                     = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
-//	if (vkCreatePipelineCache(device_manager->GetLogicalDeviceRef(), &pipelineCacheCreateInfo, nullptr, &pipeline_cache) != VK_SUCCESS)
-//	{
-//		throw std::runtime_error("failed to create Pipeline Cache!");
-//	}
-//}
-//
-//
 
 void Renderer::SetUpUserInput()
 {
@@ -779,13 +508,13 @@ void Renderer::SetUpUserInput()
 void Renderer::CreateCamera()
 {
 	camera = std::make_unique<FirstPersonCamera>();
-	camera->SetFrustum(glm::radians(60.f), swapchain_manager.GetSwapChainImageExtent().width / static_cast<float>(swapchain_manager.GetSwapChainImageExtent().height), 0.1f, 256.f);
+	camera->SetFrustum(glm::radians(60.f), static_cast<float>(swapchain_manager.GetSwapChainImageExtent().width) / static_cast<float>(swapchain_manager.GetSwapChainImageExtent().height), 0.1f, 256.f);
 }
 
 void Renderer::CreateCommomAttachmentImgs()
 {
-	CreateSwapchainImages();
-	CreateDepthImages();
+	CreateSwapchainTextures();
+	CreateDepthTextures();
 }
 //
 
@@ -796,18 +525,28 @@ void Renderer::CreateCommonTextureImgs()
 	//const VkTextureFactory::SamplerPP sampler_ppl;
 	//global_resources.hdr_environment_map = texture_factory.ProduceTexture(chiricahua_narrowPath_path,VK_FORMAT_R32G32B32A32_SFLOAT,sampler_ppl);
 }
-//
-void Renderer::CreateDepthImages()
+
+
+
+//the creation of this resources should be taken care of by render graph, which haven't been implemented.
+void Renderer::CreateDepthTextures()
 {
+
+	//Use depth stencil format, cuz we will do stencil writing.
 	const DepthImgPP depth_img_PP{gfx};
 	auto             img_view_CI = ImgViewCI::PopulateDepthImgViewCI(gfx.SwapchainMan());
-
 	global_resources.depth_attachments = renderpass_manager.GetTextureFactory().ProduceEmptyTextureArray(depth_img_PP, std::nullopt, img_view_CI, SWAP_IMG_COUNT);
+
+
 }
 
-void Renderer::CreateSwapchainImages()
+
+//the creation of this resources should be taken care of by render graph, which haven't been implemented.
+void Renderer::CreateSwapchainTextures()
 {
 	const SwapchainImgPP swap_img_PP;
 	auto                 img_view_CI       = ImgViewCI::PopulateSwapchainImgViewCI(gfx.SwapchainMan());
 	global_resources.swapchain_attachments = renderpass_manager.GetTextureFactory().ProduceEmptyTextureArray(swap_img_PP, std::nullopt, img_view_CI);
+
+
 }

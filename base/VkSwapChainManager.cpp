@@ -44,6 +44,8 @@ void VkSwapchainManager::CreateSwapChainAndSwapImages()
 		image_count = swapchain_support.capabilities.maxImageCount;
 	}
 
+	assert(Vk::SWAP_IMG_COUNT == image_count);
+
 	VkSwapchainCreateInfoKHR swapchain_createInfo{};
 	swapchain_createInfo.sType            = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
 	swapchain_createInfo.surface          = window.GetSurface();
@@ -51,7 +53,7 @@ void VkSwapchainManager::CreateSwapChainAndSwapImages()
 	swapchain_createInfo.imageFormat      = surface_format.format;
 	swapchain_createInfo.imageColorSpace  = surface_format.colorSpace;
 	swapchain_createInfo.imageExtent      = extent;
-	swapchain_createInfo.imageArrayLayers = 1;                                          //给3D应用用的，直接当成1不用管了
+	swapchain_createInfo.imageArrayLayers = 1;                                          //
 	swapchain_createInfo.imageUsage       = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;        //直接往image渲染颜色
 
 	const VkDeviceManager::QueueFamilyIndices indices            = VkDeviceManager::FindQueueFamilies(device_manager.GetPhysicalDevice(), window.GetSurface());
@@ -243,6 +245,8 @@ VkFormat VkSwapchainManager::FindDepthFormat() const
 	    {VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT},
 	    VK_IMAGE_TILING_OPTIMAL,
 	    VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT);
+
+
 }
 
 uint32_t VkSwapchainManager::GetSwapImageCount() const

@@ -39,15 +39,11 @@ std::vector<const char *> VkExtensionUtility::GetNeededGlobalInstanceExtensions(
 const std::vector<const char *> &VkExtensionUtility::GetRequiredExtensionsForAGoodDevice()
 {
 
-
-	
-
 	static std::vector<const char *> extensions{
 	    VK_KHR_SWAPCHAIN_EXTENSION_NAME,
 	    VK_KHR_MAINTENANCE1_EXTENSION_NAME,
 	    VK_KHR_MAINTENANCE2_EXTENSION_NAME,
 	    VK_KHR_MAINTENANCE3_EXTENSION_NAME,
-	    VK_KHR_SHADER_NON_SEMANTIC_INFO_EXTENSION_NAME,
 	    VK_EXT_MEMORY_BUDGET_EXTENSION_NAME,
 	    VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME,
 		VK_EXT_SHADER_VIEWPORT_INDEX_LAYER_EXTENSION_NAME,

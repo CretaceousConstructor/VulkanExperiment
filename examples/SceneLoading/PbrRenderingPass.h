@@ -1,6 +1,5 @@
 #pragma once
 
-#include "ForwardShadingPipelinePP.h"
 #include "RenderingMetaInfo.h"
 #include "VkRenderpassBase.h"
 #include "VkRenderpassManager.h"
@@ -26,7 +25,7 @@ class PbrRenderingPass : public VkRenderpassBase
   public:
 	void BeginRenderpass(const std::vector<VkCommandBuffer> &command_buffers) override final;
 	void UpdateDescriptorSets() override final;
-	void ExecuteRenderpass(const std::vector<VkCommandBuffer> &command_buffers) override final;
+	void RecordRenderpassCommandStatically(const std::vector<VkCommandBuffer> &command_buffers) override final;
 	void EndRenderpass(const std::vector<VkCommandBuffer> &command_buffers) override final;
 
   public:
@@ -35,9 +34,6 @@ class PbrRenderingPass : public VkRenderpassBase
   private:
 	void LayoutTransitionStartOfRendering(VkCommandBuffer cmd_buffer, std::optional<size_t> image_index) override final;
 	void LayoutTransitionEndOfRendering(VkCommandBuffer cmd_buffer, std::optional<size_t> image_index) override final;
-
-  private:
-	[[nodiscard]] std::vector<VkAttachmentInfo> SelectAttachments(std::optional<size_t> current_image) override final;
 
   private:
 	std::unique_ptr<VkPipelinePP> pass0_pipeline_PP;

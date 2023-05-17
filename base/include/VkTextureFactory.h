@@ -40,15 +40,18 @@ class VkTextureFactory
 
 	[[nodiscard]] std::vector<std::shared_ptr<VkTexture>> ProduceEmptyTextureArray(const SwapchainImgPP &texture_img_PP, std::optional<VkSamplerCreateInfo> sampler_CI_, std::optional<VkImageViewCreateInfo> img_view_CI_) const;
 
+
+
+
 	void ResetTexSampler(VkSamplerCreateInfo sampler_CI_, VkTexture &result_tex) const;
+	void ResetTexSampler(VkSamplerCreateInfo sampler_CI_,VkTexture::TexturePtrBundle& tex_ptr_bundle ) const;
+
+
 	void ResetTexImgView(VkImageViewCreateInfo img_view_CI_, VkTexture &result_tex) const;
 
 
 
 	void GenerateMipMaps();
-
-
-
 
   private:
 	struct InfoFromFile

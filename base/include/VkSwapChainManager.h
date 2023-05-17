@@ -2,6 +2,7 @@
 
 #include "VkDeviceManager.h"
 #include "VkWindows.h"
+#include "Vk.h"
 #include <iostream>
 #include <set>
 #include <vector>

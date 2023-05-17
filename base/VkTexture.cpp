@@ -30,9 +30,10 @@ VkWriteDescriptorSet VkTexture::GetWriteDescriptorSetInfo(uint32_t dstbinding, u
 	image_info.imageLayout = current_image_layout;
 
 	VkWriteDescriptorSet temp_write_descriptor_set{};
-	temp_write_descriptor_set.sType           = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-	temp_write_descriptor_set.dstBinding      = dstbinding;
-	temp_write_descriptor_set.descriptorType  = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	temp_write_descriptor_set.sType      = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+	temp_write_descriptor_set.dstBinding = dstbinding;
+
+	temp_write_descriptor_set.descriptorType  = image_info.sampler ? VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER : VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
 	temp_write_descriptor_set.pImageInfo      = &image_info;
 	temp_write_descriptor_set.descriptorCount = 1;
 	temp_write_descriptor_set.dstArrayElement = dstArrayElement;
@@ -108,7 +109,7 @@ void VkTexture::InsertImageMemoryBarrier(VkCommandBuffer                        
 	//    uint32_t              baseArrayLayer;
 	//    uint32_t              layerCount;
 	//} VkImageSubresourceRange;
-	const auto para_pack = tex_image->GetPP();
+	const auto image_para_pack = tex_image->GetPP();
 
 	//SUBRESOURCES RANGES
 	if (img_mem_barrier_enhanced.subresource_range.has_value())
@@ -120,16 +121,19 @@ void VkTexture::InsertImageMemoryBarrier(VkCommandBuffer                        
 	{
 		//Default setting
 		image_memory_barrier.subresourceRange.baseMipLevel = 0;
-		image_memory_barrier.subresourceRange.levelCount   = para_pack->default_image_CI.mipLevels;
+		image_memory_barrier.subresourceRange.levelCount   = image_para_pack->default_image_CI.mipLevels;
 
 		image_memory_barrier.subresourceRange.baseArrayLayer = 0;
-		image_memory_barrier.subresourceRange.layerCount     = para_pack->default_image_CI.arrayLayers;
+		image_memory_barrier.subresourceRange.layerCount     = image_para_pack->default_image_CI.arrayLayers;
 
-		//TODO:aspectMask的判断要用image_format（还是image_view_format?)
-		if (img_mem_barrier_enhanced.newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
+		//TODO:aspectMask的判断要用image_format（还是image_view_format?最后决定用image_format，因为两者差异应该不能太大，同时这里是只有指向image的指针)
+
+		const auto img_format = image_para_pack->default_image_format;
+
+		if ((img_format == VK_FORMAT_D32_SFLOAT) || (img_format == VK_FORMAT_D32_SFLOAT_S8_UINT) || (img_format == VK_FORMAT_D24_UNORM_S8_UINT))
 		{
 			image_memory_barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-			if (Vk::HasStencilComponent(para_pack->default_image_format))
+			if (Vk::HasStencilComponent(image_para_pack->default_image_format))
 			{
 				image_memory_barrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
 			}
@@ -140,10 +144,22 @@ void VkTexture::InsertImageMemoryBarrier(VkCommandBuffer                        
 			//If using a depth/stencil format with both depth and stencil components, aspectMask must include at least one of VK_IMAGE_ASPECT_DEPTH_BIT and VK_IMAGE_ASPECT_STENCIL_BIT, and can include both.
 			image_memory_barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 		}
+
+		//if (img_mem_barrier_enhanced.newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
+		//{
+		//	image_memory_barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+		//	if (Vk::HasStencilComponent(para_pack->default_image_format))
+		//	{
+		//		image_memory_barrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+		//	}
+		//}
+		//else
+		//{
+		//	//aspectMask must be only VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_ASPECT_DEPTH_BIT or VK_IMAGE_ASPECT_STENCIL_BIT if format is a color, depth-only or stencil-only format, respectively
+		//	//If using a depth/stencil format with both depth and stencil components, aspectMask must include at least one of VK_IMAGE_ASPECT_DEPTH_BIT and VK_IMAGE_ASPECT_STENCIL_BIT, and can include both.
+		//	image_memory_barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		//}
 	}
-
-
-
 
 	//这里的queue ownership transfer应该由用户负责
 	//*****************************release operation*****************************
@@ -233,7 +249,6 @@ void VkTexture::InsertImageMemoryBarrier(const Sync::VkImageMemoryBarrierEnhance
 	}
 	else
 	{
-
 		throw std::runtime_error("unknown type of command buffer.");
 	}
 
@@ -253,8 +268,8 @@ void VkTexture::InsertImageMemoryBarrier(const Sync::VkImageMemoryBarrierEnhance
 	barrier.srcAccessMask = img_mem_barrier_enhanced.srcAccessMask;
 	barrier.dstAccessMask = img_mem_barrier_enhanced.dstAccessMask;
 
-	barrier.image        = tex_image->GetImage();
-	const auto para_pack = tex_image->GetPP();
+	barrier.image              = tex_image->GetImage();
+	const auto image_para_pack = tex_image->GetPP();
 
 	if (img_mem_barrier_enhanced.subresource_range.has_value())
 	{
@@ -263,24 +278,41 @@ void VkTexture::InsertImageMemoryBarrier(const Sync::VkImageMemoryBarrierEnhance
 	else
 	{
 		barrier.subresourceRange.baseMipLevel = 0;
-		barrier.subresourceRange.levelCount   = para_pack->default_image_CI.mipLevels;
+		barrier.subresourceRange.levelCount   = image_para_pack->default_image_CI.mipLevels;
 
 		barrier.subresourceRange.baseArrayLayer = 0;
-		barrier.subresourceRange.layerCount     = para_pack->default_image_CI.arrayLayers;
+		barrier.subresourceRange.layerCount     = image_para_pack->default_image_CI.arrayLayers;
 
-		if (img_mem_barrier_enhanced.newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
+		const auto img_format = image_para_pack->default_image_format;
+
+		if ((img_format == VK_FORMAT_D32_SFLOAT) || (img_format == VK_FORMAT_D32_SFLOAT_S8_UINT) || (img_format == VK_FORMAT_D24_UNORM_S8_UINT))
 		{
 			barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
-
-			if (Vk::HasStencilComponent(para_pack->default_image_format))
+			if (Vk::HasStencilComponent(image_para_pack->default_image_format))
 			{
 				barrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
 			}
 		}
 		else
 		{
+			//aspectMask must be only VK_IMAGE_ASPECT_COLOR_BIT, VK_IMAGE_ASPECT_DEPTH_BIT or VK_IMAGE_ASPECT_STENCIL_BIT if format is a color, depth-only or stencil-only format, respectively
+			//If using a depth/stencil format with both depth and stencil components, aspectMask must include at least one of VK_IMAGE_ASPECT_DEPTH_BIT and VK_IMAGE_ASPECT_STENCIL_BIT, and can include both.
 			barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
 		}
+
+		//if (img_mem_barrier_enhanced.newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
+		//{
+		//	barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+
+		//	if (Vk::HasStencilComponent(para_pack->default_image_format))
+		//	{
+		//		barrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+		//	}
+		//}
+		//else
+		//{
+		//	barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		//}
 	}
 
 	VkPipelineStageFlags sourceStage      = img_mem_barrier_enhanced.srcStageMask;

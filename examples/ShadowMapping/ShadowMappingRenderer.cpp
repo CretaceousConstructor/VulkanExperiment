@@ -126,7 +126,7 @@ void ShadowMappingRenderer::CreateCommonUniformBuffer()
 	ubo_vs_off_screen.depth_MVP     = depthProjectionMatrix * depthViewMatrix * depthModelMatrix;
 
 	// matrix for scene pass
-	ubo_vs_scene.projection = mp_camera->GetProj();
+	ubo_vs_scene.projection = mp_camera->GetProjMatrix();
 	ubo_vs_scene.view       = mp_camera->GetView();
 	ubo_vs_scene.model      = glm::mat4(1.0f);        // = model matrix of some models
 	ubo_vs_scene.light_pos  = lightPos;
@@ -1310,7 +1310,7 @@ void ShadowMappingRenderer::UpdateUniformBufferOffscreen(uint32_t currentImage)
 
 void ShadowMappingRenderer::UpdateUniformBuffersScene(uint32_t currentImage)
 {
-	ubo_vs_scene.projection         = mp_camera->GetProj();
+	ubo_vs_scene.projection         = mp_camera->GetProjMatrix();
 	ubo_vs_scene.view               = mp_camera->GetView();
 	ubo_vs_scene.model              = glm::mat4(1.0f);
 	glm::mat4 depthProjectionMatrix = glm::perspectiveRH_ZO(glm::radians(lightFOV), 1.0f, zNear, zFar);

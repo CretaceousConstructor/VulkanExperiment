@@ -8,7 +8,7 @@
 #	define _CRT_SECURE_NO_DEPRECATE
 #endif
 
-#ifndef VK_CHECK_RESULT(f)
+#ifndef VK_CHECK_RESULT
 #	define VK_CHECK_RESULT(f)                                                        \
 		{                                                                             \
 			VkResult res = (f);                                                       \

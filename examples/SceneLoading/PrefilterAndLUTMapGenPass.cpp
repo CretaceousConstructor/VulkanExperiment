@@ -14,7 +14,8 @@ void PrefilterAndLUTMapGenPass::ResourceInit()
 	//hdr env map
 	{
 		const auto &      texture_factory = renderpass_manager.GetTextureFactory();
-		const std::string hdr_env_map_name{"../../data/textures/hdr/gcanyon_cube.ktx"};
+		//const std::string hdr_env_map_name{"../../data/textures/hdr/gcanyon_cube.ktx"};
+		const std::string hdr_env_map_name{"../../data/textures/hdr/pisa_cube.ktx"};
 
 		const auto hdr_env_map_sampler_CI{SamplerCI::PopulateCubeTexSamplerCI()};
 		const auto img_view_CI{ImgViewCI::PopulateCubeMapImgViewCI(hdr_env_map_img_format)};
@@ -121,7 +122,7 @@ void PrefilterAndLUTMapGenPass::CreateGraphicsPipeline()
 	LUT_pipeline                 = pipe_builder.BuildPipeline(*pipeline_PP);
 }
 
-void PrefilterAndLUTMapGenPass::ExecuteRenderpass(const std::vector<VkCommandBuffer> &command_buffers)
+void PrefilterAndLUTMapGenPass::RecordRenderpassCommandStatically(const std::vector<VkCommandBuffer> &command_buffers)
 {
 	ExecutePrefilteredMapGen();
 	ExecuteLUTMapGen();
@@ -460,8 +461,8 @@ void PrefilterAndLUTMapGenPass::ExecuteLUTMapGen()
 	//BEGIN RENDERING
 	vkCmdBeginRendering(LUT_gen_command_buffer, &rendering_info);
 
-	//DRAWING
 	vkCmdBindPipeline(LUT_gen_command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, LUT_pipeline);
+	//DRAWING
 	vkCmdDraw(LUT_gen_command_buffer, 3, 1, 0, 0);
 
 	//END RENDERING

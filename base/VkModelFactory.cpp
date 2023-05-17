@@ -163,14 +163,14 @@ void VkModelFactory::LoadTextures(GltfModelPack &model) const
 void VkModelFactory::LoadImages(GltfModelPack &model) const
 {
 	auto &      images        = model.images;
-	const auto &image_formats = model.image_formats;
+	auto &image_formats = model.image_formats;
 	const auto &input         = model.input;
 
 	images.resize(input.images.size());
 
 	for (size_t i = 0; i < input.images.size(); i++)
 	{
-		const auto format_of_image = image_formats[i];
+		auto& format_of_image = image_formats[i];
 
 		const tinygltf::Image &glTFImage = input.images[i];
 
@@ -179,14 +179,18 @@ void VkModelFactory::LoadImages(GltfModelPack &model) const
 		const size_t      pos            = glTFImage.uri.find_last_of('.');
 		auto              file_extension = glTFImage.uri.substr(pos + 1, glTFImage.uri.size());
 
-		//tinygltf不会帮我们加载ktx文件格式
+		//tinygltf不会帮我们加载ktx文件格式，其他格式有可能加载。
 		if ("ktx" == file_extension || (model.option & LoadingOption::LoadingImgByOurselves) || !TestIfGltfHadLoadedImg(glTFImage))
 		{
 			auto sampler_CI  = SamplerCI::PopulateTexSamplerCI();
 			auto img_view_CI = ImgViewCI::PopulateTextureImgViewCI(format_of_image);
+			if (stbi_is_hdr(path.c_str()))
+			{
+				format_of_image = VK_FORMAT_R16G16B16A16_SFLOAT;
+			}
 			images[i]        = texture_factory.ProduceTextureFromImgPath(path, format_of_image, sampler_CI, img_view_CI, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 		}
-		// 用tinygltf加载的格式。Load texture from image buffer
+		// 用tinygltf加载的格式。Load texture from given gltf image buffer
 		else
 		{
 			// Get the image data from the glTF loader

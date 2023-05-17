@@ -18,6 +18,10 @@ class VkRenderpassManager
 	VkRenderpassManager &operator=(VkRenderpassManager &&) = delete;
 
   public:
+	template <typename First, typename... Rest>
+	static std::shared_ptr<First> ProduceRenderpass(Rest &&...rest);
+
+  public:
 	void AddRenderPass(
 	    const std::string &name, uint32_t slot, const std::vector<VkAttachmentInfo> &attachments,
 	    const std::vector<VkSubpassDependency> &dependencies, const std::vector<std::shared_ptr<VkSubpassWrapper>> &subpasses);
@@ -45,12 +49,11 @@ class VkRenderpassManager
 	 */
 	//const VkSubPassFacotry &       GetSubPassFactory();
 
-
 	const VkBufferFactory &GetBufferFactory();
 
 	const VkTextureFactory &GetTextureFactory();
 
-	const VkSynObjectFactory &GetSynOjectFactory();
+	VkSynObjectFactory &GetSynOjectFactory();
 
 	const VkImageFactory &GetImageFactory();
 	const VkModelFactory &GetModelFactory();
@@ -74,3 +77,11 @@ class VkRenderpassManager
 	//std::unordered_map<uint32_t, VkRenderpassWrapper> render_passes;
 	//std::unordered_map<uint32_t, std::string>         render_passes_names;
 };
+
+template <typename First, typename... Rest>
+std::shared_ptr<First> VkRenderpassManager::ProduceRenderpass(Rest &&...rest)
+{
+	std::shared_ptr<First> result = std::make_shared<First>(rest...);
+	result->Init();
+	return result;
+}

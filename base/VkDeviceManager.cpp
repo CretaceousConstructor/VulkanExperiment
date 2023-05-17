@@ -44,10 +44,8 @@ void VkDeviceManager::PickPhysicalDevice()
 		throw std::runtime_error("failed to find a suitable GPU!");
 	}
 
-
-
 	// Use an ordered map to automatically sort candidates by increasing score
-	//目前没使用评分系统
+	// 目前暂时没使用评分系统
 	/*
 		std::multimap<int, VkPhysicalDevice> candidates;
 		for (const auto &device : devices)
@@ -56,9 +54,6 @@ void VkDeviceManager::PickPhysicalDevice()
 			candidates.insert(std::make_pair(score, device));
 		}
 	 */
-
-
-
 }
 
 int VkDeviceManager::RateDeviceSuitability(const VkPhysicalDevice &device_)
@@ -125,7 +120,7 @@ VkDeviceManager::QueueFamilyIndices VkDeviceManager::FindQueueFamilies(const VkP
 	}*/
 
 	int i = 0;
-	for (const auto &qf: queue_families)
+	for (const auto &qf : queue_families)
 	{
 		VkBool32 presentSupport = false;
 		vkGetPhysicalDeviceSurfaceSupportKHR(_device, i, surface, &presentSupport);        //必须要支持windows surface的presentation
@@ -168,22 +163,24 @@ VkDeviceManager::QueueFamilyIndices VkDeviceManager::FindQueueFamilies(const VkP
 
 bool VkDeviceManager::IsDeviceSuitable(const VkPhysicalDevice &device, const VkSurfaceKHR &surface)
 {
-	QueueFamilyIndices indices             = FindQueueFamilies(device, surface);             //
-
+	QueueFamilyIndices indices = FindQueueFamilies(device, surface);        //
 
 	//检测物理设备的设备扩展支持情况
-	bool               extensions_supported = CheckIfDeviceExtensionSupported(device);        //主要看看能不能用swapchain
+	bool extensions_supported = CheckIfDeviceExtensionSupported(device);        //主要看看能不能用swapchain
 	//TODO:检测物理设备的features的支持情况
-	bool               swap_chain_adequate   = false;
 
+	bool                     swap_chain_adequate = false;
 	VkPhysicalDeviceFeatures supported_features;
 	vkGetPhysicalDeviceFeatures(device, &supported_features);
 
 	if (extensions_supported)
 	{
 		SwapChainSupportDetails swapChainSupport = QuerySwapChainSupport(device, surface);        //询问的是物理device
-		swap_chain_adequate                        = !swapChainSupport.formats.empty() && !swapChainSupport.present_modes.empty();
+		swap_chain_adequate                      = !swapChainSupport.formats.empty() && !swapChainSupport.present_modes.empty();
 	}
+
+	bool enough_depth_formats_to_use = CheckIfRequiredDepthFomatAndFeaturesSupported(device);
+
 	/*typedef struct VkSurfaceCapabilitiesKHR {
 		uint32_t                         minImageCount; 2
 		最少支持的swapchain的图片(buffer)数量
@@ -206,7 +203,7 @@ bool VkDeviceManager::IsDeviceSuitable(const VkPhysicalDevice &device, const VkS
 			VK_IMAGE_USAGE_INPUT_ATTACHMENT_BIT = 0x00000080,  //可以用来制作VkImageView，然后可以被shader读取，或者作为frambuffer的附着
 	} VkSurfaceCapabilitiesKHR;*/
 	//记得各向异性采样的功能
-	return indices.IsComplete() && extensions_supported && swap_chain_adequate && supported_features.samplerAnisotropy;
+	return indices.IsComplete() && extensions_supported && swap_chain_adequate && supported_features.samplerAnisotropy && enough_depth_formats_to_use;
 }
 
 bool VkDeviceManager::CheckIfDeviceExtensionSupported(const VkPhysicalDevice &device)
@@ -228,6 +225,34 @@ bool VkDeviceManager::CheckIfDeviceExtensionSupported(const VkPhysicalDevice &de
 	}
 
 	return requiredExtensions.empty();        //如果是空的，则代表需要的设备扩展功能都有
+}
+
+bool VkDeviceManager::CheckIfRequiredDepthFomatAndFeaturesSupported(const VkPhysicalDevice &device)
+{
+	//// Provided by VK_VERSION_1_0
+	//typedef struct VkFormatProperties {
+	//	VkFormatFeatureFlags    linearTilingFeatures;
+	//	VkFormatFeatureFlags    optimalTilingFeatures;
+	//	VkFormatFeatureFlags    bufferFeatures;
+	//} VkFormatProperties;
+	bool result = true;
+	for (const VkFormat format : Vk::required_depth_formats)
+	{
+		VkFormatProperties props;
+		vkGetPhysicalDeviceFormatProperties(device, format, &props);
+
+		//if ((props.linearTilingFeatures & Vk::required_depth_format_feature) == Vk::required_depth_format_feature &&
+		//    ((props.optimalTilingFeatures & Vk::required_depth_format_feature) == Vk::required_depth_format_feature))
+		if ((props.optimalTilingFeatures & Vk::required_depth_format_feature) == Vk::required_depth_format_feature)
+		{
+		}
+		else
+		{
+			result = false;
+		}
+	}
+
+	return result;
 }
 
 //这个函数在swapchainmanager也需要，但是为了防止circular depen，只能重复一份
@@ -276,7 +301,7 @@ uint32_t VkDeviceManager::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFl
 
 	for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++)
 	{
-		if ((typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties)
+		if ((typeFilter & (1 << i)) && ((memProperties.memoryTypes[i].propertyFlags & properties) == properties))
 		{
 			return i;
 		}
@@ -354,8 +379,6 @@ void VkDeviceManager::CreateLogicalDeviceAndQueues()
 		queue_create_infos.push_back(queue_create_info);
 	}
 
-
-
 	/***********************************************************************/
 	VkPhysicalDeviceFeatures         enabled_gpu_features   = {};        // vulkan 1.0
 	VkPhysicalDeviceVulkan11Features enabled11_gpu_features = {};        // vulkan 1.1
@@ -376,6 +399,7 @@ void VkDeviceManager::CreateLogicalDeviceAndQueues()
 	enabled_gpu_features.multiViewport                          = VK_TRUE;
 	enabled_gpu_features.fragmentStoresAndAtomics               = VK_TRUE;
 	enabled_gpu_features.geometryShader                         = VK_TRUE;
+	enabled_gpu_features.sampleRateShading                      = VK_TRUE;
 
 	// Enable gpu features 1.1 here.   整个chain链接的开头
 	enabled11_gpu_features.sType                = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES;
@@ -400,15 +424,12 @@ void VkDeviceManager::CreateLogicalDeviceAndQueues()
 	enabled12_gpu_features.shaderOutputViewportIndex = VK_TRUE;
 	enabled12_gpu_features.shaderOutputLayer         = VK_TRUE;
 
-	enabled12_gpu_features.pNext                     = &enabled13_gpu_features;
-
-
-
+	enabled12_gpu_features.pNext = &enabled13_gpu_features;
 
 	// Enable gpu features 1.3 here.
-	enabled13_gpu_features.sType            = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES;
-	enabled13_gpu_features.pNext            = nullptr;        // todo: vulkan 1.4
-	enabled13_gpu_features.dynamicRendering = VK_TRUE;
+	enabled13_gpu_features.sType                          = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES;
+	enabled13_gpu_features.pNext                          = nullptr;        // todo: vulkan 1.4
+	enabled13_gpu_features.dynamicRendering               = VK_TRUE;
 	enabled13_gpu_features.shaderDemoteToHelperInvocation = VK_TRUE;
 
 	//*********************************************************************
@@ -439,14 +460,10 @@ void VkDeviceManager::CreateLogicalDeviceAndQueues()
 		throw std::runtime_error("failed to create logical device!");
 	}
 
-
-
 	//如果queue family有重复，这里可能会出问题
 	vkGetDeviceQueue(device, indices.graphics_family.value(), 0, &graphics_queue);
 	vkGetDeviceQueue(device, indices.present_family.value(), 0, &present_queue);
 	vkGetDeviceQueue(device, indices.transfer_family.value(), 0, &tranfer_queue);
-
-
 }
 
 VkDevice VkDeviceManager::GetLogicalDevice() const
@@ -583,4 +600,14 @@ void VkDeviceManager::CopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDevic
 
 	vkQueueSubmit(tranfer_queue, 1, &submitInfo, VK_NULL_HANDLE);
 	vkQueueWaitIdle(tranfer_queue);
+}
+
+bool VkDeviceManager::CheckIfMSAACountSupported(const VkPhysicalDevice &para_physical_device)
+{
+	//TODO: compelete this function
+
+	VkPhysicalDeviceProperties deviceProperties;        //物理器件的名字类型支持的vulkan版本
+	vkGetPhysicalDeviceProperties(para_physical_device, &deviceProperties);
+
+	return true;
 }
