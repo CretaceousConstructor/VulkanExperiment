@@ -34,7 +34,7 @@ class VkTextureFactory
 
 	[[nodiscard]] std::shared_ptr<VkTexture> ProduceTextureFromBuffer(const ImagePP &texture_img_PP, std::optional<VkSamplerCreateInfo> sampler_CI_, std::optional<VkImageViewCreateInfo> img_view_CI_, const void *const data, VkImageLayout image_layout_) const;
 
-	[[nodiscard]] std::shared_ptr<VkTexture> ProduceEmptyTexture(const ImagePP &texture_img_PP, std::optional<VkSamplerCreateInfo> sampler_CI_, std::optional<VkImageViewCreateInfo> img_view_CI_) const;
+	[[nodiscard]] std::shared_ptr<VkTexture> ProduceUnfilledTexture(const ImagePP &texture_img_PP, std::optional<VkSamplerCreateInfo> sampler_CI_, std::optional<VkImageViewCreateInfo> img_view_CI_) const;
 
 	[[nodiscard]] std::vector<std::shared_ptr<VkTexture>> ProduceEmptyTextureArray(const ImagePP &texture_img_PP, std::optional<VkSamplerCreateInfo> sampler_CI_, std::optional<VkImageViewCreateInfo> img_view_CI_, uint32_t bundle_size) const;
 
@@ -89,7 +89,7 @@ class VkTextureFactory
 template <typename ColorChannel>
 std::shared_ptr<VkGeneralPurposeImage> VkTextureFactory::InitImgFromHostBuffer(const ImagePP &texture_img_PP, const void *const data, VkImageLayout target_layout) const
 {
-	assert(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL == texture_img_PP.default_final_layout);
+	assert(VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL == texture_img_PP.default_layout_right_aft_creation);
 	std::shared_ptr<VkGeneralPurposeImage> texture_image;
 
 	const VkDeviceSize upload_size = texture_img_PP.default_image_extent.height * texture_img_PP.default_image_extent.width * 4 * sizeof(ColorChannel);

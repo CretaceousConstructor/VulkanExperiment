@@ -19,9 +19,31 @@ class VkRenderpassBase
 	void Init();
 	void ExecuteStatically(const std::vector<VkCommandBuffer> &command_buffers);
 
-  public:
-	//template <typename First, typename... Rest>
-	//static std::shared_ptr<First> ProduceRenderpass(Rest &&...rest);
+public:
+	//void InitRG();
+
+	virtual void ResourceInitRG(){} ;
+
+	virtual void CreateLocalCommandBuffersRG(){} ;
+	virtual void CreateDescriptorSetPoolsRG(){} ;
+	virtual void CreateDescriptorSetLayoutRG(){} ;
+	virtual void CreateDescriptorSetsRG(){}      ;
+
+	virtual void CreateAttachmentsRG(std::vector<VkAttachmentInfo> attachment_infos){};
+	virtual void CreateUniformBufferDescriptorsRG(std::vector<VkUniBufUsageInfo> attachment_infos){};
+
+
+	virtual void CreateGraphicsPipelineLayoutRG(){} ;
+	virtual void CreateShadersRG(){}                ;
+	virtual void CreateGraphicsPipelineRG(){}       ;
+
+public:
+
+	virtual void BeginRenderpassRG(const VkCommandBuffer command_buffers) {}
+	virtual void UpdateDescriptorSetsRG() {}
+	virtual void RecordRenderpassCommandRG(const VkCommandBuffer command_buffers) {}
+	virtual void EndRenderpassRG(const VkCommandBuffer command_buffers) {}
+
 
   public:
 	enum class Type
@@ -32,14 +54,15 @@ class VkRenderpassBase
 		Unknown
 	};
 
+  public:
+	virtual void UpdateResources(size_t current_image) = 0;
+
   protected:
 	virtual void BeginRenderpass(const std::vector<VkCommandBuffer> &command_buffers)             = 0;
 	virtual void UpdateDescriptorSets()                                                           = 0;
 	virtual void RecordRenderpassCommandStatically(const std::vector<VkCommandBuffer> &command_buffers) = 0;
 	virtual void EndRenderpass(const std::vector<VkCommandBuffer> &command_buffers)               = 0;
 
-  public:
-	virtual void UpdateResources(size_t current_image) = 0;
 
   protected:
 	virtual void LayoutTransitionStartOfRendering(VkCommandBuffer cmd_buffer, std::optional<size_t> image_index) = 0;

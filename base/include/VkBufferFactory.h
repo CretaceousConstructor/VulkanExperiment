@@ -19,6 +19,12 @@ class VkBufferFactory
 	template <typename CI>
 	[[nodiscard]] std::shared_ptr<VkBufferBase> ProduceBuffer(VkDeviceSize N, const CI &para_pack, const void *const data = nullptr) const;
 
+	template <typename CI>
+	[[nodiscard]] VkBufferBase::BufferPtrBundle ProduceBufferPtrArray(VkDeviceSize N, uint32_t bundle_size, const CI &para_pack) const;
+
+
+
+
 	//VkBufferBundle is copyable without risks of memory leak
 	//template <typename CI>
 	//[[nodiscard]] VkBufferBundle ProduceBufferBundle(VkDeviceSize N, uint32_t bundle_size, const CI &para_pack) const;
@@ -26,11 +32,6 @@ class VkBufferFactory
 	//template <typename CI>
 	//[[nodiscard]] std::shared_ptr<VkBufferBundle> ProduceBufferBundlePtr(VkDeviceSize N, uint32_t bundle_size, const CI &para_pack) const;
 
-
-
-
-	template <typename CI>
-	[[nodiscard]] VkBufferBase::BufferPtrBundle ProduceBufferPtrArray(VkDeviceSize N, uint32_t bundle_size, const CI &para_pack) const;
 
 
 	//template <typename CI>
@@ -41,7 +42,7 @@ class VkBufferFactory
 	[[nodiscard]] VkBuffer BuildBuffer(const CI &para_pack, VkDeviceSize buffer_size) const;
 	template <typename CI>
 	[[nodiscard]] VkDeviceMemory BuildMemory(const CI &para_pack, VkBuffer buffer, VkDeviceSize &mem_requirement_size) const;
-	void                         BindBufferToMemo(VkBuffer buffer, VkDeviceMemory memory, VkDeviceSize offset = 0) const;
+	void                         BindBufferToMem(VkBuffer buffer, VkDeviceMemory memory, VkDeviceSize offset = 0) const;
 
   private:
 	VkGraphicsComponent &  gfx;
@@ -57,7 +58,7 @@ std::shared_ptr<VkBufferBase> VkBufferFactory::ProduceBuffer(VkDeviceSize N, con
 
 	const auto uniform_buffer = BuildBuffer<CI>(para_pack, N);
 	const auto buffer_memory  = BuildMemory<CI>(para_pack, uniform_buffer, mem_required_size);
-	BindBufferToMemo(uniform_buffer, buffer_memory);
+	BindBufferToMem(uniform_buffer, buffer_memory);
 	auto result = std::make_shared<VkBufferBase>(gfx, uniform_buffer, buffer_memory, N, mem_required_size);
 
 	if (para_pack.memory_properties & VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT) //host visiable则可以用vkMapMemory函数

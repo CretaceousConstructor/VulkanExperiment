@@ -401,6 +401,7 @@ void VkDeviceManager::CreateLogicalDeviceAndQueues()
 	enabled_gpu_features.geometryShader                         = VK_TRUE;
 	enabled_gpu_features.sampleRateShading                      = VK_TRUE;
 
+
 	// Enable gpu features 1.1 here.   整个chain链接的开头
 	enabled11_gpu_features.sType                = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_1_FEATURES;
 	enabled11_gpu_features.pNext                = &enabled12_gpu_features;

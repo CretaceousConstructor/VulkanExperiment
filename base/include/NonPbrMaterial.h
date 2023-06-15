@@ -46,13 +46,14 @@ class NonPbrMaterial : public VkMaterial
 	//***********************************************************************
 	[[nodiscard]] constexpr uint32_t GetRequiredDescirpotrCount() const override;
 
-	VkDescriptorSet AllocateDescriptorSetAndUpdate(VkDescriptorPool descriptor_pool, VkDescriptorSetLayout desc_set_layout, const std::vector<Gltf::Texture> &textures, const std::vector<std::shared_ptr<VkTexture>> &images) override;
+	VkDescriptorSet AllocateDescriptorSetAndUpdate(VkDescriptorPool descriptor_pool, VkDescriptorSetLayout desc_set_layout, const std::vector<Gltf::Texture> &textures, const std::vector<std::shared_ptr<VkTexture>> &images,Vk::ModelLoadingOption option) override;
 	void ModifyPipelineCI(VkPipelinePP &pipeline_CI) override;
 
 	static VkDescriptorSetLayout GetDescriptorSetLayout();
+	static VkDescriptorSetLayout GetDescriptorSetLayoutBindlessRendering();
 
   public:
-	static VkDescriptorSetLayout CreateDesciptorSetLayout(const VkDeviceManager &device_manager);
+	//static VkDescriptorSetLayout CreateDesciptorSetLayout(const VkDeviceManager &device_manager);
 	static VkPipelineLayout      CreatePipelineLayout(const VkDeviceManager &device_manager, const std::vector<VkDescriptorSetLayout> &set_layouts, const std::vector<VkPushConstantRange> &push_constant_ranges);
 
 
@@ -63,6 +64,10 @@ class NonPbrMaterial : public VkMaterial
 
   private:
 	inline static VkDescriptorSetLayout desc_layout{nullptr};
+	inline static VkDescriptorSetLayout desc_layout_bindless_rendering{nullptr};
+
+
+
 	//inline static VkPipelineLayout      pipe_layout{nullptr};
 
   private:

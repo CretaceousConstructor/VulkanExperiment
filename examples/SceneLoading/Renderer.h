@@ -8,14 +8,15 @@
 #include "RenderingMetaInfo.h"
 #include "VkRenderpassManager.h"
 #include "VkImgui.h"
+#include "RenderGraph.h"
 #include "Geometry.h"
 
-#include "IrradianceMapGenPass.h"
-#include "PrefilterAndLUTMapGenPass.h"
-#include "PbrRenderingPass.h"
+//#include "IrradianceMapGenPass.h"
+//#include "PrefilterAndLUTMapGenPass.h"
+//#include "PbrRenderingPass.h"
 #include "DeferedGeometryPass.h"
 #include "DeferedCompositionPass.h"
-#include "MSAAPass.h"
+//#include "MSAAPass.h"
 
 #include "VkMath.h"
 #include "VkRenderpassBase.h"
@@ -63,6 +64,10 @@ class Renderer : public BaseRenderer
   public:
 	//========================================
 	void DrawFrame(float time_diff) override;
+
+	void DrawFrame();
+
+
 	void UpdateCamera(float dt) override;
 
   private:
@@ -97,6 +102,10 @@ private:
 	VkImgui imgui_UI;
 	//GLOBAL RESOURCES
 	Global::Resources global_resources{};
+
+
+	int cross_frame_resources = 0;
+	int persistent_resources  = 0;
 
 
 };

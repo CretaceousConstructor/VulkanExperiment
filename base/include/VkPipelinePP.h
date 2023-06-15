@@ -1,6 +1,6 @@
 #pragma once
 #include "Vk.h"
-#include "VkAttachmentInfo.h"
+#include "VkRsrcUsageInfo.h"
 #include "VkGraphicsComponent.h"
 #include "VkShaderManager.h"
 #include <algorithm>

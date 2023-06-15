@@ -42,7 +42,7 @@ void IrradianceMapGenPass::ResourceInit()
 		auto depth_img_view_CI                        = ImgViewCI::PopulateDepthImgViewCI(gfx.SwapchainMan());
 		depth_img_view_CI.viewType                    = VK_IMAGE_VIEW_TYPE_CUBE;
 		depth_img_view_CI.subresourceRange.layerCount = 6;
-		depth_attachment                              = texture_factory.ProduceEmptyTexture(depth_img_PP, std::nullopt, depth_img_view_CI);
+		depth_attachment                              = texture_factory.ProduceUnfilledTexture(depth_img_PP, std::nullopt, depth_img_view_CI);
 	}
 }
 
@@ -58,7 +58,7 @@ void IrradianceMapGenPass::CreateDescriptorSetPools()
 	const std::vector desc_pool_sizes{
 	    Vk::GetOneDescriptorPoolSizeDescription(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, Vk::DescriptorCount<1>),
 	    Vk::GetOneDescriptorPoolSizeDescription(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, Vk::DescriptorCount<1>)};
-	const auto desc_pool_CI = Vk::GetDescriptorPoolCI(desc_pool_sizes, Vk::SetCount<1> * 2);
+	const auto desc_pool_CI = Vk::GetDescriptorPoolCI(desc_pool_sizes, Vk::SetCount<1> * 2 );
 
 	local_descriptor_pool = renderpass_manager.GetDescriptorManagerV0().ProduceDescriptorPoolUnsafe(desc_pool_CI);
 }
@@ -70,7 +70,7 @@ void IrradianceMapGenPass::CreateDescriptorSetLayout()
 	const auto        binding0{Vk::GetDescriptorSetLayoutBinding(Vk::Binding<0>, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)};                  //matrix
 	const auto        binding1{Vk::GetDescriptorSetLayoutBinding(Vk::Binding<1>, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)};        //equirectangular_map
 	const std::vector bindings{binding0, binding1};
-	const auto        desc_set_layout_CI = Vk::GetDescriptorSetLayoutCI(bindings);
+	const auto        desc_set_layout_CI = Vk::GetDescriptorSetLayoutCI(bindings );
 
 	local_descriptor_set_layout = descriptor_manager.ProduceDescriptorSetLayoutUnsafe(desc_set_layout_CI);
 }
@@ -83,7 +83,7 @@ void IrradianceMapGenPass::CreateDescriptorSets()
 
 void IrradianceMapGenPass::CreateAttachments()
 {
-	const VkAttachmentInfo::Memento color_attachment_info_meme{
+	const VkAttachmentInfo::WithinPass color_attachment_info_meme{
 	    .format           = VK_FORMAT_R32G32B32A32_SFLOAT,
 	    .attachment_index = Vk::AttachmentIndex<0>,
 
@@ -101,7 +101,7 @@ void IrradianceMapGenPass::CreateAttachments()
 	color_attachment_info = VkAttachmentInfo(color_attachment_info_meme, global_resources.irradiance_map);
 
 	//Depth attachment index 1
-	const VkAttachmentInfo::Memento depth_attachment_info_meme{
+	const VkAttachmentInfo::WithinPass depth_attachment_info_meme{
 	    .format           = swapchain_manager.FindDepthFormat(),
 	    .attachment_index = Vk::AttachmentIndex<1>,
 
@@ -338,11 +338,11 @@ void IrradianceMapGenPass::ResourcesInitIrradianceMapGen() const
 
 		texture_img_PP.default_image_CI.usage       = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
 		texture_img_PP.default_image_CI.arrayLayers = 6;
-		texture_img_PP.default_final_layout         = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;        //TODO: check layout transition after creation of this image
+		texture_img_PP.default_layout_right_aft_creation         = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;        //TODO: check layout transition after creation of this image
 
 		//const auto sampler_CI  = SamplerCI::PopulateTexSamplerCI();
 		const auto img_view_CI          = ImgViewCI::PopulateCubeMapImgViewCI(VK_FORMAT_R32G32B32A32_SFLOAT);
-		global_resources.irradiance_map = renderpass_manager.GetTextureFactory().ProduceEmptyTexture(texture_img_PP, std::nullopt, img_view_CI);
+		global_resources.irradiance_map = renderpass_manager.GetTextureFactory().ProduceUnfilledTexture(texture_img_PP, std::nullopt, img_view_CI);
 	}
 }
 

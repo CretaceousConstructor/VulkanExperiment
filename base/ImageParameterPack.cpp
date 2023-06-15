@@ -24,7 +24,7 @@ DepthImgPP::DepthImgPP(const VkGraphicsComponent &gfx_, VkImageCreateFlags flags
 	default_image_CI.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 	//*************************************
 	default_image_mem_prop_flag = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
-	default_final_layout        = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+	default_layout_right_aft_creation        = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 	//*************************************
 }
 
@@ -47,7 +47,7 @@ DepthImgPP::DepthImgPP(const VkGraphicsComponent &gfx_, const VkFormat format_, 
 	default_image_CI.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 	//*************************************
 	default_image_mem_prop_flag = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
-	default_final_layout        = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+	default_layout_right_aft_creation        = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 	//*************************************
 }
 
@@ -86,7 +86,7 @@ TextureImgPP::TextureImgPP(const VkFormat format_, const VkExtent3D &image_exten
 	default_image_CI.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 	//*************************************
 	default_image_mem_prop_flag = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
-	default_final_layout        = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+	default_layout_right_aft_creation        = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
 }
 
 std::shared_ptr<ImagePP> TextureImgPP::Clone() const
@@ -101,7 +101,7 @@ SwapchainImgPP::SwapchainImgPP()
 	default_image_CI.mipLevels   = 1;
 	//*************************************
 	//default_final_layout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-	default_final_layout = VK_IMAGE_LAYOUT_UNDEFINED;
+	default_layout_right_aft_creation = VK_IMAGE_LAYOUT_UNDEFINED;
 }
 
 std::shared_ptr<ImagePP> SwapchainImgPP::Clone() const

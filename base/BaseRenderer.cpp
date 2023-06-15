@@ -20,7 +20,6 @@ void BaseRenderer::MaterialRegistration() const
 	VkMaterial::Register<NonPbrMaterial>(gfx);
 
 
-
 }
 
 void BaseRenderer::MaterialUnRegistration() const

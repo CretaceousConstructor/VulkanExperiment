@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Vk.h"
 #include "RenderingMetaInfo.h"
 #include "VkRenderpassBase.h"
 #include "VkRenderpassManager.h"
+#include "VkRsrcUsageInfo.h"
 #include "VkShaderWrapper.h"
 
 class DeferedGeometryPass : public VkRenderpassBase
@@ -25,6 +25,22 @@ class DeferedGeometryPass : public VkRenderpassBase
 	void CreateGraphicsPipeline() override final;
 
   public:
+	void ResourceInitRG() override;
+	void CreateLocalCommandBuffersRG() override;
+	void CreateDescriptorSetPoolsRG() override final;
+	void CreateDescriptorSetLayoutRG() override final;
+	void CreateDescriptorSetsRG() override final;
+
+	void CreateAttachmentsRG(std::vector<VkAttachmentInfo> attachment_infos_) override;
+	void CreateUniformBufferDescriptorsRG(std::vector<VkUniBufUsageInfo> uf_infos_) override;
+
+  public:
+	void BeginRenderpassRG(const VkCommandBuffer command_buffers) override;
+	void RecordRenderpassCommandRG(const VkCommandBuffer command_buffers) override;
+	void UpdateDescriptorSetsRG() override;
+	void EndRenderpassRG(const VkCommandBuffer command_buffers) override;
+
+  public:
 	void BeginRenderpass(const std::vector<VkCommandBuffer> &command_buffers) override final;
 	void UpdateDescriptorSets() override final;
 	void RecordRenderpassCommandStatically(const std::vector<VkCommandBuffer> &command_buffers) override final;
@@ -39,6 +55,7 @@ class DeferedGeometryPass : public VkRenderpassBase
 
   private:
 	std::unique_ptr<VkPipelinePP> pipeline_PP;
+
   private:
 	//Shaders
 	std::shared_ptr<VkShaderWrapper> defefered_geometry_vert_shader;
@@ -51,11 +68,16 @@ class DeferedGeometryPass : public VkRenderpassBase
 	VkAttachmentInfo::Bundle G_albedo_attachments_infos{};
 	VkAttachmentInfo::Bundle G_posZGrad_attachments_infos{};
 	VkAttachmentInfo::Bundle G_depth_attachments_infos{};
+
+	std::vector<VkAttachmentInfo>    attachment_infos;
+	std::vector<VkUniBufUsageInfo> uniform_buffer_infos;
+
   private:
 	//Descriptor related
 	VkDescriptorPool                            local_descriptor_pool{};
 	VkDescriptorSetLayout                       local_descriptor_set_layout{};
 	VkDescriptorSetFactory::DescriptorSetBundle descriptor_set_bundle;
+
   private:
 	const VkDeviceManager &   device_manager;
 	const VkSwapchainManager &swapchain_manager;

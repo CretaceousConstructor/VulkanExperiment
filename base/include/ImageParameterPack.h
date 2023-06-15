@@ -16,7 +16,7 @@ class ImagePP
 	[[nodiscard]] virtual std::shared_ptr<ImagePP> Clone() const = 0;
 
 	VkImageCreateInfo        default_image_CI{};
-	VkImageLayout            default_final_layout{};
+	VkImageLayout            default_layout_right_aft_creation{};
 	VkMemoryPropertyFlags default_image_mem_prop_flag{};
 
 	VkExtent3D default_image_extent{};

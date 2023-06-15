@@ -9,8 +9,9 @@ class KeyBoardInputManager
   public:
 	// Takes a list of which keys to keep state for
 	KeyBoardInputManager(std::vector<int> keys_to_be_monitored);
-
 	~KeyBoardInputManager();
+
+
 
 	bool GetIsKeyDown(int key);
 	// See _isEnabled for details

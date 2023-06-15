@@ -8,19 +8,21 @@
 #include "VkImageBundle.h"
 #include "VkMetaInfo.h"
 #include "VkModel.h"
+
+
+
+
+
 namespace DeferedRendering
 {
 constexpr VkFormat G_position_format{VK_FORMAT_R16G16B16A16_SFLOAT};
 constexpr VkFormat G_normal_format{VK_FORMAT_R16G16B16A16_SFLOAT};
 constexpr VkFormat G_albedo_format{VK_FORMAT_R8G8B8A8_SRGB};
 constexpr VkFormat G_depth_format{VK_FORMAT_D32_SFLOAT};
-constexpr VkFormat G_posZGrad_format{VK_FORMAT_R16G16_SFLOAT};
+constexpr VkFormat G_posZgrad_format{VK_FORMAT_R16G16_SFLOAT};
 
 constexpr VkFormat depth_stencil_format{VK_FORMAT_D32_SFLOAT_S8_UINT};
-
 constexpr VkSampleCountFlagBits MSAA_sample_count{VK_SAMPLE_COUNT_4_BIT};
-
-
 
 
 
@@ -34,12 +36,43 @@ struct UBO
 		glm::float3 color;
 		float       radius;
 	};
+
 	glm::mat4 projection{};
 	glm::mat4 view{};
 	glm::mat4 view_inverse{};
 	Light     lights[6];
 	glm::vec3 cam_pos{};
 };
+
+
+
+struct UniformBuffer
+{
+	struct Light
+	{
+		glm::float4 position;
+		glm::float3 color;
+		float       radius;
+	};
+	glm::mat4 projection{};
+	glm::mat4 view{};
+	glm::mat4 view_inverse{};
+	Light     lights[6];
+	glm::vec3 cam_pos{};
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 }        // namespace DeferedRendering
 

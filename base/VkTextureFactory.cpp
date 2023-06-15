@@ -63,11 +63,11 @@ void VkTextureFactory::ProcessViewAndSampler(std::optional<VkSamplerCreateInfo> 
 }
 
 //produce a texture without actual contents in it.
-std::shared_ptr<VkTexture> VkTextureFactory::ProduceEmptyTexture(const ImagePP &texture_img_PP, std::optional<VkSamplerCreateInfo> sampler_CI_, std::optional<VkImageViewCreateInfo> img_view_CI_) const
+std::shared_ptr<VkTexture> VkTextureFactory::ProduceUnfilledTexture(const ImagePP &texture_img_PP, std::optional<VkSamplerCreateInfo> sampler_CI_, std::optional<VkImageViewCreateInfo> img_view_CI_) const
 {
 	std::string image_path = "null";
 	auto        tex_img    = std::dynamic_pointer_cast<VkGeneralPurposeImage>(img_factory.ProduceImage(texture_img_PP));
-	auto        result     = std::make_shared<VkTexture>(gfx, image_path, tex_img, texture_img_PP.default_final_layout);
+	auto        result     = std::make_shared<VkTexture>(gfx, image_path, tex_img, texture_img_PP.default_layout_right_aft_creation);
 
 	ProcessViewAndSampler(sampler_CI_, img_view_CI_, *result, *tex_img);
 
@@ -80,7 +80,7 @@ std::vector<std::shared_ptr<VkTexture>> VkTextureFactory::ProduceEmptyTextureArr
 
 	for (uint32_t i = 0; i < bundle_size; i++)
 	{
-		result.push_back(ProduceEmptyTexture(texture_img_PP, sampler_CI_, img_view_CI_));
+		result.push_back(ProduceUnfilledTexture(texture_img_PP, sampler_CI_, img_view_CI_));
 	}
 
 	return result;
@@ -103,7 +103,7 @@ std::vector<std::shared_ptr<VkTexture>> VkTextureFactory::ProduceEmptyTextureArr
 
 		//tex_img->TransitionImageLayout(VK_IMAGE_LAYOUT_UNDEFINED, para_pack_ptr->default_final_layout, VkDeviceManager::CommandPoolType::graphics_command_pool, para_pack_ptr->default_image_CI.mipLevels, para_pack_ptr->default_image_CI.arrayLayers);
 
-		const auto tex = std::make_shared<VkTexture>(gfx, image_path, tex_img, texture_img_PP.default_final_layout);
+		const auto tex = std::make_shared<VkTexture>(gfx, image_path, tex_img, texture_img_PP.default_layout_right_aft_creation);
 
 		ProcessViewAndSampler(sampler_CI_, img_view_CI_, *tex, *tex_img);
 

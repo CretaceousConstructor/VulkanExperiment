@@ -127,7 +127,7 @@ class VkDescriptorManager
 	static VkDescriptorSetLayoutBinding    GetDescriptorLayoutBindingDescriptions(uint32_t binding, VkDescriptorType type, VkShaderStageFlags stage_flags, uint32_t descriptor_count = 1);
 	static VkDescriptorSetLayoutCreateInfo GetDescriptorSetLayoutCI(const std::vector<VkDescriptorSetLayoutBinding> &bindings);
 
-	static VkDescriptorSetAllocateInfo GetDescriptorAllocateInfo(VkDescriptorPool descriptorPool, const VkDescriptorSetLayout &SetLayout);
+	static VkDescriptorSetAllocateInfo GetDescriptorAllocateInfo(VkDescriptorPool descriptorPool, const VkDescriptorSetLayout &SetLayout,const void* pNext=nullptr);
 	static VkDescriptorSetAllocateInfo GetDescriptorAllocateInfo(VkDescriptorPool descriptorPool, const std::vector<VkDescriptorSetLayout> &SetLayouts);
 	//********************************************************************
 
@@ -200,7 +200,7 @@ inline void VkDescriptorManager::UpdateDescriptorSet<VkBufferBase::BufferPtrBund
 
 	for (size_t i = 0; i < set_bundle.size(); i++)
 	{
-		auto write_set   = resource[i]->GetWriteDescriptorSetInfo(dstbinding);
+		auto write_set   = resource[i]->GetWriteDescriptorSetInfo(dstbinding,dstArrayElement);
 		write_set.dstSet = set_bundle[i];
 		vkUpdateDescriptorSets(device, static_cast<uint32_t>(1), &write_set, 0, nullptr);
 	}
@@ -210,7 +210,7 @@ inline void VkDescriptorManager::UpdateDescriptorSet<VkBufferBase::BufferPtrBund
 template <>
 inline void VkDescriptorManager::UpdateDescriptorSet<VkBufferBase>(const VkDevice device, VkBufferBase &resource, const VkDescriptorSet set, uint32_t dstbinding, uint32_t dstArrayElement)
 {
-	auto write_set   = resource.GetWriteDescriptorSetInfo(dstbinding);
+	auto write_set   = resource.GetWriteDescriptorSetInfo(dstbinding,dstArrayElement);
 	write_set.dstSet = set;
 	vkUpdateDescriptorSets(device, static_cast<uint32_t>(1), &write_set, 0, nullptr);
 }
@@ -222,7 +222,7 @@ inline void VkDescriptorManager::UpdateDescriptorSet<VkTexture>(const VkDevice d
 
 	for (size_t img_indx = 0; img_indx < set_bundle.size(); img_indx++)
 	{
-		auto write_set   = resource.GetWriteDescriptorSetInfo(dstbinding);
+		auto write_set   = resource.GetWriteDescriptorSetInfo(dstbinding,dstArrayElement);
 		write_set.dstSet = set_bundle[img_indx];
 		vkUpdateDescriptorSets(device, static_cast<uint32_t>(1), &write_set, 0, nullptr);
 	}
@@ -232,7 +232,7 @@ inline void VkDescriptorManager::UpdateDescriptorSet<VkTexture>(const VkDevice d
 template <>
 inline void VkDescriptorManager::UpdateDescriptorSet<VkTexture>(const VkDevice device, VkTexture &resource, const VkDescriptorSet set, uint32_t dstbinding, uint32_t dstArrayElement)
 {
-	auto write_set   = resource.GetWriteDescriptorSetInfo(dstbinding);
+	auto write_set   = resource.GetWriteDescriptorSetInfo(dstbinding,dstArrayElement);
 	write_set.dstSet = set;
 	vkUpdateDescriptorSets(device, static_cast<uint32_t>(1), &write_set, 0, nullptr);
 }
@@ -250,7 +250,7 @@ inline void VkDescriptorManager::UpdateDescriptorSet<VkTexture::TexturePtrBundle
 
 	for (size_t img_indx = 0; img_indx < set_bundle.size(); img_indx++)
 	{
-		auto write_set   = resource[img_indx]->GetWriteDescriptorSetInfo(dstbinding);
+		auto write_set   = resource[img_indx]->GetWriteDescriptorSetInfo(dstbinding,dstArrayElement);
 		write_set.dstSet = set_bundle[img_indx];
 		vkUpdateDescriptorSets(device, static_cast<uint32_t>(1), &write_set, 0, nullptr);
 	}

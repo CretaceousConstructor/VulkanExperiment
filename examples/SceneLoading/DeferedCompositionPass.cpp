@@ -64,7 +64,7 @@ void DeferedCompositionPass::ResourceInit()
 		//这个VK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT多数在移动端才能被支持，这里如果加这个flag就创建不了
 		//texture_img_PP.default_image_mem_prop_flag = VK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT;
 
-		texture_img_PP.default_final_layout = VK_IMAGE_LAYOUT_UNDEFINED;        //TODO: check layout transition after creation of this image
+		texture_img_PP.default_layout_right_aft_creation = VK_IMAGE_LAYOUT_UNDEFINED;        //TODO: check layout transition after creation of this image
 
 		//const auto sampler_CI  = SamplerCI::PopulateTexSamplerCI();
 		const auto img_view_CI        = ImgViewCI::PopulateTextureImgViewCI(swapchain_manager.GetSwapChainImageFormat());
@@ -80,7 +80,7 @@ void DeferedCompositionPass::ResourceInit()
 		//这个VK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT多数在移动端才能被支持，这里如果加这个flag就创建不了
 		//texture_img_PP.default_image_mem_prop_flag = VK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT;
 
-		texture_img_PP.default_final_layout = VK_IMAGE_LAYOUT_UNDEFINED;        //TODO: check layout transition after creation of this image
+		texture_img_PP.default_layout_right_aft_creation = VK_IMAGE_LAYOUT_UNDEFINED;        //TODO: check layout transition after creation of this image
 		//const auto sampler_CI  = SamplerCI::PopulateTexSamplerCI();
 		const auto img_view_CI                = ImgViewCI::PopulateDepthImgViewCI(DeferedRendering::depth_stencil_format);
 		multisampled_depth_stencil_attachment = renderpass_manager.GetTextureFactory().ProduceEmptyTextureArray(texture_img_PP, std::nullopt, img_view_CI, Vk::SWAP_IMG_COUNT);
@@ -96,7 +96,7 @@ void DeferedCompositionPass::CreateDescriptorSetPools()
 	const std::vector desc_pool_sizes{
 	    Vk::GetOneDescriptorPoolSizeDescription(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, Vk::DescriptorCount<1> * swapchain_manager.GetSwapImageCount()),
 	    Vk::GetOneDescriptorPoolSizeDescription(VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, Vk::DescriptorCount<5> * swapchain_manager.GetSwapImageCount())};
-	const auto desc_pool_CI = Vk::GetDescriptorPoolCI(desc_pool_sizes, swapchain_manager.GetSwapImageCount());
+	const auto desc_pool_CI = Vk::GetDescriptorPoolCI(desc_pool_sizes, swapchain_manager.GetSwapImageCount() );
 
 	composition_descriptor_pool = renderpass_manager.GetDescriptorManagerV0().ProduceDescriptorPoolUnsafe(desc_pool_CI);
 }
@@ -129,7 +129,7 @@ void DeferedCompositionPass::CreateDescriptorSets()
 
 void DeferedCompositionPass::CreateAttachments()
 {
-	const VkAttachmentInfo::Memento swapchain_attachment{
+	const VkAttachmentInfo::WithinPass swapchain_attachment{
 	    .format           = swapchain_manager.GetSwapChainImageFormat(),
 	    .attachment_index = Vk::InvalidAttachIndex,        //无效占位的index
 
@@ -146,7 +146,7 @@ void DeferedCompositionPass::CreateAttachments()
 	};
 	swapchain_attachments_infos = VkAttachmentInfo::GetAttachmentInfos(swapchain_attachment, global_resources.swapchain_attachments);
 
-	const VkAttachmentInfo::Memento color_attachment{
+	const VkAttachmentInfo::WithinPass color_attachment{
 	    .format           = swapchain_manager.GetSwapChainImageFormat(),
 	    .attachment_index = Vk::AttachmentIndex<0>,
 
@@ -166,7 +166,7 @@ void DeferedCompositionPass::CreateAttachments()
 
 	MS_color_attachments_infos = VkAttachmentInfo::GetAttachmentInfos(color_attachment, multisampled_color_attachment, global_resources.swapchain_attachments);        //最后一个参数填接受resolve的attachment
 
-	const VkAttachmentInfo::Memento depth_stencil_attachment{
+	const VkAttachmentInfo::WithinPass depth_stencil_attachment{
 	    .format           = DeferedRendering::depth_stencil_format,
 	    .attachment_index = Vk::AttachmentIndex<1>,
 

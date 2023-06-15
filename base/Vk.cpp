@@ -94,7 +94,7 @@ VkDescriptorPoolSize Vk::GetOneDescriptorPoolSizeDescription(VkDescriptorType ty
 	return {type, descriptor_count};
 }
 
-VkDescriptorPoolCreateInfo Vk::GetDescriptorPoolCI(const std::vector<VkDescriptorPoolSize> &pool_sizes, uint32_t max_sets, const void *pNext, VkDescriptorPoolCreateFlags flags)
+VkDescriptorPoolCreateInfo Vk::GetDescriptorPoolCI(const std::vector<VkDescriptorPoolSize> &pool_sizes, uint32_t max_sets, VkDescriptorPoolCreateFlags flags, const void *pNext)
 {
 	VkDescriptorPoolCreateInfo descriptor_pool_CI{};
 	descriptor_pool_CI.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -121,7 +121,7 @@ VkDescriptorSetLayoutBinding Vk::GetDescriptorSetLayoutBinding(uint32_t binding,
 	return setLayoutBinding;
 }
 
-VkDescriptorSetLayoutCreateInfo Vk::GetDescriptorSetLayoutCI(const std::vector<VkDescriptorSetLayoutBinding> &bindings, const void *pNext, VkDescriptorSetLayoutCreateFlags flags)
+VkDescriptorSetLayoutCreateInfo Vk::GetDescriptorSetLayoutCI(const std::vector<VkDescriptorSetLayoutBinding> &bindings, VkDescriptorSetLayoutCreateFlags flags, const void *pNext)
 {
 	//TODO:	use perfect forwarding to check bindings is not a rvalue;
 	VkDescriptorSetLayoutCreateInfo descriptor_set_layout_create_info{};

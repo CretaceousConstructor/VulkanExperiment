@@ -242,13 +242,14 @@ VkDescriptorSetLayoutCreateInfo VkDescriptorManager::GetDescriptorSetLayoutCI(co
 	return descriptorSetLayoutCreateInfo;
 }
 
-VkDescriptorSetAllocateInfo VkDescriptorManager::GetDescriptorAllocateInfo(VkDescriptorPool descriptorPool, const VkDescriptorSetLayout &SetLayout)
+VkDescriptorSetAllocateInfo VkDescriptorManager::GetDescriptorAllocateInfo(VkDescriptorPool descriptorPool, const VkDescriptorSetLayout &SetLayout,const void* pNext)
 {
 	VkDescriptorSetAllocateInfo descriptorSetAllocateInfo{};
 	descriptorSetAllocateInfo.sType              = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 	descriptorSetAllocateInfo.descriptorPool     = descriptorPool;
 	descriptorSetAllocateInfo.pSetLayouts        = &SetLayout;
 	descriptorSetAllocateInfo.descriptorSetCount = 1;
+	descriptorSetAllocateInfo.pNext              = pNext;
 	return descriptorSetAllocateInfo;
 }
 
@@ -258,6 +259,7 @@ VkDescriptorSetAllocateInfo VkDescriptorManager::GetDescriptorAllocateInfo(VkDes
 	descriptorSetAllocateInfo.sType              = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
 	descriptorSetAllocateInfo.descriptorPool     = descriptorPool;
 	descriptorSetAllocateInfo.pSetLayouts        = SetLayouts.data();
-	descriptorSetAllocateInfo.descriptorSetCount = (uint32_t) SetLayouts.size();
+	descriptorSetAllocateInfo.descriptorSetCount = static_cast<uint32_t>(SetLayouts.size());
+	descriptorSetAllocateInfo.pNext              = nullptr;
 	return descriptorSetAllocateInfo;
 }

@@ -13,7 +13,7 @@ void Renderer::PrepareCommonModels()
 	//global_resources.sky_box   = model_factory.GetGltfModel<PbrMaterialMetallic>(box_path, VkModelFactory::LoadingOption::None, 1);
 
 	const std::string sponza_path = "../../data/models/sponza/sponza.gltf";
-	global_resources.sponza       = model_factory.GetGltfModel<NonPbrMaterial>(sponza_path, VkModelFactory::LoadingOption::None, 2);
+	global_resources.sponza       = model_factory.GetGltfModel<NonPbrMaterial>(sponza_path, Vk::ModelLoadingOption::BindlessRenderingMode, 0);
 
 	//auto                  data = Geometry::CreateSphere(.2f, 20, 40, glm::vec4(1.f, 1.f, 1.f, 1.f));
 	//std::vector<Vertex>   vertices;
@@ -27,9 +27,6 @@ void Renderer::PrepareCommonModels()
 
 	//light_indicator = std::make_unique<VkModel<Vertex>>(vertices, indices, device_manager, window->GetSurfaceRef(), transfer_command_buffer);
 	//light_indicator->GetTransform().SetPosition(ubo_vs_scene.light_pos);
-
-
-
 }
 
 void Renderer::CommandBufferRecording()
@@ -63,13 +60,11 @@ void Renderer::CreateCommonUniformBuffer()
 	//	global_resources.matrix_buffer_gpu_MSAA = buffer_factory.ProduceBufferPtrArray(sizeof(MSAA::UBO), Vk::BundleSize<SWAP_IMG_COUNT>, unim_buf_PP);
 	//}
 
-
 	//GPU SIDE
 	{
 		constexpr VkBufferCI::UniformBuffer unim_buf_PP;
 		global_resources.matrix_buffer_gpu_defered_rendering = buffer_factory.ProduceBufferPtrArray(sizeof(DeferedRendering::UBO), Vk::BundleSize<SWAP_IMG_COUNT>, unim_buf_PP);
 	}
-
 
 
 
@@ -116,12 +111,8 @@ void Renderer::InitRenderpasses()
 	//renderpasses.push_back(std::make_shared<DeferedGeometryPass>(gfx, renderpass_manager, global_resources));
 	//renderpasses.back()->Init();
 
-
 	renderpasses.push_back(VkRenderpassManager::ProduceRenderpass<DeferedGeometryPass>(gfx, renderpass_manager, global_resources));
 	renderpasses.push_back(VkRenderpassManager::ProduceRenderpass<DeferedCompositionPass>(gfx, renderpass_manager, global_resources));
-
-
-
 
 	//renderpasses.push_back(VkRenderpassManager::ProduceRenderpass<MSAAPass>(gfx, renderpass_manager, global_resources));
 }
@@ -152,10 +143,10 @@ void Renderer::UpdateUniformBuffer(size_t current_image_index)
 	//global_resources.matrix_buffer_cpu.cam_pos = camera->GetEyePos();
 	//global_resources.matrix_buffer_gpu[current_image_index]->CopyFrom(&global_resources.matrix_buffer_cpu, sizeof(global_resources.matrix_buffer_cpu));
 
-	global_resources.matrix_buffer_cpu_defered_rendering.projection = camera->GetProjMatrix(Camera::ProjectionMtxSetting::ReversedZ); //for revered Z
-	global_resources.matrix_buffer_cpu_defered_rendering.view       = camera->GetViewMatrix();
+	global_resources.matrix_buffer_cpu_defered_rendering.projection   = camera->GetProjMatrix(Camera::ProjectionMtxSetting::ReversedZ);        //for revered Z
+	global_resources.matrix_buffer_cpu_defered_rendering.view         = camera->GetViewMatrix();
 	global_resources.matrix_buffer_cpu_defered_rendering.view_inverse = camera->GetInverseViewMatrix();
-	global_resources.matrix_buffer_cpu_defered_rendering.cam_pos    = camera->GetEyePos();
+	global_resources.matrix_buffer_cpu_defered_rendering.cam_pos      = camera->GetEyePos();
 
 	//COPY
 	global_resources.matrix_buffer_gpu_defered_rendering[current_image_index]->CopyFrom(&global_resources.matrix_buffer_cpu_defered_rendering, sizeof(global_resources.matrix_buffer_cpu_defered_rendering));
@@ -168,17 +159,6 @@ void Renderer::UpdateUniformBuffer(size_t current_image_index)
 	////COPY
 	//global_resources.matrix_buffer_gpu_MSAA[current_image_index]->CopyFrom(&global_resources.matrix_buffer_cpu_MSAA, sizeof(global_resources.matrix_buffer_cpu_MSAA));
 
-
-
-
-
-
-
-
-
-
-
-
 	//global_resources.matrix_buffer_cpu_defered_rendering.projection   = camera->GetProjMatrix(Camera::ProjectionMtxSetting::ReversedZ);        //for revered Z
 	//global_resources.matrix_buffer_cpu_defered_rendering.view         = camera->GetViewMatrix();
 	//global_resources.matrix_buffer_cpu_defered_rendering.view_inverse = camera->GetInverseViewMatrix();
@@ -186,16 +166,11 @@ void Renderer::UpdateUniformBuffer(size_t current_image_index)
 
 	////COPY
 	//global_resources.matrix_buffer_gpu_defered_rendering[current_image_index]->CopyFrom(&global_resources.matrix_buffer_cpu_defered_rendering, sizeof(global_resources.matrix_buffer_cpu_defered_rendering));
-
-
-
-
-
-
 }
 
 void Renderer::DrawFrame(float time_diff)
 {
+	DrawFrame();
 	//TODO:image使用完毕和subpass dependency的关系
 	static size_t currentFrame = 0;
 	////所有fence    在默认初始化（不指定初始状态）时都处于unsignaled的状态
@@ -427,6 +402,246 @@ void Renderer::DrawFrame(float time_diff)
 	currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 
+void Renderer::DrawFrame()
+{
+	//*************************************************************************************
+	//RenderGraph
+	RenderGraph::DependencyGraph render_graph{renderpass_manager};        // you need to re-establish render graph for EVERY FRAME
+
+	//*************************************************************************************
+	//RESOURCES **CREATION** META INFO OF gbuffer position
+	//这里的sampler和view是空的，因这两个东西是specific to a pass的，不同的pass也许会使用不同的sampler和view，也可以一开始就指定sampler和view（相当于指定默认的sampler和view）
+
+	VkTexture::Descriptor G_buffer_position_dsctor{
+	    .tex_img_PP  = TextureImgPP{DeferedRendering::G_position_format, swapchain_manager.GetSwapChainImageExtent(), Vk::ImgCINillFlag},
+	    .img_view_CI = std::nullopt,
+	    .sample_CI   = std::nullopt,
+	    .bundle_size = Vk::SWAP_IMG_COUNT        //BUNDLE SIZE,因为是每帧都需要资源，所以也许可以通过复用，消除这个bundle size存在的必要性！
+	};
+
+	//TODO:sampler 和 view资源管理
+
+	//如果某个pass没有传入资源 要使用的sample_CI或者img_view_CI，那么就保持默认状态（不改变texture中的sampler和view指针）听起来不错，但是这样会不会让资源过度浪费？
+	//传入一推创建参数，虚拟资源只有在execute执行的时候才会创建真正的资源
+	G_buffer_position_dsctor.tex_img_PP->default_image_CI.usage            = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+	G_buffer_position_dsctor.tex_img_PP->default_image_CI.samples          = DeferedRendering::MSAA_sample_count;
+	G_buffer_position_dsctor.tex_img_PP->default_layout_right_aft_creation = VK_IMAGE_LAYOUT_UNDEFINED;        //这个default_layout_right_aft_creation是不是可以取消了
+
+	RenderGraph::Resource<VkTexture> G_buffer_position{G_buffer_position_dsctor};        //G_buffer_position代表这个资源，其中含有虚拟资源实例化时需要的信息，但是虚拟资源暂时还没有获得GPU资源
+
+	//*************************************************************************************
+	//RESOURCES **CREATION** META INFO OF gbuffer normal
+	VkTexture::Descriptor G_buffer_normal_dsctor{
+	    .tex_img_PP  = TextureImgPP{DeferedRendering::G_normal_format, swapchain_manager.GetSwapChainImageExtent(), Vk::ImgCINillFlag},
+	    .img_view_CI = std::nullopt,
+	    .sample_CI   = std::nullopt,
+	    .bundle_size = Vk::SWAP_IMG_COUNT};
+
+	G_buffer_normal_dsctor.tex_img_PP->default_image_CI.usage            = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+	G_buffer_normal_dsctor.tex_img_PP->default_image_CI.samples          = DeferedRendering::MSAA_sample_count;
+	G_buffer_normal_dsctor.tex_img_PP->default_layout_right_aft_creation = VK_IMAGE_LAYOUT_UNDEFINED;        
+	RenderGraph::Resource<VkTexture> G_buffer_normal{G_buffer_normal_dsctor};        
+
+	//*************************************************************************************
+	//RESOURCES **CREATION** META INFO OF gbuffer albedo
+	VkTexture::Descriptor G_buffer_albedo_dsctor{
+	    .tex_img_PP  = TextureImgPP{DeferedRendering::G_albedo_format, swapchain_manager.GetSwapChainImageExtent(), Vk::ImgCINillFlag},
+	    .img_view_CI = std::nullopt,
+	    .sample_CI   = std::nullopt,
+	    .bundle_size = Vk::SWAP_IMG_COUNT        //BUNDLE SIZE，很重要的信息or因为是每帧，所以也许可以通过复用，消除这个bundle size的必要性！
+	};
+
+	G_buffer_albedo_dsctor.tex_img_PP->default_image_CI.usage            = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+	G_buffer_albedo_dsctor.tex_img_PP->default_image_CI.samples          = DeferedRendering::MSAA_sample_count;
+	G_buffer_albedo_dsctor.tex_img_PP->default_layout_right_aft_creation = VK_IMAGE_LAYOUT_UNDEFINED;        
+
+	RenderGraph::Resource<VkTexture> G_buffer_albedo{G_buffer_albedo_dsctor};        
+
+	//*************************************************************************************
+	//RESOURCES **CREATION** META INFO OF gbuffer posZGradient
+	VkTexture::Descriptor G_buffer_posZGradient_dsctor{
+	    .tex_img_PP  = TextureImgPP{DeferedRendering::G_posZgrad_format, swapchain_manager.GetSwapChainImageExtent(), Vk::ImgCINillFlag},
+	    .img_view_CI = std::nullopt,
+	    .sample_CI   = std::nullopt,
+	    .bundle_size = Vk::SWAP_IMG_COUNT        //BUNDLE SIZE，很重要的信息or因为是每帧，所以也许可以通过复用，消除这个bundle size的必要性！
+	};
+
+	G_buffer_posZGradient_dsctor.tex_img_PP->default_image_CI.usage            = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+	G_buffer_posZGradient_dsctor.tex_img_PP->default_image_CI.samples          = DeferedRendering::MSAA_sample_count;
+	G_buffer_posZGradient_dsctor.tex_img_PP->default_layout_right_aft_creation = VK_IMAGE_LAYOUT_UNDEFINED;        //TODO: check layout transition after creation of this image
+
+	RenderGraph::Resource<VkTexture> G_buffer_posZGrad{G_buffer_posZGradient_dsctor};        
+	                                                                                         //*************************************************************************************
+
+	//*************************************************************************************
+	//RESOURCES **CREATION** META INFO OF gbuffer depth
+	VkTexture::Descriptor G_buffer_depth_dsctor{
+	    .tex_img_PP  = TextureImgPP{DeferedRendering::G_depth_format, swapchain_manager.GetSwapChainImageExtent(), Vk::ImgCINillFlag},
+	    .img_view_CI = std::nullopt,
+	    .sample_CI   = std::nullopt,
+	    .bundle_size = Vk::SWAP_IMG_COUNT        //BUNDLE SIZE，很重要的信息or因为是每帧，所以也许可以通过复用，消除这个bundle size的必要性！
+	};
+
+	G_buffer_depth_dsctor.tex_img_PP->default_image_CI.usage            = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+	G_buffer_depth_dsctor.tex_img_PP->default_image_CI.samples          = DeferedRendering::MSAA_sample_count;
+	G_buffer_depth_dsctor.tex_img_PP->default_layout_right_aft_creation = VK_IMAGE_LAYOUT_UNDEFINED;        //TODO: check layout transition after creation of this image
+
+	RenderGraph::Resource<VkTexture> G_buffer_depth{G_buffer_depth_dsctor};        
+	//*************************************************************************************
+
+
+	//*************************************************************************************
+	//PERSISTENT RESOURCES: Matirx uniform buffer
+	RenderGraph::Resource<VkBufferBase> uniform_matrix_buffer{global_resources.matrix_buffer_gpu_defered_rendering[0]};        //G_buffer_position代表这个资源，其中含有虚拟资源创建需要的信息，但是暂时还没有获得GPU资源
+
+
+
+
+
+
+	//*************************************************************************************
+	//*************************************************************************************
+	//TODO: META INFO of BACKBUFFER(or RESOURCES IMPORTED FROM OUTSIDE)
+
+	const auto G_buffer_pos_slot = render_graph.AddResourceNode(G_buffer_position, "GBufferPosition");        //向渲染图中加入一个资源节点
+
+	const auto G_buffer_normal_slot = render_graph.AddResourceNode(G_buffer_normal, "GBufferNormal");        //向渲染图中加入一个资源节点
+
+	const auto G_buffer_albedo_slot = render_graph.AddResourceNode(G_buffer_albedo, "GBufferAlbedo");        //向渲染图中加入一个资源节点
+
+	const auto G_buffer_posZGrad_slot = render_graph.AddResourceNode(G_buffer_posZGrad, "GBufferPosZGrad");        //向渲染图中加入一个资源节点
+
+	const auto G_buffer_depth_slot = render_graph.AddResourceNode(G_buffer_depth, "GBufferDepth");        //向渲染图中加入一个资源节点
+
+	const auto uniform_mat_buffer_slot = render_graph.AddResourceNode(uniform_matrix_buffer, "MatrixUB");        //向渲染图中加入一个资源节点
+
+
+
+
+	auto DeferedGeoPass_handle = render_graph.AddGfxPassNode(renderpasses[0], "DeferedGeometryPass", {uniform_mat_buffer_slot}, {G_buffer_pos_slot, G_buffer_normal_slot, G_buffer_albedo_slot, G_buffer_posZGrad_slot, G_buffer_depth_slot});        //向渲染图中加入一个pass
+
+	auto DeferedComPass_handle = render_graph.AddGfxPassNode(renderpasses[1], "DeferedCompositionPass", {G_buffer_pos_slot, G_buffer_normal_slot, G_buffer_albedo_slot, G_buffer_posZGrad_slot, G_buffer_depth_slot},{});        //向渲染图中加入一个pass
+
+
+
+	//REGISTER RESOURCES USAGE WITHIN A PASS
+	render_graph.RegisterRsrcsUsage(DeferedGeoPass_handle, G_buffer_pos_slot, std::make_unique<VkAttachmentInfo::WithinPassRG>(
+	    Vk::RsrcInfoType::Attachment,
+	    DeferedRendering::G_position_format,
+	    Vk::AttachmentIndex<0>,
+	    VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+	    VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+	    VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,        //
+	    VkAttachmentInfo::Type::ColorAttachment,
+	    VkClearValue{.color{0.0f, 0.0f, 0.0f, 1.0f}}
+	
+	    //TODO:sampler
+	    //TODO:img view
+	    //TODO:subresources range
+	));
+
+
+
+	render_graph.RegisterRsrcsUsage(DeferedGeoPass_handle, G_buffer_normal_slot, std::make_unique<VkAttachmentInfo::WithinPassRG>(
+	    Vk::RsrcInfoType::Attachment,
+	    DeferedRendering::G_normal_format,
+	    Vk::AttachmentIndex<1>,
+	    VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+	    VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+	    VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,        //
+	    VkAttachmentInfo::Type::ColorAttachment,
+	    VkClearValue{.color{0.0f, 0.0f, 0.0f, 1.0f}}
+	  
+	    //TODO:sampler
+	    //TODO:img view
+	    //TODO:subresources range
+	));
+
+
+	render_graph.RegisterRsrcsUsage(DeferedGeoPass_handle, G_buffer_albedo_slot, std::make_unique<VkAttachmentInfo::WithinPassRG>(
+	    Vk::RsrcInfoType::Attachment,
+	    DeferedRendering::G_albedo_format,
+	    Vk::AttachmentIndex<2>,
+	    VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+	    VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+	    VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,        //these layout maybe not needed.
+
+	    VkAttachmentInfo::Type::ColorAttachment,
+	    VkClearValue{.color{0.0f, 0.0f, 0.0f, 1.0f}}
+
+	    //TODO:sampler
+	    //TODO:img view
+	    //TODO:subresources range
+	));
+
+
+	render_graph.RegisterRsrcsUsage(DeferedGeoPass_handle, G_buffer_posZGrad_slot, std::make_unique<VkAttachmentInfo::WithinPassRG>(
+			Vk::RsrcInfoType::Attachment,
+			DeferedRendering::G_posZgrad_format,
+			Vk::AttachmentIndex<3>,
+			VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+			VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+			VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,        //these layout maybe not needed.
+
+			VkAttachmentInfo::Type::ColorAttachment,
+			VkClearValue{.color{0.0f, 0.0f, 0.0f, 1.0f}}
+
+			//TODO:sampler
+			//TODO:img view
+			//TODO:subresources range
+		));
+
+
+	render_graph.RegisterRsrcsUsage(DeferedGeoPass_handle, G_buffer_depth_slot, std::make_unique<VkAttachmentInfo::WithinPassRG>(
+			Vk::RsrcInfoType::Attachment,
+			DeferedRendering::G_depth_format,
+			Vk::AttachmentIndex<4>,
+			VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
+			VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
+			VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,        //
+
+			VkAttachmentInfo::Type::DepthAttachment,
+			VkClearValue{ .depthStencil{0.0f, 0}}
+
+			//TODO:sampler
+			//TODO:img view
+			//TODO:subresources range
+		));
+
+
+
+	//REGISTER RESOURCES USAGE WITHIN A PASS
+	render_graph.RegisterRsrcsUsage(DeferedGeoPass_handle, uniform_mat_buffer_slot,
+		std::make_shared<VkBufferBase::WithinPassRG>(RsrcInfoType::UniformBuffer,Vk::Binding<0>,Vk::BindingArrayElement<0>,VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT)
+
+		//TODO:subresources range
+	);
+
+
+		 
+
+
+	//RenderGraph编译
+	if (render_graph.Compile())
+	{
+		constexpr size_t imageIndex{0};
+		//RenderGraph执行
+		bool successed = render_graph.Execute(command_manager.GetGraphicsCommandBuffers()[imageIndex]);
+	}
+	else
+	{
+		throw std::runtime_error("Failed to compile render graph!");
+	}
+
+
+
+
+
+
+
+
+}
+
 void Renderer::UpdateCamera(float dt)
 {
 	//TODO:用命令模式优化
@@ -526,20 +741,14 @@ void Renderer::CreateCommonTextureImgs()
 	//global_resources.hdr_environment_map = texture_factory.ProduceTexture(chiricahua_narrowPath_path,VK_FORMAT_R32G32B32A32_SFLOAT,sampler_ppl);
 }
 
-
-
 //the creation of this resources should be taken care of by render graph, which haven't been implemented.
 void Renderer::CreateDepthTextures()
 {
-
 	//Use depth stencil format, cuz we will do stencil writing.
 	const DepthImgPP depth_img_PP{gfx};
-	auto             img_view_CI = ImgViewCI::PopulateDepthImgViewCI(gfx.SwapchainMan());
+	auto             img_view_CI       = ImgViewCI::PopulateDepthImgViewCI(gfx.SwapchainMan());
 	global_resources.depth_attachments = renderpass_manager.GetTextureFactory().ProduceEmptyTextureArray(depth_img_PP, std::nullopt, img_view_CI, SWAP_IMG_COUNT);
-
-
 }
-
 
 //the creation of this resources should be taken care of by render graph, which haven't been implemented.
 void Renderer::CreateSwapchainTextures()
@@ -547,6 +756,4 @@ void Renderer::CreateSwapchainTextures()
 	const SwapchainImgPP swap_img_PP;
 	auto                 img_view_CI       = ImgViewCI::PopulateSwapchainImgViewCI(gfx.SwapchainMan());
 	global_resources.swapchain_attachments = renderpass_manager.GetTextureFactory().ProduceEmptyTextureArray(swap_img_PP, std::nullopt, img_view_CI);
-
-
 }

@@ -18,11 +18,15 @@ void App::Run()
 {
 	InitRenderer();        
 	renderer->RenderingPreparation();//多态调用，这个函数会给智能指针一个具体的实例对象
+
 	MainLoop();
 }
 
 void App::MainLoop() const
 {
+
+
+
 	float time_diff = 0.f;
 	while (!glfwWindowShouldClose(const_cast<GLFWwindow *>(window.GetWindowPtr())))
 	{
@@ -39,7 +43,5 @@ void App::MainLoop() const
 	}
 
 	VK_CHECK_RESULT(vkDeviceWaitIdle(device_manager.GetLogicalDevice()))
-
-
 
 }

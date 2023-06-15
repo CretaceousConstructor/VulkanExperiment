@@ -4,7 +4,7 @@ std::vector<const char *> VkExtensionUtility::GetNeededGlobalInstanceExtensions(
 {
 	//GLFW需要的instance extension
 	uint32_t glfwExtensionCount = 0;
-		//请求所有GLFW需要的 vulkan instance extensions
+	//请求所有GLFW需要的 vulkan instance extensions
 	const char **             glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 	std::vector<const char *> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
 
@@ -38,17 +38,16 @@ std::vector<const char *> VkExtensionUtility::GetNeededGlobalInstanceExtensions(
 
 const std::vector<const char *> &VkExtensionUtility::GetRequiredExtensionsForAGoodDevice()
 {
-
 	static std::vector<const char *> extensions{
 	    VK_KHR_SWAPCHAIN_EXTENSION_NAME,
 	    VK_KHR_MAINTENANCE1_EXTENSION_NAME,
 	    VK_KHR_MAINTENANCE2_EXTENSION_NAME,
 	    VK_KHR_MAINTENANCE3_EXTENSION_NAME,
 	    VK_EXT_MEMORY_BUDGET_EXTENSION_NAME,
+	    VK_EXT_SHADER_VIEWPORT_INDEX_LAYER_EXTENSION_NAME,
+	    VK_KHR_SHADER_NON_SEMANTIC_INFO_EXTENSION_NAME,
 	    VK_EXT_DESCRIPTOR_INDEXING_EXTENSION_NAME,
-		VK_EXT_SHADER_VIEWPORT_INDEX_LAYER_EXTENSION_NAME,
-		VK_KHR_SHADER_NON_SEMANTIC_INFO_EXTENSION_NAME,
-		"VK_EXT_shader_demote_to_helper_invocation"
+	    "VK_EXT_shader_demote_to_helper_invocation"
 
 	};
 

@@ -54,6 +54,7 @@
     <ClCompile Include="base\VkPipelineManager.cpp" />
     <ClCompile Include="base\VkPipelinePPFactory.cpp" />
     <ClCompile Include="base\VkRenderpassBase.cpp" />
+    <ClCompile Include="base\VkRsrcUsageInfo.cpp" />
     <ClCompile Include="base\VkSamplerFactory.cpp" />
     <ClCompile Include="base\VkSemaphoreBundle.cpp" />
     <ClCompile Include="base\Vk.cpp" />
@@ -63,7 +64,7 @@
     <ClCompile Include="base\VkSubpassFactory.cpp" />
     <ClCompile Include="base\VkSynObjectBundleBase.cpp" />
     <ClCompile Include="base\VkSynObjectFactory.cpp" />
-    <ClCompile Include="base\VkAttachmentInfo.cpp" />
+    <ClCompile Include="base\AnotherPileOfShit.cpp" />
     <ClCompile Include="base\FirstPersonCamera.cpp" />
     <ClCompile Include="base\GltfModel.cpp" />
     <ClCompile Include="base\VkImageFactory.cpp" />
@@ -140,6 +141,7 @@
     <ClInclude Include="base\include\VkMath.h" />
     <ClInclude Include="base\include\VkPipelinePPFactory.h" />
     <ClInclude Include="base\include\VkRenderpassBase.h" />
+    <ClInclude Include="base\include\VkRsrcUsageInfo.h" />
     <ClInclude Include="base\include\VkSamplerFactory.h" />
     <ClInclude Include="base\include\VkShaderFactory.h" />
     <ClInclude Include="base\include\VkShaderManager.h" />
@@ -160,7 +162,7 @@
     <ClInclude Include="base\include\VkSynObjectBundleBase.h" />
     <ClInclude Include="base\include\VkSynObjectFactory.h" />
     <ClInclude Include="base\include\Transform.h" />
-    <ClInclude Include="base\include\VkAttachmentInfo.h" />
+    <ClInclude Include="base\include\AnotherPileOfShit.h" />
     <ClInclude Include="base\include\VkCommandManager.h" />
     <ClInclude Include="base\include\VkDescriptorManager.h" />
     <ClInclude Include="base\include\VkDeviceManager.h" />

@@ -18,7 +18,7 @@ class VkMaterial
 	VkMaterial &operator=(VkMaterial &&) = delete;
 
 
-	virtual VkDescriptorSet AllocateDescriptorSetAndUpdate(VkDescriptorPool descriptor_pool, VkDescriptorSetLayout desc_set_layout, const std::vector<Gltf::Texture> &textures, const std::vector<std::shared_ptr<VkTexture>> &images) = 0;
+	virtual VkDescriptorSet AllocateDescriptorSetAndUpdate(VkDescriptorPool descriptor_pool, VkDescriptorSetLayout desc_set_layout, const std::vector<Gltf::Texture> &textures, const std::vector<std::shared_ptr<VkTexture>> &images,Vk::ModelLoadingOption option) = 0;
 	//[[nodiscard]] const VkDescriptorSet &GetDescriptorSet() const;
 
 	//void                            SetPipeline(VkPipeline pipeline_);

@@ -35,8 +35,9 @@ std::shared_ptr<VkShaderWrapper> VkShaderFactory::GetShader(const std::string &p
 	};
 
 	//GET FILE NAME
-	const size_t start_pos = path_.find_last_of('/');
+	//const size_t start_pos = path_.find_last_of('/');
 	//const auto   file_name = path_.substr(start_pos + 1, path_.size());
+	//path必须要整全路径，否则renderdoc就傻眼了
 	const auto file_name = path_;
 
 	//CONVERT TO WSTRING
@@ -49,6 +50,10 @@ std::shared_ptr<VkShaderWrapper> VkShaderFactory::GetShader(const std::string &p
 	arguments.push_back(L"-spirv");
 	arguments.push_back(L"-fspv-target-env=vulkan1.3");
 	arguments.push_back(L"-fspv-debug=vulkan-with-source");
+
+	arguments.push_back(L"-fspv-extension=SPV_KHR_multiview");
+	arguments.push_back(L"-fspv-extension=SPV_KHR_shader_draw_parameters");
+	arguments.push_back(L"-fspv-extension=SPV_EXT_descriptor_indexing");
 
 	arguments.push_back(L"-T");        //target stage
 	switch (stage)
@@ -71,12 +76,11 @@ std::shared_ptr<VkShaderWrapper> VkShaderFactory::GetShader(const std::string &p
 
 	//arguments.push_back(DXC_ARG_DEBUG);        //-Zi选项会被-fspv-debug覆盖。
 	//arguments.push_back(L"-Qembed_debug");
-	//arguments.push_back(DXC_ARG_DEBUG_NAME_FOR_SOURCE);           
+	//arguments.push_back(DXC_ARG_DEBUG_NAME_FOR_SOURCE);
 
 	arguments.push_back(DXC_ARG_SKIP_OPTIMIZATIONS);              //为了更好的调试体验
 	arguments.push_back(DXC_ARG_WARNINGS_ARE_ERRORS);             //-WX
 	arguments.push_back(DXC_ARG_PACK_MATRIX_COLUMN_MAJOR);        //-Zpc
-
 
 	//put your shader name here
 	arguments.push_back(wstr.data());
@@ -111,8 +115,6 @@ std::shared_ptr<VkShaderWrapper> VkShaderFactory::GetShader(const std::string &p
 
 	VkShaderModuleCreateInfo shader_module_CI{};
 	shader_module_CI.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-
-
 
 	//static std::vector<std::uint32_t> spriv_buffer;
 	//spriv_buffer.resize(shader_obj->GetBufferSize() / sizeof(std::uint32_t));

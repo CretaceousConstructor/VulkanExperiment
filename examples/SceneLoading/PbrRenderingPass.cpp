@@ -58,7 +58,7 @@ void PbrRenderingPass::CreateDescriptorSetPools()
 	const std::vector desc_pool_sizes{
 	    Vk::GetOneDescriptorPoolSizeDescription(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, Vk::DescriptorCount<1> * swapchain_manager.GetSwapImageCount()),
 	    Vk::GetOneDescriptorPoolSizeDescription(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, Vk::DescriptorCount<4> * swapchain_manager.GetSwapImageCount())};
-	const auto desc_pool_CI = Vk::GetDescriptorPoolCI(desc_pool_sizes, swapchain_manager.GetSwapImageCount());
+	const auto desc_pool_CI = Vk::GetDescriptorPoolCI(desc_pool_sizes, swapchain_manager.GetSwapImageCount() );
 
 	local_descriptor_pool = renderpass_manager.GetDescriptorManagerV0().ProduceDescriptorPoolUnsafe(desc_pool_CI);
 }
@@ -80,7 +80,7 @@ void PbrRenderingPass::CreateDescriptorSetLayout()
 
 		const std::vector bindings{binding0, binding1, binding2, binding3, binding4};
 
-		const auto desc_set_layout_CI = Vk::GetDescriptorSetLayoutCI(bindings);
+		const auto desc_set_layout_CI = Vk::GetDescriptorSetLayoutCI(bindings );
 		local_descriptor_set_layout   = renderpass_manager.GetDescriptorManagerV0().ProduceDescriptorSetLayoutUnsafe(desc_set_layout_CI);
 	}
 }
@@ -101,7 +101,7 @@ void PbrRenderingPass::CreateGraphicsPipeline()
 
 void PbrRenderingPass::CreateAttachments()
 {
-	const VkAttachmentInfo::Memento color_attachment{
+	const VkAttachmentInfo::WithinPass color_attachment{
 	    .format           = swapchain_manager.GetSwapChainImageFormat(),
 	    .attachment_index = Vk::AttachmentIndex<0>,
 
@@ -117,7 +117,7 @@ void PbrRenderingPass::CreateAttachments()
 	};
 	color_attachments_infos = VkAttachmentInfo::GetAttachmentInfos(color_attachment, global_resources.swapchain_attachments);
 
-	const VkAttachmentInfo::Memento depth_attachment{
+	const VkAttachmentInfo::WithinPass depth_attachment{
 	    .format           = swapchain_manager.FindDepthFormat(),
 	    .attachment_index = Vk::AttachmentIndex<1>,
 

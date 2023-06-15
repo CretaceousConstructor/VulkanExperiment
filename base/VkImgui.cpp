@@ -255,7 +255,7 @@ void VkImgui::InitDescriptorPool()
 	    {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 20},
 	    {VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 20}};
 
-	const auto descriptorpool_CI = Vk::GetDescriptorPoolCI(pool_sizes, swapchain_manager.GetSwapImageCount() * 10);
+	const auto descriptorpool_CI = Vk::GetDescriptorPoolCI(pool_sizes, swapchain_manager.GetSwapImageCount() * 10 );
 	VK_CHECK_RESULT(vkCreateDescriptorPool(device_manager.GetLogicalDevice(), &descriptorpool_CI, nullptr, &im_descriptor_pool))
 }
 

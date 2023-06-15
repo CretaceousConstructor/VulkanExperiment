@@ -2,7 +2,6 @@
 
 #include "VkGraphicsComponent.h"
 #include "VkSubpassWrapper.h"
-#include "VkAttachmentInfo.h"
 #include <vector>
 
 //class VkRenderpassWrapper

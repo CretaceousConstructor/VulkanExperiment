@@ -11,7 +11,7 @@ VkModelFactory::VkModelFactory(VkGraphicsComponent &gfx_, const VkTextureFactory
 {
 }
 
-VkModelFactory::GltfModelPack::GltfModelPack(std::string path_, const tinygltf::Model &input_, const LoadingOption option_) :
+VkModelFactory::GltfModelPack::GltfModelPack(std::string path_, const tinygltf::Model &input_, const Vk::ModelLoadingOption option_) :
     path(std::move(path_)),
     input(input_),
     option(option_)
@@ -153,7 +153,7 @@ void VkModelFactory::LoadTextures(GltfModelPack &model) const
 	//把texture对应的image format转换成image对应的image format
 	for (size_t i = 0; i < input.textures.size(); i++)
 	{
-		textures[i].imageIndex = input.textures[i].source;
+		textures[i].imageIndex                     = input.textures[i].source;
 		temp_image_formats[textures[i].imageIndex] = image_formats[i];
 	}
 
@@ -163,14 +163,14 @@ void VkModelFactory::LoadTextures(GltfModelPack &model) const
 void VkModelFactory::LoadImages(GltfModelPack &model) const
 {
 	auto &      images        = model.images;
-	auto &image_formats = model.image_formats;
+	auto &      image_formats = model.image_formats;
 	const auto &input         = model.input;
 
 	images.resize(input.images.size());
 
 	for (size_t i = 0; i < input.images.size(); i++)
 	{
-		auto& format_of_image = image_formats[i];
+		auto &format_of_image = image_formats[i];
 
 		const tinygltf::Image &glTFImage = input.images[i];
 
@@ -180,7 +180,7 @@ void VkModelFactory::LoadImages(GltfModelPack &model) const
 		auto              file_extension = glTFImage.uri.substr(pos + 1, glTFImage.uri.size());
 
 		//tinygltf不会帮我们加载ktx文件格式，其他格式有可能加载。
-		if ("ktx" == file_extension || (model.option & LoadingOption::LoadingImgByOurselves) || !TestIfGltfHadLoadedImg(glTFImage))
+		if ("ktx" == file_extension || (model.option & Vk::ModelLoadingOption::LoadingImgByOurselves) || !TestIfGltfHadLoadedImg(glTFImage))
 		{
 			auto sampler_CI  = SamplerCI::PopulateTexSamplerCI();
 			auto img_view_CI = ImgViewCI::PopulateTextureImgViewCI(format_of_image);
@@ -188,7 +188,7 @@ void VkModelFactory::LoadImages(GltfModelPack &model) const
 			{
 				format_of_image = VK_FORMAT_R16G16B16A16_SFLOAT;
 			}
-			images[i]        = texture_factory.ProduceTextureFromImgPath(path, format_of_image, sampler_CI, img_view_CI, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+			images[i] = texture_factory.ProduceTextureFromImgPath(path, format_of_image, sampler_CI, img_view_CI, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 		}
 		// 用tinygltf加载的格式。Load texture from given gltf image buffer
 		else
@@ -208,7 +208,7 @@ void VkModelFactory::LoadImages(GltfModelPack &model) const
 				for (size_t i = 0; i < glTFImage.width * glTFImage.height; ++i)
 				{
 					memcpy(rgba, rgb, sizeof(unsigned char) * 3);
-					rgba[3] = 0xff;//默认A为1.0
+					rgba[3] = 0xff;        //默认A为1.0
 					rgba += 4;
 					rgb += 3;
 				}
@@ -247,7 +247,7 @@ void VkModelFactory::LoadNode(const size_t current_node_index_in_glft, const int
 
 	auto &                nodes                = model.nodes;
 	const tinygltf::Node &current_node_in_gltf = input.nodes[current_node_index_in_glft];
-	auto                 index_type           = model.index_type_of_cpu_buffer;
+	auto                  index_type           = model.index_type_of_cpu_buffer;
 
 	assert(model.index_type_of_cpu_buffer == VK_INDEX_TYPE_UINT32);
 	///BUGS:vector push back results in memory address changed!! solved
@@ -276,7 +276,6 @@ void VkModelFactory::LoadNode(const size_t current_node_index_in_glft, const int
 		//X* glm::scale(Identity, vec3)
 
 		node_matrix = glm::scale(node_matrix, glm::vec3(glm::make_vec3(current_node_in_gltf.scale.data())));
-		
 	}
 	if (current_node_in_gltf.matrix.size() == 16)
 	{
@@ -284,7 +283,7 @@ void VkModelFactory::LoadNode(const size_t current_node_index_in_glft, const int
 	};
 
 	//Gltf::Node &current_node = nodes[current_node_index];
-	nodes[current_node_index].matrix      = node_matrix;
+	nodes[current_node_index].matrix = node_matrix;
 
 	// Load node's children
 	if (!current_node_in_gltf.children.empty())
@@ -305,10 +304,10 @@ void VkModelFactory::LoadNode(const size_t current_node_index_in_glft, const int
 		{
 			const tinygltf::Primitive &glTFPrimitive = mesh.primitives[i];
 
-			uint32_t                   firstIndex    = static_cast<uint32_t>(index_buffer_cpu.size());
-			uint32_t                   vertexStart   = static_cast<uint32_t>(vertex_buffer_cpu.size());
-			uint32_t                   indexCount    = 0;
-			uint32_t                   vertexCount   = 0;
+			uint32_t firstIndex  = static_cast<uint32_t>(index_buffer_cpu.size());
+			uint32_t vertexStart = static_cast<uint32_t>(vertex_buffer_cpu.size());
+			uint32_t indexCount  = 0;
+			uint32_t vertexCount = 0;
 
 			// Vertices
 			{
@@ -422,7 +421,7 @@ void VkModelFactory::LoadNode(const size_t current_node_index_in_glft, const int
 	if (parent >= 0)
 	{
 		nodes[current_node_index].parent_index = parent;
-		auto &parent_children     = nodes[parent].children_indices;
+		auto &parent_children                  = nodes[parent].children_indices;
 		parent_children.push_back(current_node_index);
 	}
 	else

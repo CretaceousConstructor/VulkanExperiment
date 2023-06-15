@@ -5,16 +5,25 @@
 #include <ktx.h>
 #include <ktxvulkan.h>
 #include <memory>
-//#include <stb_image.h>
-//#include <stb_image_write.h>
 #include <string>
 
 class VkTexture
 {
+
+
   public:
 	using TexturePtrBundle = std::vector<std::shared_ptr<VkTexture>>;
 	using TextureBundle    = std::vector<VkTexture>;
 	using TexturePtr       = std::shared_ptr<VkTexture>;
+
+  public:
+	struct Descriptor
+	{
+		std::optional<TextureImgPP>          tex_img_PP;
+		std::optional<VkImageViewCreateInfo> img_view_CI;
+		std::optional<VkSamplerCreateInfo>   sample_CI;
+		uint32_t                             bundle_size{};   //maybe not needed
+	};
 
   public:
 	friend class VkTextureFactory;
@@ -45,9 +54,6 @@ class VkTexture
 	//这个函数目前需要修改，修改的目的是让用户去解决具体该怎么写image barrier，而不是通过一堆if else去假设。
 	void InsertImageMemoryBarrier(const Sync::VkImageMemoryBarrierEnhanced &img_mem_barrier, const VkDeviceManager::CommandPoolType command_type);
 
-
-
-
   private:
 	std::optional<VkSamplerCreateInfo>   sampler_CI;
 	std::optional<VkImageViewCreateInfo> img_view_CI;
@@ -73,7 +79,4 @@ class VkTexture
   private:
 	VkGraphicsComponent &  gfx;
 	const VkDeviceManager &device_manager;
-
-
-
 };

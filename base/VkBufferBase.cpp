@@ -12,6 +12,8 @@ VkBufferBase::~VkBufferBase()
 	Unmap();
 	vkDestroyBuffer(device_manager.GetLogicalDevice(), buffer, nullptr);
 	vkFreeMemory(device_manager.GetLogicalDevice(), buffer_memory, nullptr);
+
+
 }
 
 VkWriteDescriptorSet VkBufferBase::GetWriteDescriptorSetInfo(uint32_t dstbinding, uint32_t dstArrayElement, VkDeviceSize size, VkDeviceSize offset)

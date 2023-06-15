@@ -25,6 +25,7 @@ class GltfModel
 	    std::vector<Gltf::Node> &&                  nodes_,
 	    Gltf::VertexBufferGpu                       vertices_,
 	    Gltf::IndexBufferGpu                        indices_,
+	    Vk::ModelLoadingOption                      option_,
 	    VkGraphicsComponent &                       gfx_);
 	~GltfModel();
 	GltfModel() = delete;
@@ -34,8 +35,6 @@ class GltfModel
 
 	GltfModel(GltfModel &&) = delete;
 	GltfModel &operator=(GltfModel &&) = delete;
-
-	//void ProcessMaterials(const uint32_t subpass, const std::vector<VkDescriptorSetLayout> &set_layouts, VkPipelinePP &pipeline_para_pack, const VkPipelineBuilder &pipeline_builder);
 
   public:
 	//std::vector<std::shared_ptr<M>> &GetMaterials() const ;
@@ -53,7 +52,8 @@ class GltfModel
 
 	//void CleanUpMaterial();
 
-	VkIndexType index_type{};
+	VkIndexType            index_type{};
+	Vk::ModelLoadingOption option{};
 
   private:
 	void DrawNode(VkCommandBuffer commandBuffer, const int node_index) const;
@@ -96,7 +96,7 @@ class GltfModel
 };
 
 template <typename M>
-GltfModel<M>::GltfModel(std::string model_path, std::vector<std::shared_ptr<Gltf::Image>> &&images_, std::vector<VkFormat> &&image_formats_, std::vector<Gltf::Texture> &&textures_, std::vector<std::shared_ptr<VkMaterial>> &&materials_, std::vector<Gltf::Node> &&nodes_, Gltf::VertexBufferGpu vertices_, Gltf::IndexBufferGpu indices_, VkGraphicsComponent &gfx_) :
+GltfModel<M>::GltfModel(std::string model_path, std::vector<std::shared_ptr<Gltf::Image>> &&images_, std::vector<VkFormat> &&image_formats_, std::vector<Gltf::Texture> &&textures_, std::vector<std::shared_ptr<VkMaterial>> &&materials_, std::vector<Gltf::Node> &&nodes_, Gltf::VertexBufferGpu vertices_, Gltf::IndexBufferGpu indices_, Vk::ModelLoadingOption option_, VkGraphicsComponent &gfx_) :
     images(std::move(images_)),
     image_formats(std::move(image_formats_)),
     textures(std::move(textures_)),
@@ -104,6 +104,7 @@ GltfModel<M>::GltfModel(std::string model_path, std::vector<std::shared_ptr<Gltf
     nodes(std::move(nodes_)),
     vertices(vertices_),
     indices(indices_),
+    option(option_),
     gfx(gfx_),
     device_manager(gfx.DeviceMan())
 {
@@ -184,11 +185,11 @@ void GltfModel<M>::ProcessMaterial(const std::vector<VkDescriptorSetLayout> &com
 	//TODO:应该是模型的push constant range配合外面，而不是外面配合模型。
 	//TODO:better way to pass model matrix
 	std::vector<VkPushConstantRange> push_constant_ranges{};
-	constexpr VkPushConstantRange              model_constant_range{
-	    .stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
-	    .offset     = 0,
-	    .size       = sizeof(glm::mat4),
-	};
+	constexpr VkPushConstantRange    model_constant_range{
+        .stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT,
+        .offset     = 0,
+        .size       = sizeof(glm::mat4),
+    };
 
 	if (push_constant_ranges_outside.has_value())
 	{
@@ -208,8 +209,17 @@ void GltfModel<M>::ProcessMaterial(const std::vector<VkDescriptorSetLayout> &com
 	CreateDescriptorPool();
 
 	//DESCRIPTORSET LAYOUT FOR MODEL
-	//auto                               desc_layout = M::CreateDesciptorSetLayout(device_manager);
-	desc_layout = M::GetDescriptorSetLayout();
+	//auto desc_layout = M::CreateDesciptorSetLayout(device_manager);
+
+	if (option & Vk::ModelLoadingOption::BindlessRenderingMode)
+	{
+		desc_layout = M::GetDescriptorSetLayoutBindlessRendering();
+	}
+	else
+	{
+		desc_layout = M::GetDescriptorSetLayout();
+	}
+
 	//PIPELINE LAYOUT
 	std::vector<VkDescriptorSetLayout> temp_set_layouts{common_set_layouts};
 	temp_set_layouts.push_back(desc_layout);
@@ -224,7 +234,7 @@ void GltfModel<M>::ProcessMaterial(const std::vector<VkDescriptorSetLayout> &com
 	for (const auto &material : materials)
 	{
 		//ALLOCATE DESCRIPTOR SETS AND UPDATE   [PER MATERIAL OBJECT]
-		auto set = material->AllocateDescriptorSetAndUpdate(pools_for_model.back(), desc_layout, textures, images);
+		auto set = material->AllocateDescriptorSetAndUpdate(pools_for_model.back(), desc_layout, textures, images, option);
 		desc_sets.back().push_back(set);
 		//CREATE PIPELINE [PER MATERIAL OBJECT]
 		material->ModifyPipelineCI(local_para_pack);
@@ -285,7 +295,7 @@ void GltfModel<M>::DrawNode(VkCommandBuffer commandBuffer, const int node_index)
 			currentParent_index = currentParent->parent_index;
 		}
 
-		vkCmdPushConstants(commandBuffer, GetPipelineLayout(), VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(glm::mat4), &nodeMatrix);        // Pass the final matrix to the vertex shader using push constants
+		vkCmdPushConstants(commandBuffer, GetPipelineLayout(), VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, sizeof(glm::mat4), &nodeMatrix);        // Pass the final transform matrix to the vertex shader using push constants
 		for (const Gltf::Primitive &primitive : node.mesh.primitives)
 		{
 			if (primitive.indexCount > 0)
@@ -296,7 +306,6 @@ void GltfModel<M>::DrawNode(VkCommandBuffer commandBuffer, const int node_index)
 				//vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, material->GetPipeline());
 				vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, GetPipeline(primitive.materialIndex));
 
-				//MODIFY
 				vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, GetPipelineLayout(), 1, 1, &GetDescSet(primitive.materialIndex), 0, nullptr);
 
 				vkCmdDrawIndexed(commandBuffer, primitive.indexCount, 1, primitive.firstIndex, 0, 0);
@@ -319,14 +328,21 @@ void GltfModel<M>::CreateDescriptorPool()
 		descriptor_count += material->GetRequiredDescirpotrCount();
 	}
 
-	VkDescriptorPool                  temp_pool{};
-	std::vector<VkDescriptorPoolSize> pool_sizes;
-	const VkDescriptorPoolSize        temp_poolsize{Vk::GetOneDescriptorPoolSizeDescription(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, descriptor_count)};
-	pool_sizes.push_back(temp_poolsize);
+	VkDescriptorPool                        temp_pool{};
+	const std::vector<VkDescriptorPoolSize> pool_sizes{
+	    Vk::GetOneDescriptorPoolSizeDescription(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, descriptor_count)};
 
-	const VkDescriptorPoolCreateInfo descriptor_pool_CI{Vk::GetDescriptorPoolCI(pool_sizes, static_cast<uint32_t>(materials.size()))};
-
-	VK_CHECK_RESULT(vkCreateDescriptorPool(device_manager.GetLogicalDevice(), &descriptor_pool_CI, nullptr, &temp_pool))
-
-	pools_for_model.push_back(temp_pool);        //一个模型可能会被多次使用，每次使用都要分配新的descriptor set
+	if (option & Vk::ModelLoadingOption::BindlessRenderingMode)
+	{
+		const VkDescriptorPoolCreateInfo descriptor_pool_CI{Vk::GetDescriptorPoolCI(pool_sizes, static_cast<uint32_t>(materials.size()) * pool_sizes.size(),
+		                                                                            VK_DESCRIPTOR_POOL_CREATE_UPDATE_AFTER_BIND_BIT_EXT)};
+		VK_CHECK_RESULT(vkCreateDescriptorPool(device_manager.GetLogicalDevice(), &descriptor_pool_CI, nullptr, &temp_pool))
+		pools_for_model.push_back(temp_pool);        //一个模型可能会被多次使用，每次使用都要分配新的descriptor set,所以就需要新的descriptor pool
+	}
+	else
+	{
+		const VkDescriptorPoolCreateInfo descriptor_pool_CI{Vk::GetDescriptorPoolCI(pool_sizes, static_cast<uint32_t>(materials.size()))};
+		VK_CHECK_RESULT(vkCreateDescriptorPool(device_manager.GetLogicalDevice(), &descriptor_pool_CI, nullptr, &temp_pool))
+		pools_for_model.push_back(temp_pool);        //一个模型可能会被多次使用，每次使用都要分配新的descriptor set，所以就需要新的descriptor pool
+	}
 }

@@ -31,7 +31,7 @@ void MSAAPass::ResourceInit()
 		//这个VK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT多数在移动端才能被支持，这里就创建不了
 		//texture_img_PP.default_image_mem_prop_flag = VK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT;
 
-		texture_img_PP.default_final_layout = VK_IMAGE_LAYOUT_UNDEFINED;        //TODO: check layout transition after creation of this image
+		texture_img_PP.default_layout_right_aft_creation = VK_IMAGE_LAYOUT_UNDEFINED;        //TODO: check layout transition after creation of this image
 
 		//const auto sampler_CI  = SamplerCI::PopulateTexSamplerCI();
 		const auto img_view_CI        = ImgViewCI::PopulateTextureImgViewCI(swapchain_manager.GetSwapChainImageFormat());
@@ -46,7 +46,7 @@ void MSAAPass::ResourceInit()
 		texture_img_PP.default_image_CI.usage   = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT;
 		//texture_img_PP.default_image_mem_prop_flag = VK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT;
 
-		texture_img_PP.default_final_layout = VK_IMAGE_LAYOUT_UNDEFINED;        //TODO: check layout transition after creation of this image
+		texture_img_PP.default_layout_right_aft_creation = VK_IMAGE_LAYOUT_UNDEFINED;        //TODO: check layout transition after creation of this image
 		//const auto sampler_CI  = SamplerCI::PopulateTexSamplerCI();
 		const auto img_view_CI        = ImgViewCI::PopulateDepthImgViewCI(gfx.SwapchainMan());
 		multisampled_depth_attachment = renderpass_manager.GetTextureFactory().ProduceEmptyTextureArray(texture_img_PP, std::nullopt, img_view_CI, Vk::SWAP_IMG_COUNT);
@@ -94,7 +94,7 @@ void MSAAPass::CreateDescriptorSetPools()
 	/**********************************descriptor pool***********************************/
 	const std::vector desc_pool_sizes{
 	    Vk::GetOneDescriptorPoolSizeDescription(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, Vk::DescriptorCount<1> * swapchain_manager.GetSwapImageCount())};
-	const auto desc_pool_CI = Vk::GetDescriptorPoolCI(desc_pool_sizes, swapchain_manager.GetSwapImageCount());
+	const auto desc_pool_CI = Vk::GetDescriptorPoolCI(desc_pool_sizes, swapchain_manager.GetSwapImageCount() );
 
 	local_descriptor_pool = renderpass_manager.GetDescriptorManagerV0().ProduceDescriptorPoolUnsafe(desc_pool_CI);
 }
@@ -107,7 +107,7 @@ void MSAAPass::CreateDescriptorSetLayout()
 		const auto        binding0{Vk::GetDescriptorSetLayoutBinding(Vk::Binding<0>, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)};
 		const std::vector bindings{binding0};
 
-		const auto desc_set_layout_CI = Vk::GetDescriptorSetLayoutCI(bindings);
+		const auto desc_set_layout_CI = Vk::GetDescriptorSetLayoutCI(bindings );
 		local_descriptor_set_layout   = renderpass_manager.GetDescriptorManagerV0().ProduceDescriptorSetLayoutUnsafe(desc_set_layout_CI);
 	}
 }
@@ -123,7 +123,7 @@ void MSAAPass::CreateDescriptorSets()
 
 void MSAAPass::CreateAttachments()
 {
-	const VkAttachmentInfo::Memento swapchain_attachment{
+	const VkAttachmentInfo::WithinPass swapchain_attachment{
 	    .format           = swapchain_manager.GetSwapChainImageFormat(),
 	    .attachment_index = Vk::AttachmentIndex<0>,        //存疑TODO:need to modify this
 
@@ -140,7 +140,7 @@ void MSAAPass::CreateAttachments()
 	};
 	swapchain_attachments_infos = VkAttachmentInfo::GetAttachmentInfos(swapchain_attachment, global_resources.swapchain_attachments);
 
-	const VkAttachmentInfo::Memento color_attachment{
+	const VkAttachmentInfo::WithinPass color_attachment{
 	    .format           = swapchain_manager.GetSwapChainImageFormat(),
 	    .attachment_index = Vk::AttachmentIndex<0>,
 
@@ -162,7 +162,7 @@ void MSAAPass::CreateAttachments()
 
 
 
-	const VkAttachmentInfo::Memento depth_attachment{
+	const VkAttachmentInfo::WithinPass depth_attachment{
 	    .format           = swapchain_manager.FindDepthFormat(),
 	    .attachment_index = Vk::AttachmentIndex<1>,
 

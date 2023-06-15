@@ -39,7 +39,7 @@ void PrefilterAndLUTMapGenPass::CreateDescriptorSetPools()
 	/**********************************descriptor pool***********************************/
 	const std::vector desc_pool_sizes{
 	    Vk::GetOneDescriptorPoolSizeDescription(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, Vk::DescriptorCount<1>)};
-	const auto desc_pool_CI = Vk::GetDescriptorPoolCI(desc_pool_sizes, Vk::SetCount<1>);
+	const auto desc_pool_CI = Vk::GetDescriptorPoolCI(desc_pool_sizes, Vk::SetCount<1> );
 
 	prefiltered_descriptor_pool = renderpass_manager.GetDescriptorManagerV0().ProduceDescriptorPoolUnsafe(desc_pool_CI);
 
@@ -54,7 +54,7 @@ void PrefilterAndLUTMapGenPass::CreateDescriptorSetLayout()
 	const auto        binding0{Vk::GetDescriptorSetLayoutBinding(Vk::Binding<0>, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)};        //env map
 
 	const std::vector bindings{binding0};
-	const auto        desc_set_layout_CI = Vk::GetDescriptorSetLayoutCI(bindings);
+	const auto        desc_set_layout_CI = Vk::GetDescriptorSetLayoutCI(bindings );
 
 	prefiltered_descriptor_set_layout = descriptor_manager.ProduceDescriptorSetLayoutUnsafe(desc_set_layout_CI);
 }
@@ -179,7 +179,7 @@ void PrefilterAndLUTMapGenPass::PrefilteredResourcesInit()
 		texture_img_PP.default_image_CI.usage       = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 		texture_img_PP.default_image_CI.arrayLayers = 6;
 		texture_img_PP.default_image_CI.mipLevels   = prefiltered_mip_count;
-		texture_img_PP.default_final_layout         = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;        //TODO: check layout transition after creation of this image
+		texture_img_PP.default_layout_right_aft_creation         = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;        //TODO: check layout transition after creation of this image
 
 		auto sampler_CI   = SamplerCI::PopulateCubeTexSamplerCI();
 		sampler_CI.maxLod = static_cast<float>(prefiltered_mip_count);
@@ -187,18 +187,18 @@ void PrefilterAndLUTMapGenPass::PrefilteredResourcesInit()
 		auto img_view_CI                        = ImgViewCI::PopulateCubeMapImgViewCI(prefiltered_img_format);
 		img_view_CI.subresourceRange.levelCount = prefiltered_mip_count;
 
-		global_resources.prefiltered_map = renderpass_manager.GetTextureFactory().ProduceEmptyTexture(texture_img_PP, sampler_CI, img_view_CI);
+		global_resources.prefiltered_map = renderpass_manager.GetTextureFactory().ProduceUnfilledTexture(texture_img_PP, sampler_CI, img_view_CI);
 	}
 	/*******************************frame buffer images**********************************/
 	{
 		TextureImgPP texture_img_PP{prefiltered_img_format, extend_of_prefiltered_color_attachment, Vk::ImgCINillFlag};
 
 		texture_img_PP.default_image_CI.usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
-		texture_img_PP.default_final_layout   = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;        //TODO: check layout transition after creation of this image
+		texture_img_PP.default_layout_right_aft_creation   = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;        //TODO: check layout transition after creation of this image
 
 		//const auto sampler_CI  = SamplerCI::PopulateTexSamplerCI();
 		const auto img_view_CI       = ImgViewCI::PopulateTextureImgViewCI(prefiltered_img_format);
-		prefiltered_color_attachment = renderpass_manager.GetTextureFactory().ProduceEmptyTexture(texture_img_PP, std::nullopt, img_view_CI);
+		prefiltered_color_attachment = renderpass_manager.GetTextureFactory().ProduceUnfilledTexture(texture_img_PP, std::nullopt, img_view_CI);
 	}
 
 	/******************************depth buffer images**********************************/
@@ -208,7 +208,7 @@ void PrefilterAndLUTMapGenPass::PrefilteredResourcesInit()
 		depth_img_PP.default_image_extent = extend_of_depth_attachment;
 
 		auto depth_img_view_CI       = ImgViewCI::PopulateDepthImgViewCI(gfx.SwapchainMan());
-		prefiltered_depth_attachment = texture_factory.ProduceEmptyTexture(depth_img_PP, std::nullopt, depth_img_view_CI);
+		prefiltered_depth_attachment = texture_factory.ProduceUnfilledTexture(depth_img_PP, std::nullopt, depth_img_view_CI);
 	}
 }
 
@@ -524,12 +524,12 @@ void PrefilterAndLUTMapGenPass::LUTResourcesInit()
 		TextureImgPP texture_img_PP{LUT_img_format, extend_of_BRDF_LUT, Vk::ImgCINillFlag};
 
 		texture_img_PP.default_image_CI.usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
-		texture_img_PP.default_final_layout   = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+		texture_img_PP.default_layout_right_aft_creation   = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
 		auto sampler_CI  = SamplerCI::PopulateTexSamplerCI();
 		auto img_view_CI = ImgViewCI::PopulateTextureImgViewCI(LUT_img_format);
 
-		global_resources.LUT_map = renderpass_manager.GetTextureFactory().ProduceEmptyTexture(texture_img_PP, sampler_CI, img_view_CI);
+		global_resources.LUT_map = renderpass_manager.GetTextureFactory().ProduceUnfilledTexture(texture_img_PP, sampler_CI, img_view_CI);
 	}
 	/******************************depth buffer images**********************************/
 	{
@@ -538,13 +538,13 @@ void PrefilterAndLUTMapGenPass::LUTResourcesInit()
 		depth_img_PP.default_image_extent = extend_of_depth_attachment;
 
 		auto depth_img_view_CI = ImgViewCI::PopulateDepthImgViewCI(gfx.SwapchainMan());
-		LUT_depth_attachment   = texture_factory.ProduceEmptyTexture(depth_img_PP, std::nullopt, depth_img_view_CI);
+		LUT_depth_attachment   = texture_factory.ProduceUnfilledTexture(depth_img_PP, std::nullopt, depth_img_view_CI);
 	}
 }
 
 void PrefilterAndLUTMapGenPass::CreatePrefilteredAttachments()
 {
-	const VkAttachmentInfo::Memento color_attachment_info_meme{
+	const VkAttachmentInfo::WithinPass color_attachment_info_meme{
 	    .format           = prefiltered_img_format,
 	    .attachment_index = Vk::AttachmentIndex<0>,
 
@@ -562,7 +562,7 @@ void PrefilterAndLUTMapGenPass::CreatePrefilteredAttachments()
 	prefiltered_color_attachment_info = VkAttachmentInfo(color_attachment_info_meme, prefiltered_color_attachment);
 
 	//Depth attachment index 1
-	const VkAttachmentInfo::Memento depth_attachment_info_meme{
+	const VkAttachmentInfo::WithinPass depth_attachment_info_meme{
 	    .format           = swapchain_manager.FindDepthFormat(),
 	    .attachment_index = Vk::AttachmentIndex<1>,
 
@@ -581,7 +581,7 @@ void PrefilterAndLUTMapGenPass::CreatePrefilteredAttachments()
 
 void PrefilterAndLUTMapGenPass::CreateLUTAttachments()
 {
-	const VkAttachmentInfo::Memento color_attachment_info_meme{
+	const VkAttachmentInfo::WithinPass color_attachment_info_meme{
 	    .format           = LUT_img_format,
 	    .attachment_index = Vk::AttachmentIndex<0>,
 
@@ -599,7 +599,7 @@ void PrefilterAndLUTMapGenPass::CreateLUTAttachments()
 	LUT_color_attachment_info = VkAttachmentInfo(color_attachment_info_meme, global_resources.LUT_map);
 
 	//Depth attachment index 1
-	const VkAttachmentInfo::Memento depth_attachment_info_meme{
+	const VkAttachmentInfo::WithinPass depth_attachment_info_meme{
 	    .format           = swapchain_manager.FindDepthFormat(),
 	    .attachment_index = Vk::AttachmentIndex<1>,
 

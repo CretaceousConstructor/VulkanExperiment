@@ -144,11 +144,11 @@ VkDeviceMemory VkImageFactory::CreateAndBindMemory(ImagePP &para_pack, VkImage t
 
 void VkImageFactory::TransitionImageLayout(const ImagePP &para_pack, const std::shared_ptr<VkImageBase> &result)
 {
-	if (para_pack.default_final_layout == VK_IMAGE_LAYOUT_UNDEFINED)
+	if (para_pack.default_layout_right_aft_creation == VK_IMAGE_LAYOUT_UNDEFINED)
 	{
 		return;
 	}
-	else if (para_pack.default_final_layout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
+	else if (para_pack.default_layout_right_aft_creation == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
 	{
 		VkImageSubresourceRange subresource_range;
 		subresource_range.baseMipLevel   = 0;
@@ -156,7 +156,7 @@ void VkImageFactory::TransitionImageLayout(const ImagePP &para_pack, const std::
 		subresource_range.baseArrayLayer = 0;
 		subresource_range.layerCount     = para_pack.default_image_CI.arrayLayers;
 
-		result->TransitionImageLayout(VK_IMAGE_LAYOUT_UNDEFINED, para_pack.default_final_layout, VkDeviceManager::CommandPoolType::transfor_command_pool, subresource_range);
+		result->TransitionImageLayout(VK_IMAGE_LAYOUT_UNDEFINED, para_pack.default_layout_right_aft_creation, VkDeviceManager::CommandPoolType::transfor_command_pool, subresource_range);
 	}
 	else
 	{
@@ -165,7 +165,7 @@ void VkImageFactory::TransitionImageLayout(const ImagePP &para_pack, const std::
 		subresource_range.levelCount     = para_pack.default_image_CI.mipLevels;
 		subresource_range.baseArrayLayer = 0;
 		subresource_range.layerCount     = para_pack.default_image_CI.arrayLayers;
-		result->TransitionImageLayout(VK_IMAGE_LAYOUT_UNDEFINED, para_pack.default_final_layout, VkDeviceManager::CommandPoolType::graphics_command_pool, subresource_range);
+		result->TransitionImageLayout(VK_IMAGE_LAYOUT_UNDEFINED, para_pack.default_layout_right_aft_creation, VkDeviceManager::CommandPoolType::graphics_command_pool, subresource_range);
 	}
 
 	return;

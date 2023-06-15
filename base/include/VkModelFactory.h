@@ -21,24 +21,18 @@ class VkModelFactory
 	VkModelFactory(VkModelFactory &&)                 = delete;
 	VkModelFactory &operator=(VkModelFactory &&) = delete;
 
-	enum LoadingOption
-	{
-		None                  = 0x0,
-		LoadingImgByOurselves = 0x01,
-	};
-
 	template <typename M>
-	[[nodiscard]] std::shared_ptr<GltfModel<M>> GetGltfModel(const std::string &model_path, const LoadingOption option, uint32_t modle_id) const;
+	[[nodiscard]] std::shared_ptr<GltfModel<M>> GetGltfModel(const std::string &model_path, const typename Vk::ModelLoadingOption option, uint32_t modle_id) const;
 
 	class GltfModelPack
 	{
 	  public:
-		GltfModelPack(std::string path_, const tinygltf::Model &input_, const LoadingOption option_);
+		GltfModelPack(std::string path_, const tinygltf::Model &input_, const Vk::ModelLoadingOption option_);
 
-		const std::string      path{};
-		const tinygltf::Model &input;
-		std::string            model_directory{};
-		const LoadingOption    option;
+		const std::string            path{};
+		const tinygltf::Model &      input;
+		std::string                  model_directory{};
+		const Vk::ModelLoadingOption option{};
 		/*
 			Model data
 		*/
@@ -88,7 +82,7 @@ class VkModelFactory
 };
 
 template <typename M>
-std::shared_ptr<GltfModel<M>> VkModelFactory::GetGltfModel(const std::string &model_path, const LoadingOption option, uint32_t modle_id) const
+std::shared_ptr<GltfModel<M>> VkModelFactory::GetGltfModel(const std::string &model_path, const Vk::ModelLoadingOption option, uint32_t modle_id) const
 {
 	tinygltf::Model glTFInput;
 	const bool      file_loaded = LoadglTFFile(model_path, glTFInput);
@@ -123,6 +117,7 @@ std::shared_ptr<GltfModel<M>> VkModelFactory::GetGltfModel(const std::string &mo
 	        std::move(model.nodes),
 	        model.vertices_gpu,
 	        model.indices_gpu,
+	        model.option,
 	        gfx);
 	result->index_type = model.index_type_of_cpu_buffer;
 
@@ -233,8 +228,6 @@ inline void VkModelFactory::LoadMaterials<PbrMaterialMetallic>(GltfModelPack &mo
 	}
 }
 
-
-
 template <>
 inline void VkModelFactory::LoadMaterials<NonPbrMaterial>(GltfModelPack &model) const
 {
@@ -251,7 +244,7 @@ inline void VkModelFactory::LoadMaterials<NonPbrMaterial>(GltfModelPack &model) 
 	{
 		//TODO:
 		std::shared_ptr<NonPbrMaterial> mat{std::make_shared<NonPbrMaterial>(gfx)};
-		const tinygltf::Material &           glTFMaterial = input.materials[i];
+		const tinygltf::Material &      glTFMaterial = input.materials[i];
 
 		//BASE COLOR TEXTURE
 		if (glTFMaterial.values.contains("baseColorFactor"))
@@ -262,7 +255,6 @@ inline void VkModelFactory::LoadMaterials<NonPbrMaterial>(GltfModelPack &model) 
 		{
 			mat->baseColorTextureIndex = glTFMaterial.values.at("baseColorTexture").TextureIndex();
 		}
-
 
 		//NORMAL MAP TEXTURE
 		if (glTFMaterial.additionalValues.contains("normalTexture"))
@@ -323,6 +315,3 @@ inline void VkModelFactory::LoadMaterials<NonPbrMaterial>(GltfModelPack &model) 
 		materials.push_back(mat);
 	}
 }
-
-
-
