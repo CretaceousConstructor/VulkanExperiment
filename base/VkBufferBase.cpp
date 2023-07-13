@@ -12,8 +12,6 @@ VkBufferBase::~VkBufferBase()
 	Unmap();
 	vkDestroyBuffer(device_manager.GetLogicalDevice(), buffer, nullptr);
 	vkFreeMemory(device_manager.GetLogicalDevice(), buffer_memory, nullptr);
-
-
 }
 
 VkWriteDescriptorSet VkBufferBase::GetWriteDescriptorSetInfo(uint32_t dstbinding, uint32_t dstArrayElement, VkDeviceSize size, VkDeviceSize offset)
@@ -35,12 +33,17 @@ VkWriteDescriptorSet VkBufferBase::GetWriteDescriptorSetInfo(uint32_t dstbinding
 
 void VkBufferBase::CopyFrom(void const *outside_data_to_be_mapped, size_t outside_data_size, VkDeviceSize mapped_region_starting_offset) const
 {
+
+
 	if (nullptr==mapped_ptr_to_GPU_memory)
 	{
 		throw std::runtime_error("No mapped region found!");
 	}
 
 	memcpy(static_cast<void *>((static_cast<uint8_t *>(mapped_ptr_to_GPU_memory) + mapped_region_starting_offset)), outside_data_to_be_mapped, outside_data_size);
+
+
+
 }
 
 void VkBufferBase::MapMemory(VkDeviceSize size, VkDeviceSize offset)

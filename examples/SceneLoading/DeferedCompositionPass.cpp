@@ -129,57 +129,57 @@ void DeferedCompositionPass::CreateDescriptorSets()
 
 void DeferedCompositionPass::CreateAttachments()
 {
-	const VkAttachmentInfo::WithinPass swapchain_attachment{
-	    .format           = swapchain_manager.GetSwapChainImageFormat(),
-	    .attachment_index = Vk::InvalidAttachIndex,        //无效占位的index
+	//const VkAttachmentInfo::WithinPass swapchain_attachment{
+	//    .format           = swapchain_manager.GetSwapChainImageFormat(),
+	//    .attachment_index = Vk::InvalidAttachIndex,        //无效占位的index
 
-	    .loadOp  = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-	    .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+	//    .loadOp  = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+	//    .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
 
-	    .layout_prepass = VK_IMAGE_LAYOUT_UNDEFINED,
-	    //VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
-	    .layout_inpass    = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-	    .layout_afterpass = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+	//    .layout_prepass = VK_IMAGE_LAYOUT_UNDEFINED,
+	//    //VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
+	//    .layout_inpass    = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+	//    .layout_afterpass = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
 
-	    .type        = VkAttachmentInfo::Type::ColorAttachment,
-	    .clear_value = VkClearValue{.color{0.0f, 0.0f, 0.0f, 1.0f}},
-	};
-	swapchain_attachments_infos = VkAttachmentInfo::GetAttachmentInfos(swapchain_attachment, global_resources.swapchain_attachments);
+	//    .type        = VkAttachmentInfo::Type::ColorAttachment,
+	//    .clear_value = VkClearValue{.color{0.0f, 0.0f, 0.0f, 1.0f}},
+	//};
+	//swapchain_attachments_infos = VkAttachmentInfo::GetAttachmentInfos(swapchain_attachment, global_resources.swapchain_attachments);
 
-	const VkAttachmentInfo::WithinPass color_attachment{
-	    .format           = swapchain_manager.GetSwapChainImageFormat(),
-	    .attachment_index = Vk::AttachmentIndex<0>,
+	//const VkAttachmentInfo::WithinPass color_attachment{
+	//    .format           = swapchain_manager.GetSwapChainImageFormat(),
+	//    .attachment_index = Vk::AttachmentIndex<0>,
 
-	    .loadOp  = VK_ATTACHMENT_LOAD_OP_CLEAR,
-	    .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+	//    .loadOp  = VK_ATTACHMENT_LOAD_OP_CLEAR,
+	//    .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
 
-	    .layout_prepass   = VK_IMAGE_LAYOUT_UNDEFINED,
-	    .layout_inpass    = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-	    .layout_afterpass = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+	//    .layout_prepass   = VK_IMAGE_LAYOUT_UNDEFINED,
+	//    .layout_inpass    = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+	//    .layout_afterpass = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
 
-	    .type        = VkAttachmentInfo::Type::ColorAttachment,
-	    .clear_value = VkClearValue{.color{0.0f, 0.0f, 0.0f, 1.0f}},
+	//    .type        = VkAttachmentInfo::Type::ColorAttachment,
+	//    .clear_value = VkClearValue{.color{0.0f, 0.0f, 0.0f, 1.0f}},
 
-	    .resolveMode        = VK_RESOLVE_MODE_AVERAGE_BIT,
-	    .resolveImageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-	};
+	//    .resolveMode        = VK_RESOLVE_MODE_AVERAGE_BIT,
+	//    .resolveImageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+	//};
 
-	MS_color_attachments_infos = VkAttachmentInfo::GetAttachmentInfos(color_attachment, multisampled_color_attachment, global_resources.swapchain_attachments);        //最后一个参数填接受resolve的attachment
+	//MS_color_attachments_infos = VkAttachmentInfo::GetAttachmentInfos(color_attachment, multisampled_color_attachment, global_resources.swapchain_attachments);        //最后一个参数填接受resolve的attachment
 
-	const VkAttachmentInfo::WithinPass depth_stencil_attachment{
-	    .format           = DeferedRendering::depth_stencil_format,
-	    .attachment_index = Vk::AttachmentIndex<1>,
+	//const VkAttachmentInfo::WithinPass depth_stencil_attachment{
+	//    .format           = DeferedRendering::depth_stencil_format,
+	//    .attachment_index = Vk::AttachmentIndex<1>,
 
-	    .loadOp  = VK_ATTACHMENT_LOAD_OP_CLEAR,
-	    .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+	//    .loadOp  = VK_ATTACHMENT_LOAD_OP_CLEAR,
+	//    .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
 
-	    .layout_prepass   = VK_IMAGE_LAYOUT_UNDEFINED,
-	    .layout_inpass    = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-	    .layout_afterpass = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+	//    .layout_prepass   = VK_IMAGE_LAYOUT_UNDEFINED,
+	//    .layout_inpass    = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+	//    .layout_afterpass = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
 
-	    .type        = VkAttachmentInfo::Type::DepthStencilAttachment,
-	    .clear_value = VkClearValue{.depthStencil{1.0f, 0}}};
-	MS_depth_stencil_attachments_infos = VkAttachmentInfo::GetAttachmentInfos(depth_stencil_attachment, multisampled_depth_stencil_attachment);
+	//    .type        = VkAttachmentInfo::Type::DepthStencilAttachment,
+	//    .clear_value = VkClearValue{.depthStencil{1.0f, 0}}};
+	//MS_depth_stencil_attachments_infos = VkAttachmentInfo::GetAttachmentInfos(depth_stencil_attachment, multisampled_depth_stencil_attachment);
 }
 
 void DeferedCompositionPass::CreateGraphicsPipelineLayout()
@@ -386,9 +386,9 @@ void DeferedCompositionPass::BeginRenderpass(const std::vector<VkCommandBuffer> 
 		VkRenderingAttachmentInfo              depth_attachment_info;
 		VkRenderingAttachmentInfo              stensil_attachment_info;
 
-		VkAttachment::AddRenderingAttachmentInfo(color_attachment_infos, depth_attachment_info, stensil_attachment_info, image_index,
-		                                         MS_color_attachments_infos,
-		                                         MS_depth_stencil_attachments_infos);
+		//VkAttachment::AddRenderingAttachmentInfo(color_attachment_infos, depth_attachment_info, stensil_attachment_info, image_index, MS_color_attachments_infos,MS_depth_stencil_attachments_infos);
+
+
 		rendering_info.colorAttachmentCount = static_cast<uint32_t>(color_attachment_infos.size());
 		rendering_info.pColorAttachments    = color_attachment_infos.data();
 		rendering_info.pDepthAttachment     = &depth_attachment_info;

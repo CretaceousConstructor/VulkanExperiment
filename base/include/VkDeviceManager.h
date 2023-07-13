@@ -88,4 +88,8 @@ class VkDeviceManager
 	VkQueue graphics_queue{nullptr};        //used to issue commands
 	VkQueue present_queue{nullptr};         //used to present images
 	VkQueue tranfer_queue{nullptr};         //used for tranfer buffer
+
+
+
+
 };

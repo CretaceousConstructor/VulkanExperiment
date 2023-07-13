@@ -29,8 +29,8 @@ public:
 	virtual void CreateDescriptorSetLayoutRG(){} ;
 	virtual void CreateDescriptorSetsRG(){}      ;
 
-	virtual void CreateAttachmentsRG(std::vector<VkAttachmentInfo> attachment_infos){};
-	virtual void CreateUniformBufferDescriptorsRG(std::vector<VkUniBufUsageInfo> attachment_infos){};
+	virtual void GetAttachmentsRG(std::vector<VkAttachmentInfo> attachment_infos){};
+	virtual void GetUniformBufferDescriptorsRG(std::vector<VkUniBufUsageInfo> attachment_infos){};
 
 
 	virtual void CreateGraphicsPipelineLayoutRG(){} ;
@@ -39,10 +39,10 @@ public:
 
 public:
 
-	virtual void BeginRenderpassRG(const VkCommandBuffer command_buffers) {}
+	virtual void BeginRenderpassRG(const VkCommandBuffer cmd_buf) {}
 	virtual void UpdateDescriptorSetsRG() {}
-	virtual void RecordRenderpassCommandRG(const VkCommandBuffer command_buffers) {}
-	virtual void EndRenderpassRG(const VkCommandBuffer command_buffers) {}
+	virtual void RecordRenderpassCommandRG(const VkCommandBuffer cmd_buf) {}
+	virtual void EndRenderpassRG(const VkCommandBuffer cmd_buf) {}
 
 
   public:

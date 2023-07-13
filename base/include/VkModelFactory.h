@@ -1,5 +1,5 @@
 #pragma once
-#include "GltfModel.h"
+#include "VkGltfModel.h"
 #include "ModelStrcture.h"
 #include "NonPbrMaterial.h"
 #include "PbrMaterialMetallic.h"
@@ -22,7 +22,7 @@ class VkModelFactory
 	VkModelFactory &operator=(VkModelFactory &&) = delete;
 
 	template <typename M>
-	[[nodiscard]] std::shared_ptr<GltfModel<M>> GetGltfModel(const std::string &model_path, const typename Vk::ModelLoadingOption option, uint32_t modle_id) const;
+	[[nodiscard]] std::shared_ptr<VkGltfModel<M>> GetGltfModel(const std::string &model_path, const typename Vk::ModelLoadingOption option, uint32_t modle_id) const;
 
 	class GltfModelPack
 	{
@@ -82,7 +82,7 @@ class VkModelFactory
 };
 
 template <typename M>
-std::shared_ptr<GltfModel<M>> VkModelFactory::GetGltfModel(const std::string &model_path, const Vk::ModelLoadingOption option, uint32_t modle_id) const
+std::shared_ptr<VkGltfModel<M>> VkModelFactory::GetGltfModel(const std::string &model_path, const Vk::ModelLoadingOption option, uint32_t modle_id) const
 {
 	tinygltf::Model glTFInput;
 	const bool      file_loaded = LoadglTFFile(model_path, glTFInput);
@@ -107,8 +107,8 @@ std::shared_ptr<GltfModel<M>> VkModelFactory::GetGltfModel(const std::string &mo
 		throw std::runtime_error("Could not open the glTF file.\n");
 	}
 
-	std::shared_ptr<GltfModel<M>> result =
-	    std::make_shared<GltfModel<M>>(
+	std::shared_ptr<VkGltfModel<M>> result =
+	    std::make_shared<VkGltfModel<M>>(
 	        model_path,
 	        std::move(model.images),
 	        std::move(model.image_formats),

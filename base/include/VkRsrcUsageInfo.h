@@ -1,8 +1,8 @@
 #pragma once
 #include "Vk.h"
+#include "VkBufferBase.h"
 #include "VkGraphicsComponent.h"
 #include "VkTexture.h"
-#include "VkBufferBase.h"
 #include <memory>
 #include <ranges>
 #include <vector>
@@ -10,14 +10,10 @@
 class VkUniBufUsageInfo
 {
   public:
-	uint32_t dst_binding{};
-	uint32_t dst_array_element{};
+	uint32_t                      dst_binding{};
+	uint32_t                      dst_array_element{};
 	std::shared_ptr<VkBufferBase> buf;
-
 };
-
-
-
 
 class VkAttachmentInfo
 {
@@ -65,11 +61,12 @@ class VkAttachmentInfo
 		    VkClearValue         clear_value_,
 
 		    VkResolveModeFlagBits resolve_mode_         = VK_RESOLVE_MODE_NONE,
-		    VkImageLayout         resolve_image_layout_ = VK_IMAGE_LAYOUT_UNDEFINED
-
+		    VkImageLayout         resolve_image_layout_ = VK_IMAGE_LAYOUT_UNDEFINED,
 		    //VkImageView              resolveImageView{};
 
-		    ) :
+		    VkAttachmentLoadOp  load_op_   = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+		    VkAttachmentStoreOp store_op_ = VK_ATTACHMENT_STORE_OP_DONT_CARE
+		) :
 		    RsrcUsageInfoInPass(info_y),
 		    format(format_),
 		    attachment_index(attachment_index_),
@@ -79,7 +76,10 @@ class VkAttachmentInfo
 		    type(type_),
 		    clear_value(clear_value_),
 		    resolve_mode(resolve_mode_),
-		    resolve_image_layout(resolve_image_layout_)
+		    resolve_image_layout(resolve_image_layout_),
+			load_op(load_op_),
+		    store_op(store_op_)
+
 		{
 		}
 
@@ -99,6 +99,8 @@ class VkAttachmentInfo
 		VkResolveModeFlagBits resolve_mode{};
 		VkImageLayout         resolve_image_layout{};
 		//VkImageView              resolveImageView{};
+		VkAttachmentLoadOp  load_op;
+		VkAttachmentStoreOp store_op;
 
 		std::optional<VkSamplerCreateInfo>   sampler_CI;
 		std::optional<VkImageViewCreateInfo> img_view_CI;
@@ -113,7 +115,7 @@ class VkAttachmentInfo
 			return img_view_CI;
 		}
 
-		[[nodiscard]] Vk::InfoSync GetSynInfo() const override
+		[[nodiscard]] Vk::SyncInfo GetSynInfo() const override
 		{
 			return {
 			    .access_mask   = access_mask,
@@ -127,8 +129,8 @@ class VkAttachmentInfo
 		WithinPass(const WithinPassRG &rhs) :
 		    format(rhs.format),
 		    attachment_index(rhs.attachment_index),
-		    loadOp(VkAttachmentLoadOp::VK_ATTACHMENT_LOAD_OP_DONT_CARE),
-		    storeOp(VkAttachmentStoreOp::VK_ATTACHMENT_STORE_OP_DONT_CARE),
+		    loadOp(rhs.load_op),
+		    storeOp(rhs.store_op),
 		    layout_prepass(rhs.layout_inpass),
 		    layout_inpass(rhs.layout_inpass),
 		    layout_afterpass(rhs.layout_inpass),
@@ -212,19 +214,7 @@ class VkAttachmentInfo
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-namespace AttachmentGeneration
+namespace AttachmentInfoGeneration
 {
 template <typename T>
 inline void Process(
@@ -337,4 +327,4 @@ inline void GenerateRenderingAttachInfo(
 	}
 }
 
-}        // namespace VkAttachment
+}        // namespace AttachmentInfoGeneration

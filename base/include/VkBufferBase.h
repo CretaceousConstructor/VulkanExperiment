@@ -10,15 +10,23 @@ class VkBufferBase
 
 	struct Descriptor
 	{
+		//BufferCI is defined for convience
 		struct BufferCI
 		{
 			VkBufferUsageFlags    usage{};
 			VkSharingMode         sharing_mode{};
 			VkMemoryPropertyFlags memory_properties{};
 		};
+
+		VkBufferUsageFlags    usage{};
+		VkSharingMode         sharing_mode{};
+		VkMemoryPropertyFlags memory_properties{};
+
 		VkDeviceSize buffer_size{};
 	};
 
+
+	//following constexpr are defined for convience
 	static constexpr Descriptor::BufferCI StagingBuffer{
 	    VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
 	    VK_SHARING_MODE_EXCLUSIVE,
@@ -48,6 +56,12 @@ class VkBufferBase
 	    VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
 	    VK_SHARING_MODE_EXCLUSIVE,
 	    VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT};
+
+
+
+
+
+
 
 	class WithinPassRG final : public Vk::RsrcUsageInfoInPass 
 	{
@@ -104,16 +118,30 @@ class VkBufferBase
 		Type type{Type::Unknown};
 		//VkClearValue         clear_value{};
 
-		[[nodiscard]] Vk::InfoSync GetSynInfo() const override 
+		[[nodiscard]] Vk::SyncInfo GetSynInfo() const override 
 		{
 			return
 			{
 				.access_mask   = access_mask,
 				.stage_mask    = stage_mask,
-				.layout_inpass = VK_IMAGE_LAYOUT_UNDEFINED
+				.layout_inpass = VK_IMAGE_LAYOUT_UNDEFINED,
 			};
 		}
 	};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   public:
 	VkBufferBase(VkGraphicsComponent &gfx_, const VkBuffer buffer_, const VkDeviceMemory buffer_memory_, VkDeviceSize size_, VkDeviceSize mem_required_size_);

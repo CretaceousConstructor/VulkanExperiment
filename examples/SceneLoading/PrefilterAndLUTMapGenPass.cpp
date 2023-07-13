@@ -278,7 +278,7 @@ void PrefilterAndLUTMapGenPass::ExecutePrefilteredMapGen()
 	VkRenderingAttachmentInfo              local_depth_attachment_info;
 	VkRenderingAttachmentInfo              local_stensil_attachment_info;
 
-	VkAttachment::AddRenderingAttachmentInfo(local_color_attachment_infos, local_depth_attachment_info, local_stensil_attachment_info, prefiltered_color_attachment_info, prefiltered_depth_attachment_info);
+	//VkAttachment::AddRenderingAttachmentInfo(local_color_attachment_infos, local_depth_attachment_info, local_stensil_attachment_info, prefiltered_color_attachment_info, prefiltered_depth_attachment_info);
 
 	rendering_info.colorAttachmentCount = static_cast<uint32_t>(local_color_attachment_infos.size());
 	rendering_info.pColorAttachments    = local_color_attachment_infos.data();
@@ -320,7 +320,7 @@ void PrefilterAndLUTMapGenPass::ExecutePrefilteredMapGen()
 			                   VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, offsetof(PushBlockPrefiltered, pv), sizeof(PushBlockPrefiltered) - offsetof(PushBlockPrefiltered, pv), &push_block_prefiltered_cpu.pv);
 
 			//DRAWING
-			global_resources.sky_box->DrawStatically(prefiltered_gen_command_buffer);
+			global_resources.sky_box->DrawRecording(prefiltered_gen_command_buffer);
 
 			//END RENDERING
 			vkCmdEndRendering(prefiltered_gen_command_buffer);
@@ -451,7 +451,7 @@ void PrefilterAndLUTMapGenPass::ExecuteLUTMapGen()
 	VkRenderingAttachmentInfo              local_depth_attachment_info;
 	VkRenderingAttachmentInfo              local_stensil_attachment_info;
 
-	VkAttachment::AddRenderingAttachmentInfo(local_color_attachment_infos, local_depth_attachment_info, local_stensil_attachment_info, LUT_color_attachment_info, LUT_depth_attachment_info);
+	//VkAttachment::AddRenderingAttachmentInfo(local_color_attachment_infos, local_depth_attachment_info, local_stensil_attachment_info, LUT_color_attachment_info, LUT_depth_attachment_info);
 
 	rendering_info.colorAttachmentCount = static_cast<uint32_t>(local_color_attachment_infos.size());
 	rendering_info.pColorAttachments    = local_color_attachment_infos.data();
@@ -544,76 +544,76 @@ void PrefilterAndLUTMapGenPass::LUTResourcesInit()
 
 void PrefilterAndLUTMapGenPass::CreatePrefilteredAttachments()
 {
-	const VkAttachmentInfo::WithinPass color_attachment_info_meme{
-	    .format           = prefiltered_img_format,
-	    .attachment_index = Vk::AttachmentIndex<0>,
+	//const VkAttachmentInfo::WithinPass color_attachment_info_meme{
+	//    .format           = prefiltered_img_format,
+	//    .attachment_index = Vk::AttachmentIndex<0>,
 
-	    .loadOp  = VK_ATTACHMENT_LOAD_OP_CLEAR,
-	    .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+	//    .loadOp  = VK_ATTACHMENT_LOAD_OP_CLEAR,
+	//    .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
 
-	    .layout_prepass   = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-	    .layout_inpass    = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-	    .layout_afterpass = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+	//    .layout_prepass   = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+	//    .layout_inpass    = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+	//    .layout_afterpass = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
 
-	    .type        = VkAttachmentInfo::Type::ColorAttachment,
-	    .clear_value = VkClearValue{.color{0.0f, 0.0f, 0.0f, 1.0f}},
-	};
+	//    .type        = VkAttachmentInfo::Type::ColorAttachment,
+	//    .clear_value = VkClearValue{.color{0.0f, 0.0f, 0.0f, 1.0f}},
+	//};
 
-	prefiltered_color_attachment_info = VkAttachmentInfo(color_attachment_info_meme, prefiltered_color_attachment);
+	//prefiltered_color_attachment_info = VkAttachmentInfo(color_attachment_info_meme, prefiltered_color_attachment);
 
-	//Depth attachment index 1
-	const VkAttachmentInfo::WithinPass depth_attachment_info_meme{
-	    .format           = swapchain_manager.FindDepthFormat(),
-	    .attachment_index = Vk::AttachmentIndex<1>,
+	////Depth attachment index 1
+	//const VkAttachmentInfo::WithinPass depth_attachment_info_meme{
+	//    .format           = swapchain_manager.FindDepthFormat(),
+	//    .attachment_index = Vk::AttachmentIndex<1>,
 
-	    .loadOp  = VK_ATTACHMENT_LOAD_OP_CLEAR,
-	    .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+	//    .loadOp  = VK_ATTACHMENT_LOAD_OP_CLEAR,
+	//    .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
 
-	    .layout_prepass   = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-	    .layout_inpass    = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-	    .layout_afterpass = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+	//    .layout_prepass   = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+	//    .layout_inpass    = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+	//    .layout_afterpass = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
 
-	    .type        = VkAttachmentInfo::Type::DepthAttachment,
-	    .clear_value = VkClearValue{.depthStencil{1.0f, 0}}};
+	//    .type        = VkAttachmentInfo::Type::DepthAttachment,
+	//    .clear_value = VkClearValue{.depthStencil{1.0f, 0}}};
 
-	prefiltered_depth_attachment_info = VkAttachmentInfo(depth_attachment_info_meme, prefiltered_depth_attachment);
+	//prefiltered_depth_attachment_info = VkAttachmentInfo(depth_attachment_info_meme, prefiltered_depth_attachment);
 }
 
 void PrefilterAndLUTMapGenPass::CreateLUTAttachments()
 {
-	const VkAttachmentInfo::WithinPass color_attachment_info_meme{
-	    .format           = LUT_img_format,
-	    .attachment_index = Vk::AttachmentIndex<0>,
+	//const VkAttachmentInfo::WithinPass color_attachment_info_meme{
+	//    .format           = LUT_img_format,
+	//    .attachment_index = Vk::AttachmentIndex<0>,
 
-	    .loadOp  = VK_ATTACHMENT_LOAD_OP_CLEAR,
-	    .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+	//    .loadOp  = VK_ATTACHMENT_LOAD_OP_CLEAR,
+	//    .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
 
-	    .layout_prepass   = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-	    .layout_inpass    = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-	    .layout_afterpass = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+	//    .layout_prepass   = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+	//    .layout_inpass    = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+	//    .layout_afterpass = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
 
-	    .type        = VkAttachmentInfo::Type::ColorAttachment,
-	    .clear_value = VkClearValue{.color{0.0f, 0.0f, 0.0f, 1.0f}},
-	};
+	//    .type        = VkAttachmentInfo::Type::ColorAttachment,
+	//    .clear_value = VkClearValue{.color{0.0f, 0.0f, 0.0f, 1.0f}},
+	//};
 
-	LUT_color_attachment_info = VkAttachmentInfo(color_attachment_info_meme, global_resources.LUT_map);
+	//LUT_color_attachment_info = VkAttachmentInfo(color_attachment_info_meme, global_resources.LUT_map);
 
-	//Depth attachment index 1
-	const VkAttachmentInfo::WithinPass depth_attachment_info_meme{
-	    .format           = swapchain_manager.FindDepthFormat(),
-	    .attachment_index = Vk::AttachmentIndex<1>,
+	////Depth attachment index 1
+	//const VkAttachmentInfo::WithinPass depth_attachment_info_meme{
+	//    .format           = swapchain_manager.FindDepthFormat(),
+	//    .attachment_index = Vk::AttachmentIndex<1>,
 
-	    .loadOp  = VK_ATTACHMENT_LOAD_OP_CLEAR,
-	    .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+	//    .loadOp  = VK_ATTACHMENT_LOAD_OP_CLEAR,
+	//    .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
 
-	    .layout_prepass   = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-	    .layout_inpass    = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-	    .layout_afterpass = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+	//    .layout_prepass   = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+	//    .layout_inpass    = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+	//    .layout_afterpass = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
 
-	    .type        = VkAttachmentInfo::Type::DepthAttachment,
-	    .clear_value = VkClearValue{.depthStencil{1.0f, 0}}};
+	//    .type        = VkAttachmentInfo::Type::DepthAttachment,
+	//    .clear_value = VkClearValue{.depthStencil{1.0f, 0}}};
 
-	LUT_depth_attachment_info = VkAttachmentInfo(depth_attachment_info_meme, LUT_depth_attachment);
+	//LUT_depth_attachment_info = VkAttachmentInfo(depth_attachment_info_meme, LUT_depth_attachment);
 }
 
 void PrefilterAndLUTMapGenPass::UpdateResources(size_t current_image)

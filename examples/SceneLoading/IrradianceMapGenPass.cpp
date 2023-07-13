@@ -65,57 +65,60 @@ void IrradianceMapGenPass::CreateDescriptorSetPools()
 
 void IrradianceMapGenPass::CreateDescriptorSetLayout()
 {
-	auto &descriptor_manager = renderpass_manager.GetDescriptorManagerV0();
-
-	const auto        binding0{Vk::GetDescriptorSetLayoutBinding(Vk::Binding<0>, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)};                  //matrix
-	const auto        binding1{Vk::GetDescriptorSetLayoutBinding(Vk::Binding<1>, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)};        //equirectangular_map
-	const std::vector bindings{binding0, binding1};
-	const auto        desc_set_layout_CI = Vk::GetDescriptorSetLayoutCI(bindings );
-
-	local_descriptor_set_layout = descriptor_manager.ProduceDescriptorSetLayoutUnsafe(desc_set_layout_CI);
+//	auto &descriptor_manager = renderpass_manager.GetDescriptorManagerV0();
+//
+//	const auto        binding0{Vk::GetDescriptorSetLayoutBinding(Vk::Binding<0>, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT)};                  //matrix
+//	const auto        binding1{Vk::GetDescriptorSetLayoutBinding(Vk::Binding<1>, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT)};        //equirectangular_map
+//	const std::vector bindings{binding0, binding1};
+//	const auto        desc_set_layout_CI = Vk::GetDescriptorSetLayoutCI(bindings );
+//
+//	local_descriptor_set_layout = descriptor_manager.ProduceDescriptorSetLayoutUnsafe(desc_set_layout_CI);
 }
+
+
 
 void IrradianceMapGenPass::CreateDescriptorSets()
 {
-	const auto &desciptor_set_factory = renderpass_manager.GetDescriptorSetFactory();
-	irradiance_descriptor_set         = desciptor_set_factory.ProduceDescriptorSet(local_descriptor_pool, local_descriptor_set_layout);
+//	const auto &desciptor_set_factory = renderpass_manager.GetDescriptorSetFactory();
+//	irradiance_descriptor_set         = desciptor_set_factory.ProduceDescriptorSet(local_descriptor_pool, local_descriptor_set_layout);
 }
+
 
 void IrradianceMapGenPass::CreateAttachments()
 {
-	const VkAttachmentInfo::WithinPass color_attachment_info_meme{
-	    .format           = VK_FORMAT_R32G32B32A32_SFLOAT,
-	    .attachment_index = Vk::AttachmentIndex<0>,
-
-	    .loadOp  = VK_ATTACHMENT_LOAD_OP_CLEAR,
-	    .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
-
-	    .layout_prepass   = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-	    .layout_inpass    = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-	    .layout_afterpass = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-
-	    .type        = VkAttachmentInfo::Type::ColorAttachment,
-	    .clear_value = VkClearValue{.color{0.0f, 0.0f, 0.0f, 1.0f}},
-	};
-
-	color_attachment_info = VkAttachmentInfo(color_attachment_info_meme, global_resources.irradiance_map);
-
-	//Depth attachment index 1
-	const VkAttachmentInfo::WithinPass depth_attachment_info_meme{
-	    .format           = swapchain_manager.FindDepthFormat(),
-	    .attachment_index = Vk::AttachmentIndex<1>,
-
-	    .loadOp  = VK_ATTACHMENT_LOAD_OP_CLEAR,
-	    .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
-
-	    .layout_prepass   = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-	    .layout_inpass    = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-	    .layout_afterpass = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-
-	    .type        = VkAttachmentInfo::Type::DepthAttachment,
-	    .clear_value = VkClearValue{.depthStencil{1.0f, 0}}};
-
-	depth_attachment_info = VkAttachmentInfo(depth_attachment_info_meme, depth_attachment);
+//	const VkAttachmentInfo::WithinPass color_attachment_info_meme{
+//	    .format           = VK_FORMAT_R32G32B32A32_SFLOAT,
+//	    .attachment_index = Vk::AttachmentIndex<0>,
+//
+//	    .loadOp  = VK_ATTACHMENT_LOAD_OP_CLEAR,
+//	    .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+//
+//	    .layout_prepass   = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+//	    .layout_inpass    = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+//	    .layout_afterpass = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+//
+//	    .type        = VkAttachmentInfo::Type::ColorAttachment,
+//	    .clear_value = VkClearValue{.color{0.0f, 0.0f, 0.0f, 1.0f}},
+//	};
+//
+//	color_attachment_info = VkAttachmentInfo(color_attachment_info_meme, global_resources.irradiance_map);
+//
+//	//Depth attachment index 1
+//	const VkAttachmentInfo::WithinPass depth_attachment_info_meme{
+//	    .format           = swapchain_manager.FindDepthFormat(),
+//	    .attachment_index = Vk::AttachmentIndex<1>,
+//
+//	    .loadOp  = VK_ATTACHMENT_LOAD_OP_CLEAR,
+//	    .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+//
+//	    .layout_prepass   = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+//	    .layout_inpass    = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+//	    .layout_afterpass = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+//
+//	    .type        = VkAttachmentInfo::Type::DepthAttachment,
+//	    .clear_value = VkClearValue{.depthStencil{1.0f, 0}}};
+//
+//	depth_attachment_info = VkAttachmentInfo(depth_attachment_info_meme, depth_attachment);
 }
 
 void IrradianceMapGenPass::CreateGraphicsPipelineLayout()
@@ -220,7 +223,7 @@ void IrradianceMapGenPass::RecordRenderpassCommandStatically(const std::vector<V
 	//	}
 	//}
 
-	VkAttachment::AddRenderingAttachmentInfo(local_color_attachment_infos, local_depth_attachment_info, local_stensil_attachment_info, color_attachment_info, depth_attachment_info);
+	//VkAttachment::AddRenderingAttachmentInfo(local_color_attachment_infos, local_depth_attachment_info, local_stensil_attachment_info, color_attachment_info, depth_attachment_info);
 
 	rendering_info.colorAttachmentCount = static_cast<uint32_t>(local_color_attachment_infos.size());
 	rendering_info.pColorAttachments    = local_color_attachment_infos.data();
@@ -237,7 +240,7 @@ void IrradianceMapGenPass::RecordRenderpassCommandStatically(const std::vector<V
 	ubo_matrix_gpu->CopyFrom(capture_views_cpuside, sizeof(capture_views_cpuside), offsetof(UboMatrix, capture_view));
 
 	//DRAWING
-	global_resources.sky_box->DrawStatically(irradiance_gen_command_buffer);
+	global_resources.sky_box->DrawRecording(irradiance_gen_command_buffer);
 
 	//END RENDERING
 	vkCmdEndRendering(irradiance_gen_command_buffer);

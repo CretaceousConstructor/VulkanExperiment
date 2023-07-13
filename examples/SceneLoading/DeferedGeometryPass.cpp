@@ -31,8 +31,8 @@ void DeferedGeometryPass::ResourceInit()
 	/*******************************normal**********************************/
 	{
 		TextureImgPP texture_img_PP{DeferedRendering::G_normal_format, swapchain_manager.GetSwapChainImageExtent(), Vk::ImgCINillFlag};
-		texture_img_PP.default_image_CI.usage   = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
-		texture_img_PP.default_image_CI.samples = DeferedRendering::MSAA_sample_count;
+		texture_img_PP.default_image_CI.usage            = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+		texture_img_PP.default_image_CI.samples          = DeferedRendering::MSAA_sample_count;
 		texture_img_PP.default_layout_right_aft_creation = VK_IMAGE_LAYOUT_UNDEFINED;        //TODO: check layout transition after creation of this image
 
 		//const auto sampler_CI  = SamplerCI::PopulateTexSamplerCI();
@@ -103,22 +103,6 @@ void DeferedGeometryPass::ResourceInit()
 	global_resources.matrix_buffer_cpu_defered_rendering.lights[5].radius   = 25.0f;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 void DeferedGeometryPass::CreateLocalCommandBuffers()
 {
 }
@@ -157,9 +141,6 @@ void DeferedGeometryPass::CreateDescriptorSets()
 	{
 		descriptor_set_bundle = desciptor_set_factory.ProduceDescriptorSetBundle(local_descriptor_pool, local_descriptor_set_layout, Vk::BundleSize<Vk::SWAP_IMG_COUNT>);
 	}
-
-
-
 }
 
 void DeferedGeometryPass::CreateAttachments()
@@ -228,8 +209,6 @@ void DeferedGeometryPass::CreateAttachments()
 	//};
 	//G_posZGrad_attachments_infos = VkAttachmentInfo::GetAttachmentInfos(G_posZGrad_meme, global_resources.G_buffer_posZGradient);
 
-
-
 	//const VkAttachmentInfo::WithinPass G_depth_meme{
 	//    .format           = swapchain_manager.FindDepthFormat(),
 	//    .attachment_index = Vk::AttachmentIndex<4>,
@@ -245,10 +224,6 @@ void DeferedGeometryPass::CreateAttachments()
 	//    //use 0. as clear value for reverse depth technique
 	//    .clear_value = VkClearValue{.depthStencil{0.0f, 0}}};
 	//G_depth_attachments_infos = VkAttachmentInfo::GetAttachmentInfos(G_depth_meme, global_resources.G_buffer_depth);
-
-
-
-
 }
 
 void DeferedGeometryPass::CreateGraphicsPipelineLayout()
@@ -265,9 +240,7 @@ void DeferedGeometryPass::CreateShaders()
 
 void DeferedGeometryPass::CreateGraphicsPipeline()
 {
-
 }
-
 
 void DeferedGeometryPass::BeginRenderpass(const std::vector<VkCommandBuffer> &command_buffers)
 {
@@ -287,12 +260,12 @@ void DeferedGeometryPass::BeginRenderpass(const std::vector<VkCommandBuffer> &co
 		VkRenderingAttachmentInfo              depth_attachment_info;
 		VkRenderingAttachmentInfo              stensil_attachment_info;
 
-		AttachmentGeneration::GenerateRenderingAttachInfo(color_attachment_infos, depth_attachment_info, stensil_attachment_info, image_index,
-		                                         G_position_attachments_infos,
-		                                         G_normal_attachments_infos,
-		                                         G_albedo_attachments_infos,
-		                                         G_posZGrad_attachments_infos,
-		                                         G_depth_attachments_infos);
+		AttachmentInfoGeneration::GenerateRenderingAttachInfo(color_attachment_infos, depth_attachment_info, stensil_attachment_info, image_index,
+		                                                  G_position_attachments_infos,
+		                                                  G_normal_attachments_infos,
+		                                                  G_albedo_attachments_infos,
+		                                                  G_posZGrad_attachments_infos,
+		                                                  G_depth_attachments_infos);
 
 		rendering_info.colorAttachmentCount = static_cast<uint32_t>(color_attachment_infos.size());
 		rendering_info.pColorAttachments    = color_attachment_infos.data();
@@ -306,7 +279,6 @@ void DeferedGeometryPass::BeginRenderpass(const std::vector<VkCommandBuffer> &co
 void DeferedGeometryPass::UpdateDescriptorSets()
 {
 	VkDescriptorManager::UpdateDescriptorSet(device_manager.GetLogicalDevice(), global_resources.matrix_buffer_gpu_defered_rendering, descriptor_set_bundle, Vk::Binding<0>);
-
 }
 
 void DeferedGeometryPass::RecordRenderpassCommandStatically(const std::vector<VkCommandBuffer> &command_buffers)
@@ -337,7 +309,7 @@ void DeferedGeometryPass::RecordRenderpassCommandStatically(const std::vector<Vk
 		//Bind Common Descriptor Set
 		vkCmdBindDescriptorSets(command_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, global_resources.sponza->GetPipelineLayout(), 0, 1, &descriptor_set_bundle[i], 0, NULL);
 
-		global_resources.sponza->DrawStatically(command_buffers[i]);
+		global_resources.sponza->DrawRecording(command_buffers[i]);
 	}
 }
 
@@ -352,16 +324,10 @@ void DeferedGeometryPass::EndRenderpass(const std::vector<VkCommandBuffer> &comm
 
 void DeferedGeometryPass::UpdateResources(size_t currentImage)
 {
- 
 }
-
-
-
-
 
 void DeferedGeometryPass::LayoutTransitionStartOfRendering(VkCommandBuffer cmd_buffer, std::optional<size_t> image_index)
 {
-
 	{
 		const Sync::VkImageMemoryBarrierEnhanced image_memory_barrier_enhanced{
 		    .srcAccessMask = VK_ACCESS_NONE,
@@ -374,7 +340,6 @@ void DeferedGeometryPass::LayoutTransitionStartOfRendering(VkCommandBuffer cmd_b
 
 		    .subresource_range = std::nullopt,
 		};
-
 
 		G_position_attachments_infos[image_index.value()].GetTex().InsertImageMemoryBarrier(cmd_buffer, image_memory_barrier_enhanced);
 	}
@@ -516,90 +481,62 @@ void DeferedGeometryPass::LayoutTransitionEndOfRendering(VkCommandBuffer cmd_buf
 		};
 		G_depth_attachments_infos[image_index.value()].GetTex().InsertImageMemoryBarrier(cmd_buffer, image_memory_barrier_enhanced);
 	}
-
-
-
-
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+//******************************************************Render Graph Virtual Functions******************************************************
 
 void DeferedGeometryPass::ResourceInitRG()
 {
-
 	/**********************************pipeline PP***********************************/
 	auto &forward_shading_PP_factory = renderpass_manager.GetFactoryBundle().forward_shading_PP_factory;
 	pipeline_PP                      = forward_shading_PP_factory.GetPipelinePP();
-
-
-	/*******************************cpu side ubuffer init**********************************/
-	// Lights
-	// White
-	global_resources.matrix_buffer_cpu_defered_rendering.lights[0].position = glm::vec4(1.0f, .7f, 0.f, 0.0f);
-	global_resources.matrix_buffer_cpu_defered_rendering.lights[0].color    = glm::vec3(1.5f);
-	global_resources.matrix_buffer_cpu_defered_rendering.lights[0].radius   = 15.0f * 0.25f;
-	// Red
-	global_resources.matrix_buffer_cpu_defered_rendering.lights[1].position = glm::vec4(-1.0f, .7f, 0.f, 0.0f);
-	global_resources.matrix_buffer_cpu_defered_rendering.lights[1].color    = glm::vec3(1.0f, 0.0f, 0.0f);
-	global_resources.matrix_buffer_cpu_defered_rendering.lights[1].radius   = 15.0f;
-	// Blue
-	global_resources.matrix_buffer_cpu_defered_rendering.lights[2].position = glm::vec4(5.5f, .7f, 0.f, 0.0f);
-	global_resources.matrix_buffer_cpu_defered_rendering.lights[2].color    = glm::vec3(0.0f, 0.0f, 2.5f);
-	global_resources.matrix_buffer_cpu_defered_rendering.lights[2].radius   = 5.0f;
-	// Yellow
-	global_resources.matrix_buffer_cpu_defered_rendering.lights[3].position = glm::vec4(-5.5f, .7f, 0.f, 0.0f);
-	global_resources.matrix_buffer_cpu_defered_rendering.lights[3].color    = glm::vec3(1.0f, 1.0f, 0.0f);
-	global_resources.matrix_buffer_cpu_defered_rendering.lights[3].radius   = 2.0f;
-	// Green
-	global_resources.matrix_buffer_cpu_defered_rendering.lights[4].position = glm::vec4(9.5f, .7f, 0.f, 0.0f);
-	global_resources.matrix_buffer_cpu_defered_rendering.lights[4].color    = glm::vec3(0.0f, 1.0f, 0.2f);
-	global_resources.matrix_buffer_cpu_defered_rendering.lights[4].radius   = 5.0f;
-	// Yellow
-	global_resources.matrix_buffer_cpu_defered_rendering.lights[5].position = glm::vec4(-9.5f, .7f, 0.f, 0.0f);
-	global_resources.matrix_buffer_cpu_defered_rendering.lights[5].color    = glm::vec3(1.0f, 0.7f, 0.3f);
-	global_resources.matrix_buffer_cpu_defered_rendering.lights[5].radius   = 25.0f;
 }
 
 void DeferedGeometryPass::CreateLocalCommandBuffersRG()
 {
-
-
 }
 
 void DeferedGeometryPass::CreateDescriptorSetPoolsRG()
 {
-	VkRenderpassBase::CreateDescriptorSetPoolsRG();
+	/**********************************descriptor pool***********************************/
+	const std::vector desc_pool_sizes{
+	    Vk::GetOneDescriptorPoolSizeDescription(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, uniform_buffer_infos.size() * swapchain_manager.GetSwapImageCount())};
+
+	const auto desc_pool_CI  = Vk::GetDescriptorPoolCI(desc_pool_sizes, swapchain_manager.GetSwapImageCount());
+	local_descriptor_pool_RG = renderpass_manager.GetDescriptorManagerV0().ProduceDescriptorPoolUnsafe(desc_pool_CI);
 }
 
 void DeferedGeometryPass::CreateDescriptorSetLayoutRG()
 {
-	VkRenderpassBase::CreateDescriptorSetLayoutRG();
+	//LAYOUT FOR SET 0
+	{
+		//Descriptor for passing Uniform Buffers (for matrices etc.)
+		{
+			std::vector<VkDescriptorSetLayoutBinding> bindings;
+			bindings.reserve(uniform_buffer_infos.size());
+
+			for (uint32_t binding = 0; binding < uniform_buffer_infos.size(); binding++)
+			{
+				bindings.emplace_back(Vk::GetDescriptorSetLayoutBinding(binding, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT));
+			}
+			const auto desc_set_layout_CI = Vk::GetDescriptorSetLayoutCI(bindings);
+
+			local_descriptor_set_layout_RG = renderpass_manager.GetDescriptorManagerV0().ProduceDescriptorSetLayoutUnsafe(desc_set_layout_CI);
+		}
+	}
 }
 
 void DeferedGeometryPass::CreateDescriptorSetsRG()
 {
-	VkRenderpassBase::CreateDescriptorSetsRG();
+	const auto &desciptor_set_factory = renderpass_manager.GetDescriptorSetFactory();
+
+	//set = 0
+	{
+		descriptor_set_RG = desciptor_set_factory.ProduceDescriptorSet(local_descriptor_pool_RG, local_descriptor_set_layout_RG);
+	}
 }
 
-
-
-
-
-void DeferedGeometryPass::CreateAttachmentsRG(std::vector<VkAttachmentInfo> attachment_infos_)
+void DeferedGeometryPass::GetAttachmentsRG(std::vector<VkAttachmentInfo> attachment_infos_)
 {
 	//const VkAttachmentInfo::WithinPass G_albedo_meme{
 	//    .format           = DeferedRendering::G_albedo_format,
@@ -618,66 +555,76 @@ void DeferedGeometryPass::CreateAttachmentsRG(std::vector<VkAttachmentInfo> atta
 	//G_albedo_attachments_infos = VkAttachmentInfo::GetAttachmentInfos(G_albedo_meme, global_resources.G_buffer_albedo);
 
 	attachment_infos = std::move(attachment_infos_);
-
 }
 
-void DeferedGeometryPass::CreateUniformBufferDescriptorsRG(std::vector<VkUniBufUsageInfo> uf_infos_)
+void DeferedGeometryPass::GetUniformBufferDescriptorsRG(std::vector<VkUniBufUsageInfo> uf_infos_)
 {
 	uniform_buffer_infos = std::move(uf_infos_);
 }
 
-
-void DeferedGeometryPass::BeginRenderpassRG(const VkCommandBuffer command_buffers)
+void DeferedGeometryPass::CreateGraphicsPipelineLayoutRG()
 {
-
-		//LayoutTransitionStartOfRendering(command_buffers[image_index], image_index);
-
-		VkRenderingInfo rendering_info{};
-		rendering_info.sType             = VK_STRUCTURE_TYPE_RENDERING_INFO;
-		rendering_info.renderArea.offset = {0, 0};
-		rendering_info.renderArea.extent = VkExtent2D{swapchain_manager.GetSwapChainImageExtent().width, swapchain_manager.GetSwapChainImageExtent().height};
-		rendering_info.layerCount        = 1;
-		rendering_info.pNext             = nullptr;
-		rendering_info.flags             = 0;
-
-		std::vector<VkRenderingAttachmentInfo> color_attachment_infos;
-		VkRenderingAttachmentInfo              depth_attachment_info;
-		VkRenderingAttachmentInfo              stensil_attachment_info;
-
-
-		AttachmentGeneration::GenerateRenderingAttachInfo(color_attachment_infos, depth_attachment_info, stensil_attachment_info,attachment_infos);
-
-
-
-		rendering_info.colorAttachmentCount = static_cast<uint32_t>(color_attachment_infos.size());
-		rendering_info.pColorAttachments    = color_attachment_infos.data();
-		rendering_info.pDepthAttachment     = &depth_attachment_info;
-		rendering_info.pStencilAttachment   = nullptr;        //这个pStencilAttachment是reserve for future use的，永远填nullptr就行了
-
-		vkCmdBeginRendering(command_buffers, &rendering_info);
 }
 
-void DeferedGeometryPass::RecordRenderpassCommandRG(const VkCommandBuffer command_buffers)
+void DeferedGeometryPass::CreateShadersRG()
+{
+	const auto &shader_factory     = renderpass_manager.GetShaderFactory();
+	defefered_geometry_vert_shader = shader_factory.GetShader(std::string("../../data/shaders/DeferedRendering/DeferedGeoPass_vert.hlsl"), VK_SHADER_STAGE_VERTEX_BIT);
+	defefered_geometry_frag_shader = shader_factory.GetShader(std::string("../../data/shaders/DeferedRendering/DeferedGeoPass_frag.hlsl"), VK_SHADER_STAGE_FRAGMENT_BIT);
+}
+
+void DeferedGeometryPass::CreateGraphicsPipelineRG()
+{
+}
+
+void DeferedGeometryPass::BeginRenderpassRG(const VkCommandBuffer cmd_buf)
+{
+	VkRenderingInfo rendering_info{};
+	rendering_info.sType             = VK_STRUCTURE_TYPE_RENDERING_INFO;
+	rendering_info.renderArea.offset = {0, 0};
+	rendering_info.renderArea.extent = VkExtent2D{swapchain_manager.GetSwapChainImageExtent().width, swapchain_manager.GetSwapChainImageExtent().height};
+	rendering_info.layerCount        = 1;
+	rendering_info.pNext             = nullptr;
+	rendering_info.flags             = 0;
+
+	std::vector<VkRenderingAttachmentInfo> color_attachment_infos;
+	VkRenderingAttachmentInfo              depth_attachment_info;
+	VkRenderingAttachmentInfo              stensil_attachment_info;
+
+	AttachmentInfoGeneration::GenerateRenderingAttachInfo(color_attachment_infos, depth_attachment_info, stensil_attachment_info, attachment_infos);
+
+	rendering_info.colorAttachmentCount = static_cast<uint32_t>(color_attachment_infos.size());
+	rendering_info.pColorAttachments    = color_attachment_infos.data();
+	rendering_info.pDepthAttachment     = &depth_attachment_info;
+	rendering_info.pStencilAttachment   = nullptr;        //这个pStencilAttachment是reserve for future use的，永远填nullptr就行了
+
+	vkCmdBeginRendering(cmd_buf, &rendering_info);
+}
+
+void DeferedGeometryPass::UpdateDescriptorSetsRG()
+{
+	for (const auto &ub_info : uniform_buffer_infos)
+	{
+		VkDescriptorManager::UpdateDescriptorSet(device_manager.GetLogicalDevice(), *ub_info.buf, descriptor_set_RG, ub_info.dst_binding, ub_info.dst_array_element);
+	}
+}
+
+void DeferedGeometryPass::RecordRenderpassCommandRG(const VkCommandBuffer cmd_buf)
 {
 	const auto &pipe_builder = renderpass_manager.GetPipelineBuilder();
 
-	const std::vector<VkDescriptorSetLayout>           common_layouts{local_descriptor_set_layout};
+	const std::vector<VkDescriptorSetLayout>           common_layouts{local_descriptor_set_layout_RG};
 	const std::vector<VkPipelineShaderStageCreateInfo> shader_stages{defefered_geometry_vert_shader->GetShaderStageCI(), defefered_geometry_frag_shader->GetShaderStageCI()};
-
-
-
 
 	pipeline_PP->SetPipelineShaderStageCreateInfo(shader_stages);
 
 	std::vector<VkAttachmentInfo::DynamicRenderingAttachment> attachment_formats;
-	for (const auto& attach_info : attachment_infos)
+	for (const auto &attach_info : attachment_infos)
 	{
 		attachment_formats.emplace_back(attach_info.GetAttachmentFormatAndType());
 	}
 
-
 	pipeline_PP->SetDynamicRenderingAttachmentFormats(std::move(attachment_formats));
-
 
 	//for reversed Z value
 	pipeline_PP->depth_stencil_CI.depthCompareOp = VK_COMPARE_OP_GREATER_OR_EQUAL;
@@ -689,53 +636,12 @@ void DeferedGeometryPass::RecordRenderpassCommandRG(const VkCommandBuffer comman
 	global_resources.sponza->ProcessMaterial(common_layouts, *pipeline_PP, pipe_builder, std::nullopt);
 
 	//Bind Common Descriptor Set
-	//vkCmdBindDescriptorSets(command_buffers, VK_PIPELINE_BIND_POINT_GRAPHICS, global_resources.sponza->GetPipelineLayout(), 0, 1, &descriptor_set_bundle[i], 0, NULL);
+	vkCmdBindDescriptorSets(cmd_buf, VK_PIPELINE_BIND_POINT_GRAPHICS, global_resources.sponza->GetPipelineLayout(), 0, 1, &descriptor_set_RG, 0, NULL);
 
-	//global_resources.sponza->DrawStatically(command_buffers);
-
-
-
-}
-
-
-
-
-void DeferedGeometryPass::UpdateDescriptorSetsRG()
-{
-	for (const auto& ub_info : uniform_buffer_infos)
-	{
-		VkDescriptorManager::UpdateDescriptorSet(device_manager.GetLogicalDevice(), *ub_info.buf, descriptor_set_bundle,  ub_info.dst_binding,ub_info.dst_array_element);
-	}
+	global_resources.sponza->DrawRecording(cmd_buf);
 }
 
 void DeferedGeometryPass::EndRenderpassRG(const VkCommandBuffer cmd_buf)
 {
-		vkCmdEndRendering(cmd_buf);
-		//LayoutTransitionEndOfRendering(command_buffers[i], i);
-
-
+	vkCmdEndRendering(cmd_buf);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

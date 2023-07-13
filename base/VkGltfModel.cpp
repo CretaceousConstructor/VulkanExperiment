@@ -7,5 +7,5 @@
 //#define TINYGLTF_NO_STB_IMAGE_WRITE
 //#define TINYGLTF_NO_STB_IMAGE
 //#define TINYGLTF_NOEXCEPTION // optional. disable exception handling.
-#include "GltfModel.h"
+#include "VkGltfModel.h"
 

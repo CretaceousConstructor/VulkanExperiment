@@ -60,4 +60,6 @@ class FirstPersonCamera : public Camera
 	static constexpr float speed_       = 10.0f;
 	static constexpr float sensitivity_ = 1.5f;
 	static constexpr float zoom_rate    = 0.0001f;
+
+
 };

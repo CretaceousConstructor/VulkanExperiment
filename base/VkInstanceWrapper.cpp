@@ -18,7 +18,7 @@ VkInstanceWrapper::~VkInstanceWrapper()
 	vkDestroyInstance(instance, nullptr);
 }
 
-VkInstance VkInstanceWrapper::GetInstance() const
+const VkInstance& VkInstanceWrapper::GetInstance() const
 {
 	return instance;
 }

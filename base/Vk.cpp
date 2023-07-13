@@ -171,3 +171,13 @@ bool Vk::HasStencilComponent(VkFormat format)
 	//TODO: not complete
 	return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
 }
+
+Vk::RsrcUsageInfoInPass::RsrcUsageInfoInPass(RsrcInfoType info_t) :
+    info_type(info_t)
+{
+}
+
+Vk::RsrcInfoType Vk::RsrcUsageInfoInPass::GetInfoType() const
+{
+	return info_type;
+}

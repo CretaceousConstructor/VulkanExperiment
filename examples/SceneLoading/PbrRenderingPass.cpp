@@ -101,36 +101,36 @@ void PbrRenderingPass::CreateGraphicsPipeline()
 
 void PbrRenderingPass::CreateAttachments()
 {
-	const VkAttachmentInfo::WithinPass color_attachment{
-	    .format           = swapchain_manager.GetSwapChainImageFormat(),
-	    .attachment_index = Vk::AttachmentIndex<0>,
+	//const VkAttachmentInfo::WithinPass color_attachment{
+	//    .format           = swapchain_manager.GetSwapChainImageFormat(),
+	//    .attachment_index = Vk::AttachmentIndex<0>,
 
-	    .loadOp  = VK_ATTACHMENT_LOAD_OP_CLEAR,
-	    .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+	//    .loadOp  = VK_ATTACHMENT_LOAD_OP_CLEAR,
+	//    .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
 
-	    .layout_prepass   = VK_IMAGE_LAYOUT_UNDEFINED,
-	    .layout_inpass    = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-	    .layout_afterpass = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+	//    .layout_prepass   = VK_IMAGE_LAYOUT_UNDEFINED,
+	//    .layout_inpass    = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+	//    .layout_afterpass = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
 
-	    .type        = VkAttachmentInfo::Type::ColorAttachment,
-	    .clear_value = VkClearValue{.color{0.0f, 0.0f, 0.0f, 1.0f}},
-	};
-	color_attachments_infos = VkAttachmentInfo::GetAttachmentInfos(color_attachment, global_resources.swapchain_attachments);
+	//    .type        = VkAttachmentInfo::Type::ColorAttachment,
+	//    .clear_value = VkClearValue{.color{0.0f, 0.0f, 0.0f, 1.0f}},
+	//};
+	//color_attachments_infos = VkAttachmentInfo::GetAttachmentInfos(color_attachment, global_resources.swapchain_attachments);
 
-	const VkAttachmentInfo::WithinPass depth_attachment{
-	    .format           = swapchain_manager.FindDepthFormat(),
-	    .attachment_index = Vk::AttachmentIndex<1>,
+	//const VkAttachmentInfo::WithinPass depth_attachment{
+	//    .format           = swapchain_manager.FindDepthFormat(),
+	//    .attachment_index = Vk::AttachmentIndex<1>,
 
-	    .loadOp  = VK_ATTACHMENT_LOAD_OP_CLEAR,
-	    .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+	//    .loadOp  = VK_ATTACHMENT_LOAD_OP_CLEAR,
+	//    .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
 
-	    .layout_prepass   = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-	    .layout_inpass    = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-	    .layout_afterpass = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+	//    .layout_prepass   = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+	//    .layout_inpass    = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+	//    .layout_afterpass = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
 
-	    .type        = VkAttachmentInfo::Type::DepthAttachment,
-	    .clear_value = VkClearValue{.depthStencil{1.0f, 0}}};
-	depth_attachments_infos = VkAttachmentInfo::GetAttachmentInfos(depth_attachment, global_resources.depth_attachments);
+	//    .type        = VkAttachmentInfo::Type::DepthAttachment,
+	//    .clear_value = VkClearValue{.depthStencil{1.0f, 0}}};
+	//depth_attachments_infos = VkAttachmentInfo::GetAttachmentInfos(depth_attachment, global_resources.depth_attachments);
 }
 
 void PbrRenderingPass::CreateGraphicsPipelineLayout()
@@ -167,7 +167,7 @@ void PbrRenderingPass::BeginRenderpass(const std::vector<VkCommandBuffer> &comma
 		VkRenderingAttachmentInfo              depth_attachment_info;
 		VkRenderingAttachmentInfo              stensil_attachment_info;
 
-		VkAttachment::AddRenderingAttachmentInfo(color_attachment_infos, depth_attachment_info, stensil_attachment_info, image_index, color_attachments_infos, depth_attachments_infos);
+		//VkAttachment::AddRenderingAttachmentInfo(color_attachment_infos, depth_attachment_info, stensil_attachment_info, image_index, color_attachments_infos, depth_attachments_infos);
 
 		rendering_info.colorAttachmentCount = static_cast<uint32_t>(color_attachment_infos.size());
 		rendering_info.pColorAttachments    = color_attachment_infos.data();
@@ -216,7 +216,7 @@ void PbrRenderingPass::RecordRenderpassCommandStatically(const std::vector<VkCom
 			//Bind Common Descriptor Set
 			vkCmdBindDescriptorSets(command_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, global_resources.sky_box->GetPipelineLayout(), 0, 1, &descriptor_set_bundle[i], 0, NULL);
 
-			global_resources.sky_box->DrawStatically(command_buffers[i]);
+			global_resources.sky_box->DrawRecording(command_buffers[i]);
 		}
 	}
 
@@ -239,7 +239,7 @@ void PbrRenderingPass::RecordRenderpassCommandStatically(const std::vector<VkCom
 			//Bind Common Descriptor Set
 			vkCmdBindDescriptorSets(command_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, global_resources.scifi_helmet->GetPipelineLayout(), 0, 1, &descriptor_set_bundle[i], 0, NULL);
 
-			global_resources.scifi_helmet->DrawStatically(command_buffers[i]);
+			global_resources.scifi_helmet->DrawRecording(command_buffers[i]);
 		}
 	}
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "GltfModel.h"
+#include "VkGltfModel.h"
 #include "NonPbrMaterial.h"
 #include "PbrMaterialMetallic.h"
 #include "VkBufferBundle.h"
@@ -221,9 +221,9 @@ struct Resources
 
 	//MODELS
 	//std::unique_ptr<VkModel<Vertex>> light_indicator;
-	GltfModel<PbrMaterialMetallic>::Ptr scifi_helmet;
-	GltfModel<PbrMaterialMetallic>::Ptr sky_box;
-	GltfModel<NonPbrMaterial>::Ptr      sponza;
+	VkGltfModel<PbrMaterialMetallic>::Ptr scifi_helmet;
+	VkGltfModel<PbrMaterialMetallic>::Ptr sky_box;
+	VkGltfModel<NonPbrMaterial>::Ptr      sponza;
 };
 
 }        // namespace Global

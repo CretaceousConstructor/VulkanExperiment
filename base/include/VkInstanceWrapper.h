@@ -17,7 +17,8 @@ class VkInstanceWrapper
 	VkInstanceWrapper &operator=(VkInstanceWrapper &&) = delete;
 
   public:
-	[[nodiscard]] VkInstance GetInstance() const;
+	//[[nodiscard]] VkInstance GetInstance() const;
+	[[nodiscard]] const VkInstance& GetInstance() const;
 
   private:
 	void CreateInstance();

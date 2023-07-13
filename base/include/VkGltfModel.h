@@ -12,11 +12,45 @@
 #include <vector>
 
 template <typename M>
-class GltfModel
+class VkGltfModel
 {
   public:
-	using Ptr = std::shared_ptr<GltfModel<M>>;
-	GltfModel(
+	using Ptr = std::shared_ptr<VkGltfModel<M>>;
+
+	//template <typename T>
+	//struct DescriptorOfModel
+	//{
+	//	const std::string            model_path{};
+	//	const Vk::ModelLoadingOption option{};
+	//	uint32_t                     model_id{};
+	//};
+
+	//using Descriptor = DescriptorOfModel<M>;
+
+	//class WithinPassRG final : public Vk::RsrcUsageInfoInPass
+	//{
+	//  public:
+	//	WithinPassRG() :
+	//	    RsrcUsageInfoInPass(Vk::RsrcInfoType::Model)
+	//	{
+	//	}
+	//	~WithinPassRG() override = default;
+
+	//	[[nodiscard]] Vk::SyncInfo GetSynInfo() const override
+	//	{
+	//		return {};
+	//	}
+	//};
+
+
+
+  public:
+	[[nodiscard]] VkPipelineLayout       GetPipelineLayout() const;
+	[[nodiscard]] const VkPipeline &     GetPipeline(uint32_t material_index) const;
+	[[nodiscard]] const VkDescriptorSet &GetDescSet(uint32_t material_index) const;
+
+  public:
+	VkGltfModel(
 	    std::string                                 model_path,
 	    std::vector<std::shared_ptr<Gltf::Image>> &&images_,
 	    std::vector<VkFormat> &&                    image_formats_,
@@ -27,28 +61,23 @@ class GltfModel
 	    Gltf::IndexBufferGpu                        indices_,
 	    Vk::ModelLoadingOption                      option_,
 	    VkGraphicsComponent &                       gfx_);
-	~GltfModel();
-	GltfModel() = delete;
 
-	GltfModel(const GltfModel &) = delete;
-	GltfModel &operator=(const GltfModel &) = delete;
-
-	GltfModel(GltfModel &&) = delete;
-	GltfModel &operator=(GltfModel &&) = delete;
-
-  public:
 	//std::vector<std::shared_ptr<M>> &GetMaterials() const ;
-
-	[[nodiscard]] VkPipelineLayout GetPipelineLayout() const;
-
-	[[nodiscard]] const VkPipeline &     GetPipeline(uint32_t material_index) const;
-	[[nodiscard]] const VkDescriptorSet &GetDescSet(uint32_t material_index) const;
-
 	//[[nodiscard]] VkDescriptorSetLayout GetDescriptorSetLayout(uint32_t materialIndex) const;
 
   public:
 	void ProcessMaterial(const std::vector<VkDescriptorSetLayout> &set_layouts, const VkPipelinePP &pipeline_para_pack, const VkPipelineBuilder &pipeline_builder, std::optional<std::vector<VkPushConstantRange>> push_constant_ranges_outside);
-	void DrawStatically(VkCommandBuffer commandBuffer) const;
+	void DrawRecording(VkCommandBuffer commandBuffer) const;
+
+  public:
+	~VkGltfModel();
+	VkGltfModel() = delete;
+
+	VkGltfModel(const VkGltfModel &) = delete;
+	VkGltfModel &operator=(const VkGltfModel &) = delete;
+
+	VkGltfModel(VkGltfModel &&) = delete;
+	VkGltfModel &operator=(VkGltfModel &&) = delete;
 
 	//void CleanUpMaterial();
 
@@ -86,8 +115,9 @@ class GltfModel
 	std::vector<VkPipelineLayout>             pipe_layouts;
 	std::vector<std::vector<VkDescriptorSet>> desc_sets;
 
-	//VkPipelineLayout                     pipe_layout{nullptr};
 	VkDescriptorSetLayout desc_layout{nullptr};
+
+	//VkPipelineLayout                     pipe_layout{nullptr};
 	//std::vector<VkDescriptorSetLayout> desc_layouts;
 
   private:
@@ -96,7 +126,7 @@ class GltfModel
 };
 
 template <typename M>
-GltfModel<M>::GltfModel(std::string model_path, std::vector<std::shared_ptr<Gltf::Image>> &&images_, std::vector<VkFormat> &&image_formats_, std::vector<Gltf::Texture> &&textures_, std::vector<std::shared_ptr<VkMaterial>> &&materials_, std::vector<Gltf::Node> &&nodes_, Gltf::VertexBufferGpu vertices_, Gltf::IndexBufferGpu indices_, Vk::ModelLoadingOption option_, VkGraphicsComponent &gfx_) :
+VkGltfModel<M>::VkGltfModel(std::string model_path, std::vector<std::shared_ptr<Gltf::Image>> &&images_, std::vector<VkFormat> &&image_formats_, std::vector<Gltf::Texture> &&textures_, std::vector<std::shared_ptr<VkMaterial>> &&materials_, std::vector<Gltf::Node> &&nodes_, Gltf::VertexBufferGpu vertices_, Gltf::IndexBufferGpu indices_, Vk::ModelLoadingOption option_, VkGraphicsComponent &gfx_) :
     images(std::move(images_)),
     image_formats(std::move(image_formats_)),
     textures(std::move(textures_)),
@@ -111,7 +141,7 @@ GltfModel<M>::GltfModel(std::string model_path, std::vector<std::shared_ptr<Gltf
 }
 
 template <typename M>
-GltfModel<M>::~GltfModel()
+VkGltfModel<M>::~VkGltfModel()
 {
 	//vkDestroyPipelineLayout(device_manager.GetLogicalDevice(), pipe_layout, nullptr);
 	//vkDestroyDescriptorSetLayout(device_manager.GetLogicalDevice(), desc_layout, nullptr);
@@ -141,25 +171,25 @@ GltfModel<M>::~GltfModel()
 }
 
 template <typename M>
-VkPipelineLayout GltfModel<M>::GetPipelineLayout() const
+VkPipelineLayout VkGltfModel<M>::GetPipelineLayout() const
 {
 	return pipe_layouts.back();
 }
 
 template <typename M>
-const VkPipeline &GltfModel<M>::GetPipeline(uint32_t material_index) const
+const VkPipeline &VkGltfModel<M>::GetPipeline(uint32_t material_index) const
 {
 	return pipeline_array.back()[material_index];
 }
 
 template <typename M>
-const VkDescriptorSet &GltfModel<M>::GetDescSet(uint32_t material_index) const
+const VkDescriptorSet &VkGltfModel<M>::GetDescSet(uint32_t material_index) const
 {
 	return desc_sets.back()[material_index];
 }
 
 template <typename M>
-void GltfModel<M>::ProcessMaterial(const std::vector<VkDescriptorSetLayout> &common_set_layouts, const VkPipelinePP &pipeline_para_pack, const VkPipelineBuilder &pipeline_builder,
+void VkGltfModel<M>::ProcessMaterial(const std::vector<VkDescriptorSetLayout> &common_set_layouts, const VkPipelinePP &pipeline_para_pack, const VkPipelineBuilder &pipeline_builder,
                                    std::optional<std::vector<VkPushConstantRange>> push_constant_ranges_outside)
 {
 	//vkDestroyPipelineLayout(device_manager.GetLogicalDevice(), pipe_layout, nullptr);
@@ -246,7 +276,7 @@ void GltfModel<M>::ProcessMaterial(const std::vector<VkDescriptorSetLayout> &com
 }
 
 template <typename M>
-void GltfModel<M>::DrawStatically(VkCommandBuffer commandBuffer) const
+void VkGltfModel<M>::DrawRecording(VkCommandBuffer commandBuffer) const
 {
 	// All vertices and indices are stored in single buffers, so we only need to bind once
 	constexpr VkDeviceSize offsets[1] = {0};
@@ -267,7 +297,7 @@ void GltfModel<M>::DrawStatically(VkCommandBuffer commandBuffer) const
 }
 
 template <typename M>
-void GltfModel<M>::DrawNode(VkCommandBuffer commandBuffer, const int node_index) const
+void VkGltfModel<M>::DrawNode(VkCommandBuffer commandBuffer, const int node_index) const
 {
 	auto &node = nodes[node_index];
 
@@ -320,7 +350,7 @@ void GltfModel<M>::DrawNode(VkCommandBuffer commandBuffer, const int node_index)
 }
 
 template <typename M>
-void GltfModel<M>::CreateDescriptorPool()
+void VkGltfModel<M>::CreateDescriptorPool()
 {
 	uint32_t descriptor_count = 0;
 	for (const auto &material : materials)

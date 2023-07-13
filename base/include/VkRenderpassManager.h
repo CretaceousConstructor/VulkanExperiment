@@ -81,7 +81,7 @@ class VkRenderpassManager
 template <typename First, typename... Rest>
 std::shared_ptr<First> VkRenderpassManager::ProduceRenderpass(Rest &&...rest)
 {
-	std::shared_ptr<First> result = std::make_shared<First>(rest...);
+	std::shared_ptr<First> result = std::make_shared<First>(std::forward<Rest...>(rest...));
 	result->Init();
 	return result;
 }

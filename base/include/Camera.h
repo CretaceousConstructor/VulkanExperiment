@@ -52,6 +52,7 @@ class Camera
 	[[nodiscard]] glm::mat4x4 GetInverseProj(ProjectionMtxSetting setting) const;
 
 
+
 	//[[nodiscard]] glm::mat4x4 GetViewProj(ProjectionMtxSetting setting) const;
 
 

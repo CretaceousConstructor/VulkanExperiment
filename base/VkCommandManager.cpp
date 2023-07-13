@@ -104,6 +104,21 @@ void VkCommandManager::EndCommandBuffers(const std::vector<VkCommandBuffer> &com
 	}
 }
 
+void VkCommandManager::BeginCommandBuffers(VkCommandBuffer command_buffer)
+{
+	VkCommandBufferBeginInfo beginInfo{};
+	beginInfo.sType            = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+	beginInfo.flags            = 0;              // Optional
+	beginInfo.pInheritanceInfo = nullptr;        // Optional
+	VK_CHECK_RESULT(vkBeginCommandBuffer(command_buffer, &beginInfo))
+}
+
+void VkCommandManager::EndCommandBuffers(VkCommandBuffer command_buffer)
+{
+	
+	VK_CHECK_RESULT(vkEndCommandBuffer(command_buffer))
+}
+
 const std::vector<VkCommandBuffer> &VkCommandManager::GetGraphicsCommandBuffers() const
 {
 	return graphics_command_buffers;

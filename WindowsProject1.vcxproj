@@ -66,7 +66,7 @@
     <ClCompile Include="base\VkSynObjectFactory.cpp" />
     <ClCompile Include="base\AnotherPileOfShit.cpp" />
     <ClCompile Include="base\FirstPersonCamera.cpp" />
-    <ClCompile Include="base\GltfModel.cpp" />
+    <ClCompile Include="base\VkGltfModel.cpp" />
     <ClCompile Include="base\VkImageFactory.cpp" />
     <ClCompile Include="base\imgui.cpp" />
     <ClCompile Include="base\imgui_demo.cpp" />
@@ -118,7 +118,7 @@
     <ClInclude Include="base\include\VkHeader.h" />
     <ClInclude Include="base\include\FirstPersonCamera.h" />
     <ClInclude Include="base\include\Geometry.h" />
-    <ClInclude Include="base\include\GltfModel.h" />
+    <ClInclude Include="base\include\VkGltfModel.h" />
     <ClInclude Include="base\include\ImageParameterPack.h" />
     <ClInclude Include="base\include\imconfig.h" />
     <ClInclude Include="base\include\imgui.h" />

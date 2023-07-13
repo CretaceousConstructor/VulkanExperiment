@@ -123,63 +123,63 @@ void MSAAPass::CreateDescriptorSets()
 
 void MSAAPass::CreateAttachments()
 {
-	const VkAttachmentInfo::WithinPass swapchain_attachment{
-	    .format           = swapchain_manager.GetSwapChainImageFormat(),
-	    .attachment_index = Vk::AttachmentIndex<0>,        //存疑TODO:need to modify this
+	//const VkAttachmentInfo::WithinPass swapchain_attachment{
+	//    .format           = swapchain_manager.GetSwapChainImageFormat(),
+	//    .attachment_index = Vk::AttachmentIndex<0>,        //存疑TODO:need to modify this
 
-	    .loadOp  = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
-	    .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+	//    .loadOp  = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+	//    .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
 
-	    .layout_prepass   = VK_IMAGE_LAYOUT_UNDEFINED,
-		//VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
-	    .layout_inpass    = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-	    .layout_afterpass = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+	//    .layout_prepass   = VK_IMAGE_LAYOUT_UNDEFINED,
+	//	//VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL
+	//    .layout_inpass    = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+	//    .layout_afterpass = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
 
-	    .type        = VkAttachmentInfo::Type::ColorAttachment,
-	    .clear_value = VkClearValue{.color{0.0f, 0.0f, 0.0f, 1.0f}},
-	};
-	swapchain_attachments_infos = VkAttachmentInfo::GetAttachmentInfos(swapchain_attachment, global_resources.swapchain_attachments);
+	//    .type        = VkAttachmentInfo::Type::ColorAttachment,
+	//    .clear_value = VkClearValue{.color{0.0f, 0.0f, 0.0f, 1.0f}},
+	//};
+	//swapchain_attachments_infos = VkAttachmentInfo::GetAttachmentInfos(swapchain_attachment, global_resources.swapchain_attachments);
 
-	const VkAttachmentInfo::WithinPass color_attachment{
-	    .format           = swapchain_manager.GetSwapChainImageFormat(),
-	    .attachment_index = Vk::AttachmentIndex<0>,
+	//const VkAttachmentInfo::WithinPass color_attachment{
+	//    .format           = swapchain_manager.GetSwapChainImageFormat(),
+	//    .attachment_index = Vk::AttachmentIndex<0>,
 
-	    .loadOp  = VK_ATTACHMENT_LOAD_OP_CLEAR,
-	    .storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+	//    .loadOp  = VK_ATTACHMENT_LOAD_OP_CLEAR,
+	//    .storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
 
-	    .layout_prepass   = VK_IMAGE_LAYOUT_UNDEFINED,
-	    .layout_inpass    = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-	    .layout_afterpass = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+	//    .layout_prepass   = VK_IMAGE_LAYOUT_UNDEFINED,
+	//    .layout_inpass    = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+	//    .layout_afterpass = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
 
-	    .type        = VkAttachmentInfo::Type::ColorAttachment,
-	    .clear_value = VkClearValue{.color{0.0f, 0.0f, 0.0f, 1.0f}},
+	//    .type        = VkAttachmentInfo::Type::ColorAttachment,
+	//    .clear_value = VkClearValue{.color{0.0f, 0.0f, 0.0f, 1.0f}},
 
-	    .resolveMode        = VK_RESOLVE_MODE_AVERAGE_BIT,
-	    .resolveImageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+	//    .resolveMode        = VK_RESOLVE_MODE_AVERAGE_BIT,
+	//    .resolveImageLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
 
-	};
-	MS_color_attachments_infos = VkAttachmentInfo::GetAttachmentInfos(color_attachment, multisampled_color_attachment, global_resources.swapchain_attachments);
+	//};
+	//MS_color_attachments_infos = VkAttachmentInfo::GetAttachmentInfos(color_attachment, multisampled_color_attachment, global_resources.swapchain_attachments);
 
 
 
-	const VkAttachmentInfo::WithinPass depth_attachment{
-	    .format           = swapchain_manager.FindDepthFormat(),
-	    .attachment_index = Vk::AttachmentIndex<1>,
+	//const VkAttachmentInfo::WithinPass depth_attachment{
+	//    .format           = swapchain_manager.FindDepthFormat(),
+	//    .attachment_index = Vk::AttachmentIndex<1>,
 
-	    .loadOp  = VK_ATTACHMENT_LOAD_OP_CLEAR,
-	    .storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+	//    .loadOp  = VK_ATTACHMENT_LOAD_OP_CLEAR,
+	//    .storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
 
-	    .layout_prepass   = VK_IMAGE_LAYOUT_UNDEFINED,
-	    .layout_inpass    = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-	    .layout_afterpass = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+	//    .layout_prepass   = VK_IMAGE_LAYOUT_UNDEFINED,
+	//    .layout_inpass    = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+	//    .layout_afterpass = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
 
-	    .type = VkAttachmentInfo::Type::DepthAttachment,
-	    //,
-	    //use 0. as clear value for reverse depth如果不用reverseZ，那么近平面应该被映射到0.f
-	    .clear_value = VkClearValue{.depthStencil{0.0f, 0}}
+	//    .type = VkAttachmentInfo::Type::DepthAttachment,
+	//    //,
+	//    //use 0. as clear value for reverse depth如果不用reverseZ，那么近平面应该被映射到0.f
+	//    .clear_value = VkClearValue{.depthStencil{0.0f, 0}}
 
-	};
-	MS_depth_attachments_infos = VkAttachmentInfo::GetAttachmentInfos(depth_attachment, multisampled_depth_attachment);
+	//};
+	//MS_depth_attachments_infos = VkAttachmentInfo::GetAttachmentInfos(depth_attachment, multisampled_depth_attachment);
 }
 
 void MSAAPass::CreateGraphicsPipelineLayout()
@@ -215,7 +215,7 @@ void MSAAPass::BeginRenderpass(const std::vector<VkCommandBuffer> &command_buffe
 		VkRenderingAttachmentInfo              depth_attachment_info;
 		VkRenderingAttachmentInfo              stensil_attachment_info;
 
-		VkAttachment::AddRenderingAttachmentInfo(color_attachment_infos, depth_attachment_info, stensil_attachment_info, image_index, MS_color_attachments_infos, MS_depth_attachments_infos);
+		//VkAttachment::AddRenderingAttachmentInfo(color_attachment_infos, depth_attachment_info, stensil_attachment_info, image_index, MS_color_attachments_infos, MS_depth_attachments_infos);
 
 		rendering_info.colorAttachmentCount = static_cast<uint32_t>(color_attachment_infos.size());
 		rendering_info.pColorAttachments    = color_attachment_infos.data();
@@ -257,7 +257,7 @@ void MSAAPass::RecordRenderpassCommandStatically(const std::vector<VkCommandBuff
 		//Bind Common Descriptor Set
 		vkCmdBindDescriptorSets(command_buffers[i], VK_PIPELINE_BIND_POINT_GRAPHICS, global_resources.sponza->GetPipelineLayout(), 0, 1, &descriptor_set_bundle[i], 0, NULL);
 
-		global_resources.sponza->DrawStatically(command_buffers[i]);
+		global_resources.sponza->DrawRecording(command_buffers[i]);
 	}
 }
 

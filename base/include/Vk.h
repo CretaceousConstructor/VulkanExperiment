@@ -4,99 +4,15 @@
 #include <thread>
 #include <vector>
 
-
-
-
 namespace Vk
 {
 constexpr VkImageCreateFlags ImgCINillFlag{0};
+constexpr int                MAX_FRAMES_IN_FLIGHT{2};
+constexpr uint32_t           SWAP_IMG_COUNT{3};
+constexpr VkFlags            NoneFlag{0};
 
-struct InfoSync
-{
-	VkAccessFlags        access_mask{};
-	VkPipelineStageFlags stage_mask{};
-	VkImageLayout        layout_inpass{};
-};
-
-enum class RsrcInfoType
-{
-	Unknown,
-	Attachment,
-	UniformBuffer,
-	Texture
-
-};
-
-class RsrcUsageInfoInPass
-{
-  public:
-	RsrcUsageInfoInPass(RsrcInfoType info_t) :
-	    info_type(info_t)
-	{
-	}
-
-	[[nodiscard]] virtual Vk::InfoSync GetSynInfo() const = 0;
-	virtual ~RsrcUsageInfoInPass()                         = default;
-
-	RsrcInfoType GetInfoType() const
-	{
-		return info_type;
-	}
-
-  private:
-	RsrcInfoType info_type;
-};
-
-//template <typename T>
-//Vk::InfoSync GetSynInfo(const T &info)
-//{
-//	return	info.GetSynInfo();
-//}
-
-enum class Type
-{
-	Sampler
-};
-
-//template variables in replace of magic numbers in code.
-
-template <Vk::Type Sampler>
-size_t UUID_safe{0};
-
-template <Vk::Type Sampler>
-size_t UUID_unsafe{0};
-
-static constexpr int      MAX_FRAMES_IN_FLIGHT{2};
-static constexpr uint32_t SWAP_IMG_COUNT{3};
-static constexpr VkFlags  NoneFlag{0};
-
-enum ModelLoadingOption
-{
-	LoadingImgByOurselves = 0x1,
-	BindlessRenderingMode = 0x2,
-	None                  = 0x4,
-};
-
-//template const expressions in replace of magic numbers in the code.
-//enum class ConstType
-//{
-//	Binding,
-//	Offset,
-//	AttachmentRef,
-//	BindingCount,
-//	SetCount,
-//	DescriptorCount,
-//	BundleSize
-//};
-
-//template <ConstType CT>
-//struct ConstTemplate
-//{
-//    uint32_t num;
-//};
-
-//template <ConstType CT,uint32_t T>
-//constexpr ConstTemplate<CT> ConstNum{T};
+constexpr VkFormat             required_depth_formats[]{VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT};
+constexpr VkFormatFeatureFlags required_depth_format_feature{VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT};
 
 template <uint32_t T>
 constexpr uint32_t Binding{T};
@@ -127,11 +43,106 @@ constexpr uint32_t DescriptorCount{T};
 template <uint32_t T>
 constexpr uint32_t BundleSize{T};
 
+struct SyncInfo
+{
+	VkAccessFlags        access_mask{};
+	VkPipelineStageFlags stage_mask{};
+	VkImageLayout        layout_inpass{};
+};
+
+enum class RsrcInfoType
+{
+	Unknown,
+	Attachment,
+	UniformBuffer,
+	Texture,
+	Model
+};
+
+
+
+struct ResourceDimensions
+{
+	VkFormat format = VK_FORMAT_UNDEFINED;
+	//BufferInfo buffer_info;
+	unsigned width   = 0;
+	unsigned height  = 0;
+	unsigned depth   = 1;
+	unsigned layers  = 1;
+	unsigned levels  = 1;
+	unsigned samples = 1;
+	//AttachmentInfoFlags flags = ATTACHMENT_INFO_PERSISTENT_BIT;
+	VkSurfaceTransformFlagBitsKHR transform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
+	//RenderGraphQueueFlags queues = 0;
+	VkImageUsageFlags image_usage = 0;
+	bool              operator==(const ResourceDimensions &other) const
+	{
+		return format == other.format &&
+		       width == other.width &&
+		       height == other.height &&
+		       depth == other.depth &&
+		       layers == other.layers &&
+		       levels == other.levels &&
+		       //buffer_info == other.buffer_info &&
+		       //flags == other.flags &&
+		       transform == other.transform;
+		// image_usage is deliberately not part of this test.
+		// queues is deliberately not part of this test.
+	}
+};
+
+
+
+
+
+
+
+
+
+
+class RsrcUsageInfoInPass
+{
+  public:
+	RsrcUsageInfoInPass(RsrcInfoType info_t);
+	[[nodiscard]] virtual Vk::SyncInfo GetSynInfo() const = 0;
+	[[nodiscard]] RsrcInfoType         GetInfoType() const;
+
+  public:
+	virtual ~RsrcUsageInfoInPass() = default;
+	RsrcUsageInfoInPass()          = delete;
+
+	RsrcUsageInfoInPass(const RsrcUsageInfoInPass &) = delete;
+	RsrcUsageInfoInPass &operator=(const RsrcUsageInfoInPass &) = delete;
+
+	RsrcUsageInfoInPass(RsrcUsageInfoInPass &&) = delete;
+	RsrcUsageInfoInPass &operator=(RsrcUsageInfoInPass &&) = delete;
+
+  private:
+	RsrcInfoType info_type;
+};
+
+enum ModelLoadingOption
+{
+	LoadingImgByOurselves = 0x1,
+	BindlessRenderingMode = 0x2,
+	None                  = 0x4,
+};
+
+enum class Type
+{
+	Sampler
+};
+
+//template variables in replace of magic numbers in code.
+
+template <Vk::Type Sampler>
+size_t UUID_safe{0};
+
+template <Vk::Type Sampler>
+size_t UUID_unsafe{0};
+
 [[nodiscard]] std::string GetFileExtensionName(const std::string &filename);
 [[nodiscard]] bool        HasStencilComponent(VkFormat format);
-
-static constexpr VkFormat             required_depth_formats[]{VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT};
-static constexpr VkFormatFeatureFlags required_depth_format_feature{VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT};
 
 //....
 VkAttachmentReference GetAttachmentReference(uint32_t attachment, VkImageLayout layout);
@@ -190,9 +201,3 @@ struct VkImageMemoryBarrierEnhanced
 };
 
 }        // namespace Sync
-
-
-
-
-
-

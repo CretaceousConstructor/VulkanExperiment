@@ -69,9 +69,6 @@
     <Filter Include="Header Files\VkCore\Window">
       <UniqueIdentifier>{130f1273-f494-469a-9bde-5e534059bbc2}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\VkCore\Model">
-      <UniqueIdentifier>{0259e414-9277-4b81-bdea-a55419c5eb68}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\VkCore\Material">
       <UniqueIdentifier>{951d0054-173c-4ce0-8dc4-e4644dbe8303}</UniqueIdentifier>
     </Filter>
@@ -128,6 +125,9 @@
     </Filter>
     <Filter Include="Header Files\VkCore\Resources\Memory">
       <UniqueIdentifier>{aaaf6cfe-0db4-4b54-8f78-5eb2cc6b21aa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\VkCore\Resources\Model">
+      <UniqueIdentifier>{0259e414-9277-4b81-bdea-a55419c5eb68}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -371,7 +371,7 @@
     <ClCompile Include="base\FirstPersonCamera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="base\GltfModel.cpp">
+    <ClCompile Include="base\VkGltfModel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="base\ModelLoader.cpp">
@@ -392,10 +392,10 @@
       <Filter>Header Files\Renderers</Filter>
     </ClInclude>
     <ClInclude Include="base\include\ModelLoader.h">
-      <Filter>Header Files\VkCore\Model</Filter>
+      <Filter>Header Files\VkCore\Resources\Model</Filter>
     </ClInclude>
     <ClInclude Include="base\include\VkModel.h">
-      <Filter>Header Files\VkCore\Model</Filter>
+      <Filter>Header Files\VkCore\Resources\Model</Filter>
     </ClInclude>
     <ClInclude Include="base\include\MouseInputManager.h">
       <Filter>Header Files\InputManager</Filter>
@@ -412,14 +412,14 @@
     <ClInclude Include="base\include\VkShaderManager.h">
       <Filter>Header Files\VkCore\Shaders</Filter>
     </ClInclude>
-    <ClInclude Include="base\include\GltfModel.h">
-      <Filter>Header Files\VkCore\Model</Filter>
+    <ClInclude Include="base\include\VkGltfModel.h">
+      <Filter>Header Files\VkCore\Resources\Model</Filter>
     </ClInclude>
     <ClInclude Include="base\include\VkTexture.h">
       <Filter>Header Files\VkCore\Resources\Texture</Filter>
     </ClInclude>
     <ClInclude Include="base\include\Geometry.h">
-      <Filter>Header Files\VkCore\Model</Filter>
+      <Filter>Header Files\VkCore\Resources\Model</Filter>
     </ClInclude>
     <ClInclude Include="base\include\imgui_impl_vulkan.h">
       <Filter>Header Files\ImGui</Filter>
@@ -467,7 +467,7 @@
       <Filter>Header Files\VkCore\SynObject</Filter>
     </ClInclude>
     <ClInclude Include="base\include\VkModelFactory.h">
-      <Filter>Header Files\VkCore\Model</Filter>
+      <Filter>Header Files\VkCore\Resources\Model</Filter>
     </ClInclude>
     <ClInclude Include="base\include\VkDeviceManager.h">
       <Filter>Header Files\VkCore\Manager</Filter>
@@ -560,7 +560,7 @@
       <Filter>Header Files\VkCore\Material</Filter>
     </ClInclude>
     <ClInclude Include="base\include\ModelStrcture.h">
-      <Filter>Header Files\VkCore\Model</Filter>
+      <Filter>Header Files\VkCore\Resources\Model</Filter>
     </ClInclude>
     <ClInclude Include="base\include\VkGeneralPurposeImage.h">
       <Filter>Header Files\VkCore\Resources\Texture\Image\Images</Filter>

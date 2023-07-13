@@ -2,31 +2,23 @@
 
 #include "BaseRenderer.h"
 #include "FirstPersonCamera.h"
-#include "GltfModel.h"
+#include "VkGltfModel.h"
 #include "KeyBoardInputManager.h"
 #include "MouseInputManager.h"
 #include "RenderingMetaInfo.h"
 #include "VkRenderpassManager.h"
 #include "VkImgui.h"
-#include "RenderGraph.h"
-#include "Geometry.h"
-
 //#include "IrradianceMapGenPass.h"
 //#include "PrefilterAndLUTMapGenPass.h"
 //#include "PbrRenderingPass.h"
 #include "DeferedGeometryPass.h"
 #include "DeferedCompositionPass.h"
 //#include "MSAAPass.h"
-
-#include "VkMath.h"
+#include "RenderGraph.h"
+#include "VkMemoryManager.h"
 #include "VkRenderpassBase.h"
-#include "VkRenderpassManager.h"
-#include "VkTexture.h"
-#include <array>
 #include <chrono>
-#include <iostream>
 #include <memory>
-#include <random>
 #include <vector>
 
 class Renderer : public BaseRenderer
@@ -64,11 +56,12 @@ class Renderer : public BaseRenderer
   public:
 	//========================================
 	void DrawFrame(float time_diff) override;
-
-	void DrawFrame();
-
-
+	void DrawFrame(float time_diff,int);
 	void UpdateCamera(float dt) override;
+
+private:
+	void CommandBufferRecording(VkCommandBuffer cmd_buf,size_t img_index);
+
 
   private:
 
@@ -93,19 +86,24 @@ private:
 	std::unique_ptr<FirstPersonCamera> camera;
 	//SYN OBJECTS
 	std::shared_ptr<VkSemaphoreBundle> image_available_semaphores;
-	std::shared_ptr<VkSemaphoreBundle> graphics_render_finished_semaphores;
-	std::shared_ptr<VkSemaphoreBundle> UI_render_finished_semaphores;
+	std::shared_ptr<VkSemaphoreBundle> general_rendering_finished_semaphores;
+	std::shared_ptr<VkSemaphoreBundle> UI_rendering_finished_semaphores;
 	std::shared_ptr<VkFenceBundle>     frame_fences;
 	//-----------------------------------------------------------
 	std::vector<VkFence> image_fences;
+
+
 	//UI
 	VkImgui imgui_UI;
 	//GLOBAL RESOURCES
-	Global::Resources global_resources{};
+	Global::Resources persistent_resources{};
 
 
-	int cross_frame_resources = 0;
-	int persistent_resources  = 0;
+	
+
+
+
+
 
 
 };

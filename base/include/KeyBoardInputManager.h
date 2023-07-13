@@ -37,4 +37,7 @@ class KeyBoardInputManager
 	// Keep a list of all KeyInput instances and notify them all of key events
 
 	static std::vector<KeyBoardInputManager *> _instances;
+
+
+
 };

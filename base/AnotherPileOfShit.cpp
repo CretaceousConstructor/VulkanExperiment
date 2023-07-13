@@ -1,4 +1,3 @@
-#include "VkAttachmentInfo.h"
 
 ////VkAttachmentInfo::VkAttachmentInfo(std::shared_ptr<VkTexture> attachment_tex_) :
 ////    attachment_tex(std::move(attachment_tex_))

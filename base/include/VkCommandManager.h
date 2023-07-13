@@ -21,14 +21,15 @@ class VkCommandManager
 
 
 
-
-
-
-
 	static void CreateCommandBuffer(const VkDevice &device, const VkCommandPool &commandpool, VkCommandBuffer &CommandBuffer, VkCommandBufferLevel level);
 
 	static void BeginCommandBuffers(const std::vector<VkCommandBuffer> &command_buffers);
 	static void EndCommandBuffers(const std::vector<VkCommandBuffer> &command_buffers);
+
+
+	static void BeginCommandBuffers(VkCommandBuffer command_buffer);
+	static void EndCommandBuffers(VkCommandBuffer command_buffer);
+
 
   private:
 	VkDeviceManager &device_manager;

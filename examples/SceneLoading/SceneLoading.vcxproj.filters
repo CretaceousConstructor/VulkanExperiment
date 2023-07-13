@@ -46,6 +46,9 @@
     <Filter Include="Header Files\MSAAPasses">
       <UniqueIdentifier>{06a4ab24-7595-4888-a785-94e8f17b0027}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource Files\Shader Files\DeferedRendering\BindlessRendering">
+      <UniqueIdentifier>{9ac1e8e9-e63b-4f5e-97da-13802a5faf3a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GraphicsApp.cpp">
@@ -203,6 +206,36 @@
     </FxCompile>
     <FxCompile Include="..\..\data\shaders\DeferedRendering\DeferedComPerFrag_frag.hlsl">
       <Filter>Resource Files\Shader Files\DeferedRendering</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\data\shaders\DeferedRendering\BindlessRenderingShader\DeferedComPerSample_frag.hlsl">
+      <Filter>Resource Files\Shader Files\DeferedRendering\BindlessRendering</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\data\shaders\DeferedRendering\BindlessRenderingShader\DeferedComPerSample_vert.hlsl">
+      <Filter>Resource Files\Shader Files\DeferedRendering\BindlessRendering</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\data\shaders\DeferedRendering\BindlessRenderingShader\DeferedComStencilWrite_frag.hlsl">
+      <Filter>Resource Files\Shader Files\DeferedRendering\BindlessRendering</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\data\shaders\DeferedRendering\BindlessRenderingShader\DeferedComStencilWrite_vert.hlsl">
+      <Filter>Resource Files\Shader Files\DeferedRendering\BindlessRendering</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\data\shaders\DeferedRendering\BindlessRenderingShader\DeferedGeoPass_frag.hlsl">
+      <Filter>Resource Files\Shader Files\DeferedRendering\BindlessRendering</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\data\shaders\DeferedRendering\BindlessRenderingShader\DeferedGeoPass_vert.hlsl">
+      <Filter>Resource Files\Shader Files\DeferedRendering\BindlessRendering</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\data\shaders\DeferedRendering\BindlessRenderingShader\DeferedComPass_frag.hlsl">
+      <Filter>Resource Files\Shader Files\DeferedRendering\BindlessRendering</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\data\shaders\DeferedRendering\BindlessRenderingShader\DeferedComPass_vert.hlsl">
+      <Filter>Resource Files\Shader Files\DeferedRendering\BindlessRendering</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\data\shaders\DeferedRendering\BindlessRenderingShader\DeferedComPerFrag_frag.hlsl">
+      <Filter>Resource Files\Shader Files\DeferedRendering\BindlessRendering</Filter>
+    </FxCompile>
+    <FxCompile Include="..\..\data\shaders\DeferedRendering\BindlessRenderingShader\DeferedComPerFrag_vert.hlsl">
+      <Filter>Resource Files\Shader Files\DeferedRendering\BindlessRendering</Filter>
     </FxCompile>
   </ItemGroup>
 </Project>

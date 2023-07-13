@@ -299,16 +299,22 @@ uint32_t VkDeviceManager::FindMemoryType(uint32_t typeFilter, VkMemoryPropertyFl
 	VkPhysicalDeviceMemoryProperties memProperties;
 	vkGetPhysicalDeviceMemoryProperties(para_physical_device, &memProperties);
 
-	for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++)
+	for (uint32_t mem_type_index = 0; mem_type_index < memProperties.memoryTypeCount; mem_type_index++)
 	{
-		if ((typeFilter & (1 << i)) && ((memProperties.memoryTypes[i].propertyFlags & properties) == properties))
+		if ((typeFilter & (1 << mem_type_index)) && ((memProperties.memoryTypes[mem_type_index].propertyFlags & properties) == properties))
 		{
-			return i;
+			return mem_type_index;
 		}
 	}
 
 	throw std::runtime_error("failed to find suitable memory type!");
 }
+
+
+
+
+
+
 
 VkBool32 VkDeviceManager::FormatIsFilterable(VkFormat format, VkImageTiling tiling) const
 {

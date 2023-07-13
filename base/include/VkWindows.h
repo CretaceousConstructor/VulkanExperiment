@@ -26,11 +26,11 @@ class VkWindows
 
   public:
 	[[nodiscard]] VkSurfaceKHR GetSurface() const;
-	//[[nodiscard]] VkFormat     GetSurfaceFormat() const;
+	[[nodiscard]] const GLFWwindow *GetWindowPtr() const;
 
+	//[[nodiscard]] VkFormat     GetSurfaceFormat() const;
 	//const VkSurfaceKHR &GetSurfaceRef() const;
 	//VkSurfaceKHR &      GetSurfaceRef();
-	[[nodiscard]] const GLFWwindow *GetWindowPtr() const;
 
   public:
 	const uint32_t    WIDTH;
