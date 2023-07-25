@@ -11,12 +11,19 @@
 //#include "IrradianceMapGenPass.h"
 //#include "PrefilterAndLUTMapGenPass.h"
 //#include "PbrRenderingPass.h"
-#include "DeferedGeometryPass.h"
-#include "DeferedCompositionPass.h"
+//#include "DeferedGeometryPass.h"
+//#include "DeferedCompositionPass.h"
+
 //#include "MSAAPass.h"
+
+#include "DeferedGeometryPassRG.h"
+#include "DeferedCompositionPassRG.h"
+
 #include "RenderGraph.h"
 #include "VkMemoryManager.h"
 #include "VkRenderpassBase.h"
+#include "VkRsrcUsageInfo.h"
+
 #include <chrono>
 #include <memory>
 #include <vector>
@@ -78,6 +85,8 @@ private:
 	VkRenderpassManager renderpass_manager;
 	//RENDERPASS
 	std::vector<std::shared_ptr<VkRenderpassBase>> renderpasses;
+	//RENDERPASS FOR RenderGraph
+	std::vector<std::shared_ptr<VkRenderpassBaseRG>> renderpasses_RG;
 
 	//INPUT MANAGER
 	std::unique_ptr<KeyBoardInputManager> keyboard;
@@ -98,8 +107,8 @@ private:
 	//GLOBAL RESOURCES
 	Global::Resources persistent_resources{};
 
-
-	
+	//RENDER GRAPH
+	RenderGraph::DependencyGraph render_graph;        // you need to re-establish render graph for EVERY FRAME
 
 
 

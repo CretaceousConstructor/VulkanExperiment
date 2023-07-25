@@ -11,6 +11,29 @@
 //	return attachment_tex;
 //}
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+RsrcUsageInfoInPass::RsrcUsageInfoInPass(Vk::RsrcInfoType info_t) :
+    info_type(info_t)
+{
+}
+
+Vk::RsrcInfoType RsrcUsageInfoInPass::GetInfoType() const
+{
+	return info_type;
+}
+
 VkAttachmentInfo::DynamicRenderingAttachment::DynamicRenderingAttachment(Type attach_type_, VkFormat format_, uint32_t index_) :
     attach_type(attach_type_),
     format(format_),
@@ -41,24 +64,21 @@ VkAttachmentInfo &VkAttachmentInfo::Bundle::operator[](size_t index)
 //
 //}
 
-VkAttachmentInfo::VkAttachmentInfo(const WithinPassRG &info, std::shared_ptr<VkTexture> tex_):
+VkAttachmentInfo::VkAttachmentInfo(const WithinPassRG &info, std::shared_ptr<VkTexture> tex_) :
 
     info_in_pass(info),
     tex(tex_)
 
 {
-
-
 }
 
-VkAttachmentInfo::VkAttachmentInfo(const WithinPassRG &info, std::shared_ptr<VkTexture> tex_, std::shared_ptr<VkTexture> resolve_tex_):
+VkAttachmentInfo::VkAttachmentInfo(const WithinPassRG &info, std::shared_ptr<VkTexture> tex_, std::shared_ptr<VkTexture> resolve_tex_) :
 
     info_in_pass(info),
     tex(tex_),
     resolve_tex(resolve_tex_)
 
 {}
-
 
 VkAttachmentInfo::VkAttachmentInfo(WithinPass meme_, std::shared_ptr<VkTexture> tex_) :
     info_in_pass(meme_),
@@ -71,20 +91,16 @@ VkAttachmentInfo::VkAttachmentInfo(WithinPass meme_, std::shared_ptr<VkTexture> 
     tex(tex_),
     resolve_tex(resolve_tex_)
 {
-
-
 }
-
 
 //VkAttachmentInfo::Bundle VkAttachmentInfo::GetAttachmentInfos(const Memento &meme_)
 //{
-//	
+//
 //	std::vector<VkAttachmentInfo> result;
 //
 //	result.emplace_back(meme_);
 //	return {result, {meme_.type, meme_.format, meme_.attachment_index}};
 //}
-
 
 VkAttachmentInfo::Bundle VkAttachmentInfo::GetAttachmentInfos(const WithinPass &meme_, const VkTexture::TexturePtrBundle &textures_)
 {
@@ -148,7 +164,6 @@ VkTexture &VkAttachmentInfo::GetTex()
 	return *tex;
 }
 
-
 VkRenderingAttachmentInfo VkAttachmentInfo::GetRenderingAttachmentInfo()
 {
 	if (!info_in_pass || !tex)
@@ -169,6 +184,8 @@ VkRenderingAttachmentInfo VkAttachmentInfo::GetRenderingAttachmentInfo()
 	{
 		rendering_attachment_info.resolveImageView = resolve_tex->GetTextureImageView();
 	}
+
+
 	rendering_attachment_info.resolveImageLayout = info_in_pass->resolveImageLayout;
 
 	return rendering_attachment_info;

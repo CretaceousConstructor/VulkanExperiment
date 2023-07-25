@@ -383,6 +383,9 @@
     <ClCompile Include="base\BaseRenderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="base\VkRenderpassBaseRG.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="base\include\Camera.h">
@@ -633,6 +636,9 @@
     </ClInclude>
     <ClInclude Include="base\include\VkRsrcUsageInfo.h">
       <Filter>Header Files\VkCore\Resources\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\VkRenderpassBaseRG.h">
+      <Filter>Header Files\VkCore\Renderpass</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

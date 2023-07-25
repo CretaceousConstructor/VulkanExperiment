@@ -4,6 +4,52 @@
 #include <unordered_map>
 #include <mutex>
 
+
+namespace DescriptorManagement
+{
+
+template <typename T>
+concept HasDescType = requires (T&& t) {
+	{t.desc_type} -> std::same_as<VkDescriptorType&>;
+};
+
+
+
+template <HasDescType T, typename... Args>
+void FillDescriptorPoolSizeMap(std::unordered_map<VkDescriptorType, uint32_t, Vk::EnumClassHash> &result_map, T &&first, Args &&...args)
+{
+	if constexpr (0 == sizeof...(args))
+	{
+		return;
+	}
+	else
+	{
+		if (!result_map.contains(first.desc_type))
+		{
+			result_map.emplace(first.desc_type, 1u);
+		}
+		else
+		{
+			++result_map[first.desc_type];
+		}
+	}
+
+	return CalculateDescriptorPoolSize(result_map, args);
+}
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
 class VkDescriptorManagerV0
 {
   public:
@@ -26,7 +72,9 @@ class VkDescriptorManagerV0
 
 	//use a map to handle  VkAllocationCallbacks shit,use VkAllocationCallbacks as key of the map;
   private:
-	/*"Each object of a dispatchable type must have a unique handle value during its lifetime."
+	/*
+	 *
+	 *"Each object of a dispatchable type must have a unique handle value during its lifetime."
 	Non-dispatchable handle types are a 64-bit integer type whose meaning is implementation-
 	dependent. If the privateData feature is enabled for a VkDevice, each object of a non-dispatchable
 	type created on that device must have a handle value that is unique among objects created on that
@@ -36,9 +84,11 @@ class VkDescriptorManagerV0
 	If handle values are not unique, then destroying one
 	such handle must not cause identical handles of other types to become invalid, and must not cause
 	identical handles of the same type to become invalid if that handle value has been created more
-	times than it has been destroyed.*/
-	std::mutex desc_layout_mutex;
-	std::mutex desc_pool_mutex;
+	times than it has been destroyed.
+	*
+	*/
+	//std::mutex desc_layout_mutex;
+	//std::mutex desc_pool_mutex;
 
 	std::unordered_map<VkDescriptorSetLayout, uint32_t> desc_set_layouts;
 	std::unordered_map<VkDescriptorPool, uint32_t>      desc_set_pools;

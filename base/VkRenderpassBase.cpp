@@ -30,20 +30,6 @@ void VkRenderpassBase::ExecuteStatically(const std::vector<VkCommandBuffer> &com
 	EndRenderpass(command_buffers);
 }
 
-//void VkRenderpassBase::InitRG()
-//{
-//
-//	ResourceInitRG();
-//
-//	CreateLocalCommandBuffersRG();
-//
-//	CreateDescriptorSetPoolsRG();
-//	CreateDescriptorSetLayoutRG();
-//	CreateDescriptorSetsRG();
-//
-//	CreateAttachmentsRG();
-//	CreateGraphicsPipelineLayoutRG();
-//	CreateShadersRG();
-//	CreateGraphicsPipelineRG();
-//}
+void VkRenderpassBase::UpdateResources(size_t current_image)
+{}
 

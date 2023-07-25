@@ -6,6 +6,9 @@
 
 namespace Vk
 {
+
+
+
 constexpr VkImageCreateFlags ImgCINillFlag{0};
 constexpr int                MAX_FRAMES_IN_FLIGHT{2};
 constexpr uint32_t           SWAP_IMG_COUNT{3};
@@ -13,6 +16,13 @@ constexpr VkFlags            NoneFlag{0};
 
 constexpr VkFormat             required_depth_formats[]{VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT};
 constexpr VkFormatFeatureFlags required_depth_format_feature{VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT};
+
+
+
+using AttachmentIndexType = uint32_t;
+
+template <uint32_t T>
+constexpr uint32_t SetIndex{T};
 
 template <uint32_t T>
 constexpr uint32_t Binding{T};
@@ -50,15 +60,32 @@ struct SyncInfo
 	VkImageLayout        layout_inpass{};
 };
 
+
+
 enum class RsrcInfoType
 {
 	Unknown,
 	Attachment,
-	UniformBuffer,
+	Buffer,
 	Texture,
 	Model
 };
 
+struct DescSetInfo
+{
+	uint32_t set{0};
+	uint32_t binding{0};
+	uint32_t array_elemnt{0};
+};
+
+struct EnumClassHash
+{
+	template <typename T>
+	std::size_t operator()(T t) const
+	{
+		return static_cast<std::size_t>(t);
+	}
+};
 
 
 struct ResourceDimensions
@@ -92,34 +119,6 @@ struct ResourceDimensions
 };
 
 
-
-
-
-
-
-
-
-
-class RsrcUsageInfoInPass
-{
-  public:
-	RsrcUsageInfoInPass(RsrcInfoType info_t);
-	[[nodiscard]] virtual Vk::SyncInfo GetSynInfo() const = 0;
-	[[nodiscard]] RsrcInfoType         GetInfoType() const;
-
-  public:
-	virtual ~RsrcUsageInfoInPass() = default;
-	RsrcUsageInfoInPass()          = delete;
-
-	RsrcUsageInfoInPass(const RsrcUsageInfoInPass &) = delete;
-	RsrcUsageInfoInPass &operator=(const RsrcUsageInfoInPass &) = delete;
-
-	RsrcUsageInfoInPass(RsrcUsageInfoInPass &&) = delete;
-	RsrcUsageInfoInPass &operator=(RsrcUsageInfoInPass &&) = delete;
-
-  private:
-	RsrcInfoType info_type;
-};
 
 enum ModelLoadingOption
 {

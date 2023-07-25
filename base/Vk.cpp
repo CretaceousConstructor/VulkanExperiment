@@ -17,7 +17,7 @@ VkPipelineLayout Vk::GetPipelineLayout(const VkDevice &device, const std::vector
 	pipeline_layoutCI.setLayoutCount = static_cast<uint32_t>(set_layouts.size());
 	pipeline_layoutCI.pSetLayouts    = set_layouts.data();
 
-	//TODO: testing multiple push constants and how to access it
+	// TODO: testing multiple push constants and how to access it
 	// We will use push constants to push the local matrices of a primitive to the vertex shader
 	pipeline_layoutCI.pushConstantRangeCount = static_cast<uint32_t>(push_constant_ranges.size());
 	if (push_constant_ranges.empty())
@@ -172,12 +172,3 @@ bool Vk::HasStencilComponent(VkFormat format)
 	return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
 }
 
-Vk::RsrcUsageInfoInPass::RsrcUsageInfoInPass(RsrcInfoType info_t) :
-    info_type(info_t)
-{
-}
-
-Vk::RsrcInfoType Vk::RsrcUsageInfoInPass::GetInfoType() const
-{
-	return info_type;
-}

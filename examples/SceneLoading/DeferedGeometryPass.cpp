@@ -1,7 +1,7 @@
 #include "DeferedGeometryPass.h"
 
-DeferedGeometryPass::DeferedGeometryPass(VkGraphicsComponent &gfx_, VkRenderpassManager &renderpass_manager_, Global::Resources &common_resources_) :
-    VkRenderpassBase(gfx_, renderpass_manager_), device_manager(gfx.DeviceMan()), swapchain_manager(gfx.SwapchainMan()), global_resources(common_resources_)
+DeferedGeometryPass::DeferedGeometryPass(VkGraphicsComponent &gfx_, VkRenderpassManager &renderpass_manager_, Global::Resources &global_resources_) :
+    VkRenderpassBase(gfx_, renderpass_manager_), device_manager(gfx.DeviceMan()), swapchain_manager(gfx.SwapchainMan()), global_resources(global_resources_)
 {
 }
 
@@ -120,14 +120,12 @@ void DeferedGeometryPass::CreateDescriptorSetPools()
 void DeferedGeometryPass::CreateDescriptorSetLayout()
 {
 	//LAYOUT FOR SET 0
-
 	{
 		//Descriptor for passing matrices
 		const auto binding0{Vk::GetDescriptorSetLayoutBinding(Vk::Binding<0>, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)};
 
 		const std::vector bindings{binding0};
-
-		const auto desc_set_layout_CI = Vk::GetDescriptorSetLayoutCI(bindings);
+		const auto        desc_set_layout_CI = Vk::GetDescriptorSetLayoutCI(bindings);
 
 		local_descriptor_set_layout = renderpass_manager.GetDescriptorManagerV0().ProduceDescriptorSetLayoutUnsafe(desc_set_layout_CI);
 	}
@@ -136,7 +134,6 @@ void DeferedGeometryPass::CreateDescriptorSetLayout()
 void DeferedGeometryPass::CreateDescriptorSets()
 {
 	const auto &desciptor_set_factory = renderpass_manager.GetDescriptorSetFactory();
-
 	//set = 0
 	{
 		descriptor_set_bundle = desciptor_set_factory.ProduceDescriptorSetBundle(local_descriptor_pool, local_descriptor_set_layout, Vk::BundleSize<Vk::SWAP_IMG_COUNT>);
@@ -145,85 +142,85 @@ void DeferedGeometryPass::CreateDescriptorSets()
 
 void DeferedGeometryPass::CreateAttachments()
 {
-	//const VkAttachmentInfo::WithinPass G_position_meme{
-	//    .format           = DeferedRendering::G_position_format,
-	//    .attachment_index = Vk::AttachmentIndex<0>,
+	const VkAttachmentInfo::WithinPass G_position_meme{
+	    DeferedRendering::G_position_format,
+	    Vk::AttachmentIndex<0>,
 
-	//    .loadOp  = VK_ATTACHMENT_LOAD_OP_CLEAR,
-	//    .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+	    VK_ATTACHMENT_LOAD_OP_CLEAR,
+	    VK_ATTACHMENT_STORE_OP_STORE,
 
-	//    .layout_prepass   = VK_IMAGE_LAYOUT_UNDEFINED,
-	//    .layout_inpass    = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-	//    .layout_afterpass = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+	    VK_IMAGE_LAYOUT_UNDEFINED,
+	    VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+	    VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
 
-	//    .type        = VkAttachmentInfo::Type::ColorAttachment,
-	//    .clear_value = VkClearValue{.color{0.0f, 0.0f, 0.0f, 1.0f}},
-	//};
-	//G_position_attachments_infos = VkAttachmentInfo::GetAttachmentInfos(G_position_meme, global_resources.G_buffer_position);
+	    VkAttachmentInfo::Type::ColorAttachment,
+	    VkClearValue{.color{0.0f, 0.0f, 0.0f, 1.0f}},
+	};
+	G_position_attachments_infos = VkAttachmentInfo::GetAttachmentInfos(G_position_meme, global_resources.G_buffer_position);
 
-	//const VkAttachmentInfo::WithinPass G_normal_meme{
-	//    .format           = DeferedRendering::G_normal_format,
-	//    .attachment_index = Vk::AttachmentIndex<1>,
+	const VkAttachmentInfo::WithinPass G_normal_meme{
+	    DeferedRendering::G_normal_format,
+	    Vk::AttachmentIndex<1>,
 
-	//    .loadOp  = VK_ATTACHMENT_LOAD_OP_CLEAR,
-	//    .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+	    VK_ATTACHMENT_LOAD_OP_CLEAR,
+	    VK_ATTACHMENT_STORE_OP_STORE,
 
-	//    .layout_prepass   = VK_IMAGE_LAYOUT_UNDEFINED,
-	//    .layout_inpass    = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-	//    .layout_afterpass = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+	    VK_IMAGE_LAYOUT_UNDEFINED,
+	    VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+	    VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
 
-	//    .type        = VkAttachmentInfo::Type::ColorAttachment,
-	//    .clear_value = VkClearValue{.color{0.0f, 0.0f, 0.0f, 1.0f}},
-	//};
-	//G_normal_attachments_infos = VkAttachmentInfo::GetAttachmentInfos(G_normal_meme, global_resources.G_buffer_normal);
+	    VkAttachmentInfo::Type::ColorAttachment,
+	    VkClearValue{.color{0.0f, 0.0f, 0.0f, 1.0f}},
+	};
+	G_normal_attachments_infos = VkAttachmentInfo::GetAttachmentInfos(G_normal_meme, global_resources.G_buffer_normal);
 
-	//const VkAttachmentInfo::WithinPass G_albedo_meme{
-	//    .format           = DeferedRendering::G_albedo_format,
-	//    .attachment_index = Vk::AttachmentIndex<2>,
+	const VkAttachmentInfo::WithinPass G_albedo_meme{
+	    DeferedRendering::G_albedo_format,
+	    Vk::AttachmentIndex<2>,
 
-	//    .loadOp  = VK_ATTACHMENT_LOAD_OP_CLEAR,
-	//    .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+	    VK_ATTACHMENT_LOAD_OP_CLEAR,
+	    VK_ATTACHMENT_STORE_OP_STORE,
 
-	//    .layout_prepass   = VK_IMAGE_LAYOUT_UNDEFINED,
-	//    .layout_inpass    = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-	//    .layout_afterpass = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+	    VK_IMAGE_LAYOUT_UNDEFINED,
+	    VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+	    VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
 
-	//    .type        = VkAttachmentInfo::Type::ColorAttachment,
-	//    .clear_value = VkClearValue{.color{0.0f, 0.0f, 0.0f, 1.0f}},
-	//};
-	//G_albedo_attachments_infos = VkAttachmentInfo::GetAttachmentInfos(G_albedo_meme, global_resources.G_buffer_albedo);
+	    VkAttachmentInfo::Type::ColorAttachment,
+	    VkClearValue{.color{0.0f, 0.0f, 0.0f, 1.0f}},
+	};
+	G_albedo_attachments_infos = VkAttachmentInfo::GetAttachmentInfos(G_albedo_meme, global_resources.G_buffer_albedo);
 
-	//const VkAttachmentInfo::WithinPass G_posZGrad_meme{
-	//    .format           = DeferedRendering::G_posZGrad_format,
-	//    .attachment_index = Vk::AttachmentIndex<3>,
+	const VkAttachmentInfo::WithinPass G_posZGrad_meme{
+	    DeferedRendering::G_posZgrad_format,
+	    Vk::AttachmentIndex<3>,
 
-	//    .loadOp  = VK_ATTACHMENT_LOAD_OP_CLEAR,
-	//    .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+	    VK_ATTACHMENT_LOAD_OP_CLEAR,
+	    VK_ATTACHMENT_STORE_OP_STORE,
 
-	//    .layout_prepass   = VK_IMAGE_LAYOUT_UNDEFINED,
-	//    .layout_inpass    = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-	//    .layout_afterpass = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+	    VK_IMAGE_LAYOUT_UNDEFINED,
+	    VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+	    VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
 
-	//    .type        = VkAttachmentInfo::Type::ColorAttachment,
-	//    .clear_value = VkClearValue{.color{0.0f, 0.0f, 0.0f, 1.0f}},
-	//};
-	//G_posZGrad_attachments_infos = VkAttachmentInfo::GetAttachmentInfos(G_posZGrad_meme, global_resources.G_buffer_posZGradient);
+	    VkAttachmentInfo::Type::ColorAttachment,
+	    VkClearValue{.color{0.0f, 0.0f, 0.0f, 1.0f}},
+	};
+	G_posZGrad_attachments_infos = VkAttachmentInfo::GetAttachmentInfos(G_posZGrad_meme, global_resources.G_buffer_posZGradient);
 
-	//const VkAttachmentInfo::WithinPass G_depth_meme{
-	//    .format           = swapchain_manager.FindDepthFormat(),
-	//    .attachment_index = Vk::AttachmentIndex<4>,
+	const VkAttachmentInfo::WithinPass G_depth_meme{
+	    swapchain_manager.FindDepthFormat(),
+	    Vk::AttachmentIndex<4>,
 
-	//    .loadOp  = VK_ATTACHMENT_LOAD_OP_CLEAR,
-	//    .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+	    VK_ATTACHMENT_LOAD_OP_CLEAR,
+	    VK_ATTACHMENT_STORE_OP_STORE,
 
-	//    .layout_prepass   = VK_IMAGE_LAYOUT_UNDEFINED,
-	//    .layout_inpass    = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-	//    .layout_afterpass = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+	    VK_IMAGE_LAYOUT_UNDEFINED,
+	    VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+	    VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
 
-	//    .type = VkAttachmentInfo::Type::DepthAttachment,
-	//    //use 0. as clear value for reverse depth technique
-	//    .clear_value = VkClearValue{.depthStencil{0.0f, 0}}};
-	//G_depth_attachments_infos = VkAttachmentInfo::GetAttachmentInfos(G_depth_meme, global_resources.G_buffer_depth);
+	    VkAttachmentInfo::Type::DepthAttachment,
+	    //use 0. as clear value for reverse depth technique
+	    VkClearValue{.depthStencil{0.0f, 0}}};
+	G_depth_attachments_infos = VkAttachmentInfo::GetAttachmentInfos(G_depth_meme, global_resources.G_buffer_depth);
 }
 
 void DeferedGeometryPass::CreateGraphicsPipelineLayout()
@@ -261,11 +258,11 @@ void DeferedGeometryPass::BeginRenderpass(const std::vector<VkCommandBuffer> &co
 		VkRenderingAttachmentInfo              stensil_attachment_info;
 
 		AttachmentInfoGeneration::GenerateRenderingAttachInfo(color_attachment_infos, depth_attachment_info, stensil_attachment_info, image_index,
-		                                                  G_position_attachments_infos,
-		                                                  G_normal_attachments_infos,
-		                                                  G_albedo_attachments_infos,
-		                                                  G_posZGrad_attachments_infos,
-		                                                  G_depth_attachments_infos);
+		                                                      G_position_attachments_infos,
+		                                                      G_normal_attachments_infos,
+		                                                      G_albedo_attachments_infos,
+		                                                      G_posZGrad_attachments_infos,
+		                                                      G_depth_attachments_infos);
 
 		rendering_info.colorAttachmentCount = static_cast<uint32_t>(color_attachment_infos.size());
 		rendering_info.pColorAttachments    = color_attachment_infos.data();
@@ -322,9 +319,6 @@ void DeferedGeometryPass::EndRenderpass(const std::vector<VkCommandBuffer> &comm
 	}
 }
 
-void DeferedGeometryPass::UpdateResources(size_t currentImage)
-{
-}
 
 void DeferedGeometryPass::LayoutTransitionStartOfRendering(VkCommandBuffer cmd_buffer, std::optional<size_t> image_index)
 {
@@ -483,165 +477,3 @@ void DeferedGeometryPass::LayoutTransitionEndOfRendering(VkCommandBuffer cmd_buf
 	}
 }
 
-//******************************************************Render Graph Virtual Functions******************************************************
-
-void DeferedGeometryPass::ResourceInitRG()
-{
-	/**********************************pipeline PP***********************************/
-	auto &forward_shading_PP_factory = renderpass_manager.GetFactoryBundle().forward_shading_PP_factory;
-	pipeline_PP                      = forward_shading_PP_factory.GetPipelinePP();
-}
-
-void DeferedGeometryPass::CreateLocalCommandBuffersRG()
-{
-}
-
-void DeferedGeometryPass::CreateDescriptorSetPoolsRG()
-{
-	/**********************************descriptor pool***********************************/
-	const std::vector desc_pool_sizes{
-	    Vk::GetOneDescriptorPoolSizeDescription(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, uniform_buffer_infos.size() * swapchain_manager.GetSwapImageCount())};
-
-	const auto desc_pool_CI  = Vk::GetDescriptorPoolCI(desc_pool_sizes, swapchain_manager.GetSwapImageCount());
-	local_descriptor_pool_RG = renderpass_manager.GetDescriptorManagerV0().ProduceDescriptorPoolUnsafe(desc_pool_CI);
-}
-
-void DeferedGeometryPass::CreateDescriptorSetLayoutRG()
-{
-	//LAYOUT FOR SET 0
-	{
-		//Descriptor for passing Uniform Buffers (for matrices etc.)
-		{
-			std::vector<VkDescriptorSetLayoutBinding> bindings;
-			bindings.reserve(uniform_buffer_infos.size());
-
-			for (uint32_t binding = 0; binding < uniform_buffer_infos.size(); binding++)
-			{
-				bindings.emplace_back(Vk::GetDescriptorSetLayoutBinding(binding, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT));
-			}
-			const auto desc_set_layout_CI = Vk::GetDescriptorSetLayoutCI(bindings);
-
-			local_descriptor_set_layout_RG = renderpass_manager.GetDescriptorManagerV0().ProduceDescriptorSetLayoutUnsafe(desc_set_layout_CI);
-		}
-	}
-}
-
-void DeferedGeometryPass::CreateDescriptorSetsRG()
-{
-	const auto &desciptor_set_factory = renderpass_manager.GetDescriptorSetFactory();
-
-	//set = 0
-	{
-		descriptor_set_RG = desciptor_set_factory.ProduceDescriptorSet(local_descriptor_pool_RG, local_descriptor_set_layout_RG);
-	}
-}
-
-void DeferedGeometryPass::GetAttachmentsRG(std::vector<VkAttachmentInfo> attachment_infos_)
-{
-	//const VkAttachmentInfo::WithinPass G_albedo_meme{
-	//    .format           = DeferedRendering::G_albedo_format,
-	//    .attachment_index = Vk::AttachmentIndex<2>,
-
-	//    .loadOp  = VK_ATTACHMENT_LOAD_OP_CLEAR,
-	//    .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
-
-	//    .layout_prepass   = VK_IMAGE_LAYOUT_UNDEFINED,
-	//    .layout_inpass    = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-	//    .layout_afterpass = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-
-	//    .type        = VkAttachmentInfo::Type::ColorAttachment,
-	//    .clear_value = VkClearValue{.color{0.0f, 0.0f, 0.0f, 1.0f}},
-	//};
-	//G_albedo_attachments_infos = VkAttachmentInfo::GetAttachmentInfos(G_albedo_meme, global_resources.G_buffer_albedo);
-
-	attachment_infos = std::move(attachment_infos_);
-}
-
-void DeferedGeometryPass::GetUniformBufferDescriptorsRG(std::vector<VkUniBufUsageInfo> uf_infos_)
-{
-	uniform_buffer_infos = std::move(uf_infos_);
-}
-
-void DeferedGeometryPass::CreateGraphicsPipelineLayoutRG()
-{
-}
-
-void DeferedGeometryPass::CreateShadersRG()
-{
-	const auto &shader_factory     = renderpass_manager.GetShaderFactory();
-	defefered_geometry_vert_shader = shader_factory.GetShader(std::string("../../data/shaders/DeferedRendering/DeferedGeoPass_vert.hlsl"), VK_SHADER_STAGE_VERTEX_BIT);
-	defefered_geometry_frag_shader = shader_factory.GetShader(std::string("../../data/shaders/DeferedRendering/DeferedGeoPass_frag.hlsl"), VK_SHADER_STAGE_FRAGMENT_BIT);
-}
-
-void DeferedGeometryPass::CreateGraphicsPipelineRG()
-{
-}
-
-void DeferedGeometryPass::BeginRenderpassRG(const VkCommandBuffer cmd_buf)
-{
-	VkRenderingInfo rendering_info{};
-	rendering_info.sType             = VK_STRUCTURE_TYPE_RENDERING_INFO;
-	rendering_info.renderArea.offset = {0, 0};
-	rendering_info.renderArea.extent = VkExtent2D{swapchain_manager.GetSwapChainImageExtent().width, swapchain_manager.GetSwapChainImageExtent().height};
-	rendering_info.layerCount        = 1;
-	rendering_info.pNext             = nullptr;
-	rendering_info.flags             = 0;
-
-	std::vector<VkRenderingAttachmentInfo> color_attachment_infos;
-	VkRenderingAttachmentInfo              depth_attachment_info;
-	VkRenderingAttachmentInfo              stensil_attachment_info;
-
-	AttachmentInfoGeneration::GenerateRenderingAttachInfo(color_attachment_infos, depth_attachment_info, stensil_attachment_info, attachment_infos);
-
-	rendering_info.colorAttachmentCount = static_cast<uint32_t>(color_attachment_infos.size());
-	rendering_info.pColorAttachments    = color_attachment_infos.data();
-	rendering_info.pDepthAttachment     = &depth_attachment_info;
-	rendering_info.pStencilAttachment   = nullptr;        //这个pStencilAttachment是reserve for future use的，永远填nullptr就行了
-
-	vkCmdBeginRendering(cmd_buf, &rendering_info);
-}
-
-void DeferedGeometryPass::UpdateDescriptorSetsRG()
-{
-	for (const auto &ub_info : uniform_buffer_infos)
-	{
-		VkDescriptorManager::UpdateDescriptorSet(device_manager.GetLogicalDevice(), *ub_info.buf, descriptor_set_RG, ub_info.dst_binding, ub_info.dst_array_element);
-	}
-}
-
-void DeferedGeometryPass::RecordRenderpassCommandRG(const VkCommandBuffer cmd_buf)
-{
-	const auto &pipe_builder = renderpass_manager.GetPipelineBuilder();
-
-	const std::vector<VkDescriptorSetLayout>           common_layouts{local_descriptor_set_layout_RG};
-	const std::vector<VkPipelineShaderStageCreateInfo> shader_stages{defefered_geometry_vert_shader->GetShaderStageCI(), defefered_geometry_frag_shader->GetShaderStageCI()};
-
-	pipeline_PP->SetPipelineShaderStageCreateInfo(shader_stages);
-
-	std::vector<VkAttachmentInfo::DynamicRenderingAttachment> attachment_formats;
-	for (const auto &attach_info : attachment_infos)
-	{
-		attachment_formats.emplace_back(attach_info.GetAttachmentFormatAndType());
-	}
-
-	pipeline_PP->SetDynamicRenderingAttachmentFormats(std::move(attachment_formats));
-
-	//for reversed Z value
-	pipeline_PP->depth_stencil_CI.depthCompareOp = VK_COMPARE_OP_GREATER_OR_EQUAL;
-
-	//multisample
-	pipeline_PP->multisample_state_CI.rasterizationSamples = DeferedRendering::MSAA_sample_count;
-	pipeline_PP->multisample_state_CI.sampleShadingEnable  = VK_FALSE;
-
-	global_resources.sponza->ProcessMaterial(common_layouts, *pipeline_PP, pipe_builder, std::nullopt);
-
-	//Bind Common Descriptor Set
-	vkCmdBindDescriptorSets(cmd_buf, VK_PIPELINE_BIND_POINT_GRAPHICS, global_resources.sponza->GetPipelineLayout(), 0, 1, &descriptor_set_RG, 0, NULL);
-
-	global_resources.sponza->DrawRecording(cmd_buf);
-}
-
-void DeferedGeometryPass::EndRenderpassRG(const VkCommandBuffer cmd_buf)
-{
-	vkCmdEndRendering(cmd_buf);
-}

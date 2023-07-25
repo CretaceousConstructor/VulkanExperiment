@@ -10,33 +10,39 @@ class DeferedCompositionPass final : public VkRenderpassBase
 {
   public:
 	DeferedCompositionPass(VkGraphicsComponent &gfx_, VkRenderpassManager &renderpass_manager_, Global::Resources &common_resources_);
-	virtual ~DeferedCompositionPass() override;
+	~DeferedCompositionPass() override;
+
+	DeferedCompositionPass()                               = delete;
+	DeferedCompositionPass(const DeferedCompositionPass &) = delete;
+	DeferedCompositionPass &operator=(const DeferedCompositionPass &) = delete;
+	DeferedCompositionPass(DeferedCompositionPass &&)                 = delete;
+	DeferedCompositionPass &operator=(DeferedCompositionPass &&) = delete;
+
+
 
   protected:
-	void ResourceInit() override final;
+	void ResourceInit() override ;
 
-	void CreateLocalCommandBuffers() override final;
-	void CreateDescriptorSetPools() override final;
-	void CreateDescriptorSetLayout() override final;
-	void CreateDescriptorSets() override final;
+	void CreateLocalCommandBuffers() override ;
+	void CreateDescriptorSetPools() override ;
+	void CreateDescriptorSetLayout() override ;
+	void CreateDescriptorSets() override ;
 
-	void CreateAttachments() override final;
-	void CreateGraphicsPipelineLayout() override final;
-	void CreateShaders() override final;
-	void CreateGraphicsPipeline() override final;
+	void CreateAttachments() override ;
+	void CreateGraphicsPipelineLayout() override ;
+	void CreateShaders() override ;
+	void CreateGraphicsPipeline() override ;
 
   public:
-	void BeginRenderpass(const std::vector<VkCommandBuffer> &command_buffers) override final;
+	void BeginRenderpass(const std::vector<VkCommandBuffer> &command_buffers) override ;
 	void UpdateDescriptorSets() override final;
-	void RecordRenderpassCommandStatically(const std::vector<VkCommandBuffer> &command_buffers) override final;
-	void EndRenderpass(const std::vector<VkCommandBuffer> &command_buffers) override final;
+	void RecordRenderpassCommandStatically(const std::vector<VkCommandBuffer> &command_buffers) override ;
+	void EndRenderpass(const std::vector<VkCommandBuffer> &command_buffers) override ;
 
-  public:
-	void UpdateResources(size_t currentImage) override final;
 
   private:
-	void LayoutTransitionStartOfRendering(VkCommandBuffer cmd_buffer, std::optional<size_t> image_index) override final;
-	void LayoutTransitionEndOfRendering(VkCommandBuffer cmd_buffer, std::optional<size_t> image_index) override final;
+	void LayoutTransitionStartOfRendering(VkCommandBuffer cmd_buffer, std::optional<size_t> image_index) override ;
+	void LayoutTransitionEndOfRendering(VkCommandBuffer cmd_buffer, std::optional<size_t> image_index) override ;
 
   private:
 	std::unique_ptr<VkPipelinePP> composition_pipeline_PP;

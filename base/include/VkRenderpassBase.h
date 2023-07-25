@@ -19,32 +19,6 @@ class VkRenderpassBase
 	void Init();
 	void ExecuteStatically(const std::vector<VkCommandBuffer> &command_buffers);
 
-public:
-	//void InitRG();
-
-	virtual void ResourceInitRG(){} ;
-
-	virtual void CreateLocalCommandBuffersRG(){} ;
-	virtual void CreateDescriptorSetPoolsRG(){} ;
-	virtual void CreateDescriptorSetLayoutRG(){} ;
-	virtual void CreateDescriptorSetsRG(){}      ;
-
-	virtual void GetAttachmentsRG(std::vector<VkAttachmentInfo> attachment_infos){};
-	virtual void GetUniformBufferDescriptorsRG(std::vector<VkUniBufUsageInfo> attachment_infos){};
-
-
-	virtual void CreateGraphicsPipelineLayoutRG(){} ;
-	virtual void CreateShadersRG(){}                ;
-	virtual void CreateGraphicsPipelineRG(){}       ;
-
-public:
-
-	virtual void BeginRenderpassRG(const VkCommandBuffer cmd_buf) {}
-	virtual void UpdateDescriptorSetsRG() {}
-	virtual void RecordRenderpassCommandRG(const VkCommandBuffer cmd_buf) {}
-	virtual void EndRenderpassRG(const VkCommandBuffer cmd_buf) {}
-
-
   public:
 	enum class Type
 	{
@@ -55,7 +29,7 @@ public:
 	};
 
   public:
-	virtual void UpdateResources(size_t current_image) = 0;
+	virtual void UpdateResources(size_t current_image) ;
 
   protected:
 	virtual void BeginRenderpass(const std::vector<VkCommandBuffer> &command_buffers)             = 0;
@@ -85,7 +59,6 @@ public:
 	VkGraphicsComponent &gfx;
 	VkRenderpassManager &renderpass_manager;
 };
-
 
 
 

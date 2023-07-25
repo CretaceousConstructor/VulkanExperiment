@@ -13,7 +13,7 @@ void Renderer::PrepareCommonModels()
 	//global_resources.sky_box   = model_factory.GetGltfModel<PbrMaterialMetallic>(box_path, VkModelFactory::LoadingOption::None, 1);
 
 	const std::string sponza_path = "../../data/models/sponza/sponza.gltf";
-	persistent_resources.sponza   = model_factory.GetGltfModel<NonPbrMaterial>(sponza_path, Vk::ModelLoadingOption::BindlessRenderingMode, 0);
+	persistent_resources.sponza   = model_factory.GetGltfModel<NonPbrMaterial>(sponza_path, Vk::ModelLoadingOption::None, 0);
 
 	//auto                  data = Geometry::CreateSphere(.2f, 20, 40, glm::vec4(1.f, 1.f, 1.f, 1.f));
 	//std::vector<Vertex>   vertices;
@@ -113,8 +113,11 @@ void Renderer::InitRenderpasses()
 
 	//renderpasses.push_back(VkRenderpassManager::ProduceRenderpass<MSAAPass>(gfx, renderpass_manager, global_resources));
 
-	renderpasses.push_back(std::make_shared<DeferedGeometryPass>(gfx, renderpass_manager, persistent_resources));
-	renderpasses.push_back(std::make_shared<DeferedCompositionPass>(gfx, renderpass_manager, persistent_resources));
+	//renderpasses.push_back(std::make_shared<DeferedGeometryPass>(gfx, renderpass_manager, persistent_resources));
+	//renderpasses.push_back(std::make_shared<DeferedCompositionPass>(gfx, renderpass_manager, persistent_resources));
+
+	renderpasses.push_back(std::make_shared<DeferedGeometryPassRG>(gfx, renderpass_manager, persistent_resources));
+	renderpasses.push_back(std::make_shared<DeferedCompositionPassRG>(gfx, renderpass_manager, persistent_resources));
 }
 
 void Renderer::InitSynObjects()
@@ -441,7 +444,7 @@ void Renderer::DrawFrame(float time_diff, int)
 	///
 	///
 	////等待frame
-	vkWaitForFences(device_manager.GetLogicalDevice(), 1, &(frame_fences->GetOne(currentFrame)), VK_TRUE, UINT64_MAX);        //vkWaitForFences无限时阻塞CPU，等待fence被signal后 从 unsignaled状态 变成 signaled状态才会停止阻塞。                  To wait for one or more fences to enter the signaled state on the host,
+	vkWaitForFences(device_manager.GetLogicalDevice(), 1, &(frame_fences->GetOne(currentFrame)), VK_TRUE, UINT64_MAX);        //vkWaitForFences 无限时长 阻塞CPU，等待fence被signal后 从 unsignaled状态 变成 signaled状态才会停止阻塞。                  To wait for one or more fences to enter the signaled state on the host,
 
 	uint32_t img_index;
 
@@ -451,7 +454,7 @@ void Renderer::DrawFrame(float time_diff, int)
 	if (result == VK_ERROR_OUT_OF_DATE_KHR)
 	{
 		//TODO: recreation of swapchain
-		//recreateSwapChain();
+		//RecreateSwapChain();
 		return;
 	}
 	else if (result == VK_NOT_READY)
@@ -642,7 +645,7 @@ void Renderer::UpdateCamera(float dt)
 }
 
 Renderer::Renderer(VkGraphicsComponent &gfx_) :
-    BaseRenderer(gfx_), renderpass_manager(gfx), imgui_UI(gfx)
+    BaseRenderer(gfx_), renderpass_manager(gfx), imgui_UI(gfx), render_graph(renderpass_manager)
 {
 }
 
@@ -697,9 +700,19 @@ void Renderer::CommandBufferRecording(VkCommandBuffer cmd_buf, size_t img_index)
 {
 	VkCommandManager::BeginCommandBuffers(cmd_buf);
 
+
+
+	//TODO: optimizations
+	// trancient resources management
+	// memory management(memory pool)
+	// object pool
+
+
+
+	using namespace RenderGraph;
 	//*************************************************************************************
 	//RENDERGRAPH
-	RenderGraph::DependencyGraph render_graph{renderpass_manager};        // you need to re-establish render graph for EVERY FRAME
+	render_graph.Purge();        // you need to re-establish render graph for EVERY FRAME
 
 	//TRANSIENT RESOURCES **CREATION** META INFO
 	//*************************************************************************************
@@ -715,13 +728,13 @@ void Renderer::CommandBufferRecording(VkCommandBuffer cmd_buf, size_t img_index)
 
 	//TODO:sampler 和 view资源管理
 
-	//如果某个pass没有传入资源 要使用的sample_CI或者img_view_CI，那么就保持默认状态（不改变texture中的sampler和view指针）听起来不错，但是这样会不会让资源过度浪费？
-	//传入一推创建参数，虚拟资源只有在execute执行的时候才会创建真正的资源
-	G_buffer_position_dsctor.tex_img_PP->default_image_CI.usage            = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+	//如果某个pass没有传入 资源 要使用的sample_CI或者img_view_CI，那么就保持默认状态（不改变texture中的sampler和view指针）听起来不错，但是这样会不会让资源过度浪费？
+	//descriptorj就是创建参数，虚拟资源只有在execute执行的时候才会创建真正的资源
+	G_buffer_position_dsctor.tex_img_PP->default_image_CI.usage            = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;        //TODO:这里的usage都可以通过rendergraph进行分析，
 	G_buffer_position_dsctor.tex_img_PP->default_image_CI.samples          = DeferedRendering::MSAA_sample_count;
 	G_buffer_position_dsctor.tex_img_PP->default_layout_right_aft_creation = VK_IMAGE_LAYOUT_UNDEFINED;        //这个default_layout_right_aft_creation是不是可以取消了
 
-	RenderGraph::Resource<VkTexture> G_buffer_position{G_buffer_position_dsctor};        //G_buffer_position代表这个资源，其中含有虚拟资源实例化时需要的信息，但是虚拟资源暂时还没有获得GPU资源
+	auto G_buffer_position = std::make_unique<Resource<VkTexture>>(G_buffer_position_dsctor);        //G_buffer_position代表这个资源，其中含有虚拟资源实例化时需要的信息，但是虚拟资源暂时还没有获得GPU资源
 
 	//*************************************************************************************
 	//RESOURCES **CREATION** META INFO OF gbuffer normal
@@ -731,10 +744,11 @@ void Renderer::CommandBufferRecording(VkCommandBuffer cmd_buf, size_t img_index)
 	    .sample_CI   = std::nullopt,
 	    .bundle_size = Vk::SWAP_IMG_COUNT};
 
-	G_buffer_normal_dsctor.tex_img_PP->default_image_CI.usage            = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+	G_buffer_normal_dsctor.tex_img_PP->default_image_CI.usage            = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;        //TODO:这里的usage都可以通过rendergraph进行分析，
 	G_buffer_normal_dsctor.tex_img_PP->default_image_CI.samples          = DeferedRendering::MSAA_sample_count;
 	G_buffer_normal_dsctor.tex_img_PP->default_layout_right_aft_creation = VK_IMAGE_LAYOUT_UNDEFINED;
-	RenderGraph::Resource<VkTexture> G_buffer_normal{G_buffer_normal_dsctor};
+
+	auto G_buffer_normal = std::make_unique<Resource<VkTexture>>(G_buffer_normal_dsctor);
 
 	//*************************************************************************************
 	//RESOURCES **CREATION** META INFO OF gbuffer albedo
@@ -744,12 +758,11 @@ void Renderer::CommandBufferRecording(VkCommandBuffer cmd_buf, size_t img_index)
 	    .sample_CI   = std::nullopt,
 	    .bundle_size = Vk::SWAP_IMG_COUNT        //BUNDLE SIZE，很重要的信息or因为是每帧，所以也许可以通过复用，消除这个bundle size的必要性！
 	};
-
-	G_buffer_albedo_dsctor.tex_img_PP->default_image_CI.usage            = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+	G_buffer_albedo_dsctor.tex_img_PP->default_image_CI.usage            = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;        //TODO:这里的usage都可以通过rendergraph进行分析，
 	G_buffer_albedo_dsctor.tex_img_PP->default_image_CI.samples          = DeferedRendering::MSAA_sample_count;
 	G_buffer_albedo_dsctor.tex_img_PP->default_layout_right_aft_creation = VK_IMAGE_LAYOUT_UNDEFINED;
 
-	RenderGraph::Resource<VkTexture> G_buffer_albedo{G_buffer_albedo_dsctor};
+	auto G_buffer_albedo = std::make_unique<Resource<VkTexture>>(G_buffer_albedo_dsctor);
 
 	//*************************************************************************************
 	//RESOURCES **CREATION** META INFO OF gbuffer posZGradient
@@ -760,12 +773,11 @@ void Renderer::CommandBufferRecording(VkCommandBuffer cmd_buf, size_t img_index)
 	    .bundle_size = Vk::SWAP_IMG_COUNT        //BUNDLE SIZE，很重要的信息or因为是每帧，所以也许可以通过复用，消除这个bundle size的必要性！
 	};
 
-	G_buffer_posZGradient_dsctor.tex_img_PP->default_image_CI.usage            = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+	G_buffer_posZGradient_dsctor.tex_img_PP->default_image_CI.usage            = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;        //TODO:这里的usage都可以通过rendergraph进行分析，
 	G_buffer_posZGradient_dsctor.tex_img_PP->default_image_CI.samples          = DeferedRendering::MSAA_sample_count;
 	G_buffer_posZGradient_dsctor.tex_img_PP->default_layout_right_aft_creation = VK_IMAGE_LAYOUT_UNDEFINED;        //TODO: check layout transition after creation of this image
 
-	RenderGraph::Resource<VkTexture> G_buffer_posZGrad{G_buffer_posZGradient_dsctor};
-	//*************************************************************************************
+	auto G_buffer_posZGrad = std::make_unique<Resource<VkTexture>>(G_buffer_posZGradient_dsctor);
 
 	//*************************************************************************************
 	//RESOURCES **CREATION** META INFO OF gbuffer depth
@@ -780,73 +792,129 @@ void Renderer::CommandBufferRecording(VkCommandBuffer cmd_buf, size_t img_index)
 	G_buffer_depth_dsctor.tex_img_PP->default_image_CI.samples          = DeferedRendering::MSAA_sample_count;
 	G_buffer_depth_dsctor.tex_img_PP->default_layout_right_aft_creation = VK_IMAGE_LAYOUT_UNDEFINED;        //TODO: check layout transition after creation of this image
 
-	RenderGraph::Resource<VkTexture> G_buffer_depth{G_buffer_depth_dsctor};
-	//RenderGraph::Resource  G_buffer_depth{G_buffer_depth_dsctor};
+	auto G_buffer_depth = std::make_unique<Resource<VkTexture>>(G_buffer_depth_dsctor);
 	//*************************************************************************************
 
+	/*******************************MULTISAMPLED TARGETS**********************************/
+	//RESOURCES **CREATION** META INFO OF color attach of DeferedComposition
+	VkTexture::Descriptor multisampled_color_attach_DeferedCom_dsctor{
+	    .tex_img_PP  = TextureImgPP{swapchain_manager.GetSwapChainImageFormat(), swapchain_manager.GetSwapChainImageExtent(), Vk::ImgCINillFlag},
+	    .img_view_CI = ImgViewCI::PopulateTextureImgViewCI(swapchain_manager.GetSwapChainImageFormat()),
+	    .sample_CI   = std::nullopt,
+	    .bundle_size = Vk::SWAP_IMG_COUNT        //BUNDLE SIZE，很重要的信息or因为是每帧，所以也许可以通过复用，消除这个bundle size的必要性！
+	};
+	multisampled_color_attach_DeferedCom_dsctor.tex_img_PP->default_image_CI.usage   = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+	multisampled_color_attach_DeferedCom_dsctor.tex_img_PP->default_image_CI.samples = DeferedRendering::MSAA_sample_count;
+	//这个VK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT多数在移动端才能被支持，这里如果加这个flag就创建不了
+	//tex_img_PP.default_image_mem_prop_flag = VK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT;
+	multisampled_color_attach_DeferedCom_dsctor.tex_img_PP->default_layout_right_aft_creation = VK_IMAGE_LAYOUT_UNDEFINED;        //TODO: check layout transition after creation of this image
+	auto MS_color_attach                                                                      = std::make_unique<Resource<VkTexture>>(multisampled_color_attach_DeferedCom_dsctor);
 	//*************************************************************************************
-	//PERSISTENT RESOURCES
+
+	//RESOURCES **CREATION** META INFO OF depth attach of DeferedComposition
+	VkTexture::Descriptor multisampled_depth_attach_DeferedCom_dsctor{
+	    .tex_img_PP  = TextureImgPP{DeferedRendering::depth_stencil_format, swapchain_manager.GetSwapChainImageExtent(), Vk::ImgCINillFlag},
+	    .img_view_CI = ImgViewCI::PopulateTextureImgViewCI(DeferedRendering::depth_stencil_format),
+	    .sample_CI   = std::nullopt,
+	    .bundle_size = Vk::SWAP_IMG_COUNT        //BUNDLE SIZE，很重要的信息or因为是每帧，所以也许可以通过复用，消除这个bundle size的必要性！
+	};
+
+	multisampled_depth_attach_DeferedCom_dsctor.tex_img_PP->default_image_CI.usage   = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+	multisampled_depth_attach_DeferedCom_dsctor.tex_img_PP->default_image_CI.samples = DeferedRendering::MSAA_sample_count;
+
+	//这个VK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT多数在移动端才能被支持，这里如果加这个flag就创建不了
+	//tex_img_PP.default_image_mem_prop_flag = VK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT;
+	multisampled_depth_attach_DeferedCom_dsctor.tex_img_PP->default_layout_right_aft_creation = VK_IMAGE_LAYOUT_UNDEFINED;        //TODO: check layout transition after creation of this image
+	auto MS_depth_attach                                                                      = std::make_unique<Resource<VkTexture>>(multisampled_depth_attach_DeferedCom_dsctor);
+	//*************************************************************************************
+	/*******************************MULTISAMPLED TARGETS ENDS**********************************/
+
+	//*************************************************************************************
+	//PERSISTENT RESOURCES(or RESOURCES IMPORTED FROM OUTSIDE) 这里暂时 就放这么几种，之后要想办法把模型处理了（对象池之类的）
+
 	//Matirx Uniform buffer
-	RenderGraph::Resource uniform_matrix_buffer{persistent_resources.matrix_buffer_gpu_defered_rendering[img_index]};
+	auto uniform_matrix_buffer = std::make_unique<Resource<VkBufferBase>>(persistent_resources.matrix_buffer_gpu_defered_rendering[img_index]);
 	//Swap Chain Color Attachment
-	RenderGraph::Resource swap_color_attach{persistent_resources.swapchain_attachments[img_index]};
+	auto swap_color_attach = std::make_unique<Resource<VkTexture>>(persistent_resources.swapchain_attachments[img_index]);
 	//Swap Chain Depth Attachment
-	RenderGraph::Resource swap_depth_attach{persistent_resources.depth_attachments[img_index]};
+	auto swap_depth_attach = std::make_unique<Resource<VkTexture>>(persistent_resources.depth_attachments[img_index]);
+
 	//*************************************************************************************
+	//PERSISTENT RESOURCES ENDS 这里暂时 就放这么几种，之后要想办法把模型处理了（对象池之类的）
+
 	//*************************************************************************************
-	//TODO: META INFO of BACKBUFFER(or RESOURCES IMPORTED FROM OUTSIDE)
+	//ResourceSlot 存储两个东西，第一个指向资源数组中实际的资源，第二个指向 资源在渲染图中对应的 Node
 
-	const auto G_pos_slot = render_graph.AddResourceNode(G_buffer_position, "GBufferPosition");        //向渲染图中加入一个资源节点
+	const auto G_pos_slot = render_graph.AddResourceNode(std::move(G_buffer_position), "GBufferPosition");        //向渲染图中加入一个资源节点
 
-	const auto G_normal_slot = render_graph.AddResourceNode(G_buffer_normal, "GBufferNormal");        //向渲染图中加入一个资源节点
+	const auto G_normal_slot = render_graph.AddResourceNode(std::move(G_buffer_normal), "GBufferNormal");        //向渲染图中加入一个资源节点
 
-	const auto G_albedo_slot = render_graph.AddResourceNode(G_buffer_albedo, "GBufferAlbedo");        //向渲染图中加入一个资源节点
+	const auto G_albedo_slot = render_graph.AddResourceNode(std::move(G_buffer_albedo), "GBufferAlbedo");        //向渲染图中加入一个资源节点
 
-	const auto G_posZGrad_slot = render_graph.AddResourceNode(G_buffer_posZGrad, "GBufferPosZGrad");        //向渲染图中加入一个资源节点
+	const auto G_posZGrad_slot = render_graph.AddResourceNode(std::move(G_buffer_posZGrad), "GBufferPosZGrad");        //向渲染图中加入一个资源节点
 
-	const auto G_depth_slot = render_graph.AddResourceNode(G_buffer_depth, "GBufferDepth");        //向渲染图中加入一个资源节点
+	const auto G_depth_slot = render_graph.AddResourceNode(std::move(G_buffer_depth), "GBufferDepth");        //向渲染图中加入一个资源节点
 
-	const auto uniform_buffer_mat_slot = render_graph.AddResourceNode(uniform_matrix_buffer, "MatrixUB");        //向渲染图中加入一个资源节点
+	//*************************************************************************************
 
-	const auto swap_color_slot = render_graph.AddResourceNode(swap_color_attach, "MatrixUB");        //向渲染图中加入一个资源节点
+	const auto MS_color_slot = render_graph.AddResourceNode(std::move(MS_color_attach), "MSColorAttach");        //向渲染图中加入一个资源节点
 
-	const auto swap_depth_slot = render_graph.AddResourceNode(swap_depth_attach, "MatrixUB");        //向渲染图中加入一个资源节点
+	const auto MS_depth_slot = render_graph.AddResourceNode(std::move(MS_depth_attach), "MSDepthAttach");        //向渲染图中加入一个资源节点
 
-	auto DeferedGeoPass_handle = render_graph.AddGfxPassNode(renderpasses[0], "DeferedGeometryPass",
+	//******************************persistent resources******************************
+
+	const auto uniform_buffer_mat_slot = render_graph.AddResourceNode(std::move(uniform_matrix_buffer), "MatrixUBO");        //向渲染图中加入一个资源节点
+
+	const auto swap_color_slot = render_graph.AddResourceNode(std::move(swap_color_attach), "BackBufferColor");        //向渲染图中加入一个资源节点
+
+	//const auto swap_depth_slot = render_graph.AddResourceNode(swap_depth_attach, "BackBufferDepth");        //向渲染图中加入一个资源节点
+
+
+
+
+	//******************************加入renderpass******************************************
+	//加入renderpass，同时也加入了对应的Edges，表示资源被使用的关系。
+
+	const auto DeferedGeoPass_handle = render_graph.AddGfxPassNode(renderpasses_RG[0], "DeferedGeometryPass",
 	                                                         {uniform_buffer_mat_slot},
 	                                                         {G_pos_slot, G_normal_slot, G_albedo_slot, G_posZGrad_slot, G_depth_slot});        //向渲染图中加入一个pass
 
-	auto DeferedComPass_handle = render_graph.AddGfxPassNode(renderpasses[1], "DeferedCompositionPass",
+	const auto DeferedComPass_handle = render_graph.AddGfxPassNode(renderpasses_RG[1], "DeferedCompositionPass",
 	                                                         {uniform_buffer_mat_slot, G_pos_slot, G_normal_slot, G_albedo_slot, G_posZGrad_slot, G_depth_slot},
-	                                                         {swap_color_slot, swap_depth_slot});        //向渲染图中加入一个pass
+	                                                         {swap_color_slot, MS_color_slot, MS_depth_slot});        //向渲染图中加入一个pass
 
-	//Defered Geo Pass Resources Usage Recording
+	//******************************注册资源在renderpass中的使用方式******************************************
+	//Defered GeoPass Resources Usage Recording
 	{
 		//REGISTER RESOURCES USAGE WITHIN A PASS
+		//TODO:sampler
+		//TODO:img view
+		//TODO:subresources range
+
 		render_graph.RegisterRsrcsUsage(DeferedGeoPass_handle, G_pos_slot,
 		                                std::make_unique<VkAttachmentInfo::WithinPassRG>(
 		                                    Vk::RsrcInfoType::Attachment,
 		                                    DeferedRendering::G_position_format,
 		                                    Vk::AttachmentIndex<0>,
+
 		                                    VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
 		                                    VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
 		                                    VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,        //
+
 		                                    VkAttachmentInfo::Type::ColorAttachment,
-		                                    VkClearValue{.color{0.0f, 0.0f, 0.0f, 1.0f}}
-		                                    //TODO:sampler
-		                                    //TODO:img view
-		                                    //TODO:subresources range
-		                                    ));
+		                                    VkClearValue{.color{0.0f, 0.0f, 0.0f, 1.0f}}));
 
 		render_graph.RegisterRsrcsUsage(DeferedGeoPass_handle, G_normal_slot,
 		                                std::make_unique<VkAttachmentInfo::WithinPassRG>(
 		                                    Vk::RsrcInfoType::Attachment,
 		                                    DeferedRendering::G_normal_format,
 		                                    Vk::AttachmentIndex<1>,
+
 		                                    VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
 		                                    VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
 		                                    VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,        //
 		                                    VkAttachmentInfo::Type::ColorAttachment,
+
 		                                    VkClearValue{.color{0.0f, 0.0f, 0.0f, 1.0f}}));
 
 		render_graph.RegisterRsrcsUsage(DeferedGeoPass_handle, G_albedo_slot,
@@ -854,9 +922,11 @@ void Renderer::CommandBufferRecording(VkCommandBuffer cmd_buf, size_t img_index)
 		                                    Vk::RsrcInfoType::Attachment,
 		                                    DeferedRendering::G_albedo_format,
 		                                    Vk::AttachmentIndex<2>,
+
 		                                    VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
 		                                    VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
 		                                    VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,        //
+
 		                                    VkAttachmentInfo::Type::ColorAttachment,
 		                                    VkClearValue{.color{0.0f, 0.0f, 0.0f, 1.0f}}));
 
@@ -865,9 +935,11 @@ void Renderer::CommandBufferRecording(VkCommandBuffer cmd_buf, size_t img_index)
 		                                    Vk::RsrcInfoType::Attachment,
 		                                    DeferedRendering::G_posZgrad_format,
 		                                    Vk::AttachmentIndex<3>,
+
 		                                    VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
 		                                    VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
 		                                    VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,        //
+
 		                                    VkAttachmentInfo::Type::ColorAttachment,
 		                                    VkClearValue{.color{0.0f, 0.0f, 0.0f, 1.0f}}));
 
@@ -876,115 +948,191 @@ void Renderer::CommandBufferRecording(VkCommandBuffer cmd_buf, size_t img_index)
 		                                    Vk::RsrcInfoType::Attachment,
 		                                    DeferedRendering::G_depth_format,
 		                                    Vk::AttachmentIndex<4>,
+
 		                                    VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
 		                                    VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
 		                                    VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,        //
+
 		                                    VkAttachmentInfo::Type::DepthAttachment,
 		                                    VkClearValue{.depthStencil{0.0f, 0}}));
 
-		//REGISTER RESOURCES USAGE WITHIN A PASS
 		render_graph.RegisterRsrcsUsage(DeferedGeoPass_handle, uniform_buffer_mat_slot,
-		                                std::make_unique<VkBufferBase::WithinPassRG>(
-		                                    RsrcInfoType::UniformBuffer,
-		                                    Vk::Binding<0>, Vk::BindingArrayElement<0>,
-		                                    VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
-		                                    VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT));
+		                                std::make_unique<VkBufUsageInfoRG>(
+		                                    RsrcInfoType::Buffer,
 
-		//TODO:subresources range
+		                                    Vk::DescSetInfo{
+		                                        .set          = Vk::SetIndex<0>,
+		                                        .binding      = Vk::Binding<0>,
+		                                        .array_elemnt = Vk::BindingArrayElement<0>,
+		                                    },
+
+		                                    VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+		                                    VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT));
 	}
-
-
-
 
 	//Defered Composition Pass Resources Usage Recording
 	{
 		//REGISTER RESOURCES USAGE WITHIN A PASS
+		render_graph.RegisterRsrcsUsage(DeferedComPass_handle, uniform_buffer_mat_slot,
+		                                std::make_unique<VkBufUsageInfoRG>(
+		                                    RsrcInfoType::Buffer,
+
+		                                    Vk::DescSetInfo{
+		                                        .set          = Vk::SetIndex<0>,
+		                                        .binding      = Vk::Binding<0>,
+		                                        .array_elemnt = Vk::BindingArrayElement<0>,
+		                                    },
+
+		                                    VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+		                                    VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT));
+
+		//REGISTER RESOURCES USAGE WITHIN A PASS
 		render_graph.RegisterRsrcsUsage(DeferedComPass_handle, G_pos_slot,
-		                                std::make_unique<VkAttachmentInfo::WithinPassRG>(
+		                                std::make_unique<VkTexUsageInfoRG>(
 		                                    Vk::RsrcInfoType::Texture,
 		                                    DeferedRendering::G_position_format,
-		                                    Vk::AttachmentIndex<0>,
+
+		                                    Vk::DescSetInfo{
+		                                        .set          = Vk::SetIndex<0>,
+		                                        .binding      = Vk::Binding<1>,
+		                                        .array_elemnt = Vk::BindingArrayElement<0>,
+		                                    },
+
 		                                    VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
 		                                    VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
 		                                    VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,        //
-		                                    VkAttachmentInfo::Type::ColorAttachment,
-		                                    VkClearValue{.color{0.0f, 0.0f, 0.0f, 1.0f}}
-		                                    //TODO:sampler
-		                                    //TODO:img view
-		                                    //TODO:subresources range
-		                                    ));
+
+		                                    VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE));
 
 		render_graph.RegisterRsrcsUsage(DeferedComPass_handle, G_normal_slot,
-		                                std::make_unique<VkAttachmentInfo::WithinPassRG>(
+		                                std::make_unique<VkTexUsageInfoRG>(
+
 		                                    Vk::RsrcInfoType::Texture,
 		                                    DeferedRendering::G_normal_format,
-		                                    Vk::AttachmentIndex<1>,
+
+		                                    Vk::DescSetInfo{
+		                                        .set          = Vk::SetIndex<0>,
+		                                        .binding      = Vk::Binding<2>,
+		                                        .array_elemnt = Vk::BindingArrayElement<0>,
+		                                    },
+
 		                                    VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
 		                                    VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
 		                                    VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,        //
-		                                    VkAttachmentInfo::Type::ColorAttachment,
-		                                    VkClearValue{.color{0.0f, 0.0f, 0.0f, 1.0f}}));
+
+		                                    VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE));
 
 		render_graph.RegisterRsrcsUsage(DeferedComPass_handle, G_albedo_slot,
-		                                std::make_unique<VkAttachmentInfo::WithinPassRG>(
+		                                std::make_unique<VkTexUsageInfoRG>(
+
 		                                    Vk::RsrcInfoType::Texture,
 		                                    DeferedRendering::G_albedo_format,
-		                                    Vk::AttachmentIndex<2>,
+
+		                                    Vk::DescSetInfo{
+		                                        .set          = Vk::SetIndex<0>,
+		                                        .binding      = Vk::Binding<3>,
+		                                        .array_elemnt = Vk::BindingArrayElement<0>,
+		                                    },
+
 		                                    VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
 		                                    VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
 		                                    VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,        //
-		                                    VkAttachmentInfo::Type::ColorAttachment,
-		                                    VkClearValue{.color{0.0f, 0.0f, 0.0f, 1.0f}}));
+
+		                                    VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE));
 
 		render_graph.RegisterRsrcsUsage(DeferedComPass_handle, G_posZGrad_slot,
-		                                std::make_unique<VkAttachmentInfo::WithinPassRG>(
+		                                std::make_unique<VkTexUsageInfoRG>(
+
 		                                    Vk::RsrcInfoType::Texture,
 		                                    DeferedRendering::G_posZgrad_format,
-		                                    Vk::AttachmentIndex<3>,
+
+		                                    Vk::DescSetInfo{
+		                                        .set          = Vk::SetIndex<0>,
+		                                        .binding      = Vk::Binding<4>,
+		                                        .array_elemnt = Vk::BindingArrayElement<0>,
+		                                    },
+
 		                                    VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
 		                                    VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
 		                                    VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,        //
-		                                    VkAttachmentInfo::Type::ColorAttachment,
-		                                    VkClearValue{.color{0.0f, 0.0f, 0.0f, 1.0f}}));
+
+		                                    VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE));
 
 		render_graph.RegisterRsrcsUsage(DeferedComPass_handle, G_depth_slot,
-		                                std::make_unique<VkAttachmentInfo::WithinPassRG>(
+		                                std::make_unique<VkTexUsageInfoRG>(
+
 		                                    Vk::RsrcInfoType::Texture,
 		                                    DeferedRendering::G_depth_format,
-		                                    Vk::AttachmentIndex<4>,
+
+		                                    Vk::DescSetInfo{
+		                                        .set          = Vk::SetIndex<0>,
+		                                        .binding      = Vk::Binding<5>,
+		                                        .array_elemnt = Vk::BindingArrayElement<0>,
+		                                    },
+
 		                                    VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
 		                                    VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
 		                                    VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,        //
-		                                    VkAttachmentInfo::Type::DepthAttachment,
+
+		                                    VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE));
+
+		//Multisampled Attachments declarations
+		render_graph.RegisterRsrcsUsage(DeferedComPass_handle, MS_color_slot,
+		                                std::make_unique<VkAttachmentInfo::WithinPassRG>(
+		                                    Vk::RsrcInfoType::Attachment,
+		                                    swapchain_manager.GetSwapChainImageFormat(),
+		                                    Vk::AttachmentIndex<0>,
+
+		                                    VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+		                                    VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+		                                    VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,        //
+
+		                                    VkAttachmentInfo::Type::ColorAttachment,
+		                                    VkClearValue{.color{0.0f, 0.0f, 0.0f, 1.0f}},
+		                                    VK_RESOLVE_MODE_AVERAGE_BIT));
+
+		render_graph.RegisterRsrcsUsage(DeferedComPass_handle, MS_depth_slot,
+		                                std::make_unique<VkAttachmentInfo::WithinPassRG>(
+		                                    Vk::RsrcInfoType::Attachment,
+		                                    DeferedRendering::depth_stencil_format,
+		                                    Vk::AttachmentIndex<1>,
+
+		                                    VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
+		                                    VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
+		                                    VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,        //
+
+		                                    VkAttachmentInfo::Type::DepthStencilAttachment,        //TODO: modification please
 		                                    VkClearValue{.depthStencil{0.0f, 0}}));
 
-		//REGISTER RESOURCES USAGE WITHIN A PASS
-		render_graph.RegisterRsrcsUsage(DeferedComPass_handle, uniform_buffer_mat_slot,
-		                                std::make_unique<VkBufferBase::WithinPassRG>(
-		                                    RsrcInfoType::UniformBuffer,
-		                                    Vk::Binding<0>, Vk::BindingArrayElement<0>,
-		                                    VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
-		                                    VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT));
+		//这里这个swap_color_slot是用来承受 multisample resolve结果的操作，想办法整：
+		render_graph.RegisterRsrcsUsage(DeferedComPass_handle, swap_color_slot,
+		                                std::make_unique<VkAttachmentInfo::WithinPassRG>(
+		                                    Vk::RsrcInfoType::Attachment,
+		                                    swapchain_manager.GetSwapChainImageFormat(),
+		                                    InvalidAttachIndex,
+
+		                                    VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+		                                    VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+		                                    VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,        //
+
+		                                    VkAttachmentInfo::Type::ResolveOpTargetAttachment,        //TODO: modification please
+		                                    VkClearValue{.color{0.0f, 0.0f, 0.0f, 1.0f}}));
 	}
-
-
-
-
 
 	//RenderGraph编译
 	if (render_graph.Compile())
 	{
 		//RenderGraph执行
-		bool successed = render_graph.Execute(cmd_buf);
+		const bool successed = render_graph.Execute(cmd_buf);
 
 		if (!successed)
 		{
-			throw std::runtime_error("Failed to compile render graph!");
+			throw std::runtime_error("Failed to execute render graph!");
 		}
 	}
 	else
 	{
-		throw std::runtime_error("Failed to compile render graph!");
+		throw std::runtime_error("Failed to record commands from render graph!");
 	}
 
 	VkCommandManager::EndCommandBuffers(cmd_buf);
