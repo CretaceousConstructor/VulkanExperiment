@@ -154,8 +154,10 @@
   <ItemGroup>
     <ClCompile Include="DeferedCompositionPass.cpp" />
     <ClCompile Include="DeferedCompositionPassRG.cpp" />
+    <ClCompile Include="DeferedCompositionPassRGV0.cpp" />
     <ClCompile Include="DeferedGeometryPass.cpp" />
     <ClCompile Include="DeferedGeometryPassRG.cpp" />
+    <ClCompile Include="DeferedGeometryPassRGV0.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MSAAPass.cpp" />
     <ClCompile Include="PrefilterAndLUTMapGenPass.cpp" />
@@ -168,8 +170,10 @@
   <ItemGroup>
     <ClInclude Include="DeferedCompositionPass.h" />
     <ClInclude Include="DeferedCompositionPassRG.h" />
+    <ClInclude Include="DeferedCompositionPassRGV0.h" />
     <ClInclude Include="DeferedGeometryPass.h" />
     <ClInclude Include="DeferedGeometryPassRG.h" />
+    <ClInclude Include="DeferedGeometryPassRGV0.h" />
     <ClInclude Include="MSAAPass.h" />
     <ClInclude Include="PrefilterAndLUTMapGenPass.h" />
     <ClInclude Include="IrradianceMapGenPass.h" />

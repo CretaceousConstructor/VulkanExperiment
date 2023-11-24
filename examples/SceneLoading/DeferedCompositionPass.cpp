@@ -73,7 +73,7 @@ void DeferedCompositionPass::ResourceInit()
 
 	/*******************************depth**********************************/
 	{
-		DepthImgPP texture_img_PP{gfx, DeferedRendering::depth_stencil_format, swapchain_manager.GetSwapChainImageExtent()};
+		DepthImgPP texture_img_PP{gfx, DeferedRendering::C_depth_stencil_format, swapchain_manager.GetSwapChainImageExtent()};
 		//To enable multisample
 		texture_img_PP.default_image_CI.samples = DeferedRendering::MSAA_sample_count;
 		texture_img_PP.default_image_CI.usage   = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;        //| VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT;
@@ -82,7 +82,7 @@ void DeferedCompositionPass::ResourceInit()
 
 		texture_img_PP.default_layout_right_aft_creation = VK_IMAGE_LAYOUT_UNDEFINED;        //TODO: check layout transition after creation of this image
 		//const auto sampler_CI  = SamplerCI::PopulateTexSamplerCI();
-		const auto img_view_CI                = ImgViewCI::PopulateDepthImgViewCI(DeferedRendering::depth_stencil_format);
+		const auto img_view_CI                = ImgViewCI::PopulateDepthImgViewCI(DeferedRendering::C_depth_stencil_format);
 		multisampled_depth_stencil_attachment = renderpass_manager.GetTextureFactory().ProduceEmptyTextureArray(texture_img_PP, std::nullopt, img_view_CI, Vk::SWAP_IMG_COUNT);
 	}
 }
@@ -172,7 +172,7 @@ void DeferedCompositionPass::CreateAttachments()
 
 
 	const VkAttachmentInfo::WithinPass depth_stencil_attachment{
-	    DeferedRendering::depth_stencil_format,
+	    DeferedRendering::C_depth_stencil_format,
 	    Vk::AttachmentIndex<1>,
 
 	    VK_ATTACHMENT_LOAD_OP_CLEAR,

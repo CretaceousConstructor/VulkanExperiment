@@ -47,12 +47,17 @@ void DeferedGeometryPassRG::CreateDescriptorSetLayout()
 	//LAYOUT FOR SET 0
 	{
 		//Descriptor for passing matrices
-		const auto binding0{Vk::GetDescriptorSetLayoutBinding(Vk::Binding<0>, matrix_ubo.desc_type, matrix_ubo.access_stages)};
+		const auto binding0{Vk::GetDescriptorSetLayoutBinding(Vk::Binding<0>, matrix_ubo.desc_type, matrix_ubo.shader_stages)};
 
 		const std::vector bindings{binding0};
 		const auto        desc_set_layout_CI = Vk::GetDescriptorSetLayoutCI(bindings);
 		descriptor_set_layout                = renderpass_manager.GetDescriptorManagerV0().ProduceDescriptorSetLayoutUnsafe(desc_set_layout_CI);
 	}
+
+
+
+
+
 }
 
 void DeferedGeometryPassRG::CreateDescriptorSets()

@@ -36,6 +36,8 @@
     <ClCompile Include="base\NonPbrMaterial.cpp" />
     <ClCompile Include="base\PbrMaterialMetallic.cpp" />
     <ClCompile Include="base\RenderGraph.cpp" />
+    <ClCompile Include="base\RenderGraphPass.cpp" />
+    <ClCompile Include="base\RenderGraphV0.cpp" />
     <ClCompile Include="base\VkBufferBundle.cpp" />
     <ClCompile Include="base\VkBufferFactory.cpp" />
     <ClCompile Include="base\VkBufferCI.cpp" />
@@ -47,6 +49,7 @@
     <ClCompile Include="base\VkImageBase.cpp" />
     <ClCompile Include="base\VkImageBundle.cpp" />
     <ClCompile Include="base\VkImgViewFactory.cpp" />
+    <ClCompile Include="base\VkLets.cpp" />
     <ClCompile Include="base\VkManagerBundle.cpp" />
     <ClCompile Include="base\VkMaterial.cpp" />
     <ClCompile Include="base\VkMath.cpp" />
@@ -55,7 +58,9 @@
     <ClCompile Include="base\VkPipelinePPFactory.cpp" />
     <ClCompile Include="base\VkRenderpassBase.cpp" />
     <ClCompile Include="base\VkRenderpassBaseRG.cpp" />
+    <ClCompile Include="base\VkRsrcState.cpp" />
     <ClCompile Include="base\VkRsrcUsageInfo.cpp" />
+    <ClCompile Include="base\VkRsrcUsageInfoRG.cpp" />
     <ClCompile Include="base\VkSamplerFactory.cpp" />
     <ClCompile Include="base\VkSemaphoreBundle.cpp" />
     <ClCompile Include="base\Vk.cpp" />
@@ -65,7 +70,6 @@
     <ClCompile Include="base\VkSubpassFactory.cpp" />
     <ClCompile Include="base\VkSynObjectBundleBase.cpp" />
     <ClCompile Include="base\VkSynObjectFactory.cpp" />
-    <ClCompile Include="base\AnotherPileOfShit.cpp" />
     <ClCompile Include="base\FirstPersonCamera.cpp" />
     <ClCompile Include="base\VkGltfModel.cpp" />
     <ClCompile Include="base\VkImageFactory.cpp" />
@@ -103,6 +107,7 @@
     <ClCompile Include="base\VkUniformBuffer.cpp" />
     <ClCompile Include="base\VkPipelinePP.cpp" />
     <ClCompile Include="base\VkValidationUtility.cpp" />
+    <ClCompile Include="base\VkVirtualResource.cpp" />
     <ClCompile Include="base\VkWindows.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -114,6 +119,10 @@
     <ClInclude Include="base\include\ImguiPipePP.h" />
     <ClInclude Include="base\include\PbrMaterialMetallic.h" />
     <ClInclude Include="base\include\RenderGraph.h" />
+    <ClInclude Include="base\include\RenderGraphPass.h" />
+    <ClInclude Include="base\include\RenderGraphV0.h" />
+    <ClInclude Include="base\include\VkLets.h" />
+    <ClInclude Include="base\include\VkRsrcState.h" />
     <ClInclude Include="base\include\VkDescriptorManagerV0.h" />
     <ClInclude Include="base\include\VkEventBundle.h" />
     <ClInclude Include="base\include\VkHeader.h" />
@@ -144,6 +153,7 @@
     <ClInclude Include="base\include\VkRenderpassBase.h" />
     <ClInclude Include="base\include\VkRenderpassBaseRG.h" />
     <ClInclude Include="base\include\VkRsrcUsageInfo.h" />
+    <ClInclude Include="base\include\VkRsrcUsageInfoRG.h" />
     <ClInclude Include="base\include\VkSamplerFactory.h" />
     <ClInclude Include="base\include\VkShaderFactory.h" />
     <ClInclude Include="base\include\VkShaderManager.h" />
@@ -164,7 +174,6 @@
     <ClInclude Include="base\include\VkSynObjectBundleBase.h" />
     <ClInclude Include="base\include\VkSynObjectFactory.h" />
     <ClInclude Include="base\include\Transform.h" />
-    <ClInclude Include="base\include\AnotherPileOfShit.h" />
     <ClInclude Include="base\include\VkCommandManager.h" />
     <ClInclude Include="base\include\VkDescriptorManager.h" />
     <ClInclude Include="base\include\VkDeviceManager.h" />
@@ -188,8 +197,12 @@
     <ClInclude Include="base\include\VkUniformBuffer.h" />
     <ClInclude Include="base\include\VkPipelinePP.h" />
     <ClInclude Include="base\include\VkValidationUtility.h" />
+    <ClInclude Include="base\include\VkVirtualResource.h" />
     <ClInclude Include="base\include\VkWindows.h" />
     <ClInclude Include="base\include\WindowsSubsys.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ClassDiagram.cd" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

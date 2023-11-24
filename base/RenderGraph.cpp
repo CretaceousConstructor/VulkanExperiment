@@ -36,11 +36,12 @@ RenderGraph::DependencyGraph::PassNodeHandle RenderGraph::DependencyGraph::AddGf
 	//TODO:处理同一个pass 读后写，写后读 的问题。方案1：用两个inputs，两个putputs，分别表示 读后写 和 写后读 的情况？
 
 	//CREATE PASSNODE
-	auto p_pass_node              = std::make_unique<GraphicsPassNode>(nodes_of_passes.size());
-	p_pass_node->node_handle      = nodes_of_passes.size();
-	p_pass_node->renderpass       = renderpass;
+	auto p_pass_node         = std::make_unique<GraphicsPassNode>(nodes_of_passes.size());
+	p_pass_node->node_handle = nodes_of_passes.size();
+	p_pass_node->renderpass  = renderpass;
+	p_pass_node->name        = name;
 
-
+	p_pass_node->renderpass->SetRenderGraphPassHandle(nodes_of_passes.size());
 
 	const auto &current_pass_node = nodes_of_passes.emplace_back(std::move(p_pass_node));
 
@@ -74,8 +75,6 @@ RenderGraph::DependencyGraph::PassNodeHandle RenderGraph::DependencyGraph::AddGf
 	}
 
 	const auto result_handle = nodes_of_passes.size() - 1;
-	//renderpass->SetRenderGraphPassHandle(result_handle);
-
 
 	return result_handle;
 }
@@ -93,17 +92,17 @@ void RenderGraph::DependencyGraph::RegisterRsrcsUsage(const PassNodeHandle pass_
 
 	if (Vk::RsrcInfoType::Attachment == info_t)
 	{
-		pass.attachment_rsrcs.emplace_back(rsrc_slot, RsrcUsageInfoSlot{rsrc_info_handle});
+		pass.attachment_rsrcs_usages.emplace_back(rsrc_slot, RsrcUsageInfoSlot{rsrc_info_handle});
 	}
 
 	if (Vk::RsrcInfoType::Buffer == info_t)
 	{
-		pass.buffer_rsrcs.emplace_back(rsrc_slot, RsrcUsageInfoSlot{rsrc_info_handle});
+		pass.buffer_rsrcs_usages.emplace_back(rsrc_slot, RsrcUsageInfoSlot{rsrc_info_handle});
 	}
 
 	if (Vk::RsrcInfoType::Texture == info_t)
 	{
-		pass.texture_rsrcs.emplace_back(rsrc_slot, RsrcUsageInfoSlot{rsrc_info_handle});
+		pass.texture_rsrcs_usages.emplace_back(rsrc_slot, RsrcUsageInfoSlot{rsrc_info_handle});
 	}
 
 	//同时在全局资源使用记录表中 记录此资源的使用
@@ -157,7 +156,6 @@ bool RenderGraph::DependencyGraph::Move()
 
 void RenderGraph::DependencyGraph::Purge()
 {
-
 	slots_of_rsrcs.clear();
 	resources.clear();
 	nodes_of_resources.clear();
@@ -166,6 +164,7 @@ void RenderGraph::DependencyGraph::Purge()
 	rsrcs_map.clear();
 	resources_usage_recording_table.clear();
 	final_execution_order.clear();
+
 
 
 }
@@ -239,23 +238,27 @@ bool RenderGraph::DependencyGraph::Compile()
 
 	//MAKE SURE that passes within resources_usage_recording_table are in correct order 想一下，一个资源也许 先被pass0使用，然后再被pass1使用，但是用户在RegisterRsrcsUsage可能不喜欢按顺序来，先RegisterRsrcsUsage在pass1，又RegisterRsrcsUsage在pass0。。。那么就要在这里重新排序一遍
 
-	//资源使用重排序
+	//TODO:资源使用重排序
 	//每个资源一次只能被两个pass使用，多次使用的情况需要用pass accessing order处理。
-	for (auto &[_, rsrc_usage_info_of_two_passes] : resources_usage_recording_table)
-	{
-		if (rsrc_usage_info_of_two_passes.front().first && rsrc_usage_info_of_two_passes.back().first)        //有的资源可能只会被一个pass使用一次，此时std::optional为空
-		{
-			if (!IfPassInOrder(rsrc_usage_info_of_two_passes.front().first.value(), rsrc_usage_info_of_two_passes.back().first.value()))
-			{
-				std::swap(rsrc_usage_info_of_two_passes.front(), rsrc_usage_info_of_two_passes.back());
-			}
-		}
-	}
 
-	//INFERENCE of the loading operation of ATTACHMENTs  推导attachment资源的 加载 和 存储 操作
+	//for (auto &[_, rsrc_usage_info_of_two_passes] : resources_usage_recording_table)
+	//{
+	//	if (rsrc_usage_info_of_two_passes.front().first && rsrc_usage_info_of_two_passes.back().first)        //有的资源可能只会被一个pass使用一次，此时std::optional为空
+	//	{
+	//		if (!IfPassInOrder(rsrc_usage_info_of_two_passes.front().first.value(), rsrc_usage_info_of_two_passes.back().first.value()))
+	//		{
+	//			std::swap(rsrc_usage_info_of_two_passes.front(), rsrc_usage_info_of_two_passes.back());
+	//		}
+	//	}
+	//}
+
+
+
+
+	//INFERENCE of the loading operation of ATTACHMENTs  推导attachment资源的 加载load 和 存储store 操作
 	for (const auto &pass : nodes_of_passes)        //for all the passes
 	{
-		for (auto &attach : pass->attachment_rsrcs)        //take all the attachment rsrcs of the pass（之前分发到不同的容器里面的资源，这里我们先处理attachments资源）
+		for (auto &attach : pass->attachment_rsrcs_usages)        //take all the attachment rsrcs of the pass（之前分发到不同的容器里面的资源，这里我们先处理attachments资源）
 		{
 			const auto &rsrc_node = *nodes_of_resources[attach.first.resource_handle];
 
@@ -268,7 +271,7 @@ bool RenderGraph::DependencyGraph::Compile()
 			{
 				if (pass == nodes_of_passes[rsrc_usage_info_of_two_passes.front().first.value()])        //当前pass是attachment被使用的第一个pass
 				{
-					const auto accessing_type = nodes_of_passes[rsrc_usage_info_of_two_passes.front().first.value()]->rsrc_accessing_types[attach.first];
+					const auto accessing_type = pass->rsrc_accessing_types[attach.first];
 					if (VirtualResource::RsrcAccessType::Write == accessing_type)
 					{
 						attach_info.load_op  = VK_ATTACHMENT_LOAD_OP_DONT_CARE;        //里面还没有内容
@@ -277,7 +280,7 @@ bool RenderGraph::DependencyGraph::Compile()
 				}
 				else        //当前pass是attachment被使用的第二个pass
 				{
-					const auto accessing_type = nodes_of_passes[rsrc_usage_info_of_two_passes.back().first.value()]->rsrc_accessing_types[attach.first];
+					const auto accessing_type = pass->rsrc_accessing_types[attach.first];
 					if (VirtualResource::RsrcAccessType::Read == accessing_type)
 					{
 						attach_info.load_op  = VK_ATTACHMENT_LOAD_OP_LOAD;
@@ -319,7 +322,7 @@ bool RenderGraph::DependencyGraph::Execute(VkCommandBuffer cmb)
 
 		//*****************************************************************************************
 
-		if (nodes_of_resources[rsrc_slot.node_handle]->pass_accessing_order.empty())   //资源被多次重复使用的情况
+		if (nodes_of_resources[rsrc_slot.node_handle]->pass_accessing_order.empty())        //资源被多次重复使用的情况
 		{
 			//DECIDING WHICH RESOURCES NEED TO BE INITIALIZED WITHIN THE PASS
 			if (VirtualResource::RsrcLifeTimeType::Persistent != resources[rsrc_slot.resource_handle]->life_time)        // persistent resources are imported from outside RG,don't need to be init-ed or destoryed
@@ -337,29 +340,22 @@ bool RenderGraph::DependencyGraph::Execute(VkCommandBuffer cmb)
 				{
 					first_pass.slot_rsrc_recycle_list.push_back(rsrc_slot);
 				}
-
 			}
 
 			//RECORDING at which pass RESOURCES need STATE CHANGES
 			first_pass.slot_rsrc_state_changing_list.push_back(rsrc_slot);
-			if (pass_and_usage_idx_vec.back().first)  //如果有第二个pass使用当前资源的话：
+			if (pass_and_usage_idx_vec.back().first)        //如果有第二个pass使用当前资源的话：
 			{
 				auto &second_pass = *nodes_of_passes[pass_and_usage_idx_vec.back().first.value()];
 				second_pass.slot_rsrc_state_changing_list.push_back(rsrc_slot);
 			}
-			else   //资源被多次重复使用的情况
+			else        //资源被多次重复使用的情况
 			{
 			}
 		}
 		else
 		{
-
-
-
 		}
-
-
-
 
 		//*****************************************************************************************
 		//RECORDING THE SYNC INFORMATION
@@ -374,24 +370,18 @@ bool RenderGraph::DependencyGraph::Execute(VkCommandBuffer cmb)
 		    .stage_mask    = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
 		    .layout_inpass = VK_IMAGE_LAYOUT_UNDEFINED};
 
-		if (pass_and_usage_idx_vec.back().first)//如果有第二个pass使用同一个资源
+		std::swap(syn_info_source, syn_info_target);
+		first_pass.syn_infos.emplace_back(syn_info_source, syn_info_target, rsrc_slot);
+		std::swap(syn_info_source, syn_info_target);
+
+		if (pass_and_usage_idx_vec.back().first)        //如果有第二个pass使用同一个资源
 		{
 			auto &second_pass = *nodes_of_passes[pass_and_usage_idx_vec.back().first.value()];
 
-
-			syn_info_target   = rsrc_usage_infos[pass_and_usage_idx_vec.back().second.handle]->GetSynInfo();
-			second_pass.syn_infos.emplace_back(std::tuple{syn_info_source, syn_info_target, rsrc_slot});
-
+			syn_info_target = rsrc_usage_infos[pass_and_usage_idx_vec.back().second.handle]->GetSynInfo();
+			second_pass.syn_infos.emplace_back(syn_info_source, syn_info_target, rsrc_slot);
 		}
-		else//如果没有第二个pass使用同一个资源
-		{
-			std::swap(syn_info_source, syn_info_target);
-			first_pass.syn_infos.emplace_back(std::tuple{syn_info_source, syn_info_target, rsrc_slot});
-		}
-
-
 	}
-
 
 	//PASSES EXECUTION(TODO:ORGANIZE PASSES INTO GROUPS FOR PARALLEL EXECUTION)
 
@@ -400,69 +390,55 @@ bool RenderGraph::DependencyGraph::Execute(VkCommandBuffer cmb)
 		ExecutePass(cmb, pass_node_handle);
 	}
 
-
 	std::cout << "Render graph command recording finished" << std::endl;
 	return true;
 
 
+
 }
-
-
-
-
-
-
-
 
 void RenderGraph::DependencyGraph::ExecutePass(VkCommandBuffer cmd_buf, const PassNodeHandle pass_node_handle)
 {
-
 	auto &pass = *nodes_of_passes[pass_node_handle];
-
 
 	//REQUIRED RESOURCES INITIALIZATION
 	for (const auto &slot : pass.slot_rsrc_init_list)
 	{
-
 		// persistent resources are imported from outside RG,don't need to be init-ed or destoryed
-		if (VirtualResource::RsrcLifeTimeType::Persistent != resources[slot.resource_handle]->life_time)        		
+		if (VirtualResource::RsrcLifeTimeType::Persistent != resources[slot.resource_handle]->life_time)
 		{
 			//VirtualResource has a descriptor to help initalize resources
-			auto& pvr = resources[slot.resource_handle];
+			auto &pvr = resources[slot.resource_handle];
 			pvr->Actualize(renderpass_manager);
 		}
-
 	}
 
 	//CHANGE STATES OF ALL RESOURCES THAT NEED TO HAVE NEW STATE WITHIN THE CURRENT PASS
 	for (const auto rsrc_slot : pass.slot_rsrc_state_changing_list)
 	{
-		const std::array< std::pair<std::optional<PassNodeHandle>, RsrcUsageInfoSlot>, 2 > &pass_node_handle_and_usage_handle_vec = resources_usage_recording_table[rsrc_slot];
+		const std::array<std::pair<std::optional<PassNodeHandle>, RsrcUsageInfoSlot>, 2> &pass_node_handle_and_usage_handle_vec = resources_usage_recording_table[rsrc_slot];
 
 		//根据当前pass是使用资源的第一个pass
 		if (pass_node_handle == pass_node_handle_and_usage_handle_vec.front().first.value())
 		{
-			const auto& pvr = resources[rsrc_slot.resource_handle];
+			const auto &pvr = resources[rsrc_slot.resource_handle];
 			pvr->StateChangeNoNeedCmdRecording(renderpass_manager, *rsrc_usage_infos[pass_node_handle_and_usage_handle_vec.front().second.handle]);
 		}
 
 		//根据当前pass是使用资源的第二个pass
 		if (pass_node_handle_and_usage_handle_vec.back().first && (pass_node_handle == pass_node_handle_and_usage_handle_vec.back().first.value()))
 		{
-			const auto& pvr = resources[rsrc_slot.resource_handle];
+			const auto &pvr = resources[rsrc_slot.resource_handle];
 			pvr->StateChangeNoNeedCmdRecording(renderpass_manager, *rsrc_usage_infos[pass_node_handle_and_usage_handle_vec.back().second.handle]);
 		}
-
 	}
-
-
 
 	//BARRIERS INSERSION before PASS EXECUTION
 	for (auto &[source_syn, target_syn, resource_slot] : pass.syn_infos)
 	{
-		const auto& pvr = resources[resource_slot.resource_handle];
+		const auto &pvr = resources[resource_slot.resource_handle];
 		//多态调用正确的InsertSync函数，不同资源insert barrier的方法不同；
-		pvr->InsertSync(cmd_buf, source_syn, target_syn);
+		pvr->InsertSyncIntoCmdBuf(cmd_buf, source_syn, target_syn);
 	}
 
 	//RENDERPASS INITIALIZATION AND EXECUTION
@@ -471,18 +447,20 @@ void RenderGraph::DependencyGraph::ExecutePass(VkCommandBuffer cmd_buf, const Pa
 
 
 
-	//TRANSIENT RESOURCES DESTRUCTION
-	for (const auto &slot : pass.slot_rsrc_recycle_list)
-	{
-		// persistent resources are imported from outside RG,don't need to be init-ed or destoryed
-		if (VirtualResource::RsrcLifeTimeType::Persistent != resources[slot.resource_handle]->life_time)        		
-		{
-			//VirtualResource has a descriptor to help initalize resources
-			auto& pvr = resources[slot.resource_handle];
-			pvr->DeActualize(renderpass_manager);
-		}
 
-	}
+	//TRANSIENT RESOURCES DESTRUCTION
+
+
+	//for (const auto &slot : pass.slot_rsrc_recycle_list)
+	//{
+	//	// persistent resources are imported from outside RG,don't need to be init-ed or destoryed
+	//	if (VirtualResource::RsrcLifeTimeType::Persistent != resources[slot.resource_handle]->life_time)
+	//	{
+	//		//VirtualResource has a descriptor to help initalize resources
+	//		const auto &pvr = resources[slot.resource_handle];
+	//		pvr->DeActualize(renderpass_manager);
+	//	}
+	//}
 
 
 
@@ -511,6 +489,16 @@ RenderGraph::DependencyGraph::ResourceNode &RenderGraph::DependencyGraph::GetRes
 
 
 
+
+
+
+
+
+
+
+
+
+
 VkAttachmentInfo RenderGraph::DependencyGraph::GetAttachmentRsrc(std::string name, PassNodeHandle pass_node_handle)
 {
 	//首先找到当前pass的handle
@@ -518,28 +506,53 @@ VkAttachmentInfo RenderGraph::DependencyGraph::GetAttachmentRsrc(std::string nam
 	//找到资源对应的slot
 	const auto rsrcs_slot = rsrcs_map[name];
 	//用资源slot作为键值，找到资源的使用方式：
-	const std::array<std::pair<std::optional<RenderGraph::DependencyGraph::PassNodeHandle>, RenderGraph::RsrcUsageInfoSlot>, 2> rsrc_usage = resources_usage_recording_table[rsrcs_slot];
+	const std::array<std::pair<std::optional<RenderGraph::DependencyGraph::PassNodeHandle>, RenderGraph::RsrcUsageInfoSlot>, 2> &rsrc_usage = resources_usage_recording_table[rsrcs_slot];
 
-	//找到当前pass 资源被使用的方式
+
 	if (rsrc_usage.front().first.has_value())
 	{
-		if (rsrc_usage.front().first.value() == cur_pass_node->node_handle)
+		//make sure cur_pass_node->node_handle and pass_handle_inRG are the same.
+		//if (rsrc_usage.front().first.value() == cur_pass_node->node_handle)
+
+		const size_t shit = rsrc_usage.front().first.value();
+		const float shitfloat = static_cast<float>(shit);
+
+		//size_t fuck = cur_pass_node->node_handle;
+		const size_t fuck      = pass_node_handle;
+		const float fuckfloat = static_cast<float>(fuck);
+
+		std::cout << abs(fuckfloat - shitfloat);
+
+		if ( abs(fuckfloat - shitfloat ) < (0.000001) )
 		{
 			const auto &                       attch_info = dynamic_cast<VkAttachmentInfo::WithinPassRG &>(*rsrc_usage_infos[rsrc_usage.front().second.handle]);
 			const VkAttachmentInfo::WithinPass attach_info_inpass{attch_info};
 			const auto &                       rsrc_tex = dynamic_cast<RenderGraph::Resource<VkTexture> &>(*resources[rsrcs_slot.resource_handle]);
 			return VkAttachmentInfo{attach_info_inpass, rsrc_tex.resource};
+
 		}
-	}
-	else if (rsrc_usage.back().first.has_value())
-	{
-		if (rsrc_usage.back().first.value() == cur_pass_node->node_handle)
+
+		if (rsrc_usage.back().first.has_value())
 		{
-			const auto &                       attch_info = dynamic_cast<VkAttachmentInfo::WithinPassRG &>(*rsrc_usage_infos[rsrc_usage.back().second.handle]);
-			const VkAttachmentInfo::WithinPass attach_info_inpass{attch_info};
-			const auto &                       rsrc_tex = dynamic_cast<RenderGraph::Resource<VkTexture> &>(*resources[rsrcs_slot.resource_handle]);
-			return VkAttachmentInfo{attach_info_inpass, rsrc_tex.resource};
+			if (rsrc_usage.back().first.value() == cur_pass_node->node_handle)
+			{
+				const auto &                       attch_info = dynamic_cast<VkAttachmentInfo::WithinPassRG &>(*rsrc_usage_infos[rsrc_usage.back().second.handle]);
+				const VkAttachmentInfo::WithinPass attach_info_inpass{attch_info};
+				const auto &                       rsrc_tex = dynamic_cast<RenderGraph::Resource<VkTexture> &>(*resources[rsrcs_slot.resource_handle]);
+				return VkAttachmentInfo{attach_info_inpass, rsrc_tex.resource};
+			}
+
+			else
+			{
+				throw std::runtime_error("Can't find resources usage info");
+			}
 		}
+		else
+		{
+			throw std::runtime_error("Can't find resources usage info");
+		}
+
+
 	}
 	else
 	{
@@ -547,6 +560,49 @@ VkAttachmentInfo RenderGraph::DependencyGraph::GetAttachmentRsrc(std::string nam
 	}
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	////找到当前pass 资源被使用的方式
+	//if (rsrc_usage.front().first.has_value())
+	//{
+	//	if (rsrc_usage.front().first.value() == cur_pass_node->node_handle)
+	//	{
+	//		const auto &                       attch_info = dynamic_cast<VkAttachmentInfo::WithinPassRG &>(*rsrc_usage_infos[rsrc_usage.front().second.handle]);
+	//		const VkAttachmentInfo::WithinPass attach_info_inpass{attch_info};
+	//		const auto &                       rsrc_tex = dynamic_cast<RenderGraph::Resource<VkTexture> &>(*resources[rsrcs_slot.resource_handle]);
+	//		return VkAttachmentInfo{attach_info_inpass, rsrc_tex.resource};
+	//	}
+	//}
+	//else if (rsrc_usage.back().first.has_value())
+	//{
+	//	if (rsrc_usage.back().first.value() == cur_pass_node->node_handle)
+	//	{
+	//		const auto &                       attch_info = dynamic_cast<VkAttachmentInfo::WithinPassRG &>(*rsrc_usage_infos[rsrc_usage.back().second.handle]);
+	//		const VkAttachmentInfo::WithinPass attach_info_inpass{attch_info};
+	//		const auto &                       rsrc_tex = dynamic_cast<RenderGraph::Resource<VkTexture> &>(*resources[rsrcs_slot.resource_handle]);
+	//		return VkAttachmentInfo{attach_info_inpass, rsrc_tex.resource};
+	//	}
+	//}
+	//else
+	//{
+	//	throw std::runtime_error("Can't find resources usage info");
+	//}
 }
 
 VkTexUsageInfo RenderGraph::DependencyGraph::GetTextureRsrc(std::string name, PassNodeHandle pass_node_handle)
@@ -556,32 +612,85 @@ VkTexUsageInfo RenderGraph::DependencyGraph::GetTextureRsrc(std::string name, Pa
 	//找到资源对应的slot
 	const auto rsrcs_slot = rsrcs_map[name];
 	//用资源slot作为键值，找到资源的使用方式：
-	const std::array<std::pair<std::optional<RenderGraph::DependencyGraph::PassNodeHandle>, RenderGraph::RsrcUsageInfoSlot>, 2> rsrc_usage = resources_usage_recording_table[rsrcs_slot];
+	const std::array<std::pair<std::optional<RenderGraph::DependencyGraph::PassNodeHandle>, RenderGraph::RsrcUsageInfoSlot>, 2> &rsrc_usage = resources_usage_recording_table[rsrcs_slot];
+
+
 
 	if (rsrc_usage.front().first.has_value())
 	{
 		//make sure cur_pass_node->node_handle and pass_handle_inRG are the same.
-		if (rsrc_usage.front().first.value() == cur_pass_node->node_handle)
+		//if (rsrc_usage.front().first.value() == cur_pass_node->node_handle)
+
+		const size_t shit = rsrc_usage.front().first.value();
+		const float shitfloat = static_cast<float>(shit);
+
+		//size_t fuck = cur_pass_node->node_handle;
+		const size_t fuck      = pass_node_handle;
+		const float fuckfloat = static_cast<float>(fuck);
+
+		std::cout << abs(fuckfloat - shitfloat);
+
+		if ( abs(fuckfloat - shitfloat ) < (0.000001) )
 		{
 			const auto &tex_usage_info = dynamic_cast<VkTexUsageInfoRG &>(*rsrc_usage_infos[rsrc_usage.front().second.handle]);
 			const auto &rsrc_tex       = dynamic_cast<RenderGraph::Resource<VkTexture> &>(*resources[rsrcs_slot.resource_handle]);
+			return VkTexUsageInfo{tex_usage_info.tex_type, tex_usage_info.shader_stages, tex_usage_info.set_info, rsrc_tex.resource};
+		}
 
-			return VkTexUsageInfo{tex_usage_info.tex_type, tex_usage_info.stage_mask, tex_usage_info.set_info, rsrc_tex.resource};
-		}
-	}
-	else if (rsrc_usage.back().first.has_value())
-	{
-		if (rsrc_usage.back().first.value() == cur_pass_node->node_handle)
+		if (rsrc_usage.back().first.has_value())
 		{
-			const auto &tex_usage_info = dynamic_cast<VkTexUsageInfoRG &>(*rsrc_usage_infos[rsrc_usage.back().second.handle]);
-			const auto &rsrc_tex       = dynamic_cast<RenderGraph::Resource<VkTexture> &>(*resources[rsrcs_slot.resource_handle]);
-			return VkTexUsageInfo{tex_usage_info.tex_type, tex_usage_info.stage_mask, tex_usage_info.set_info, rsrc_tex.resource};
+			if (rsrc_usage.back().first.value() == cur_pass_node->node_handle)
+			{
+				const auto &tex_usage_info = dynamic_cast<VkTexUsageInfoRG &>(*rsrc_usage_infos[rsrc_usage.back().second.handle]);
+				const auto &rsrc_tex       = dynamic_cast<RenderGraph::Resource<VkTexture> &>(*resources[rsrcs_slot.resource_handle]);
+				return VkTexUsageInfo{tex_usage_info.tex_type, tex_usage_info.shader_stages, tex_usage_info.set_info, rsrc_tex.resource};
+			}
+			else
+			{
+				throw std::runtime_error("Can't find resources usage info");
+			}
+
 		}
+		else
+		{
+			throw std::runtime_error("Can't find resources usage info");
+		}
+
 	}
 	else
 	{
 		throw std::runtime_error("Can't find resources usage info");
 	}
+
+
+
+	//if (rsrc_usage.front().first.has_value())
+	//{
+	//	//make sure cur_pass_node->node_handle and pass_handle_inRG are the same.
+	//	if (rsrc_usage.front().first.value() == cur_pass_node->node_handle)
+	//	{
+	//		const auto &tex_usage_info = dynamic_cast<VkTexUsageInfoRG &>(*rsrc_usage_infos[rsrc_usage.front().second.handle]);
+	//		const auto &rsrc_tex       = dynamic_cast<RenderGraph::Resource<VkTexture> &>(*resources[rsrcs_slot.resource_handle]);
+
+	//		return VkTexUsageInfo{tex_usage_info.tex_type, tex_usage_info.shader_stages, tex_usage_info.set_info, rsrc_tex.resource};
+	//	}
+	//}
+	//else if (rsrc_usage.back().first.has_value())
+	//{
+	//	if (rsrc_usage.back().first.value() == cur_pass_node->node_handle)
+	//	{
+	//		const auto &tex_usage_info = dynamic_cast<VkTexUsageInfoRG &>(*rsrc_usage_infos[rsrc_usage.back().second.handle]);
+	//		const auto &rsrc_tex       = dynamic_cast<RenderGraph::Resource<VkTexture> &>(*resources[rsrcs_slot.resource_handle]);
+	//		return VkTexUsageInfo{tex_usage_info.tex_type, tex_usage_info.shader_stages, tex_usage_info.set_info, rsrc_tex.resource};
+	//	}
+	//}
+	//else
+	//{
+	//	throw std::runtime_error("Can't find resources usage info");
+	//}
+
+
+
 }
 
 VkUniBufUsageInfo RenderGraph::DependencyGraph::GetBufferRsrc(std::string name, PassNodeHandle pass_node_handle)
@@ -591,40 +700,60 @@ VkUniBufUsageInfo RenderGraph::DependencyGraph::GetBufferRsrc(std::string name, 
 	//找到资源对应的slot
 	const auto rsrcs_slot = rsrcs_map[name];
 	//用资源slot作为键值，找到资源的使用方式：
-	const std::array<std::pair<std::optional<RenderGraph::DependencyGraph::PassNodeHandle>, RenderGraph::RsrcUsageInfoSlot>, 2> rsrc_usage = resources_usage_recording_table[rsrcs_slot];
+	const std::array<std::pair<std::optional<RenderGraph::DependencyGraph::PassNodeHandle>, RenderGraph::RsrcUsageInfoSlot>, 2> &rsrc_usage = resources_usage_recording_table[rsrcs_slot];
+
+
+
 
 	if (rsrc_usage.front().first.has_value())
 	{
 		//make sure cur_pass_node->node_handle and pass_handle_inRG are the same.
-		if (rsrc_usage.front().first.value() == cur_pass_node->node_handle)
+		//if (rsrc_usage.front().first.value() == cur_pass_node->node_handle)
+
+		const size_t shit = rsrc_usage.front().first.value();
+		const float shitfloat = static_cast<float>(shit);
+
+		//size_t fuck = cur_pass_node->node_handle;
+		const size_t fuck      = pass_node_handle;
+		const float fuckfloat = static_cast<float>(fuck);
+
+		std::cout << abs(fuckfloat - shitfloat);
+
+		if ( abs(fuckfloat - shitfloat ) < (0.000001) )
 		{
 			const auto &buf_usage_info = dynamic_cast<VkBufUsageInfoRG &>(*rsrc_usage_infos[rsrc_usage.front().second.handle]);
 			const auto &rsrc_buffer    = dynamic_cast<RenderGraph::Resource<VkBufferBase> &>(*resources[rsrcs_slot.resource_handle]);
 
-			return VkUniBufUsageInfo{buf_usage_info.buf_type, buf_usage_info.stage_mask, buf_usage_info.set_info, rsrc_buffer.resource};
+			return VkUniBufUsageInfo{buf_usage_info.buf_type, buf_usage_info.shader_stages, buf_usage_info.set_info, rsrc_buffer.resource};
 		}
-	}
-	else if (rsrc_usage.back().first.has_value())
-	{
-		if (rsrc_usage.back().first.value() == cur_pass_node->node_handle)
-		{
-			const auto &buf_usage_info = dynamic_cast<VkBufUsageInfoRG &>(*rsrc_usage_infos[rsrc_usage.back().second.handle]);
-			const auto &rsrc_buffer    = dynamic_cast<RenderGraph::Resource<VkBufferBase> &>(*resources[rsrcs_slot.resource_handle]);
 
-			return VkUniBufUsageInfo{buf_usage_info.buf_type, buf_usage_info.stage_mask, buf_usage_info.set_info, rsrc_buffer.resource};
+		if (rsrc_usage.back().first.has_value())
+		{
+			if (rsrc_usage.back().first.value() == cur_pass_node->node_handle)
+			{
+				const auto &buf_usage_info = dynamic_cast<VkBufUsageInfoRG &>(*rsrc_usage_infos[rsrc_usage.back().second.handle]);
+				const auto &rsrc_buffer    = dynamic_cast<RenderGraph::Resource<VkBufferBase> &>(*resources[rsrcs_slot.resource_handle]);
+
+				return VkUniBufUsageInfo{buf_usage_info.buf_type, buf_usage_info.shader_stages, buf_usage_info.set_info, rsrc_buffer.resource};
+			}
+			else
+			{
+				throw std::runtime_error("Can't find resources usage info");
+			}
 		}
+		else
+		{
+			throw std::runtime_error("Can't find resources usage info");
+		}
+
+
 	}
 	else
 	{
 		throw std::runtime_error("Can't find resources usage info");
 	}
+
 }
-
-
-
-
-
-
 
 RenderGraph::VirtualResource::VirtualResource(RsrcLifeTimeType life_time_) :
     life_time(life_time_)
@@ -641,9 +770,6 @@ RenderGraph::GraphicsPassNode::GraphicsPassNode(size_t node_handle_) :
 {
 }
 
-
-
-
 void RenderGraph::GraphicsPassNode::PrePassExecuteRG(DependencyGraph &RG)
 {
 	//CreateAttachmentsRG(*this, RG);
@@ -651,16 +777,12 @@ void RenderGraph::GraphicsPassNode::PrePassExecuteRG(DependencyGraph &RG)
 	//CreateBufferDescriptorsRG(*this, RG);
 
 	renderpass->Init();
-
 }
 
 void RenderGraph::GraphicsPassNode::ExecuteRG(VkCommandBuffer cmd_buf)
 {
-
 	renderpass->Execute(cmd_buf);
 }
-
-
 
 
 
@@ -670,7 +792,7 @@ void RenderGraph::GraphicsPassNode::ExecuteRG(VkCommandBuffer cmd_buf)
 void RenderGraph::GraphicsPassNode::GiveAttachmentsToPass(RenderGraph::PassNode &pass, DependencyGraph &RG)
 {
 	//std::vector<VkAttachmentInfo> attachment_infos;
- //
+	//
 	////attachments 和 texture 会被分发到不同的数组中去，所以这里可以把std::variant直接转换成AttachmentIndex
 	////因为attachment resources有一个AttachmentIndex，所以根据这个AttachmentIndex排序
 	//std::sort(pass.attachment_rsrcs.begin(), pass.attachment_rsrcs.end(),
@@ -695,10 +817,8 @@ void RenderGraph::GraphicsPassNode::GiveAttachmentsToPass(RenderGraph::PassNode 
 	//renderpass->GetAttachmentsRG(std::move(attachment_infos));
 }
 
-
 void RenderGraph::GraphicsPassNode::GiveTexturesToPass(RenderGraph::PassNode &pass, DependencyGraph &RG)
 {
-
 	//std::vector<VkTexUsageInfo> tex_infos;
 
 	//for (const auto &tex_rsrc : pass.texture_rsrcs)
@@ -717,19 +837,15 @@ void RenderGraph::GraphicsPassNode::GiveTexturesToPass(RenderGraph::PassNode &pa
 	//		tex_info.set_info,
 	//	rsrc_tex->resource
 	//	}
-	//	
+	//
 	//	);
 	//}
 
 	//renderpass->GetTexturesRG(std::move(tex_infos));
 }
 
-
-
 void RenderGraph::GraphicsPassNode::GiveBuffersToPass(RenderGraph::PassNode &pass, DependencyGraph &RG)
 {
-
-
 	//std::vector<VkUniBufUsageInfo> uniform_buffer_infos;
 
 	////std::sort(pass.uniform_buffer_rsrcs.begin(), pass.uniform_buffer_rsrcs.end(),
@@ -754,17 +870,5 @@ void RenderGraph::GraphicsPassNode::GiveBuffersToPass(RenderGraph::PassNode &pas
 	//	uniform_buffer_infos.emplace_back( ub_info.buf_type, ub_info.stage_mask, ub_info.set_info ,rsrc_uniform_buffer->resource);
 	//}
 
-
 	//renderpass->GetUniformBufferDescriptorsRG(std::move(uniform_buffer_infos));
-
-
-
 }
-
-
-
-
-
-
-
-

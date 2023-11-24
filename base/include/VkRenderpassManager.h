@@ -1,8 +1,6 @@
 #pragma once
-#include "VkDescriptorManagerV0.h"
 #include "VkFactoryBundle.h"
 #include "VkManagerBundle.h"
-
 #include <unordered_map>
 
 class VkRenderpassManager
@@ -20,7 +18,7 @@ class VkRenderpassManager
   public:
 	template <typename First, typename... Rest>
 	static std::shared_ptr<First> ProduceRenderpass(Rest &&...rest);
-
+	 
   public:
 	void AddRenderPass(
 	    const std::string &name, uint32_t slot, const std::vector<VkAttachmentInfo> &attachments,

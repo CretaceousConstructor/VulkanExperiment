@@ -1,22 +1,20 @@
 #pragma once
 #include "Vk.h"
 #include "VkBufferBase.h"
-#include "VkGraphicsComponent.h"
 #include "VkTexture.h"
 #include <memory>
+#include <unordered_map>
 #include <variant>
 #include <vector>
 
 class RsrcUsageInfoInPass
 {
   public:
-	RsrcUsageInfoInPass(Vk::RsrcInfoType info_t);
+	RsrcUsageInfoInPass(Vk::RsrcInfoType info_t, Vk::AccessType access_t);
 	[[nodiscard]] virtual Vk::SyncInfo GetSynInfo() const = 0;
 	[[nodiscard]] Vk::RsrcInfoType     GetInfoType() const;
 
   public:
-	virtual ~RsrcUsageInfoInPass() = default;
-
 	RsrcUsageInfoInPass() = delete;
 
 	RsrcUsageInfoInPass(const RsrcUsageInfoInPass &) = delete;
@@ -25,15 +23,18 @@ class RsrcUsageInfoInPass
 	RsrcUsageInfoInPass(RsrcUsageInfoInPass &&) = delete;
 	RsrcUsageInfoInPass &operator=(RsrcUsageInfoInPass &&) = delete;
 
-  private:
+	virtual ~RsrcUsageInfoInPass() = default;
+
+  protected:
 	Vk::RsrcInfoType info_type;
+	Vk::AccessType   access_type;
 };
 
 class VkTexUsageInfo
 {
   public:
 	VkDescriptorType   desc_type{};
-	VkShaderStageFlags access_stages{};
+	VkShaderStageFlags shader_stages{};
 	Vk::DescSetInfo    set_info{};
 
 	std::shared_ptr<VkTexture> tex{};
@@ -43,35 +44,57 @@ class VkTexUsageInfoRG : public RsrcUsageInfoInPass
 {
   public:
 	VkTexUsageInfoRG(
-	    Vk::RsrcInfoType info_y,
+	    Vk::RsrcInfoType info_t,
 	    VkFormat         format_,
 	    Vk::DescSetInfo  set_info_,
 
 	    VkAccessFlags        access_mask_,
-	    VkPipelineStageFlags stage_mask_,
+	    VkPipelineStageFlags pip_stage_mask_,
 	    VkImageLayout        layout_inpass_,
-	    VkDescriptorType     type_) :
-	    RsrcUsageInfoInPass(info_y),
+
+	    VkDescriptorType   type_,
+	    VkShaderStageFlags shader_stages_,
+	    Vk::AccessType     access_t) :
+	    RsrcUsageInfoInPass(info_t, access_t),
 	    format(format_),
 	    set_info(set_info_),
 	    access_mask(access_mask_),
-	    stage_mask(stage_mask_),
+	    pip_stage_mask(pip_stage_mask_),
 	    layout_inpass(layout_inpass_),
-	    tex_type(type_)
+	    tex_type(type_),
+	    shader_stages(shader_stages_)
 
 	{
 	}
 
-	~VkTexUsageInfoRG() = default;
+	VkTexUsageInfoRG(const VkTexUsageInfoRG &other) :
+	    RsrcUsageInfoInPass(other.info_type, other.access_type),
+	    format(other.format),
+	    set_info(other.set_info),
+	    access_mask(other.access_mask),
+	    pip_stage_mask(other.pip_stage_mask),
+	    layout_inpass(other.layout_inpass),
+	    tex_type(other.tex_type),
+	    shader_stages(other.shader_stages),
+	    sampler_CI(other.sampler_CI),
+	    img_view_CI(other.img_view_CI)
+	{
+	}
+
+	VkTexUsageInfoRG &operator=(const VkTexUsageInfoRG &other) = delete;
+	VkTexUsageInfoRG(VkTexUsageInfoRG &&other)                 = delete;
+	VkTexUsageInfoRG &operator=(VkTexUsageInfoRG &&other) = delete;
+	~VkTexUsageInfoRG() override                          = default;
 
 	VkFormat format{};
 
-	VkDescriptorType     tex_type{};
-	VkPipelineStageFlags stage_mask{};
-	VkAccessFlags        access_mask{};
 	Vk::DescSetInfo      set_info{};
+	VkAccessFlags        access_mask{};
+	VkPipelineStageFlags pip_stage_mask{};
+	VkImageLayout        layout_inpass{};
+	VkDescriptorType     tex_type{};
 
-	VkImageLayout layout_inpass{};
+	VkShaderStageFlags shader_stages{};
 
 	std::optional<VkSamplerCreateInfo>   sampler_CI{};
 	std::optional<VkImageViewCreateInfo> img_view_CI{};
@@ -91,7 +114,7 @@ class VkTexUsageInfoRG : public RsrcUsageInfoInPass
 	{
 		return {
 		    .access_mask   = access_mask,
-		    .stage_mask    = stage_mask,
+		    .stage_mask    = pip_stage_mask,
 		    .layout_inpass = layout_inpass};
 	}
 };
@@ -100,7 +123,7 @@ class VkUniBufUsageInfo
 {
   public:
 	VkDescriptorType   desc_type{};
-	VkShaderStageFlags access_stages{};
+	VkShaderStageFlags shader_stages{};
 	Vk::DescSetInfo    set_info{};
 
 	std::shared_ptr<VkBufferBase> buf{};
@@ -110,23 +133,35 @@ class VkBufUsageInfoRG final : public RsrcUsageInfoInPass
 {
   public:
 	VkBufUsageInfoRG(
-	    Vk::RsrcInfoType info_t,
-	    Vk::DescSetInfo  slot_info_,
-	    VkDescriptorType buf_type_,
-
-	    VkPipelineStageFlags stage_mask_) :
-	    RsrcUsageInfoInPass(info_t),
+	    Vk::RsrcInfoType   info_t,
+	    Vk::DescSetInfo    slot_info_,
+	    VkDescriptorType   buf_type_,
+	    VkShaderStageFlags shader_stages_,
+	    Vk::AccessType     access_t) :
+	    RsrcUsageInfoInPass(info_t, access_t),
 	    set_info(slot_info_),
 	    buf_type(buf_type_),
-	    stage_mask(stage_mask_)
+	    shader_stages(shader_stages_)
 	{
 	}
 
-	~VkBufUsageInfoRG() = default;
+	VkBufUsageInfoRG(const VkBufUsageInfoRG &other) :
+	    RsrcUsageInfoInPass(other.info_type, other.access_type),
+	    set_info(other.set_info),
+	    buf_type(other.buf_type),
+	    shader_stages(other.shader_stages)
+	{
+	}
 
-	VkDescriptorType     buf_type{};
-	VkPipelineStageFlags stage_mask{};
-	Vk::DescSetInfo      set_info{};
+	VkBufUsageInfoRG &operator=(const VkBufUsageInfoRG &other) = delete;
+	VkBufUsageInfoRG(VkBufUsageInfoRG &&other)                 = delete;
+	VkBufUsageInfoRG &operator=(VkBufUsageInfoRG &&other) = delete;
+
+	~VkBufUsageInfoRG() override = default;
+
+	Vk::DescSetInfo    set_info{};
+	VkDescriptorType   buf_type{};
+	VkShaderStageFlags shader_stages{};
 
 	[[nodiscard]] Vk::SyncInfo GetSynInfo() const override
 	{
@@ -168,7 +203,28 @@ class VkAttachmentInfo
 	class WithinPassRG : public RsrcUsageInfoInPass
 	{
 	  public:
-	  public:
+		WithinPassRG(const WithinPassRG &other) :
+		    RsrcUsageInfoInPass(other.info_type, other.access_type),
+		    format(other.format),
+		    slot_info(other.slot_info),
+		    access_mask(other.access_mask),
+		    stage_mask(other.stage_mask),
+		    layout_inpass(other.layout_inpass),
+		    type(other.type),
+		    clear_value(other.clear_value),
+		    resolve_mode(other.resolve_mode),
+		    resolve_image_layout(other.resolve_image_layout),
+		    load_op(other.load_op),
+		    store_op(other.store_op),
+		    sampler_CI(other.sampler_CI),
+		    img_view_CI(other.img_view_CI)
+		{
+		}
+
+		WithinPassRG &operator=(const WithinPassRG &other) = delete;
+		WithinPassRG(WithinPassRG &&other)                 = delete;
+		WithinPassRG &operator=(WithinPassRG &&other) = delete;
+
 		WithinPassRG(
 		    Vk::RsrcInfoType                                       info_y,
 		    VkFormat                                               format_,
@@ -179,14 +235,15 @@ class VkAttachmentInfo
 		    VkImageLayout        layout_inpass_,
 		    Type                 type_,
 		    VkClearValue         clear_value_,
+		    Vk::AccessType       access_t,
 
 		    VkResolveModeFlagBits resolve_mode_         = VK_RESOLVE_MODE_NONE,
 		    VkImageLayout         resolve_image_layout_ = VK_IMAGE_LAYOUT_UNDEFINED,
 		    //VkImageView              resolveImageView{};
-
 		    VkAttachmentLoadOp  load_op_  = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
 		    VkAttachmentStoreOp store_op_ = VK_ATTACHMENT_STORE_OP_DONT_CARE) :
-		    RsrcUsageInfoInPass(info_y),
+
+		    RsrcUsageInfoInPass(info_y, access_t),
 		    format(format_),
 		    slot_info(slot_info_),
 		    access_mask(access_mask_),
@@ -221,13 +278,11 @@ class VkAttachmentInfo
 		VkImageLayout         resolve_image_layout{};
 		//VkImageView              resolveImageView{};
 
-
-
 		VkAttachmentLoadOp  load_op;
 		VkAttachmentStoreOp store_op;
 
-		std::optional<VkSamplerCreateInfo>   sampler_CI;
-		std::optional<VkImageViewCreateInfo> img_view_CI;
+		std::optional<VkSamplerCreateInfo>   sampler_CI{};
+		std::optional<VkImageViewCreateInfo> img_view_CI{};
 
 		std::optional<VkSamplerCreateInfo> GetSamplerCI() const
 		{
@@ -312,8 +367,7 @@ class VkAttachmentInfo
 		VkImageLayout resolveImageLayout{};
 	};
 
-
-	void SetResolveTargetTexImgView(const VkAttachmentInfo& resolve_target)
+	void SetResolveTargetTexImgView(const VkAttachmentInfo &resolve_target)
 	{
 		resolve_tex = resolve_target.tex;
 		if (!info_in_pass.has_value())
@@ -325,8 +379,6 @@ class VkAttachmentInfo
 			info_in_pass.value().resolveImageLayout = resolve_target.GetInfo().layout_inpass;
 		}
 	}
-
-
 
 	class Bundle
 	{
@@ -344,7 +396,6 @@ class VkAttachmentInfo
   public:
 	VkAttachmentInfo(const WithinPassRG &info, std::shared_ptr<VkTexture> tex_);
 	VkAttachmentInfo(const WithinPassRG &info, std::shared_ptr<VkTexture> tex_, std::shared_ptr<VkTexture> resolve_tex_);
-
 
 	VkAttachmentInfo(WithinPass meme_, std::shared_ptr<VkTexture> tex_);
 	VkAttachmentInfo(WithinPass meme_, std::shared_ptr<VkTexture> tex_, std::shared_ptr<VkTexture> resolve_tex_);
@@ -365,18 +416,12 @@ class VkAttachmentInfo
 	static Bundle GetAttachmentInfos(const WithinPass &meme_, const VkTexture::TexturePtrBundle &textures_);
 	static Bundle GetAttachmentInfos(const WithinPass &meme_, const VkTexture::TexturePtrBundle &textures_, const VkTexture::TexturePtrBundle &resolve_textures_);
 
-
-
-
   private:
-
-	VkRenderingAttachmentInfo  rendering_attachment_info{}; //provided by vulkan header, will be pass to VkBeginRendering funciton
+	VkRenderingAttachmentInfo  rendering_attachment_info{};        //provided by vulkan header, will be pass to VkBeginRendering funciton
 	std::optional<WithinPass>  info_in_pass;
 	std::shared_ptr<VkTexture> tex;
 	std::shared_ptr<VkTexture> resolve_tex;
 };
-
-
 
 namespace AttachmentInfoGeneration
 {
@@ -476,7 +521,7 @@ void GenerateRenderingAttachInfo(
     Rest &&...rest)
 {
 	Process(color_attachment_infos, depth_attachment_info, stensil_attachment_info, std::nullopt, std::forward<First>(first));
-	return AddRenderingAttachmentInfo(color_attachment_infos, depth_attachment_info, stensil_attachment_info, std::forward<Rest>(rest)...);
+	return GenerateRenderingAttachInfo(color_attachment_infos, depth_attachment_info, stensil_attachment_info, std::forward<Rest>(rest)...);
 }
 
 inline void GenerateRenderingAttachInfo(

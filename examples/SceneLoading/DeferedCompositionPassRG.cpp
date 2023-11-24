@@ -32,7 +32,9 @@ void DeferedCompositionPassRG::ResourceInit()        // rename to resources acqu
 
  
 	//a lonely buffer :)
+
 	matrix_ubo = rg.GetBufferRsrc(std::string("MatrixUBO"),pass_handle_inRG);
+
 
 	G_buffer_position     = rg.GetTextureRsrc(std::string("GBufferPosition"),pass_handle_inRG);
 	G_buffer_normal       = rg.GetTextureRsrc(std::string("GBufferNormal")  ,pass_handle_inRG);
@@ -69,12 +71,12 @@ void DeferedCompositionPassRG::CreateDescriptorSetLayout()
 	//LAYOUT FOR SET 0. In general, SET 1 is reserved for models' material
 	{
 		//Descriptor for passing matrices and g-buffers
-		const auto binding0{Vk::GetDescriptorSetLayoutBinding(Vk::Binding<0>, matrix_ubo.desc_type, matrix_ubo.access_stages)};
-		const auto binding1{Vk::GetDescriptorSetLayoutBinding(Vk::Binding<1>, G_buffer_position.desc_type, G_buffer_position.access_stages)};
-		const auto binding2{Vk::GetDescriptorSetLayoutBinding(Vk::Binding<2>, G_buffer_normal.desc_type, G_buffer_normal.access_stages)};
-		const auto binding3{Vk::GetDescriptorSetLayoutBinding(Vk::Binding<3>, G_buffer_albedo.desc_type, G_buffer_albedo.access_stages)};
-		const auto binding4{Vk::GetDescriptorSetLayoutBinding(Vk::Binding<4>, G_buffer_posZGradient.desc_type, G_buffer_posZGradient.access_stages)};
-		const auto binding5{Vk::GetDescriptorSetLayoutBinding(Vk::Binding<5>, G_buffer_depth.desc_type, G_buffer_depth.access_stages)};
+		const auto binding0{Vk::GetDescriptorSetLayoutBinding(Vk::Binding<0>, matrix_ubo.desc_type, matrix_ubo.shader_stages)};
+		const auto binding1{Vk::GetDescriptorSetLayoutBinding(Vk::Binding<1>, G_buffer_position.desc_type, G_buffer_position.shader_stages)};
+		const auto binding2{Vk::GetDescriptorSetLayoutBinding(Vk::Binding<2>, G_buffer_normal.desc_type, G_buffer_normal.shader_stages)};
+		const auto binding3{Vk::GetDescriptorSetLayoutBinding(Vk::Binding<3>, G_buffer_albedo.desc_type, G_buffer_albedo.shader_stages)};
+		const auto binding4{Vk::GetDescriptorSetLayoutBinding(Vk::Binding<4>, G_buffer_posZGradient.desc_type, G_buffer_posZGradient.shader_stages)};
+		const auto binding5{Vk::GetDescriptorSetLayoutBinding(Vk::Binding<5>, G_buffer_depth.desc_type, G_buffer_depth.shader_stages)};
 
 		const std::vector bindings{binding0, binding1, binding2, binding3, binding4, binding5};
 		const auto        desc_set_layout_CI = Vk::GetDescriptorSetLayoutCI(bindings);
@@ -350,6 +352,8 @@ void DeferedCompositionPassRG::RecordRenderpassCommandRG(const VkCommandBuffer c
 
 	//DRAWING QUAD
 	vkCmdDraw(command_buffers, 3, 1, 0, 0);
+
+	//vkCmd
 
 
 }

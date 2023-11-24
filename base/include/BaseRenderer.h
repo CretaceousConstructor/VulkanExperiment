@@ -55,7 +55,8 @@ class BaseRenderer
 	virtual void UpdateCamera(float dt) = 0;
 
   public:
-	virtual void DrawFrame(float time_diff) = 0;
+	virtual void DrawFrameStaticBakingCmdBuf(float time_diff) = 0;
+	virtual void DrawFrameRecordCmdBufEvrFrame(float time_diff) = 0;
 	//virtual void UIRendering() = 0;
 
   private:

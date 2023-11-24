@@ -1,0 +1,401 @@
+enum class RsrcInputType
+{
+	Unknown,
+	Attachment,
+	Buffer,
+	Texture,
+	Reference,
+	Model
+};
+
+//enum class RsrcOuptputType
+//{
+//	Unknown,
+//	FromInput,
+//	FromCurrent
+//};
+constexpr int OutsideRenderGraph = -1;
+
+class RenderpassInput
+{
+public:
+	RsrcInfoType rsrc_type;
+	std::string name;
+	int pass_handle;
+};
+
+
+class RenderpassOutput
+{
+public:
+	RsrcInfoType rsrc_type;
+	std::string name;
+	std::variant<VkTexture::Descriptor, VkBufferBase::Descriptor> descriptor;
+};
+
+
+
+
+const auto DeferedGeoPass_handle = 
+
+render_graph.AddGfxPassNode
+(
+	"DeferedGeometryPass"
+)
+.In
+(
+	//RsrcInfoType::Buffer,
+	"MatUBO",
+	OutsideRenderGraph,
+	std::make_unique<VkBufUsageInfoRG>
+	(
+		//RsrcInfoType::Buffer,
+		Vk::DescSetInfo{
+			.set          = Vk::SetIndex<0>,
+			.binding      = Vk::Binding<0>,
+			.array_elemnt = Vk::BindingArrayElement<0>,
+		},
+		VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+		VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT
+	)
+)
+.Out
+(
+	//RsrcInfoType::Attachment,
+	"GBufPos",
+	VkTexture::Descriptor{
+	    .tex_img_PP  = TextureImgPP{DeferedRendering::G_position_format, swapchain_manager.GetSwapChainImageExtent(), Vk::ImgCINillFlag},
+	    .img_view_CI = std::nullopt,
+	    .sample_CI   = std::nullopt,
+	},
+	[](VkTexture::Descriptor& desco)
+	{
+		//如果某个pass没有传入 资源 要使用的sample_CI或者img_view_CI，那么就保持默认状态（不改变texture中的sampler和view指针）听起来不错，但是这样会不会让资源过度浪费？
+		//descriptor就是创建参数，虚拟资源只有在execute执行的时候才会创建真正的资源
+		desco.tex_img_PP->default_image_CI.usage            = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;        //TODO:这里的usage都可以通过rendergraph进行分析，
+		desco.tex_img_PP->default_image_CI.samples          = DeferedRendering::MSAA_sample_count;
+		desco.tex_img_PP->default_layout_right_aft_creation = VK_IMAGE_LAYOUT_UNDEFINED;        //这个default_layout_right_aft_creation是不是可以取消了
+	},
+
+	std::make_unique<VkAttachmentInfo::WithinPassRG>(
+		//Vk::RsrcInfoType::Attachment,
+		DeferedRendering::G_position_format,
+		Vk::AttachmentIndex<0>,
+
+		VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+		VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+		VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,        //
+
+		VkAttachmentInfo::Type::ColorAttachment,
+		VkClearValue{.color{0.0f, 0.0f, 0.0f, 1.0f}}
+	)
+)
+.Out
+(
+	//RsrcInfoType::Attachment,
+	"GBufNormal",
+	VkTexture::Descriptor{
+	    .tex_img_PP  = TextureImgPP{DeferedRendering::G_normal_format, swapchain_manager.GetSwapChainImageExtent(), Vk::ImgCINillFlag},
+	    .img_view_CI = std::nullopt,
+	    .sample_CI   = std::nullopt,
+	},
+	[](VkTexture::Descriptor& desco)
+	{
+		//如果某个pass没有传入 资源 要使用的sample_CI或者img_view_CI，那么就保持默认状态（不改变texture中的sampler和view指针）听起来不错，但是这样会不会让资源过度浪费？
+		//descriptor就是创建参数，虚拟资源只有在execute执行的时候才会创建真正的资源
+		desco.tex_img_PP->default_image_CI.usage            = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;        //TODO:这里的usage都可以通过rendergraph进行分析，
+		desco.tex_img_PP->default_image_CI.samples          = DeferedRendering::MSAA_sample_count;
+		desco.tex_img_PP->default_layout_right_aft_creation = VK_IMAGE_LAYOUT_UNDEFINED;
+	},
+	std::make_unique<VkAttachmentInfo::WithinPassRG>(
+		//Vk::RsrcInfoType::Attachment,
+		DeferedRendering::G_normal_format,
+		Vk::AttachmentIndex<1>,
+
+		VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+		VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+		VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,        //
+
+		VkAttachmentInfo::Type::ColorAttachment,
+		VkClearValue{.color{0.0f, 0.0f, 0.0f, 1.0f}}
+	)
+)
+.Out
+(
+	//RsrcInfoType::Attachment,
+	"GBufAlbedo",
+	VkTexture::Descriptor{
+	    .tex_img_PP  = TextureImgPP{DeferedRendering::G_albedo_format, swapchain_manager.GetSwapChainImageExtent(), Vk::ImgCINillFlag},
+	    .img_view_CI = std::nullopt,
+	    .sample_CI   = std::nullopt,
+	},
+	[](VkTexture::Descriptor& desco)
+	{
+		//如果某个pass没有传入 资源 要使用的sample_CI或者img_view_CI，那么就保持默认状态（不改变texture中的sampler和view指针）听起来不错，但是这样会不会让资源过度浪费？
+		//descriptor就是创建参数，虚拟资源只有在execute执行的时候才会创建真正的资源
+		desco.tex_img_PP->default_image_CI.usage            = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;        //TODO:这里的usage都可以通过rendergraph进行分析，
+		desco.tex_img_PP->default_image_CI.samples          = DeferedRendering::MSAA_sample_count;
+		desco.tex_img_PP->default_layout_right_aft_creation = VK_IMAGE_LAYOUT_UNDEFINED;
+	},
+
+	std::make_unique<VkAttachmentInfo::WithinPassRG>(
+		//Vk::RsrcInfoType::Attachment,
+		DeferedRendering::G_albedo_format,
+		Vk::AttachmentIndex<2>,
+
+		VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+		VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+		VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,        //
+
+		VkAttachmentInfo::Type::ColorAttachment,
+		VkClearValue{.color{0.0f, 0.0f, 0.0f, 1.0f}}
+	)
+)
+.Out
+(
+	//RsrcInfoType::Attachment,
+	"GBufPosZGradient",
+	VkTexture::Descriptor{
+	    .tex_img_PP  = TextureImgPP{DeferedRendering::G_posZgrad_format, swapchain_manager.GetSwapChainImageExtent(), Vk::ImgCINillFlag},
+	    .img_view_CI = std::nullopt,
+	    .sample_CI   = std::nullopt,
+	},
+	[](VkTexture::Descriptor& desco)
+	{
+		//如果某个pass没有传入 资源 要使用的sample_CI或者img_view_CI，那么就保持默认状态（不改变texture中的sampler和view指针）听起来不错，但是这样会不会让资源过度浪费？
+		//descriptor就是创建参数，虚拟资源只有在execute执行的时候才会创建真正的资源
+		desco.tex_img_PP->default_image_CI.usage            = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;        //TODO:这里的usage都可以通过rendergraph进行分析，
+		desco.tex_img_PP->default_image_CI.samples          = DeferedRendering::MSAA_sample_count;
+		desco.tex_img_PP->default_layout_right_aft_creation = VK_IMAGE_LAYOUT_UNDEFINED;        //TODO: check layout transition after creation of this image
+	},
+	std::make_unique<VkAttachmentInfo::WithinPassRG>(
+		//Vk::RsrcInfoType::Attachment,
+		DeferedRendering::G_posZgrad_format,
+		Vk::AttachmentIndex<3>,
+
+		VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+		VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+		VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,        //
+
+		VkAttachmentInfo::Type::ColorAttachment,
+		VkClearValue{.color{0.0f, 0.0f, 0.0f, 1.0f}}
+	)
+)
+.Out
+(
+	//RsrcInfoType::Attachment,
+	"GBufDepth",
+	VkTexture::Descriptor{
+	    .tex_img_PP  = TextureImgPP{DeferedRendering::G_depth_format, swapchain_manager.GetSwapChainImageExtent(), Vk::ImgCINillFlag},
+	    .img_view_CI = std::nullopt,
+	    .sample_CI   = std::nullopt,
+	},
+	[](VkTexture::Descriptor& desco)
+	{
+		desco.tex_img_PP->default_image_CI.usage            = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+		desco.tex_img_PP->default_image_CI.samples          = DeferedRendering::MSAA_sample_count;
+		desco.tex_img_PP->default_layout_right_aft_creation = VK_IMAGE_LAYOUT_UNDEFINED;        //TODO: check layout transition after creation of this image
+	},
+	std::make_unique<VkAttachmentInfo::WithinPassRG>(
+		//Vk::RsrcInfoType::Attachment,
+		DeferedRendering::G_depth_format,
+		Vk::AttachmentIndex<4>,
+
+		VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
+		VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
+		VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,        //
+
+		VkAttachmentInfo::Type::DepthAttachment,
+		VkClearValue{.depthStencil{0.0f, 0}}
+	)
+)
+.GetHandle();
+
+
+
+
+
+
+
+
+render_graph.AddGfxPassNode
+(
+	"DeferedCompositionPass"
+)
+.In
+(
+	//RsrcInfoType::Buffer,
+	"MatUBO",
+	OutsideRenderGraph,
+
+	std::make_unique<VkBufUsageInfoRG>(
+		//RsrcInfoType::Buffer,
+		Vk::DescSetInfo{
+			.set          = Vk::SetIndex<0>,
+			.binding      = Vk::Binding<0>,
+			.array_elemnt = Vk::BindingArrayElement<0>,
+		},
+
+		VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,
+		VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT)
+	)
+
+)
+.In
+(
+	//RsrcInfoType::Reference,
+	"GBufPos",
+	DeferedGeoPass_handle,
+	std::make_unique<VkTexUsageInfoRG>(
+		//Vk::RsrcInfoType::Texture,
+		DeferedRendering::G_position_format,
+
+		Vk::DescSetInfo{
+			.set          = Vk::SetIndex<0>,
+			.binding      = Vk::Binding<1>,
+			.array_elemnt = Vk::BindingArrayElement<0>,
+		},
+
+		VK_ACCESS_SHADER_READ_BIT,
+		VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,        //
+
+		VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+		VK_SHADER_STAGE_FRAGMENT_BIT
+	)
+
+
+)
+.In
+(
+	//RsrcInfoType::Reference,
+	"GBufNormal",
+	DeferedGeoPass_handle,
+	std::make_unique<VkTexUsageInfoRG>(
+		//Vk::RsrcInfoType::Texture,
+		DeferedRendering::G_normal_format,
+
+		Vk::DescSetInfo{
+			.set          = Vk::SetIndex<0>,
+			.binding      = Vk::Binding<2>,
+			.array_elemnt = Vk::BindingArrayElement<0>,
+		},
+
+		VK_ACCESS_SHADER_READ_BIT,
+		VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,        //
+
+		VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+		VK_SHADER_STAGE_FRAGMENT_BIT
+	)
+)
+.In
+(
+	//RsrcInfoType::Reference,
+	"GBufAlbedo",
+	DeferedGeoPass_handle,
+	std::make_unique<VkTexUsageInfoRG>(
+
+		//Vk::RsrcInfoType::Texture,
+		DeferedRendering::G_albedo_format,
+
+		Vk::DescSetInfo{
+			.set          = Vk::SetIndex<0>,
+			.binding      = Vk::Binding<3>,
+			.array_elemnt = Vk::BindingArrayElement<0>,
+		},
+
+		VK_ACCESS_SHADER_READ_BIT,
+		VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,        //
+
+		VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+		VK_SHADER_STAGE_FRAGMENT_BIT
+	)
+)
+.In
+(
+	//RsrcInfoType::Reference,
+	"GBufPosZGradient",
+	DeferedGeoPass_handle,
+	std::make_unique<VkTexUsageInfoRG>(
+		//Vk::RsrcInfoType::Texture,
+		DeferedRendering::G_posZgrad_format,
+
+		Vk::DescSetInfo{
+			.set          = Vk::SetIndex<0>,
+			.binding      = Vk::Binding<4>,
+			.array_elemnt = Vk::BindingArrayElement<0>,
+		},
+
+		VK_ACCESS_SHADER_READ_BIT,
+		VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,        //
+
+		VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+		VK_SHADER_STAGE_FRAGMENT_BIT
+	)
+)
+.In
+(
+	//RsrcInfoType::Reference,
+	"GBufDepth",
+	DeferedGeoPass_handle,
+	std::make_unique<VkTexUsageInfoRG>(
+		/Vk::RsrcInfoType::Texture,
+		DeferedRendering::G_depth_format,
+
+		Vk::DescSetInfo{
+			.set          = Vk::SetIndex<0>,
+			.binding      = Vk::Binding<5>,
+			.array_elemnt = Vk::BindingArrayElement<0>,
+		},
+
+		VK_ACCESS_SHADER_READ_BIT,
+		VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,        //
+
+		VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE,
+		VK_SHADER_STAGE_FRAGMENT_BIT
+
+	)
+)
+.Out
+(
+	//RsrcInfoType::Attachment,
+	"MSColorAttach",
+	VkTexture::Descriptor{
+		.tex_img_PP  = TextureImgPP{swapchain_manager.GetSwapChainImageFormat(), swapchain_manager.GetSwapChainImageExtent(), Vk::ImgCINillFlag},
+	    .img_view_CI = ImgViewCI::PopulateTextureImgViewCI(swapchain_manager.GetSwapChainImageFormat()),
+	    .sample_CI   = std::nullopt,
+	},
+	[](VkTexture::Descriptor& desco)
+	{
+		desco.tex_img_PP->default_image_CI.usage   = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+		desco.tex_img_PP->default_image_CI.samples = DeferedRendering::MSAA_sample_count;
+		//这个VK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT多数在移动端才能被支持，这里如果加这个flag就创建不了
+		//tex_img_PP.default_image_mem_prop_flag = VK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT;
+		desco.tex_img_PP->default_layout_right_aft_creation = VK_IMAGE_LAYOUT_UNDEFINED;        //TODO: check layout transition after creation of this image
+	}
+)
+.Out
+(
+	RsrcInfoType::Attachment,
+	"MSDepthStencilAttach",
+	VkTexture::Descriptor{
+	    .tex_img_PP  = TextureImgPP{DeferedRendering::depth_stencil_format, swapchain_manager.GetSwapChainImageExtent(), Vk::ImgCINillFlag},
+	    .img_view_CI = ImgViewCI::PopulateTextureImgViewCI(DeferedRendering::depth_stencil_format),
+	    .sample_CI   = std::nullopt,
+	},
+	[](VkTexture::Descriptor& desco)
+	{
+		desco.tex_img_PP->default_image_CI.usage   = VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+		desco.tex_img_PP->default_image_CI.samples = DeferedRendering::MSAA_sample_count;
+
+		//这个VK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT多数在移动端才能被支持，这里如果加这个flag就创建不了
+		//tex_img_PP.default_image_mem_prop_flag = VK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT;
+		desco.tex_img_PP->default_layout_right_aft_creation = VK_IMAGE_LAYOUT_UNDEFINED;        //TODO: check layout transition after creation of this image
+	}
+)
+
+

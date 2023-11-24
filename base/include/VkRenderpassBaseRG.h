@@ -3,6 +3,12 @@
 #include "VkManagerBundle.h"
 #include "VkRenderpassManager.h"
 
+namespace RenderGraphV0
+{
+	class PassNode;
+}
+
+
 class VkRenderpassBaseRG
 {
   public:
@@ -11,6 +17,7 @@ class VkRenderpassBaseRG
 
   public:
 	void SetRenderGraphPassHandle(size_t handle);
+	void SetRenderGraphPassPointer(RenderGraphV0::PassNode *curr_pass_in_rg_);
 
   public:
 	enum class Type
@@ -20,6 +27,7 @@ class VkRenderpassBaseRG
 		Transfor,
 		Unknown
 	};
+
 
   public:
 	virtual void UpdateResources(size_t current_image) ;
@@ -64,5 +72,7 @@ protected:
 
   protected:
 	size_t pass_handle_inRG{};
+	RenderGraphV0::PassNode *curr_pass_in_rg{};
+
 };
 

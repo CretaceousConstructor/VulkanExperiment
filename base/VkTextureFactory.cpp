@@ -132,7 +132,7 @@ void VkTextureFactory::ResetTexSampler(VkSamplerCreateInfo sampler_CI_, VkTextur
 void VkTextureFactory::ResetTexImgView(VkImageViewCreateInfo img_view_CI_, VkTexture &result_tex) const
 {
 	img_view_CI_.image         = result_tex.GetTextureRawImage();
-	const VkImageView img_view = image_view_factory.ProduceImgViewUnsafe(img_view_CI_);
+	VkImageView img_view = image_view_factory.ProduceImgViewUnsafe(img_view_CI_);
 	result_tex.tex_image_view  = img_view;
 	result_tex.SetImgViewCI(img_view_CI_);
 	return;

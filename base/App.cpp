@@ -18,7 +18,6 @@ void App::Run()
 {
 	InitRenderer();        
 	renderer->RenderingPreparation();//多态调用，这个函数会给智能指针一个具体的实例对象
-
 	MainLoop();
 }
 
@@ -35,7 +34,7 @@ void App::MainLoop() const
 
 		const auto tStart = glfwGetTime();
 
-		renderer->DrawFrame(time_diff);
+		renderer->DrawFrameRecordCmdBufEvrFrame(time_diff);
 
 		const auto tEnd = glfwGetTime();
 

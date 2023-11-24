@@ -46,6 +46,11 @@ void VkRenderpassBaseRG::SetRenderGraphPassHandle(size_t handle)
 	pass_handle_inRG = handle;
 }
 
+void VkRenderpassBaseRG::SetRenderGraphPassPointer(RenderGraphV0::PassNode *curr_pass_in_rg_)
+{
+	curr_pass_in_rg = curr_pass_in_rg_;
+}
+
 void VkRenderpassBaseRG::UpdateResources(size_t current_image)
 {}
 

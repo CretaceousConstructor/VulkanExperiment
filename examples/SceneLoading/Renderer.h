@@ -8,18 +8,15 @@
 #include "RenderingMetaInfo.h"
 #include "VkRenderpassManager.h"
 #include "VkImgui.h"
+#include "RenderGraphV0.h"
 //#include "IrradianceMapGenPass.h"
 //#include "PrefilterAndLUTMapGenPass.h"
 //#include "PbrRenderingPass.h"
-//#include "DeferedGeometryPass.h"
-//#include "DeferedCompositionPass.h"
-
+#include "DeferedGeometryPass.h"
+#include "DeferedCompositionPass.h"
 //#include "MSAAPass.h"
-
-#include "DeferedGeometryPassRG.h"
-#include "DeferedCompositionPassRG.h"
-
-#include "RenderGraph.h"
+#include "DeferedGeometryPassRGV0.h"
+#include "DeferedCompositionPassRGV0.h"
 #include "VkMemoryManager.h"
 #include "VkRenderpassBase.h"
 #include "VkRsrcUsageInfo.h"
@@ -62,15 +59,12 @@ class Renderer : public BaseRenderer
 
   public:
 	//========================================
-	void DrawFrame(float time_diff) override;
-	void DrawFrame(float time_diff,int);
+	void DrawFrameStaticBakingCmdBuf(float time_diff) override;
+	void DrawFrameRecordCmdBufEvrFrame(float time_diff) override;
 	void UpdateCamera(float dt) override;
 
 private:
 	void CommandBufferRecording(VkCommandBuffer cmd_buf,size_t img_index);
-
-
-  private:
 
 
   private:
@@ -101,17 +95,17 @@ private:
 	//-----------------------------------------------------------
 	std::vector<VkFence> image_fences;
 
-
 	//UI
 	VkImgui imgui_UI;
+
 	//GLOBAL RESOURCES
 	Global::Resources persistent_resources{};
-
 	//RENDER GRAPH
-	RenderGraph::DependencyGraph render_graph;        // you need to re-establish render graph for EVERY FRAME
+	RenderGraphV0::DependencyGraph render_graph_v0;// you need to re-establish render graph for EVERY FRAME
 
 
 
+	//RenderGraph::DependencyGraph render_graph;        // you need to re-establish render graph for EVERY FRAME
 
 
 

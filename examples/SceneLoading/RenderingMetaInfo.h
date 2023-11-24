@@ -21,7 +21,9 @@ constexpr VkFormat G_albedo_format{VK_FORMAT_R8G8B8A8_SRGB};
 constexpr VkFormat G_depth_format{VK_FORMAT_D32_SFLOAT};
 constexpr VkFormat G_posZgrad_format{VK_FORMAT_R16G16_SFLOAT};
 
-constexpr VkFormat depth_stencil_format{VK_FORMAT_D32_SFLOAT_S8_UINT};
+constexpr VkFormat C_color_attch_format{VK_FORMAT_R8G8B8A8_SRGB};
+constexpr VkFormat C_depth_stencil_format{VK_FORMAT_D32_SFLOAT_S8_UINT};
+
 constexpr VkSampleCountFlagBits MSAA_sample_count{VK_SAMPLE_COUNT_4_BIT};
 
 

@@ -1,8 +1,5 @@
 #pragma once
-
-#include "ImageParameterPack.h"
 #include "VkImageBase.h"
-
 class VkGeneralPurposeImage : public VkImageBase
 {
   public:

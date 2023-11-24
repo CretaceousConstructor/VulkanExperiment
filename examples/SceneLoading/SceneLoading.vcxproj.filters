@@ -87,6 +87,12 @@
     <ClCompile Include="DeferedGeometryPassRG.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="DeferedGeometryPassRGV0.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DeferedCompositionPassRGV0.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="IrradianceMapGenPass.h">
@@ -120,6 +126,12 @@
       <Filter>Header Files\DeferedRenderingPasses</Filter>
     </ClInclude>
     <ClInclude Include="DeferedGeometryPassRG.h">
+      <Filter>Header Files\DeferedRenderingPasses</Filter>
+    </ClInclude>
+    <ClInclude Include="DeferedGeometryPassRGV0.h">
+      <Filter>Header Files\DeferedRenderingPasses</Filter>
+    </ClInclude>
+    <ClInclude Include="DeferedCompositionPassRGV0.h">
       <Filter>Header Files\DeferedRenderingPasses</Filter>
     </ClInclude>
   </ItemGroup>

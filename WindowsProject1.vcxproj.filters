@@ -194,9 +194,6 @@
     <ClCompile Include="base\Vk.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="base\AnotherPileOfShit.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="base\VkBufferBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -386,6 +383,24 @@
     <ClCompile Include="base\VkRenderpassBaseRG.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="base\RenderGraphV0.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="base\VkVirtualResource.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="base\RenderGraphPass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="base\VkRsrcState.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="base\VkRsrcUsageInfoRG.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="base\VkLets.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="base\include\Camera.h">
@@ -480,9 +495,6 @@
     </ClInclude>
     <ClInclude Include="base\include\VkCommandManager.h">
       <Filter>Header Files\VkCore\Manager</Filter>
-    </ClInclude>
-    <ClInclude Include="base\include\AnotherPileOfShit.h">
-      <Filter>Header Files\VkCore\MetaInfo</Filter>
     </ClInclude>
     <ClInclude Include="base\include\VkMetaInfo.h">
       <Filter>Header Files\VkCore\MetaInfo</Filter>
@@ -640,5 +652,26 @@
     <ClInclude Include="base\include\VkRenderpassBaseRG.h">
       <Filter>Header Files\VkCore\Renderpass</Filter>
     </ClInclude>
+    <ClInclude Include="base\include\VkVirtualResource.h">
+      <Filter>Header Files\VkCore\Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\RenderGraphPass.h">
+      <Filter>Header Files\RenderGraph</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\VkRsrcState.h">
+      <Filter>Header Files\VkCore\Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\VkRsrcUsageInfoRG.h">
+      <Filter>Header Files\VkCore\Resources</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\RenderGraphV0.h">
+      <Filter>Header Files\RenderGraph</Filter>
+    </ClInclude>
+    <ClInclude Include="base\include\VkLets.h">
+      <Filter>Header Files\RenderGraph</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ClassDiagram.cd" />
   </ItemGroup>
 </Project>

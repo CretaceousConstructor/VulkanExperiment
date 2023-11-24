@@ -11,21 +11,8 @@
 //	return attachment_tex;
 //}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-RsrcUsageInfoInPass::RsrcUsageInfoInPass(Vk::RsrcInfoType info_t) :
-    info_type(info_t)
+RsrcUsageInfoInPass::RsrcUsageInfoInPass(Vk::RsrcInfoType info_t, Vk::AccessType access_t) :
+    info_type(info_t), access_type(access_t)
 {
 }
 

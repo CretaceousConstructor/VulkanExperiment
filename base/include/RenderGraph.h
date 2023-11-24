@@ -16,8 +16,8 @@ struct RsrcUsageInfoSlot
 struct ResourceSlot
 {
 	using Handle = size_t;
-	Handle resource_handle{0};        //×ÊÔ´ ÔÚ×ÊÔ´Êı×éÖĞµÄÏÂ±ê
-	Handle node_handle{0};            //×ÊÔ´ ¶ÔÓ¦µÄ×ÊÔ´½ÚµãNodeÔÚÊı×éÖĞµÄÏÂ±ê
+	Handle resource_handle;        //×ÊÔ´ ÔÚ×ÊÔ´Êı×éÖĞµÄÏÂ±ê
+	Handle node_handle;            //×ÊÔ´ ¶ÔÓ¦µÄ×ÊÔ´½ÚµãNodeÔÚÊı×éÖĞµÄÏÂ±ê
 
 	bool operator==(const ResourceSlot &other) const
 	{
@@ -98,8 +98,10 @@ class DependencyGraph
 		std::vector<Edge> incoming_edges;
 		std::vector<Edge> outgoing_edges;
 
-		uint32_t ref_count{0};
-		size_t   node_handle{};
+		std::string name{};
+		uint32_t    ref_count{0};
+		size_t      node_handle{0xFFFFFFFF};
+
 	};
 
 	class ResourceNode : public Node
@@ -162,8 +164,8 @@ class DependencyGraph
 
 	//VirtualResource
 	std::vector<std::unique_ptr<VirtualResource>> resources;
-	std::vector<std::unique_ptr<ResourceNode>> nodes_of_resources;
-	std::vector<std::unique_ptr<PassNode>>     nodes_of_passes;
+	std::vector<std::unique_ptr<ResourceNode>>    nodes_of_resources;
+	std::vector<std::unique_ptr<PassNode>>        nodes_of_passes;
 
 	//Resources usage within passes£¬ÉùÃ÷¸÷¸öpassÖĞ£¬²»Í¬×ÊÔ´µÄÊ¹ÓÃ·½Ê½
 	std::vector<std::unique_ptr<RsrcUsageInfoInPass>> rsrc_usage_infos;
@@ -185,7 +187,9 @@ template <typename RESOURCE>
 ResourceSlot DependencyGraph::AddResourceNode(std::unique_ptr<Resource<RESOURCE>> rsrc, std::string name)
 {
 	//provides slot<--resources -->stores actual resource
+	rsrc->name = (name + std::string("UnderlyingRsrc"));
 	resources.push_back(std::move(rsrc));
+
 	const auto &rsrc_node = nodes_of_resources.emplace_back(std::make_unique<ResourceNode>());
 
 	//thread safety, forget it!
@@ -195,9 +199,9 @@ ResourceSlot DependencyGraph::AddResourceNode(std::unique_ptr<Resource<RESOURCE>
 	};
 
 	rsrc_node->node_handle = slot.node_handle;
+	rsrc_node->name        = name;
 
 	slots_of_rsrcs.push_back(slot);
-
 	rsrcs_map.emplace(name, slot);        //°Ñ×ÊÔ´µÄÃû×ÖºÍ slot¶ÔÓ¦ÆğÀ´£¬·½±ãÖ®ºó¾ßÌåµÄpassÔÚÊ¹ÓÃ×ÊÔ´Ê± È¡ÓÃ¡£
 
 	return slot;
@@ -206,6 +210,9 @@ ResourceSlot DependencyGraph::AddResourceNode(std::unique_ptr<Resource<RESOURCE>
 
 namespace RenderGraph
 {
+
+
+
 class VirtualResource
 {
   public:
@@ -226,10 +233,10 @@ class VirtualResource
 	};
 
   public:
-	virtual void Actualize(VkRenderpassManager &renderpass_manager) = 0;
-	virtual void DeActualize(VkRenderpassManager &)                                                                   = 0;
-	virtual void StateChangeNoNeedCmdRecording(VkRenderpassManager &renderpass_manager, RsrcUsageInfoInPass &)        = 0;
-	virtual void InsertSync(VkCommandBuffer cmd_buf, const Vk::SyncInfo &source_syn, const Vk::SyncInfo &target_sync) = 0;
+	virtual void Actualize(VkRenderpassManager &renderpass_manager)                                                             = 0;
+	virtual void DeActualize(VkRenderpassManager &)                                                                             = 0;
+	virtual void StateChangeNoNeedCmdRecording(VkRenderpassManager &renderpass_manager, RsrcUsageInfoInPass &)                  = 0;
+	virtual void InsertSyncIntoCmdBuf(VkCommandBuffer cmd_buf, const Vk::SyncInfo &source_syn, const Vk::SyncInfo &target_sync) = 0;
 
   public:
 	VirtualResource(RsrcLifeTimeType life_time_);
@@ -246,7 +253,8 @@ class VirtualResource
 
   public:
 	const RsrcLifeTimeType life_time;
-	uint32_t               ref_count = 0;        //refcount > 1²ÅÄÜÉêÇëµ½×ÊÔ´£¬·ñÔò¾ÍµÈÓÚËµ±»ÌŞ³ıÁË
+	std::string            name;
+	uint32_t               ref_count = 0;        //refcount >= 1²ÅÄÜÉêÇëµ½×ÊÔ´£¬·ñÔò¾ÍµÈÓÚËµ±»ÌŞ³ıÁË
 };
 
 //ÕâÊÇ¸öÄ£°åÀà£¬µ«ÊÇÍ¨¹ıResourcesSlotÕâÖÖindirection£¬¾Í¿ÉÒÔÊµÏÖ¼ä½ÓÒıÓÃ×ÊÔ´¶ø²»ÓÃspecifyÒ»¶ÑÀàĞÍ±äÁ¿
@@ -260,7 +268,7 @@ class Resource final : public VirtualResource        //Ö®ºó»á»ñµÃGPU×ÊÔ´µÄÀà,µ«²
 	void Actualize(VkRenderpassManager &) override;
 	void DeActualize(VkRenderpassManager &) override;
 	void StateChangeNoNeedCmdRecording(VkRenderpassManager &renderpass_manager, RsrcUsageInfoInPass &) override;
-	void InsertSync(VkCommandBuffer cmd_buf, const Vk::SyncInfo &source_syn, const Vk::SyncInfo &target_sync) override;
+	void InsertSyncIntoCmdBuf(VkCommandBuffer cmd_buf, const Vk::SyncInfo &source_syn, const Vk::SyncInfo &target_sync) override;
 
   public:
 	explicit Resource(Descriptor dstor);
@@ -283,6 +291,10 @@ class Resource final : public VirtualResource        //Ö®ºó»á»ñµÃGPU×ÊÔ´µÄÀà,µ«²
 	Descriptor descriptor;
 };
 
+
+
+
+
 template <typename RESOURCE>
 Resource<RESOURCE>::Resource(Descriptor dstor) :
     VirtualResource(RsrcLifeTimeType::Transient),
@@ -298,11 +310,6 @@ Resource<RESOURCE>::Resource(std::shared_ptr<RESOURCE> rsrc) :
 {
 }
 
-
-
-
-
-
 //*********************************Texture Specilization**********************************
 template <>
 inline void Resource<VkTexture>::Actualize(VkRenderpassManager &renderpass_manager)
@@ -313,7 +320,6 @@ inline void Resource<VkTexture>::Actualize(VkRenderpassManager &renderpass_manag
 	}
 }
 
-
 template <>
 inline void Resource<VkTexture>::DeActualize(VkRenderpassManager &renderpass_manager)
 {
@@ -323,42 +329,67 @@ inline void Resource<VkTexture>::DeActualize(VkRenderpassManager &renderpass_man
 	}
 }
 
-
-
 template <>
 inline void Resource<VkTexture>::StateChangeNoNeedCmdRecording(VkRenderpassManager &renderpass_manager, RsrcUsageInfoInPass &prsrcinfo)
 {
-	const auto &p_tex_info  = dynamic_cast<VkAttachmentInfo::WithinPassRG &>(prsrcinfo);
-	const auto  img_view_CI = p_tex_info.GetImgViewCI();
-	const auto  sampler_CI  = p_tex_info.GetSamplerCI();
 
-	if (img_view_CI)
+	if (Vk::RsrcInfoType::Attachment == prsrcinfo.GetInfoType())
 	{
-		renderpass_manager.GetTextureFactory().ResetTexImgView(*img_view_CI, *resource);
+		const auto &p_tex_info  = dynamic_cast<VkAttachmentInfo::WithinPassRG &>(prsrcinfo);
+		const auto  img_view_CI = p_tex_info.GetImgViewCI();
+		const auto  sampler_CI  = p_tex_info.GetSamplerCI();
+
+		if (img_view_CI)
+		{
+			renderpass_manager.GetTextureFactory().ResetTexImgView(*img_view_CI, *resource);
+		}
+		if (sampler_CI)
+		{
+			renderpass_manager.GetTextureFactory().ResetTexSampler(*sampler_CI, *resource);
+		}
 	}
-	if (sampler_CI)
+	//Vk::RsrcInfoType::Texture
+	else
 	{
-		renderpass_manager.GetTextureFactory().ResetTexSampler(*sampler_CI, *resource);
+		const auto &p_tex_info  = dynamic_cast<VkTexUsageInfoRG &>(prsrcinfo);
+		const auto  img_view_CI = p_tex_info.GetImgViewCI();
+		const auto  sampler_CI  = p_tex_info.GetSamplerCI();
+
+		if (img_view_CI)
+		{
+			renderpass_manager.GetTextureFactory().ResetTexImgView(*img_view_CI, *resource);
+		}
+		if (sampler_CI)
+		{
+			renderpass_manager.GetTextureFactory().ResetTexSampler(*sampler_CI, *resource);
+		}
+		
 	}
+
+
+
+
+
+
+
 }
 
 template <>
-inline void Resource<VkTexture>::InsertSync(VkCommandBuffer cmd_buf, const Vk::SyncInfo &source_syn, const Vk::SyncInfo &target_sync)
+inline void Resource<VkTexture>::InsertSyncIntoCmdBuf(VkCommandBuffer cmd_buf, const Vk::SyncInfo &source_syn, const Vk::SyncInfo &target_sync)
 {
 	const Sync::VkImageMemoryBarrierEnhanced image_memory_barrier_enhanced{
 	    .srcAccessMask = source_syn.access_mask,
 	    .srcStageMask  = source_syn.stage_mask,
 	    .oldLayout     = source_syn.layout_inpass,
 
-	    .dstAccessMask = source_syn.access_mask,
-	    .dstStageMask  = source_syn.stage_mask,
-	    .newLayout     = source_syn.layout_inpass,
+	    .dstAccessMask = target_sync.access_mask,
+	    .dstStageMask  = target_sync.stage_mask,
+	    .newLayout     = target_sync.layout_inpass,
 	    //TODO: sub ranges
 	    .subresource_range = std::nullopt,
 	};
 	resource->InsertImageMemoryBarrier(cmd_buf, image_memory_barrier_enhanced);
 }
-
 
 //*********************************Buffer Specilization**********************************
 template <>
@@ -379,7 +410,6 @@ inline void Resource<VkBufferBase>::DeActualize(VkRenderpassManager &renderpass_
 	}
 }
 
-
 template <>
 inline void Resource<VkBufferBase>::StateChangeNoNeedCmdRecording(VkRenderpassManager &renderpass_manager, RsrcUsageInfoInPass &prsrcinfo)
 {
@@ -387,7 +417,7 @@ inline void Resource<VkBufferBase>::StateChangeNoNeedCmdRecording(VkRenderpassMa
 }
 
 template <>
-inline void Resource<VkBufferBase>::InsertSync(VkCommandBuffer cmd_buf, const Vk::SyncInfo &source_syn, const Vk::SyncInfo &target_sync)
+inline void Resource<VkBufferBase>::InsertSyncIntoCmdBuf(VkCommandBuffer cmd_buf, const Vk::SyncInfo &source_syn, const Vk::SyncInfo &target_sync)
 {
 	//TODO:
 }
@@ -396,6 +426,9 @@ inline void Resource<VkBufferBase>::InsertSync(VkCommandBuffer cmd_buf, const Vk
 
 namespace RenderGraph
 {
+
+
+
 class PassNode : public DependencyGraph::Node
 {
   public:
@@ -426,22 +459,11 @@ class PassNode : public DependencyGraph::Node
 	std::unordered_map<ResourceSlot, VirtualResource::RsrcAccessType> rsrc_accessing_types;
 	//**************************************************************
 
-	std::vector<std::pair<ResourceSlot, RsrcUsageInfoSlot>> attachment_rsrcs;
-	std::vector<std::pair<ResourceSlot, RsrcUsageInfoSlot>> buffer_rsrcs;
-	std::vector<std::pair<ResourceSlot, RsrcUsageInfoSlot>> texture_rsrcs;
+	std::vector<std::pair<ResourceSlot, RsrcUsageInfoSlot>> attachment_rsrcs_usages;
+	std::vector<std::pair<ResourceSlot, RsrcUsageInfoSlot>> buffer_rsrcs_usages;
+	std::vector<std::pair<ResourceSlot, RsrcUsageInfoSlot>> texture_rsrcs_usages;
 
-  private:
 };
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -463,12 +485,25 @@ class GraphicsPassNode final : public PassNode
 	GraphicsPassNode(GraphicsPassNode &&)                 = delete;
 	GraphicsPassNode &operator=(GraphicsPassNode &&) = delete;
 
+
+
+
 	std::shared_ptr<VkRenderpassBaseRG> renderpass{};
+
+
+
+
+
+
 
   private:
 	void GiveAttachmentsToPass(RenderGraph::PassNode &pass, DependencyGraph &RG);
 	void GiveTexturesToPass(RenderGraph::PassNode &pass, DependencyGraph &RG);
 	void GiveBuffersToPass(RenderGraph::PassNode &pass, DependencyGraph &RG);
+
+
+
+
 };
 
 }        // namespace RenderGraph

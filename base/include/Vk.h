@@ -68,8 +68,17 @@ enum class RsrcInfoType
 	Attachment,
 	Buffer,
 	Texture,
+	Reference,
 	Model
 };
+enum class AccessType
+{
+	Unknown,
+	Write,
+	Read,
+	ReadWrite,
+};
+
 
 struct DescSetInfo
 {
