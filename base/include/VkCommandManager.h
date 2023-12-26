@@ -1,6 +1,9 @@
 #pragma once
 
 #include "VkDeviceManager.h"
+#include <unordered_set>
+//command buffer类型的变量是 dispatchable的，所以可以当作std map的key值！
+
 
 class VkCommandManager
 {
@@ -46,4 +49,9 @@ class VkCommandManager
 	//COMMAND BUFFERS
 	std::vector<VkCommandBuffer> graphics_command_buffers;        //3
 	std::vector<VkCommandBuffer> transfer_command_buffer;
+
+	//COMMAND BUFFERS
+	std::unordered_set<VkCommandBuffer> command_buffers_pool;
+
+
 };

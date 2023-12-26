@@ -2,7 +2,7 @@
 using namespace Vk;
 using namespace Global;
 
-void Renderer::PrepareCommonModels()
+void RealtimeRenderer::PrepareCommonModels()
 {
 	const auto &model_factory = renderpass_manager.GetModelFactory();
 
@@ -29,7 +29,7 @@ void Renderer::PrepareCommonModels()
 	//light_indicator->GetTransform().SetPosition(ubo_vs_scene.light_pos);
 }
 
-void Renderer::CommandBufferRecording()
+void RealtimeRenderer::CommandBufferRecording()
 {
 	//auto &graphics_command_buffers = command_manager.GetGraphicsCommandBuffers();
 
@@ -43,7 +43,7 @@ void Renderer::CommandBufferRecording()
 	//VkCommandManager::EndCommandBuffers(graphics_command_buffers);
 }
 
-void Renderer::CreateCommonUniformBuffer()
+void RealtimeRenderer::CreateCommonUniformBuffer()
 {
 	auto &buffer_factory{renderpass_manager.GetBufferFactory()};
 
@@ -67,7 +67,7 @@ void Renderer::CreateCommonUniformBuffer()
 	}
 }
 
-void Renderer::CreateCommonDescriptorPool()
+void RealtimeRenderer::CreateCommonDescriptorPool()
 {
 	// Create the global descriptor pool
 	//TODO:这里的分配数目
@@ -91,7 +91,7 @@ void Renderer::CreateCommonDescriptorPool()
 	persistent_resources.pool = renderpass_manager.GetDescriptorManagerV0().ProduceDescriptorPoolUnsafe(desc_pool_CI);
 }
 
-void Renderer::InitRenderpasses()
+void RealtimeRenderer::InitRenderpasses()
 {
 	//use factory mode to optimize
 	//renderpasses.push_back(std::make_shared<PrefilterAndLUTMapGenPass>(gfx, renderpass_manager, global_resources));
@@ -123,7 +123,7 @@ void Renderer::InitRenderpasses()
 	renderpasses_RG.push_back(std::make_shared<DeferedCompositionPassRGV0>(gfx, renderpass_manager, render_graph_v0, persistent_resources));
 }
 
-void Renderer::InitSynObjects()
+void RealtimeRenderer::InitSynObjects()
 {
 	const auto &syn_obj_factory{renderpass_manager.GetSynOjectFactory()};
 
@@ -134,7 +134,7 @@ void Renderer::InitSynObjects()
 	image_fences.resize(swapchain_manager.GetSwapImageCount());
 }
 
-void Renderer::UpdateUniformBuffer(size_t current_image_index)
+void RealtimeRenderer::UpdateUniformBuffer(size_t current_image_index)
 {
 	//struct UBO_VS_SCENE{
 	//	glm::mat4 projection;
@@ -205,7 +205,7 @@ void Renderer::UpdateUniformBuffer(size_t current_image_index)
 	//global_resources.matrix_buffer_gpu_defered_rendering[current_image_index]->CopyFrom(&global_resources.matrix_buffer_cpu_defered_rendering, sizeof(global_resources.matrix_buffer_cpu_defered_rendering));
 }
 
-void Renderer::DrawFrameStaticBakingCmdBuf(float time_diff)
+void RealtimeRenderer::DrawFrameStaticBakingCmdBuf(float time_diff)
 {
 	//	//TODO:image使用完毕和subpass dependency的关系
 	//	static size_t currentFrame = 0;
@@ -439,7 +439,7 @@ void Renderer::DrawFrameStaticBakingCmdBuf(float time_diff)
 	//	currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 
-void Renderer::DrawFrameRecordCmdBufEvrFrame(float time_diff)
+void RealtimeRenderer::DrawFrameRecordCmdBufEvrFrame(float time_diff)
 {
 	static size_t currentFrame = 0;
 	////所有fence    在默认初始化（不指定初始状态）时都处于unsignaled的状态
@@ -583,7 +583,7 @@ void Renderer::DrawFrameRecordCmdBufEvrFrame(float time_diff)
 	currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 
-void Renderer::UpdateCamera(float dt)
+void RealtimeRenderer::UpdateCamera(float dt)
 {
 	//TODO:用命令模式优化
 	static bool stop_cam = false;
@@ -647,13 +647,13 @@ void Renderer::UpdateCamera(float dt)
 	camera->ProcessMouseScroll(mouse->GetMouseScroll());
 }
 
-Renderer::Renderer(VkGraphicsComponent &gfx_) :
+RealtimeRenderer::RealtimeRenderer(VkGraphicsComponent &gfx_) :
     BaseRenderer(gfx_), renderpass_manager(gfx), imgui_UI(gfx), render_graph_v0(renderpass_manager)
 //,render_graph(renderpass_manager)
 {
 }
 
-void Renderer::SetUpUserInput()
+void RealtimeRenderer::SetUpUserInput()
 {
 	std::vector<int> tracked_keys = {GLFW_KEY_ESCAPE, GLFW_KEY_W, GLFW_KEY_S, GLFW_KEY_A, GLFW_KEY_D, GLFW_KEY_Q, GLFW_KEY_E, GLFW_KEY_G, GLFW_KEY_UP, GLFW_KEY_DOWN};
 	keyboard                      = std::make_unique<KeyBoardInputManager>(tracked_keys);
@@ -662,20 +662,20 @@ void Renderer::SetUpUserInput()
 	mouse = std::make_unique<MouseInputManager>(gfx);
 }
 
-void Renderer::CreateCamera()
+void RealtimeRenderer::CreateCamera()
 {
 	camera = std::make_unique<FirstPersonCamera>();
 	camera->SetFrustum(glm::radians(60.f), static_cast<float>(swapchain_manager.GetSwapChainImageExtent().width) / static_cast<float>(swapchain_manager.GetSwapChainImageExtent().height), 0.1f, 256.f);
 }
 
-void Renderer::CreateCommomAttachmentImgs()
+void RealtimeRenderer::CreateCommomAttachmentImgs()
 {
 	CreateSwapchainTextures();
 	CreateDepthTextures();
 }
 //
 
-void Renderer::CreateCommonTextureImgs()
+void RealtimeRenderer::CreateCommonTextureImgs()
 {
 	//const auto &      texture_factory       = renderpass_manager.GetTextureFactory();
 	//const std::string chiricahua_narrowPath_path = "../../data/textures/hdr/NarrowPath_3k.hdr";
@@ -684,7 +684,7 @@ void Renderer::CreateCommonTextureImgs()
 }
 
 //the creation of this resources should be taken care of by render graph, which haven't been implemented.
-void Renderer::CreateDepthTextures()
+void RealtimeRenderer::CreateDepthTextures()
 {
 	//Use depth stencil format, cuz we will do stencil writing.
 	const DepthImgPP depth_img_PP{gfx};
@@ -693,7 +693,7 @@ void Renderer::CreateDepthTextures()
 }
 
 //the creation of this resources should be taken care of by render graph, which haven't been implemented.
-void Renderer::CreateSwapchainTextures()
+void RealtimeRenderer::CreateSwapchainTextures()
 {
 	const SwapchainImgPP swap_img_PP;
 	auto                 img_view_CI           = ImgViewCI::PopulateSwapchainImgViewCI(gfx.SwapchainMan());
@@ -707,7 +707,7 @@ void Renderer::CreateSwapchainTextures()
  ********************************************************
  */
 
-//void Renderer::CommandBufferRecording(VkCommandBuffer cmd_buf, size_t img_index)
+//void RealtimeRenderer::CommandBufferRecording(VkCommandBuffer cmd_buf, size_t img_index)
 //{
 //	VkCommandManager::BeginCommandBuffers(cmd_buf);
 //
@@ -1152,18 +1152,19 @@ void Renderer::CreateSwapchainTextures()
 //	VkCommandManager::EndCommandBuffers(cmd_buf);
 //}
 
-void Renderer::CommandBufferRecording(VkCommandBuffer cmd_buf, size_t img_index)
+void RealtimeRenderer::CommandBufferRecording(VkSemaphore general_rendering_finished_semaphore,VkSemaphore image_available_semaphore, size_t img_index)
 {
-	VkCommandManager::BeginCommandBuffers(cmd_buf);
+	//VkCommandManager::BeginCommandBuffers(cmd_buf);
+	//VkCommandManager::EndCommandBuffers(cmd_buf);
+
+	//这里的interface设计有所限制：同一个资源被multiple writes是被允许的吗？
 
 	auto &DeferedGeoPass =
 	    render_graph_v0.AddGfxPassNode("DeferedGeometryPass", renderpasses_RG[0])
-
 	        .In(
 	            std::string("MatUBO"),
 	            persistent_resources.matrix_buffer_gpu_defered_rendering[img_index],
 	            std::make_unique<VkBufUsageInfoRG>(
-	                RsrcInfoType::Buffer,
 	                Vk::DescSetInfo{
 	                    .set          = Vk::SetIndex<0>,
 	                    .binding      = Vk::Binding<0>,
@@ -1189,8 +1190,7 @@ void Renderer::CommandBufferRecording(VkCommandBuffer cmd_buf, size_t img_index)
 		            desco.tex_img_PP->default_layout_right_aft_creation = VK_IMAGE_LAYOUT_UNDEFINED;        //这个default_layout_right_aft_creation是不是可以取消了
 	            },
 
-	            std::make_unique<VkAttachmentInfo::WithinPassRG>(
-	                Vk::RsrcInfoType::Attachment,
+	            std::make_unique<VkUniversalTexUsageInfoRG>(
 	                DeferedRendering::G_position_format,
 	                Vk::AttachmentIndex<0>,
 
@@ -1215,8 +1215,7 @@ void Renderer::CommandBufferRecording(VkCommandBuffer cmd_buf, size_t img_index)
 		            desco.tex_img_PP->default_image_CI.samples          = DeferedRendering::MSAA_sample_count;
 		            desco.tex_img_PP->default_layout_right_aft_creation = VK_IMAGE_LAYOUT_UNDEFINED;
 	            },
-	            std::make_unique<VkAttachmentInfo::WithinPassRG>(
-	                Vk::RsrcInfoType::Attachment,
+	            std::make_unique<VkUniversalTexUsageInfoRG>(
 	                DeferedRendering::G_normal_format,
 	                Vk::AttachmentIndex<1>,
 
@@ -1242,8 +1241,7 @@ void Renderer::CommandBufferRecording(VkCommandBuffer cmd_buf, size_t img_index)
 		            desco.tex_img_PP->default_layout_right_aft_creation = VK_IMAGE_LAYOUT_UNDEFINED;
 	            },
 
-	            std::make_unique<VkAttachmentInfo::WithinPassRG>(
-	                Vk::RsrcInfoType::Attachment,
+	            std::make_unique<VkUniversalTexUsageInfoRG>(
 	                DeferedRendering::G_albedo_format,
 	                Vk::AttachmentIndex<2>,
 
@@ -1268,8 +1266,7 @@ void Renderer::CommandBufferRecording(VkCommandBuffer cmd_buf, size_t img_index)
 		            desco.tex_img_PP->default_image_CI.samples          = DeferedRendering::MSAA_sample_count;
 		            desco.tex_img_PP->default_layout_right_aft_creation = VK_IMAGE_LAYOUT_UNDEFINED;        //TODO: check layout transition after creation of this image
 	            },
-	            std::make_unique<VkAttachmentInfo::WithinPassRG>(
-	                Vk::RsrcInfoType::Attachment,
+	            std::make_unique<VkUniversalTexUsageInfoRG>(
 	                DeferedRendering::G_posZgrad_format,
 	                Vk::AttachmentIndex<3>,
 
@@ -1292,8 +1289,7 @@ void Renderer::CommandBufferRecording(VkCommandBuffer cmd_buf, size_t img_index)
 		            desco.tex_img_PP->default_image_CI.samples          = DeferedRendering::MSAA_sample_count;
 		            desco.tex_img_PP->default_layout_right_aft_creation = VK_IMAGE_LAYOUT_UNDEFINED;        //TODO: check layout transition after creation of this image
 	            },
-	            std::make_unique<VkAttachmentInfo::WithinPassRG>(
-	                Vk::RsrcInfoType::Attachment,
+	            std::make_unique<VkUniversalTexUsageInfoRG>(
 	                DeferedRendering::G_depth_format,
 	                Vk::AttachmentIndex<4>,
 
@@ -1305,9 +1301,8 @@ void Renderer::CommandBufferRecording(VkCommandBuffer cmd_buf, size_t img_index)
 	                VkClearValue{.depthStencil{0.0f, 0}},
 	                Vk::AccessType::Write));
 
-	render_graph_v0.AddGfxPassNode("DeferedCompositionPass", renderpasses_RG[0])
+	render_graph_v0.AddGfxPassNode("DeferedCompositionPass", renderpasses_RG[1])
 	    .In(
-	        //RsrcInfoType::Reference,
 	        "MatUBO",
 	        persistent_resources.matrix_buffer_gpu_defered_rendering[img_index],
 	        std::make_unique<VkBufUsageInfoRG>(
@@ -1323,8 +1318,7 @@ void Renderer::CommandBufferRecording(VkCommandBuffer cmd_buf, size_t img_index)
 	    .In(
 	        "GBufPos",
 	        DeferedGeoPass,
-	        std::make_unique<VkTexUsageInfoRG>(
-	            Vk::RsrcInfoType::Texture,
+	        std::make_unique<VkUniversalTexUsageInfoRG>(
 	            DeferedRendering::G_position_format,
 
 	            Vk::DescSetInfo{
@@ -1345,8 +1339,7 @@ void Renderer::CommandBufferRecording(VkCommandBuffer cmd_buf, size_t img_index)
 	    .In(
 	        "GBufNormal",
 	        DeferedGeoPass,
-	        std::make_unique<VkTexUsageInfoRG>(
-	            Vk::RsrcInfoType::Texture,
+	        std::make_unique<VkUniversalTexUsageInfoRG>(
 	            DeferedRendering::G_normal_format,
 
 	            Vk::DescSetInfo{
@@ -1365,8 +1358,7 @@ void Renderer::CommandBufferRecording(VkCommandBuffer cmd_buf, size_t img_index)
 	    .In(
 	        "GBufAlbedo",
 	        DeferedGeoPass,
-	        std::make_unique<VkTexUsageInfoRG>(
-	            Vk::RsrcInfoType::Texture,
+	        std::make_unique<VkUniversalTexUsageInfoRG>(
 	            DeferedRendering::G_albedo_format,
 
 	            Vk::DescSetInfo{
@@ -1385,8 +1377,7 @@ void Renderer::CommandBufferRecording(VkCommandBuffer cmd_buf, size_t img_index)
 	    .In(
 	        "GBufPosZGradient",
 	        DeferedGeoPass,
-	        std::make_unique<VkTexUsageInfoRG>(
-	            Vk::RsrcInfoType::Texture,
+	        std::make_unique<VkUniversalTexUsageInfoRG>(
 	            DeferedRendering::G_posZgrad_format,
 
 	            Vk::DescSetInfo{
@@ -1406,7 +1397,7 @@ void Renderer::CommandBufferRecording(VkCommandBuffer cmd_buf, size_t img_index)
 	    .In(
 	        "GBufDepth",
 	        DeferedGeoPass,
-	        std::make_unique<VkTexUsageInfoRG>(
+	        std::make_unique<VkUniversalTexUsageInfoRG>(
 	            Vk::RsrcInfoType::Texture,
 	            DeferedRendering::G_depth_format,
 
@@ -1438,8 +1429,7 @@ void Renderer::CommandBufferRecording(VkCommandBuffer cmd_buf, size_t img_index)
 		        //tex_img_PP.default_image_mem_prop_flag = VK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT;
 		        desco.tex_img_PP->default_layout_right_aft_creation = VK_IMAGE_LAYOUT_UNDEFINED;        //TODO: check layout transition after creation of this image
 	        },
-	        std::make_unique<VkAttachmentInfo::WithinPassRG>(
-	            Vk::RsrcInfoType::Attachment,
+	        std::make_unique<VkUniversalTexUsageInfoRG>(
 	            DeferedRendering::C_color_attch_format,
 	            Vk::AttachmentIndex<0>,
 
@@ -1468,8 +1458,7 @@ void Renderer::CommandBufferRecording(VkCommandBuffer cmd_buf, size_t img_index)
 		        //tex_img_PP.default_image_mem_prop_flag = VK_MEMORY_PROPERTY_LAZILY_ALLOCATED_BIT;
 		        desco.tex_img_PP->default_layout_right_aft_creation = VK_IMAGE_LAYOUT_UNDEFINED;        //TODO: check layout transition after creation of this image
 	        },
-	        std::make_unique<VkAttachmentInfo::WithinPassRG>(
-	            Vk::RsrcInfoType::Attachment,
+	        std::make_unique<VkUniversalTexUsageInfoRG>(
 	            DeferedRendering::C_depth_stencil_format,
 	            Vk::AttachmentIndex<1>,
 
@@ -1479,14 +1468,42 @@ void Renderer::CommandBufferRecording(VkCommandBuffer cmd_buf, size_t img_index)
 
 	            VkAttachmentInfo::Type::DepthAttachment,
 	            VkClearValue{.depthStencil{0.0f, 0}},
+	            Vk::AccessType::Write))
+	    .Out(
+	        "SwapImage",
+	        persistent_resources.swapchain_attachments[img_index],
+	        std::make_unique<VkUniversalTexUsageInfoRG>(
+	            DeferedRendering::C_color_attch_format,
+	            Vk::AttachmentIndex<0>,
+
+	            VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+	            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+	            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,        //
+
+	            VkAttachmentInfo::Type::ColorAttachment,
+	            VkClearValue{.color{0.0f, 0.0f, 0.0f, 1.0f}},
+	            Vk::AccessType::Write))
+	    .Out(
+	        "DepthImage",
+	        persistent_resources.depth_attachments[img_index],
+	        std::make_unique<VkUniversalTexUsageInfoRG>(
+	            DeferedRendering::C_depth_stencil_format,
+	            Vk::AttachmentIndex<1>,
+
+	            VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT,
+	            VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
+	            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,        //
+
+	            VkAttachmentInfo::Type::DepthAttachment,
+	            VkClearValue{.color{0.0f, 0.0f, 0.0f, 1.0f}},
 	            Vk::AccessType::Write));
 
 	//RenderGraph编译
-	if (render_graph_v0.Compile())
+	if (render_graph_v0.Compile(device_manager))
 	{
-		//RenderGraph执行(CMDbuffer录制)
-		const bool successed = render_graph_v0.ExecutRenderGraphV0(cmd_buf);
-
+		//RenderGraph执行(包括CMDbuffer录制过程)
+		//把work 分配到不同到queue上
+		const bool successed = render_graph_v0.ParallelExecuteRenderGraphV0(device_manager,general_rendering_finished_semaphore,image_available_semaphore);
 		if (!successed)
 		{
 			throw std::runtime_error("Failed to execute render graph!");
@@ -1497,5 +1514,4 @@ void Renderer::CommandBufferRecording(VkCommandBuffer cmd_buf, size_t img_index)
 		throw std::runtime_error("Failed to record commands from render graph!");
 	}
 
-	VkCommandManager::EndCommandBuffers(cmd_buf);
 }

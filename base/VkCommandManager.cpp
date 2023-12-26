@@ -18,7 +18,10 @@ VkCommandManager::VkCommandManager(VkDeviceManager &_device_manager, size_t num_
 	{
 		VkCommandManager::CreateCommandBuffer(device_manager.GetLogicalDevice(), graphics_command_pool, graphics_command_buffers[i], VK_COMMAND_BUFFER_LEVEL_PRIMARY);
 	}
+
+
 }
+
 
 VkCommandBuffer VkCommandManager::BeginSingleTimeCommands(const VkCommandPool &command_pool, const VkDevice &device)
 {

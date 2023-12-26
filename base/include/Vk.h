@@ -19,7 +19,7 @@ constexpr VkFormatFeatureFlags required_depth_format_feature{VK_FORMAT_FEATURE_D
 
 
 
-using AttachmentIndexType = uint32_t;
+using AttachmentIndix = uint32_t;
 
 template <uint32_t T>
 constexpr uint32_t SetIndex{T};
@@ -71,6 +71,22 @@ enum class RsrcInfoType
 	Reference,
 	Model
 };
+
+
+enum struct AttachmentType
+{
+	Unknown,
+	ColorAttachment,
+	DepthAttachment,
+	DepthStencilAttachment,
+	//StencilAttachment, // reserved for future use
+	ResolveOpTargetAttachment,
+	NotUsedWithinPass
+
+};
+
+
+
 enum class AccessType
 {
 	Unknown,
@@ -86,6 +102,23 @@ struct DescSetInfo
 	uint32_t binding{0};
 	uint32_t array_elemnt{0};
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 struct EnumClassHash
 {

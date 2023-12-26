@@ -7,6 +7,8 @@ VkSynObjectFactory::VkSynObjectFactory(VkGraphicsComponent &_gfx) :
     device_manager(gfx.DeviceMan()),
     window(gfx.Window())
 {
+
+
 }
 
 std::shared_ptr<VkSemaphoreBundle> VkSynObjectFactory::GetSemaphoreBundle(uint32_t _bundle_size) const

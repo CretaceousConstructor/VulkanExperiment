@@ -25,17 +25,17 @@
 #include <memory>
 #include <vector>
 
-class Renderer : public BaseRenderer
+class RealtimeRenderer : public BaseRenderer
 {
   public:
-	Renderer(VkGraphicsComponent &gfx_);
-	~Renderer() override = default;
+	RealtimeRenderer(VkGraphicsComponent &gfx_);
+	~RealtimeRenderer() override = default;
 
-	Renderer()                             = delete;
-	Renderer(const Renderer &) = delete;
-	Renderer &operator=(const Renderer &) = delete;
-	Renderer(Renderer &&)                 = delete;
-	Renderer &operator=(Renderer &&) = delete;
+	RealtimeRenderer()                             = delete;
+	RealtimeRenderer(const RealtimeRenderer &) = delete;
+	RealtimeRenderer &operator=(const RealtimeRenderer &) = delete;
+	RealtimeRenderer(RealtimeRenderer &&)                 = delete;
+	RealtimeRenderer &operator=(RealtimeRenderer &&) = delete;
 
   public:
 	void SetUpUserInput() override;
@@ -64,7 +64,7 @@ class Renderer : public BaseRenderer
 	void UpdateCamera(float dt) override;
 
 private:
-	void CommandBufferRecording(VkCommandBuffer cmd_buf,size_t img_index);
+	void CommandBufferRecording(VkSemaphore general_rendering_finished_semaphore,VkSemaphore image_available_semaphore, size_t img_index);
 
 
   private:

@@ -21,6 +21,11 @@ Vk::RsrcInfoType RsrcUsageInfoInPass::GetInfoType() const
 	return info_type;
 }
 
+Vk::AccessType RsrcUsageInfoInPass::GetAccessType()const
+{
+	return access_type;
+}
+
 VkAttachmentInfo::DynamicRenderingAttachment::DynamicRenderingAttachment(Type attach_type_, VkFormat format_, uint32_t index_) :
     attach_type(attach_type_),
     format(format_),

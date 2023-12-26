@@ -14,6 +14,9 @@ VkSemaphoreBundle::VkSemaphoreBundle(const VkDeviceManager &_device_manager, uin
 	{
 		VK_CHECK_RESULT(vkCreateSemaphore(device_manager.GetLogicalDevice(), &semaphore_CI, nullptr, &semaphore))
 	}
+
+
+
 }
 
 const VkSemaphore &VkSemaphoreBundle::operator[](size_t num) const

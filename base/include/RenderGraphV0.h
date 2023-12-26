@@ -1,13 +1,14 @@
 #pragma once
 #include "RenderGraphPass.h"
 #include "Vk.h"
+#include "VkDeviceManager.h"
 #include "VkRenderpassBaseRG.h"
 #include "VkRenderpassManager.h"
-#include "VkRsrcUsageInfoRG.h"
 #include "VkRsrcState.h"
-
+#include "VkRsrcUsageInfoRG.h"
 
 #include <functional>
+#include <array>
 
 namespace RenderGraphV0
 {
@@ -271,6 +272,33 @@ namespace RenderGraphV0
 //};
 //
 
+class GraphEdge
+{
+  public:
+	GraphEdge(PassNode *f, PassNode *t) :
+	    from(f), to(t)
+	{
+	}
+
+	PassNode *from;
+	PassNode *to;
+};
+
+class GraphNode
+{
+  public:
+	GraphNode(PassNode *node_) :
+	    curr_pass(node_)
+	{
+	}
+	void AddEdge(GraphEdge edge)
+	{
+		edges.push_back(edge);
+	}
+	PassNode *             curr_pass;
+	std::vector<GraphEdge> edges;
+};
+
 class DependencyGraph
 {
   public:
@@ -303,31 +331,41 @@ class DependencyGraph
 	void StateChangeNoNeedCmdRecordingBufferIn(std::string rsrc_name, PassNode *pass, uint32_t usage_index = 0);
 	void StateChangeNoNeedCmdRecordingBufferOut(std::string rsrc_name, PassNode *pass, uint32_t usage_index = 0);
 
-	GraphicsPassNode &AddGfxPassNode(std::string name,std::shared_ptr<VkRenderpassBaseRG> renderpass_ptr);
+	GraphicsPassNode &AddGfxPassNode(std::string name, std::shared_ptr<VkRenderpassBaseRG> renderpass_ptr);
 
-	bool Compile();
+	bool Compile(const VkDeviceManager &device_man);
 	bool Execute(VkCommandBuffer cmb);
 	bool ExecutRenderGraphV0(VkCommandBuffer cmb);
+	bool ParallelExecuteRenderGraphV0(const VkDeviceManager &device_man, VkSemaphore general_rendering_finished_semaphore, VkSemaphore image_available_semaphore);
 
   private:
-	void      GeneratePassNodeDepen() const;
+	void      GeneratePassNodeDepen();
 	PassNode *FindLastAccessingPass(const std::vector<PassNode *> &final_exe_order, std::vector<PassNode *> &passes_access_this_rsrc) const;
 	void      SortAccessingPasses(const std::vector<PassNode *> &final_exe_order, std::vector<PassNode *> &passes_access_this_rsrc) const;
 	void      ExecutePass(VkCommandBuffer cmd_buf, PassNode *pass);
+	void      RootPassMarking(PassNode *root_pass);
+	void      SubGraphMerge();
 
+	bool CompareByFinalExeOrder(const PassNode *a, const PassNode *b, const std::vector<PassNode *> &order);
+	void VisitNode(size_t index, PassNode *cur_node_pass, std::vector<bool> &visited, std::vector<bool> &on_stack, std::vector<PassNode *> &topologically_sorted_nodes);
 
-
+	size_t FindIndexInPassNodeArray(PassNode *node_pass,  const std::vector<std::unique_ptr<GraphicsPassNode>> &all_nodes);
 
   public:
 	//使用unordered map，迭代器除非指向的是被删除的元素，否则迭代器[ 不会失效 ]
 	std::unordered_map<std::string, VirtualResource<VkBufferBase>> buffers_map;
-	std::unordered_map<std::string, VirtualResource<VkTexture>>    textures_map;
-	std::unordered_map<std::string, VirtualResource<VkTexture>>    attachments_map;
-
-	std::vector<std::unique_ptr<GraphicsPassNode>> gfx_pass_nodes;
+	//std::unordered_map<std::string, VirtualResource<VkTexture>>    textures_map;
+	//std::unordered_map<std::string, VirtualResource<VkTexture>>    attachments_map;
+	std::unordered_map<std::string, VirtualResource<VkTexture>> uni_textures_map;
+	std::vector<std::unique_ptr<GraphicsPassNode>>              gfx_pass_nodes;
 
   private:
-	std::vector<PassNode *> final_execution_order;
+	std::vector<PassNode *> final_execution_order_hint;
+	//head数组
+	//边数组
+	std::vector<GraphNode> heads;
+	std::vector<GraphEdge> edges;
+
   private:
 	VkRenderpassManager &renderpass_manager;
 };

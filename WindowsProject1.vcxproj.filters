@@ -27,9 +27,6 @@
     <Filter Include="Source Files\Imgui">
       <UniqueIdentifier>{fa5ab306-8b45-4cca-984c-a83671bfcc33}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Header Files\ClassReflection">
-      <UniqueIdentifier>{7ee56ee3-1b49-4bf1-9190-52f67e549e9a}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\VkCore">
       <UniqueIdentifier>{050df9e2-4ba4-4754-968c-a8463ad0b466}</UniqueIdentifier>
     </Filter>
@@ -128,6 +125,9 @@
     </Filter>
     <Filter Include="Header Files\VkCore\Resources\Model">
       <UniqueIdentifier>{0259e414-9277-4b81-bdea-a55419c5eb68}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Reflection">
+      <UniqueIdentifier>{7ee56ee3-1b49-4bf1-9190-52f67e549e9a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

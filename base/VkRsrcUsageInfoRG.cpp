@@ -399,15 +399,15 @@
 //
 //	return texture_image;
 //}
-RenderGraphV0::VkRsrcUsageInfoRGTex::VkRsrcUsageInfoRGTex(std::unique_ptr<VkTexUsageInfoRG> tex_usage_, std::unordered_map<std::string, VirtualResource<VkTexture>>::iterator tex_itr_) :
-    tex_usage(std::move(tex_usage_)),
-    texture(std::move(tex_itr_))
-{
-}
-
-RenderGraphV0::VkRsrcUsageInfoRGTex::VkRsrcUsageInfoRGTex(VkRsrcUsageInfoRGTex &&other) :
-    tex_usage(std::move(other.tex_usage)), texture(std::move(other.texture))
-{}
+//RenderGraphV0::VkRsrcUsageInfoRGTex::VkRsrcUsageInfoRGTex(std::unique_ptr<VkTexUsageInfoRG> tex_usage_, std::unordered_map<std::string, VirtualResource<VkTexture>>::iterator tex_itr_) :
+//    tex_usage(std::move(tex_usage_)),
+//    texture(std::move(tex_itr_))
+//{
+//}
+//
+//RenderGraphV0::VkRsrcUsageInfoRGTex::VkRsrcUsageInfoRGTex(VkRsrcUsageInfoRGTex &&other) :
+//    tex_usage(std::move(other.tex_usage)), texture(std::move(other.texture))
+//{}
 
 //RenderGraphV0::VkRsrcUsageInfoRGTex::VkRsrcUsageInfoRGTex(const VkRsrcUsageInfoRGTex &other) :
 //    tex_usage(std::make_unique<VkTexUsageInfoRG>(*other.tex_usage)), texture(other.texture)
@@ -431,19 +431,37 @@ RenderGraphV0::VkRsrcUsageInfoRGBuf::VkRsrcUsageInfoRGBuf(VkRsrcUsageInfoRGBuf &
 //{
 //}
 
-RenderGraphV0::VkRsrcUsageInfoRGAttach::VkRsrcUsageInfoRGAttach(std::unique_ptr<VkAttachmentInfo::WithinPassRG> attach_usage_, std::unordered_map<std::string, VirtualResource<VkTexture>>::iterator tex_itr_) :
-    attach_usage(std::move(attach_usage_)),
-    texture(std::move(tex_itr_))
-{
-}
+//VkBufUsageInfoRG &RenderGraphV0::VkRsrcUsageInfoRGBuf::GetBufUsage() const
+//{
+//	return *buf_usage;
+//}
 
-RenderGraphV0::VkRsrcUsageInfoRGAttach::VkRsrcUsageInfoRGAttach(VkRsrcUsageInfoRGAttach &&other) :
-    attach_usage(std::move(other.attach_usage)), texture(std::move(other.texture))
-{
-}
+//RenderGraphV0::VkRsrcUsageInfoRGAttach::VkRsrcUsageInfoRGAttach(std::unique_ptr<VkAttachmentInfo::WithinPassRG> attach_usage_, std::unordered_map<std::string, VirtualResource<VkTexture>>::iterator tex_itr_) :
+//    attach_usage(std::move(attach_usage_)),
+//    texture(std::move(tex_itr_))
+//{
+//}
+
+//RenderGraphV0::VkRsrcUsageInfoRGAttach::VkRsrcUsageInfoRGAttach(VkRsrcUsageInfoRGAttach &&other) :
+//    attach_usage(std::move(other.attach_usage)), texture(std::move(other.texture))
+//{
+//}
 
 //RenderGraphV0::VkRsrcUsageInfoRGAttach::VkRsrcUsageInfoRGAttach(const VkRsrcUsageInfoRGAttach &other) :
 //    attach_usage(std::make_unique<VkAttachmentInfo::WithinPassRG>(*other.attach_usage)), texture(other.texture)
 //{
 //}
 
+RenderGraphV0::VkRsrcUsageInfoRGUniversalTex::VkRsrcUsageInfoRGUniversalTex(std::unique_ptr<VkUniversalTexUsageInfoRG> tex_usage_, std::unordered_map<std::string, VirtualResource<VkTexture>>::iterator tex_itr_) :
+    tex_usage(std::move(tex_usage_)),
+    tex_itr(std::move(tex_itr_))
+
+{
+}
+
+RenderGraphV0::VkRsrcUsageInfoRGUniversalTex::VkRsrcUsageInfoRGUniversalTex(VkRsrcUsageInfoRGUniversalTex &&other) :
+    tex_usage(std::move(other.tex_usage)),
+    tex_itr(std::move(other.tex_itr))
+
+{
+}

@@ -3,6 +3,26 @@
 DeferedGeometryPassRGV0::DeferedGeometryPassRGV0(VkGraphicsComponent &gfx_, VkRenderpassManager &renderpass_manager_, RenderGraphV0::DependencyGraph &rg_, Global::Resources &common_resources_) :
     VkRenderpassBaseRG(gfx_, renderpass_manager_), device_manager(gfx.DeviceMan()), swapchain_manager(gfx.SwapchainMan()), global_resources(common_resources_), rg(rg_)
 {
+
+
+	//WARNING: relase_sem is not recycled!
+	VkSemaphoreTypeCreateInfo timelineCreateInfo;
+	timelineCreateInfo.sType         = VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO;
+	timelineCreateInfo.pNext         = NULL;
+	timelineCreateInfo.semaphoreType = VK_SEMAPHORE_TYPE_TIMELINE;
+	timelineCreateInfo.initialValue  = 0;
+
+	VkSemaphoreCreateInfo createInfo;
+	createInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+	createInfo.pNext = &timelineCreateInfo;
+	createInfo.flags = 0;
+
+	vkCreateSemaphore(device_manager.GetLogicalDevice(), &createInfo, NULL, &relase_sem);
+	//..............................................
+
+
+
+
 }
 
 void DeferedGeometryPassRGV0::ResourceInit()
@@ -16,23 +36,28 @@ void DeferedGeometryPassRGV0::ResourceInit()
 
 	//StateChangeNoNeedCmdRecordingAttachmentIn是为了给一些资源做状态变换的，比如texture可以使用崭新的sampler和view，而这种变换不能用 向cmdbuf插入指令实现。
 	G_position_attachments_info = rg.GetAttachmentRsrcIn(std::string("GBufferPos"), curr_pass_in_rg);
-	rg.StateChangeNoNeedCmdRecordingAttachmentIn(std::string("GBufferPos"),curr_pass_in_rg);
+	rg.StateChangeNoNeedCmdRecordingAttachmentIn(std::string("GBufferPos"), curr_pass_in_rg);
 
-	G_normal_attachments_info   = rg.GetAttachmentRsrcIn(std::string("GBufferNormal"), curr_pass_in_rg);
-	rg.StateChangeNoNeedCmdRecordingAttachmentIn(std::string("GBufferNormal"),curr_pass_in_rg);
+	G_normal_attachments_info = rg.GetAttachmentRsrcIn(std::string("GBufferNormal"), curr_pass_in_rg);
+	rg.StateChangeNoNeedCmdRecordingAttachmentIn(std::string("GBufferNormal"), curr_pass_in_rg);
 
-	G_albedo_attachments_info   = rg.GetAttachmentRsrcIn(std::string("GBufferAlbedo"), curr_pass_in_rg);
-	rg.StateChangeNoNeedCmdRecordingAttachmentIn(std::string("GBufferAlbedo"),curr_pass_in_rg);
+	G_albedo_attachments_info = rg.GetAttachmentRsrcIn(std::string("GBufferAlbedo"), curr_pass_in_rg);
+	rg.StateChangeNoNeedCmdRecordingAttachmentIn(std::string("GBufferAlbedo"), curr_pass_in_rg);
 
 	G_posZGrad_attachments_info = rg.GetAttachmentRsrcIn(std::string("GBufferPosZGrad"), curr_pass_in_rg);
-	rg.StateChangeNoNeedCmdRecordingAttachmentIn(std::string("GBufferPosZGrad"),curr_pass_in_rg);
+	rg.StateChangeNoNeedCmdRecordingAttachmentIn(std::string("GBufferPosZGrad"), curr_pass_in_rg);
 
-	G_depth_attachments_info    = rg.GetAttachmentRsrcIn(std::string("GBufferDepth"), curr_pass_in_rg);
-	rg.StateChangeNoNeedCmdRecordingAttachmentIn(std::string("GBufferDepth"),curr_pass_in_rg);
+	G_depth_attachments_info = rg.GetAttachmentRsrcIn(std::string("GBufferDepth"), curr_pass_in_rg);
+	rg.StateChangeNoNeedCmdRecordingAttachmentIn(std::string("GBufferDepth"), curr_pass_in_rg);
 
 	//a lonely buffer :)
 	matrix_ubo = rg.GetBufferRsrcIn(std::string("MatrixUBO"), curr_pass_in_rg);
-	rg.StateChangeNoNeedCmdRecordingBufferIn(std::string("MatrixUBO"),curr_pass_in_rg);
+	rg.StateChangeNoNeedCmdRecordingBufferIn(std::string("MatrixUBO"), curr_pass_in_rg);
+}
+
+void DeferedGeometryPassRGV0::ResourceReleaseOp()
+{
+
 
 
 
@@ -41,10 +66,6 @@ void DeferedGeometryPassRGV0::ResourceInit()
 
 void DeferedGeometryPassRGV0::CreateLocalCommandBuffers()
 {
-
-
-
-
 }
 
 void DeferedGeometryPassRGV0::CreateDescriptorSetPools()
@@ -61,7 +82,6 @@ void DeferedGeometryPassRGV0::CreateDescriptorSetPools()
 	//const auto desc_pool_CI     = Vk::GetDescriptorPoolCI(desc_pool_sizes, swapchain_manager.GetSwapImageCount());        //这里可以改成1了？
 	const auto desc_pool_CI = Vk::GetDescriptorPoolCI(desc_pool_sizes, Vk::SetCount<1>);        //这里可以改成1了？
 	descriptor_pool         = renderpass_manager.GetDescriptorManagerV0().ProduceDescriptorPoolUnsafe(desc_pool_CI);
-
 }
 
 void DeferedGeometryPassRGV0::CreateDescriptorSetLayout()
@@ -75,8 +95,6 @@ void DeferedGeometryPassRGV0::CreateDescriptorSetLayout()
 		const auto        desc_set_layout_CI = Vk::GetDescriptorSetLayoutCI(bindings);
 		descriptor_set_layout                = renderpass_manager.GetDescriptorManagerV0().ProduceDescriptorSetLayoutUnsafe(desc_set_layout_CI);
 	}
-
-
 }
 
 void DeferedGeometryPassRGV0::CreateDescriptorSets()
@@ -88,8 +106,6 @@ void DeferedGeometryPassRGV0::CreateDescriptorSets()
 
 void DeferedGeometryPassRGV0::CreateAttachments()
 {
-
-
 }
 
 void DeferedGeometryPassRGV0::CreateGraphicsPipelineLayout()
@@ -135,13 +151,7 @@ void DeferedGeometryPassRGV0::BeginRenderpass(const VkCommandBuffer command_buff
 	rendering_info.pStencilAttachment   = nullptr;        //这个pStencilAttachment是reserve for future use的，填什么也没用。
 
 	vkCmdBeginRendering(command_buffer, &rendering_info);
-
-
-
-
 }
-
-
 
 void DeferedGeometryPassRGV0::UpdateDescriptorSets()
 {
@@ -181,8 +191,3 @@ void DeferedGeometryPassRGV0::EndRenderpass(const VkCommandBuffer command_buffer
 {
 	vkCmdEndRendering(command_buffer);
 }
-
-
-
-
-

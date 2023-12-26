@@ -20,13 +20,15 @@ class VkRenderpassBaseRG
 	void SetRenderGraphPassPointer(RenderGraphV0::PassNode *curr_pass_in_rg_);
 
   public:
-	enum class Type
+	enum Type 
 	{
-		Graphics,
-		Compute,
-		Transfor,
-		Unknown
+		None = 0x00,
+		Graphics = 0x01,
+		Compute  = 0x02,
+		Transfor = 0x04,
+		Present = 0x04,
 	};
+
 
 
   public:

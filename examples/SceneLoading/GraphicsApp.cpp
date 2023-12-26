@@ -2,5 +2,5 @@
 
 void GraphicsApp::InitRenderer()
 {
-	renderer = std::make_unique<Renderer>(gfx);
+	renderer = std::make_unique<RealtimeRenderer>(gfx);
 }

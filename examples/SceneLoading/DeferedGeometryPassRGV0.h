@@ -20,6 +20,7 @@ class DeferedGeometryPassRGV0 final : public VkRenderpassBaseRG
 
   protected:
 	void ResourceInit() override;
+	void ResourceReleaseOp();
 
 	void CreateLocalCommandBuffers() override;
 	void CreateDescriptorSetPools() override;
@@ -47,6 +48,9 @@ class DeferedGeometryPassRGV0 final : public VkRenderpassBaseRG
 
   private:
 	//*********************************************Resources*********************************************
+	// Relese and Acquire related
+	VkSemaphore acquire_sem;
+	VkSemaphore relase_sem;
 
 	//attachments
 	VkAttachmentInfo G_position_attachments_info{};
@@ -71,9 +75,4 @@ class DeferedGeometryPassRGV0 final : public VkRenderpassBaseRG
 	const VkSwapchainManager &      swapchain_manager;
 	Global::Resources &             global_resources;
 	RenderGraphV0::DependencyGraph &rg;
-
-
-
-
-
 };

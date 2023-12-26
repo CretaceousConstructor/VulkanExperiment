@@ -11,10 +11,26 @@ namespace RenderGraphV0
 class PassNode;
 }
 
+class VkReleaseOpInfo
+{
+  public:
+	VkReleaseOpInfo() = delete;
+	VkReleaseOpInfo(size_t target_family_index_) :
+	    target_family_index(target_family_index_)
+	{
+	}
+
+  private:
+	size_t target_family_index;
+};
 
 template <typename RESOURCE>
 class VirtualResource
 {
+  private:
+	using ReadPass = RenderGraphV0::PassNode;
+	using RootPass = RenderGraphV0::PassNode;
+
   public:
 	enum class RsrcType
 	{
@@ -34,8 +50,6 @@ class VirtualResource
 	{
 	}
 
-
-
 	VirtualResource() = delete;
 
 	VirtualResource(const VirtualResource &) = delete;
@@ -50,23 +64,27 @@ class VirtualResource
 	void Actualize(VkRenderpassManager &);
 	void Recycle(VkRenderpassManager &);
 	void InsertSyncIntoCmdBuf(VkCommandBuffer cmd_buf, const Vk::SyncInfo &source_syn, const Vk::SyncInfo &target_sync);
-
+	void AssignReadPassesMap(std::unordered_multimap<RootPass *, ReadPass *> root_read_passes_map);
 
   public:
 	std::string                                  name;
 	std::shared_ptr<RESOURCE>                    ptr_rsrc;
 	std::optional<typename RESOURCE::Descriptor> descriptor;
 	RsrcType                                     rsrc_type;
-	std::vector<RenderGraphV0::PassNode *>       passes_access_this_rsrc;
+
+	//std::vector<RenderGraphV0::PassNode *>       passes_access_this_rsrc;
+
+	std::vector<std::pair<RenderGraphV0::PassNode *, Vk::AccessType>> passes_access_this_rsrc;
+
+
+  public:
+	//which passes read this rsrc, and these reading passes's root passes are used as the keys of unordered multi map.
+	std::unordered_multimap<RootPass *, ReadPass *> root_read_passes_map;
 };
-
-
 
 //
 //
 //Rsrc Actualization spcialization
-
-
 
 template <>
 inline void VirtualResource<VkTexture>::Actualize(VkRenderpassManager &renderpass_manager)
@@ -79,8 +97,6 @@ inline void VirtualResource<VkTexture>::Actualize(VkRenderpassManager &renderpas
 	const auto &dis = descriptor.value();
 	ptr_rsrc        = renderpass_manager.GetTextureFactory().ProduceUnfilledTexture(*dis.tex_img_PP, dis.sample_CI, dis.img_view_CI);
 }
-
-
 
 template <>
 inline void VirtualResource<VkBufferBase>::Actualize(VkRenderpassManager &renderpass_manager)
@@ -95,21 +111,17 @@ inline void VirtualResource<VkBufferBase>::Actualize(VkRenderpassManager &render
 	ptr_rsrc = renderpass_manager.GetBufferFactory().ProduceBuffer(dis.buffer_size, descriptor.value());
 }
 
-
 template <>
 inline void VirtualResource<VkTexture>::Recycle(VkRenderpassManager &renderpass_manager)
 {
 	ptr_rsrc.reset();
 }
 
-
 template <>
 inline void VirtualResource<VkBufferBase>::Recycle(VkRenderpassManager &renderpass_manager)
 {
 	ptr_rsrc.reset();
 }
-
-
 
 template <>
 inline void VirtualResource<VkTexture>::InsertSyncIntoCmdBuf(VkCommandBuffer cmd_buf, const Vk::SyncInfo &source_syn, const Vk::SyncInfo &target_sync)
@@ -128,16 +140,14 @@ inline void VirtualResource<VkTexture>::InsertSyncIntoCmdBuf(VkCommandBuffer cmd
 	ptr_rsrc->InsertImageMemoryBarrier(cmd_buf, image_memory_barrier_enhanced);
 }
 
-
-
-
+template <typename RESOURCE>
+inline void VirtualResource<RESOURCE>::AssignReadPassesMap(std::unordered_multimap<RootPass *, ReadPass *> root_read_passes_map)
+{
+	root_read_passes_map = std::move(root_read_passes_map);
+}
 
 template <>
 inline void VirtualResource<VkBufferBase>::InsertSyncIntoCmdBuf(VkCommandBuffer cmd_buf, const Vk::SyncInfo &source_syn, const Vk::SyncInfo &target_sync)
 {
 	//TODO:
 }
-
-
-
-
