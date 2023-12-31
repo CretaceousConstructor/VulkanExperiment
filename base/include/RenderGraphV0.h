@@ -7,8 +7,9 @@
 #include "VkRsrcState.h"
 #include "VkRsrcUsageInfoRG.h"
 
-#include <functional>
 #include <array>
+#include <functional>
+#include <ranges>
 
 namespace RenderGraphV0
 {
@@ -272,31 +273,70 @@ namespace RenderGraphV0
 //};
 //
 
-class GraphEdge
+//class GraphEdge
+//{
+//  public:
+//	GraphEdge(PassNode *f, PassNode *t) :
+//	    from(f), to(t)
+//	{
+//	}
+//
+//	PassNode *from;
+//	PassNode *to;
+//};
+//
+//class GraphNode
+//{
+//  public:
+//	GraphNode(PassNode *node_) :
+//	    curr_pass(node_)
+//	{
+//	}
+//	void AddEdge(GraphEdge edge)
+//	{
+//		edges.push_back(edge);
+//	}
+//	PassNode *             curr_pass;
+//	std::vector<GraphEdge> edges;
+//};
+
+;
+
+class PassPair
 {
   public:
-	GraphEdge(PassNode *f, PassNode *t) :
-	    from(f), to(t)
+	PassPair(
+	    PassNode *pass0_,
+	    PassNode *pass1_) :
+	    pass0(pass0_), pass1(pass1_)
+	{}
+
+	// Equality operator
+	bool operator==(const PassPair &other) const
 	{
+		return ((pass0 == other.pass0) && (pass1 == other.pass1)) ||
+		       ((pass0 == other.pass1) && (pass0 == other.pass0));
 	}
 
-	PassNode *from;
-	PassNode *to;
-};
+	// Hash function
+	struct Hash
+	{
+		size_t operator()(const PassPair &obj) const
+		{
+			// 使用哈希组合函数，确保指针的顺序不影响结果
+			std::hash<PassNode *> hasher;
 
-class GraphNode
-{
+			// 对两个指针进行哈希，使用异或操作
+			size_t hash1 = hasher(obj.pass0);
+			size_t hash2 = hasher(obj.pass1);
+
+			return hash1 ^ hash2;
+		}
+	};
+
   public:
-	GraphNode(PassNode *node_) :
-	    curr_pass(node_)
-	{
-	}
-	void AddEdge(GraphEdge edge)
-	{
-		edges.push_back(edge);
-	}
-	PassNode *             curr_pass;
-	std::vector<GraphEdge> edges;
+	PassNode *pass0;
+	PassNode *pass1;
 };
 
 class DependencyGraph
@@ -337,6 +377,7 @@ class DependencyGraph
 	bool Execute(VkCommandBuffer cmb);
 	bool ExecutRenderGraphV0(VkCommandBuffer cmb);
 	bool ParallelExecuteRenderGraphV0(const VkDeviceManager &device_man, VkSemaphore general_rendering_finished_semaphore, VkSemaphore image_available_semaphore);
+	bool ParallelExecuteRenderGraphV0V0(const VkDeviceManager &device_man, VkSemaphore general_rendering_finished_semaphore, VkSemaphore image_available_semaphore);
 
   private:
 	void      GeneratePassNodeDepen();
@@ -347,9 +388,10 @@ class DependencyGraph
 	void      SubGraphMerge();
 
 	bool CompareByFinalExeOrder(const PassNode *a, const PassNode *b, const std::vector<PassNode *> &order);
-	void VisitNode(size_t index, PassNode *cur_node_pass, std::vector<bool> &visited, std::vector<bool> &on_stack, std::vector<PassNode *> &topologically_sorted_nodes);
 
-	size_t FindIndexInPassNodeArray(PassNode *node_pass,  const std::vector<std::unique_ptr<GraphicsPassNode>> &all_nodes);
+  public:
+	void   VisitNode(size_t index, PassNode *cur_node_pass, std::vector<bool> &visited, std::vector<bool> &on_stack, std::vector<PassNode *> &topologically_sorted_nodes);
+	size_t FindIndexInPassNodeArray(PassNode *node_pass, const std::vector<std::unique_ptr<GraphicsPassNode>> &all_nodes);
 
   public:
 	//使用unordered map，迭代器除非指向的是被删除的元素，否则迭代器[ 不会失效 ]
@@ -359,12 +401,17 @@ class DependencyGraph
 	std::unordered_map<std::string, VirtualResource<VkTexture>> uni_textures_map;
 	std::vector<std::unique_ptr<GraphicsPassNode>>              gfx_pass_nodes;
 
+	std::unordered_map<VkDeviceManager::VkExecutionQueue *, std::list<PassNode *>>         queue_with_all_passes_on_it;
+	std::unordered_map<PassNode *, std::pair<VkDeviceManager::VkExecutionQueue *, size_t>> pass_on_queue_info;
+	size_t                                                                                 max_level = 0;
+	std::vector<PassNode *>                                                                topologically_sorted_nodes;
+
   private:
 	std::vector<PassNode *> final_execution_order_hint;
 	//head数组
 	//边数组
-	std::vector<GraphNode> heads;
-	std::vector<GraphEdge> edges;
+	//std::vector<GraphNode> heads;
+	//std::vector<GraphEdge> edges;
 
   private:
 	VkRenderpassManager &renderpass_manager;

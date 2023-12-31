@@ -124,43 +124,46 @@ namespace RenderGraphV0
 //	    std::unordered_map<std::string, RsrcOutletMultiUsages<VkTexture, VkAttachmentInfo::WithinPassRG>>::iterator>
 //	    outlet_itr;
 //};
+//
+//
+
 //这里面U参数（usage）表示是资源的使用方式，其是传引用进入函数的。
+//这里面R参数（rsrc）表示是资源类型，其是传引用进入函数的。
+
+template <typename R, typename U>
+class RsrcInlet;
+
 template <typename R, typename U>
 class RsrcOutlet
 {
   public:
 	RsrcOutlet(
-	    typename std::unordered_map<std::string, VirtualResource<R>>::iterator rsrcmap_itr_,
+	    typename std::unordered_map<std::string, VirtualResource<R>>::iterator underlying_rsrc_itr_,
 	    RenderGraphV0::PassNode *                                              pass_attached_to_,
 	    U *                                                                    usage_) :
-	    rsrcmap_itr(std::move(rsrcmap_itr_)), usage(std::move(usage_)), pass_attached_to(pass_attached_to_), providing_passes(nullptr)
+	    underlying_rsrc_itr(std::move(underlying_rsrc_itr_)), usage(std::move(usage_)), pass_attached_to(pass_attached_to_)
 	{
 	}
 	RsrcOutlet() = delete;
 
-	typename std::unordered_map<std::string, VirtualResource<R>>::iterator GetItrInRsrcMap()
+	typename std::unordered_map<std::string, VirtualResource<R>>::iterator GetUnderlyingRsrcItr()
 	{
-		return rsrcmap_itr;
+		return underlying_rsrc_itr;
 	}
 
-	void AddAccessingPass(PassNode *pass)
+	void AddAccessingPassAndItr(PassNode *pass, std::unordered_map<std::string, RsrcOutlet<R, U>>::iterator itr)
 	{
-		accessing_passes.push_back(pass);
-	}
-	std::vector<RenderGraphV0::PassNode *> GetAccessingPasses()
-	{
-		return accessing_passes;
-	}
-	template <typename TIter>
-	void AssignProvidingPassAndProOutItr(PassNode *pass, TIter &&iter)
-	{
-		providing_passes = pass;
-		outlet_itr       = iter;
+		target_outlet_itrs.emplace(pass, itr);
 	}
 
-	PassNode *GetProvidingPass() const
+	void AddAccessingPassAndItr(PassNode *pass, std::unordered_map<std::string, RsrcInlet<R, U>>::iterator itr)
 	{
-		return providing_passes;
+		target_inlet_itrs.emplace(pass, itr);
+	}
+
+	void AssignProvidingPassAndProvidingOutItr(PassNode *pass, std::unordered_map<std::string, RsrcOutlet<R, U>>::iterator itr)
+	{
+		providing_pass_and_source_outlet_itr.emplace(pass, itr);
 	}
 
 	PassNode *GetPassAttachedTo() const
@@ -168,14 +171,11 @@ class RsrcOutlet
 		return pass_attached_to;
 	}
 
-	std::variant<
-		std::monostate,
-	    std::unordered_map<std::string, RsrcOutlet<VkBufferBase, VkBufUsageInfoRG>>::iterator,
-	    std::unordered_map<std::string, RsrcOutlet<VkTexture, VkTexUsageInfoRG>>::iterator,
-	    std::unordered_map<std::string, RsrcOutlet<VkTexture, VkAttachmentInfo::WithinPassRG>>::iterator>
-	    GetProvidingOutletItr()
+
+	std::optional<std::pair<RenderGraphV0::PassNode *, std::unordered_map<std::string, RsrcOutlet<R, U>>::iterator>>
+	    GetProvidingOutletItrAndPass()
 	{
-		return outlet_itr;
+		return providing_pass_and_source_outlet_itr;
 	}
 
 	U *GetRsrcUsage()
@@ -183,21 +183,22 @@ class RsrcOutlet
 		return usage;
 	}
 
+
+
+	std::vector<std::pair<RenderGraphV0::PassNode *, std::unordered_map<std::string, RsrcOutlet<R, U>>::iterator>> target_outlet_itrs;
+	std::vector<std::pair<RenderGraphV0::PassNode *, std::unordered_map<std::string, RsrcInlet<R, U>>::iterator>>  target_inlet_itrs;
+
   private:
-	typename std::unordered_map<std::string, VirtualResource<R>>::iterator rsrcmap_itr;
+	typename std::unordered_map<std::string, VirtualResource<R>>::iterator underlying_rsrc_itr;
 	U *                                                                    usage;
-	std::vector<RenderGraphV0::PassNode *>                                 accessing_passes;
 
 	RenderGraphV0::PassNode *pass_attached_to;
-	RenderGraphV0::PassNode *providing_passes;
 
-	std::variant<
-		std::monostate,
-	    std::unordered_map<std::string, RsrcOutlet<VkBufferBase, VkBufUsageInfoRG>>::iterator,
-	    std::unordered_map<std::string, RsrcOutlet<VkTexture, VkTexUsageInfoRG>>::iterator,
-	    std::unordered_map<std::string, RsrcOutlet<VkTexture, VkUniversalTexUsageInfoRG>>::iterator,
-	    std::unordered_map<std::string, RsrcOutlet<VkTexture, VkAttachmentInfo::WithinPassRG>>::iterator>
-	    outlet_itr;
+	std::optional<std::pair<RenderGraphV0::PassNode *, std::unordered_map<std::string, RsrcOutlet<R, U>>::iterator>> providing_pass_and_source_outlet_itr;
+
+
+
+
 };
 
 template <typename R, typename U>
@@ -205,29 +206,22 @@ class RsrcInlet
 {
   public:
 	RsrcInlet(
-	    typename std::unordered_map<std::string, VirtualResource<R>>::iterator rsrcmap_itr_,
+	    typename std::unordered_map<std::string, VirtualResource<R>>::iterator underlying_rsrc_itr_,
 	    RenderGraphV0::PassNode *                                              pass_attached_to_,
 	    U *                                                                    usage_) :
-	    rsrcmap_itr(std::move(rsrcmap_itr_)), usage(std::move(usage_)), pass_attached_to(pass_attached_to_), providing_passes(nullptr)
+	    underlying_rsrc_itr(std::move(rsrcmap_itr_)), usage(std::move(usage_)), pass_attached_to(pass_attached_to_)
 	{
 	}
 	RsrcInlet() = delete;
 
-	typename std::unordered_map<std::string, VirtualResource<R>>::iterator GetItrInRsrcMap()
+	typename std::unordered_map<std::string, VirtualResource<R>>::iterator GetUnderlyingRsrcItr()
 	{
-		return rsrcmap_itr;
+		return underlying_rsrc_itr;
 	}
 
-	template <typename TIter>
-	void AssignProvidingPassAndOutItr(PassNode *pass, TIter &&iter)
+	void AssignProvidingPassAndProvidingOutItr(PassNode *pass, std::unordered_map<std::string, RsrcOutlet<R, U>>::iterator itr)
 	{
-		providing_passes = pass;
-		outlet_itr       = iter;
-	}
-
-	PassNode *GetProvidingPass() const
-	{
-		return providing_passes;
+		providing_pass_and_source_outlet_itr.emplace(pass, itr);
 	}
 
 	PassNode *GetPassAttachedTo() const
@@ -235,35 +229,26 @@ class RsrcInlet
 		return pass_attached_to;
 	}
 
-	std::variant<
-		std::monostate,
-	    std::unordered_map<std::string, RsrcOutlet<VkBufferBase, VkBufUsageInfoRG>>::iterator,
-	    std::unordered_map<std::string, RsrcOutlet<VkTexture, VkTexUsageInfoRG>>::iterator,
-	    std::unordered_map<std::string, RsrcOutlet<VkTexture, VkAttachmentInfo::WithinPassRG>>::iterator>
-	    GetProvidingOutletItr()
-	{
-		return outlet_itr;
-	}
-
 	U *GetRsrcUsage()
 	{
 		return usage;
 	}
 
+	std::optional<std::pair<RenderGraphV0::PassNode *, std::unordered_map<std::string, RsrcOutlet<R, U>>::iterator>>
+	    GetProvidingOutletItrAndPass()
+	{
+		return providing_pass_and_source_outlet_itr;
+	}
+
   private:
-	typename std::unordered_map<std::string, VirtualResource<R>>::iterator rsrcmap_itr;
+	typename std::unordered_map<std::string, VirtualResource<R>>::iterator underlying_rsrc_itr;
 	U *                                                                    usage;
 
 	RenderGraphV0::PassNode *pass_attached_to;
-	RenderGraphV0::PassNode *providing_passes;
 
-	std::variant<
-		std::monostate,
-	    std::unordered_map<std::string, RsrcOutlet<VkBufferBase, VkBufUsageInfoRG>>::iterator,
-	    std::unordered_map<std::string, RsrcOutlet<VkTexture, VkTexUsageInfoRG>>::iterator,
-	    std::unordered_map<std::string, RsrcOutlet<VkTexture, VkUniversalTexUsageInfoRG>>::iterator,
-	    std::unordered_map<std::string, RsrcOutlet<VkTexture, VkAttachmentInfo::WithinPassRG>>::iterator>
-	    outlet_itr;
+	std::optional<std::pair<RenderGraphV0::PassNode *, std::unordered_map<std::string, RsrcOutlet<R, U>>::iterator>> providing_pass_and_source_outlet_itr;
+
+
 
 };
 

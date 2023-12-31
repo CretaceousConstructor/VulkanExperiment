@@ -2,11 +2,13 @@
 #include "Vk.h"
 #include "VkExtensionUtility.h"
 #include "VkWindows.h"
+#include <ranges>
 #include <algorithm>
 #include <array>
 #include <list>
 #include <unordered_map>
 #include <unordered_set>
+#include <set>
 #include <vector>
 
 namespace RenderGraphV0
@@ -142,8 +144,6 @@ class VkDeviceManager
 		    const std::unordered_map<RenderGraphV0::GraphicsPassNode *, VkDeviceManager::QueueCapability> &subgraph_execute_on_queue_info,
 		    const std::unordered_map<RenderGraphV0::GraphicsPassNode *, size_t> &                          subgraph_execute_on_queue_order)
 		{
-
-
 
 			const std::unordered_map<RenderGraphV0::GraphicsPassNode *, VkDeviceManager::QueueCapability> different_queue_family_subgraphs;
 			const std::unordered_map<RenderGraphV0::GraphicsPassNode *, VkDeviceManager::QueueCapability> same_queue_family_subgraphs;

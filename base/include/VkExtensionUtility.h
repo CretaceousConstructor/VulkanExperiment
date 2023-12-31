@@ -15,8 +15,4 @@ namespace VkExtensionUtility
 	std::vector<const char *> GetNeededGlobalInstanceExtensions(bool ValidationLayerEnabled);
 	const std::vector<const char *>& GetRequiredExtensionsForAGoodDevice();
 
-
-
-
-
 };        // namespace VkExtensionUtility

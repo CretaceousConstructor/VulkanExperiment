@@ -514,7 +514,7 @@ void RealtimeRenderer::DrawFrameRecordCmdBufEvrFrame(float time_diff)
 
 	const auto graphics_command_buffer = command_manager.GetGraphicsCommandBuffers()[img_index];
 
-	CommandBufferRecording(graphics_command_buffer, img_index);
+	//CommandBufferRecording(graphics_command_buffer, img_index);
 
 	const std::array<VkCommandBuffer, 1> submit_command_buffers = {graphics_command_buffer};
 
@@ -1152,7 +1152,7 @@ void RealtimeRenderer::CreateSwapchainTextures()
 //	VkCommandManager::EndCommandBuffers(cmd_buf);
 //}
 
-void RealtimeRenderer::CommandBufferRecording(VkSemaphore general_rendering_finished_semaphore,VkSemaphore image_available_semaphore, size_t img_index)
+void RealtimeRenderer::CommandBufferRecording(VkSemaphore general_rendering_finished_semaphore, VkSemaphore image_available_semaphore, size_t img_index)
 {
 	//VkCommandManager::BeginCommandBuffers(cmd_buf);
 	//VkCommandManager::EndCommandBuffers(cmd_buf);
@@ -1499,19 +1499,13 @@ void RealtimeRenderer::CommandBufferRecording(VkSemaphore general_rendering_fini
 	            Vk::AccessType::Write));
 
 	//RenderGraph编译
-	if (render_graph_v0.Compile(device_manager))
-	{
-		//RenderGraph执行(包括CMDbuffer录制过程)
-		//把work 分配到不同到queue上
-		const bool successed = render_graph_v0.ParallelExecuteRenderGraphV0(device_manager,general_rendering_finished_semaphore,image_available_semaphore);
-		if (!successed)
-		{
-			throw std::runtime_error("Failed to execute render graph!");
-		}
-	}
-	else
-	{
-		throw std::runtime_error("Failed to record commands from render graph!");
-	}
+	render_graph_v0.Compile(device_manager);
+	//RenderGraph执行(包括CMDbuffer录制过程)
+	//把work 分配到不同到queue上
+	//render_graph_v0.ParallelExecuteRenderGraphV0(device_manager, general_rendering_finished_semaphore, image_available_semaphore);
+	render_graph_v0.ParallelExecuteRenderGraphV0V0(device_manager, general_rendering_finished_semaphore, image_available_semaphore);
+
+
+
 
 }

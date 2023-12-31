@@ -17,7 +17,6 @@ class VkFactoryBundle
 {
 	friend class VkRenderpassManager;
 
-
   private:
 	VkFactoryBundle(VkGraphicsComponent &gfx);
 

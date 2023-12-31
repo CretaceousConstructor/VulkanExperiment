@@ -26,8 +26,6 @@ void VkRenderpassBaseRG::Init()
 
 	CreateAttachments();
 
-
-
 	CreateGraphicsPipelineLayout();
 	CreateShaders();
 	CreateGraphicsPipeline();

@@ -191,12 +191,11 @@ bool RenderGraphV0::DependencyGraph::Compile(const VkDeviceManager &device_man)
 	final_execution_order_hint.clear();
 	final_execution_order_hint.reserve(gfx_pass_nodes.size());
 
-	GeneratePassNodeDepen();        //由声明确定可以推断出来的顺序
+	GeneratePassNodeDepen();        //由In,Out函数声明确定可以推断出来的顺序
 
 	//拓扑排序算法1，dfs
-	std::vector<bool>       visited(gfx_pass_nodes.size(), false);
-	std::vector<bool>       on_stack(gfx_pass_nodes.size(), false);
-	std::vector<PassNode *> topologically_sorted_nodes;
+	std::vector<bool> visited(gfx_pass_nodes.size(), false);
+	std::vector<bool> on_stack(gfx_pass_nodes.size(), false);
 
 	for (auto gfx_node_itr = gfx_pass_nodes.begin(); gfx_node_itr < gfx_pass_nodes.end(); ++gfx_node_itr)
 	{
@@ -208,7 +207,8 @@ bool RenderGraphV0::DependencyGraph::Compile(const VkDeviceManager &device_man)
 			break;
 		}
 	}
-	std::reverse(topologically_sorted_nodes.begin(), topologically_sorted_nodes.end());
+
+	std::ranges::reverse(topologically_sorted_nodes);
 
 	//拓扑排序算法2
 	////Topological Sorting拓扑排序，为mark root pass做准备
@@ -254,22 +254,34 @@ bool RenderGraphV0::DependencyGraph::Compile(const VkDeviceManager &device_man)
 	//	}
 	//}
 
-	//TODO:多线程优化，继续对pass进行层次划分，变成pass groups(一个个sub graph)，让每一个sub graph都可以拿去到不同的queue去并行执行
-
 	//Again, we begin at the bottom-most root pass, and note all the resources that get read by this pass. Then we iterate upwards in our list of passes until we find a pass which writes to any of these read resources. If we find such a pass, it is tagged as contributing to that particular root pass.
 
 	//There’s one special case: if a pass uses a resource write-only, we take this resource out of our reads-set - we won’t be interested in the next-earlier write to this resource as it will get overwritten anyway.
 
 	//We add the read resources of our contributing pass to our current set of monitored read resources and continue our iteration upwards, until we find the next pass which writes to any of these read resources. If we find such a pass, it too contributes to the current root pass and we add a matching tag to it.
 
-	//层次划分DEPENDENCY LEVELS
-	std::vector<size_t> maximum_recursion_depth(gfx_pass_nodes.size(), 0);
+	//多queue优化，继续对pass进行层次划分，变成pass groups(一个个sub graph)，让每一个sub graph都可以拿去到不同的queue去并行执行
+
+	///************************************************************
+	//层次划分DEPENDENCY LEVELS GENERATION:
+	///************************************************************
+	std::vector<size_t> maximum_recursion_depth(topologically_sorted_nodes.size(), 0);
 	for (auto pas_itr = topologically_sorted_nodes.begin(); pas_itr < topologically_sorted_nodes.end(); ++pas_itr)
 	{
 		size_t cur_index = std::distance(topologically_sorted_nodes.begin(), pas_itr);
 		for (auto adjacent_pass : (*pas_itr)->passes_depen_on_cur_pass_set)
 		{
-			size_t adj_index = FindIndexInPassNodeArray(adjacent_pass, gfx_pass_nodes);
+			// Use std::find_if with a lambda function
+			auto it_adj_pass = std::ranges::find_if(topologically_sorted_nodes,
+			                                        [adjacent_pass](const PassNode *node_itr) {
+				                                        return node_itr == adjacent_pass;
+			                                        });
+			if (it_adj_pass == topologically_sorted_nodes.end())
+			{
+				throw std::runtime_error("no pass found!");
+			}
+
+			size_t adj_index = std::distance(topologically_sorted_nodes.begin(), it_adj_pass);
 			if (maximum_recursion_depth[adj_index] < maximum_recursion_depth[cur_index] + 1)
 			{
 				maximum_recursion_depth[adj_index] = maximum_recursion_depth[cur_index] + 1;
@@ -281,46 +293,45 @@ bool RenderGraphV0::DependencyGraph::Compile(const VkDeviceManager &device_man)
 	{
 		topologically_sorted_nodes[i]->maximum_recursion_depth = maximum_recursion_depth[i];
 	}
-	auto max_level_itr = std::max_element(maximum_recursion_depth.begin(), maximum_recursion_depth.end());
-
+	const auto max_level_itr = std::ranges::max_element(maximum_recursion_depth);
+	max_level                = *max_level_itr;
 	///************************************************************
 	//DISTRIBUTE WORK TO MULTIPLE QUEUES ONTO GPU:
 	///************************************************************
 
-	std::unordered_map<VkDeviceManager::VkExecutionQueue *, std::list<PassNode *>>         queue_with_all_passes_on_it;
-	std::unordered_map<PassNode *, std::pair<VkDeviceManager::VkExecutionQueue *, size_t>> pass_on_queue_info;
-	std::unordered_map<PassNode *, std::array<std::vector<size_t>, 2>>                     sufficient_synchronization_index_set;
+	//std::unordered_map<VkDeviceManager::VkExecutionQueue *, std::list<PassNode *>>         queue_with_all_passes_on_it;
+	//std::unordered_map<PassNode *, std::pair<VkDeviceManager::VkExecutionQueue *, size_t>> pass_on_queue_info;
 
 	device_man.QueuesNumDisbatchedPassesToZero();
-	size_t assigned_index = 1;
-	for (auto level = 0; level <= *max_level_itr; ++level)
+	size_t monotonical_assigned_index = 1;
+	for (auto level = 0; level <= max_level; ++level)
 	{
 		for (auto &ptr_pass : topologically_sorted_nodes)
 		{
 			if (ptr_pass->maximum_recursion_depth == level)
 			{
 				VkRenderpassBaseRG::Type         pass_type = ptr_pass->GetRenderpassType();
-				VkDeviceManager::QueueCapability queue_cap;
+				VkDeviceManager::QueueCapability queue_cap_requirement;
 				if (pass_type & VkRenderpassBaseRG::Type::Graphics)
 				{
-					queue_cap.graphics = true;
+					queue_cap_requirement.graphics = true;
 				}
 
 				if (pass_type & VkRenderpassBaseRG::Type::Compute)
 				{
-					queue_cap.compute = true;
+					queue_cap_requirement.compute = true;
 				}
 
 				if (pass_type & VkRenderpassBaseRG::Type::Transfor)
 				{
-					queue_cap.transfer = true;
+					queue_cap_requirement.transfer = true;
 				}
 
 				if (pass_type & VkRenderpassBaseRG::Type::Present)
 				{
-					queue_cap.present = true;
+					queue_cap_requirement.present = true;
 				}
-				auto &target_queue = device_man.GetSuitableQueue2(queue_cap);
+				auto &target_queue = device_man.GetSuitableQueue2(queue_cap_requirement);
 				auto  ptr_queue    = &target_queue;
 				if (queue_with_all_passes_on_it.contains(ptr_queue))
 				{
@@ -331,94 +342,372 @@ bool RenderGraphV0::DependencyGraph::Compile(const VkDeviceManager &device_man)
 					queue_with_all_passes_on_it.emplace(ptr_queue, std::list<PassNode *>{ptr_pass});
 				}
 
-				auto result_itr = pass_on_queue_info.emplace(ptr_queue, std::pair<VkDeviceManager::VkExecutionQueue *, size_t>{ptr_queue, assigned_index});
+				auto result_itr = pass_on_queue_info.emplace(ptr_queue, std::pair<VkDeviceManager::VkExecutionQueue *, size_t>{ptr_queue, monotonical_assigned_index});
 
 				if (!result_itr.second)
 				{
 					throw std::runtime_error("the pass has been distributed to queue!");
 				}
-				assigned_index++;
+				monotonical_assigned_index++;
 			}
 		}
 	}
 
-	//生成SSIS
 	std::vector<VkDeviceManager::VkExecutionQueue *> all_queue_in_use;        //确定一个queue的顺序，方便之后用index索引
 	// Extract keys from the map and store them in the vector
-	std::transform(queue_with_all_passes_on_it.begin(), queue_with_all_passes_on_it.end(), std::back_inserter(all_queue_in_use), [](const std::pair<VkDeviceManager::VkExecutionQueue *, std::list<PassNode *>> &pair) {
-		return pair.first;        // Extract the key
-	});
-	auto ssis_size = queue_with_all_passes_on_it.size();
+	std::ranges::transform(queue_with_all_passes_on_it, std::back_inserter(all_queue_in_use),
+	                       [](const std::pair<VkDeviceManager::VkExecutionQueue *, std::list<PassNode *>> &pair) {
+		                       return pair.first;        // Extract the key
+	                       });
 
-	std::for_each(topologically_sorted_nodes.begin(), topologically_sorted_nodes.end(), [&sufficient_synchronization_index_set, ssis_size](PassNode *ptr_pass) {
-		sufficient_synchronization_index_set.emplace(ptr_pass, std::array<std::vector<size_t>, 2>{std::vector<size_t>(ssis_size, 0), std::vector<size_t>(ssis_size, 0)});
-	});
+	//FOR EVERY pass pair, we assign it an event, in order to do sync within a same queue;
+	std::unordered_map<PassPair, VkEvent>     same_queue_sync_event;
+	std::unordered_map<PassPair, VkSemaphore> diff_queue_sync_sema;
+	VkEvent                                   shit_event;
+	VkSemaphore                               shit_sema;
+	for (auto itr = topologically_sorted_nodes.begin(); std::next(itr) != topologically_sorted_nodes.end(); ++itr)
+	{
+		same_queue_sync_event.emplace(PassPair{*itr, *std::next(itr)}, shit_event);
+		diff_queue_sync_sema.emplace(PassPair{*itr, *std::next(itr)}, shit_sema);
+	}
 
-	//填写queue_with_depen_passes_on_it
-	std::for_each(topologically_sorted_nodes.begin(), topologically_sorted_nodes.end(),
-	              [&pass_on_queue_info, &queue_with_all_passes_on_it](PassNode *ptr_pass) {
-		              std::unordered_map<VkDeviceManager::VkExecutionQueue *, std::vector<PassNode *>> queue_with_depen_passes_on_it;        //每一个pass的depen pass都需要一个queue_with_depen_passes_on_it
+	//按照level层次来loop，
+	for (auto level = 0; level <= *max_level_itr; ++level)
+	{
+		std::ranges::for_each(
+		    topologically_sorted_nodes,
+		    [level, this, &same_queue_sync_event, &diff_queue_sync_sema](PassNode *cur_pass) {
+			    if (cur_pass->maximum_recursion_depth == level)
+			    {
+				    for (auto &[_, cur_out_let] : cur_pass->outs_buf)
+				    {
+					    for (auto &[tar_pass, tar_let] : cur_out_let.target_outlet_itrs)
+					    {
+						    auto  cur_pass_queue_cap = pass_on_queue_info.at(cur_pass).first->GetQueueCap();
+						    auto  tar_pass_queue_cap = pass_on_queue_info.at(tar_pass).first->GetQueueCap();
+						    auto &providing_outlet   = cur_out_let;
+						    auto &target_let         = tar_let->second;
+						    //Cur pass     ------------------------->       Tar pass
 
-		              //loop 所有 之前需要先执行的depen pass，从而填充 queue_with_depen_passes_on_it
-		              std::for_each(ptr_pass->passes_depen_set.begin(), ptr_pass->passes_depen_set.end(),
-		                            [&pass_on_queue_info, &queue_with_all_passes_on_it, &queue_with_depen_passes_on_it](PassNode *pas) {
-			                            //找到先执行pass的queue，如果在，就加入，不在就创建新的加入
-			                            auto ptr_to_queue = pass_on_queue_info.at(pas).first;
-			                            if (!queue_with_depen_passes_on_it.contains(ptr_to_queue))
-			                            {
-				                            queue_with_depen_passes_on_it.emplace(ptr_to_queue, std::vector<PassNode *>{pas});
-			                            }
-			                            else
-			                            {
-				                            queue_with_depen_passes_on_it.at(ptr_to_queue).push_back(pas);
-			                            }
-		                            });
+						    //Sync primitive
+						    auto sync_event = same_queue_sync_event.at(PassPair{cur_pass, tar_pass});
+						    auto sync_sema  = diff_queue_sync_sema.at(PassPair{cur_pass, tar_pass});
 
-		              //按照在某一个queue内，按照assigned index排序所有需要先执行的depen pass
-		              std::for_each(queue_with_depen_passes_on_it.begin(), queue_with_depen_passes_on_it.end(),
-		                            [&pass_on_queue_info](std::pair<VkDeviceManager::VkExecutionQueue *, std::vector<PassNode *>> &queue_passlist_pair) {
-			                            std::sort(queue_passlist_pair.second.begin(), queue_passlist_pair.second.end(),
-			                                      [&pass_on_queue_info](PassNode *lhs, PassNode *rhs) {
-				                                      pass_on_queue_info.at(lhs).second < pass_on_queue_info.at(rhs).second;
-			                                      });
-		                            });
-		              //对于每一个depen pass：
-		              std::for_each(ptr_pass->passes_depen_set.begin(), ptr_pass->passes_depen_set.end(),
+						    //CASE 1: in a same queue situation
+						    if (cur_pass_queue_cap.queue_family_index == tar_pass_queue_cap.queue_family_index)
+						    {
+							    cur_pass->InsertSameQueueSyncInfo(
+							        cur_pass,
+							        tar_pass,
+							        sync_event,
+							        cur_pass_queue_cap,
+							        providing_outlet.GetRsrcUsage()->GetSynInfo(),
+							        target_let.GetRsrcUsage()->GetSynInfo(),
+							        target_let.GetUnderlyingRsrcItr());
 
-		              )
-	              })
+							    tar_pass->InsertSameQueueSyncInfo(
+							        cur_pass,
+							        tar_pass,
+							        sync_event,
+							        tar_pass_queue_cap,
+							        providing_outlet.GetRsrcUsage()->GetSynInfo(),
+							        target_let.GetRsrcUsage()->GetSynInfo(),
+							        target_let.GetUnderlyingRsrcItr());
+						    }
+						    //CASE 2: NOT in a same queue situation (need queue ownership transfer!)
+						    else
+						    {
+							    cur_pass->InsertDiffQueueSyncInfo(
+							        cur_pass,
+							        tar_pass,
+							        sync_sema,
+							        cur_pass_queue_cap,
+							        tar_pass_queue_cap,
+							        providing_outlet.GetRsrcUsage()->GetSynInfo(),
+							        target_let.GetRsrcUsage()->GetSynInfo(),
+							        target_let.GetUnderlyingRsrcItr());
 
-	    //
-	    //std::unordered_map<VkDeviceManager::VkExecutionQueue *, std::list<PassNode *>>         queue_with_passes_on_it;
-	    //std::unordered_map<PassNode *, std::pair<VkDeviceManager::VkExecutionQueue *, size_t>> pass_on_queue_info;
-	    //std::unordered_map<VkDeviceManager::VkExecutionQueue *, std::vector<PassNode *>>       queue_with_depen_passes_on_it;
-	    //std::unordered_map<PassNode *, std::vector<size_t>>                                    sufficient_synchronization_index_set;
+							    tar_pass->InsertSameQueueSyncInfo(
+							        cur_pass,
+							        tar_pass,
+							        sync_event,
+							        tar_pass_queue_cap,
+							        providing_outlet.GetRsrcUsage()->GetSynInfo(),
+							        target_let.GetRsrcUsage()->GetSynInfo(),
+							        target_let.GetUnderlyingRsrcItr());
+						    }
+					    }
+				    }
+				    //TODO: do the same shit for textures
 
-	    /// <summary>
-	    /// 生成subgraph
-	    /// </summary>
-	    /// <returns></returns>
-	    //for (const auto &gfx_node : gfx_pass_nodes)
-	    //{
-	    //	if (gfx_node->IsRootPass())
-	    //	{
-	    //		//Root pass marking
-	    //		RootPassMarking(gfx_node.get());
-	    //		//sub graph overlap testing
-	    //		SubGraphMerge();
-	    //	}
-	    //}
+				    for (auto &[_, cur_out_let] : cur_pass->outs_uni_tex)
+				    {
+					    for (auto &[tar_pass, tar_let] : cur_out_let.target_outlet_itrs)
+					    {
+						    auto  cur_pass_queue_cap = pass_on_queue_info.at(cur_pass).first->GetQueueCap();
+						    auto  tar_pass_queue_cap = pass_on_queue_info.at(tar_pass).first->GetQueueCap();
+						    auto &providing_outlet   = cur_out_let;
+						    auto &target_let         = tar_let->second;
+						    //Cur pass     ------------------------->       Tar pass
 
-	    //for (const auto &gfx_node : gfx_pass_nodes)
-	    //{
-	    //	if (gfx_node->IsRootPass())
-	    //	{
-	    //		gfx_node->AccumulateQueueRequirement();
-	    //	}
-	    //}
+						    //Sync primitive
+						    auto sync_event = same_queue_sync_event.at(PassPair{cur_pass, tar_pass});
+						    auto sync_sema  = diff_queue_sync_sema.at(PassPair{cur_pass, tar_pass});
 
-	    std::cout
-	    << "Render graph compilation finished" << std::endl;
+						    //CASE 1: in a same queue situation
+						    if (cur_pass_queue_cap.queue_family_index == tar_pass_queue_cap.queue_family_index)
+						    {
+							    cur_pass->InsertSameQueueSyncInfo(
+							        cur_pass,
+							        tar_pass,
+							        sync_event,
+							        cur_pass_queue_cap,
+							        providing_outlet.GetRsrcUsage()->GetSynInfo(),
+							        target_let.GetRsrcUsage()->GetSynInfo(),
+							        target_let.GetUnderlyingRsrcItr());
+
+							    tar_pass->InsertSameQueueSyncInfo(
+							        cur_pass,
+							        tar_pass,
+							        sync_event,
+							        tar_pass_queue_cap,
+							        providing_outlet.GetRsrcUsage()->GetSynInfo(),
+							        target_let.GetRsrcUsage()->GetSynInfo(),
+							        target_let.GetUnderlyingRsrcItr());
+						    }
+						    //CASE 2: NOT in a same queue situation (need queue ownership transfer!)
+						    else
+						    {
+							    cur_pass->InsertDiffQueueSyncInfo(
+							        cur_pass,
+							        tar_pass,
+							        sync_sema,
+							        cur_pass_queue_cap,
+							        tar_pass_queue_cap,
+							        providing_outlet.GetRsrcUsage()->GetSynInfo(),
+							        target_let.GetRsrcUsage()->GetSynInfo(),
+							        target_let.GetUnderlyingRsrcItr());
+
+							    tar_pass->InsertSameQueueSyncInfo(
+							        cur_pass,
+							        tar_pass,
+							        sync_event,
+							        tar_pass_queue_cap,
+							        providing_outlet.GetRsrcUsage()->GetSynInfo(),
+							        target_let.GetRsrcUsage()->GetSynInfo(),
+							        target_let.GetUnderlyingRsrcItr());
+						    }
+					    }
+				    }
+
+				    //for (const auto later_pass : cur_pass->passes_depen_on_cur_pass_set)
+				    //{
+				    // auto &later_pass_queue_info = pass_on_queue_info.at(later_pass);
+				    // auto &cur_pass_queue_info   = pass_on_queue_info.at(cur_pass);
+
+				    // //Cur pass     ------------------------->       Later pass
+
+				    // //CASE 1: in a same queue situation
+				    // //*********************************
+				    // for (auto &[_, inlet] : later_pass->ins_buf)
+				    // {
+				    //  //  Same queue here: || cur_pass  ->  set_event->  wait_event  ->  later_pass ||
+				    //  auto providing_itr_and_pass = inlet.GetProvidingOutletItrAndPass();
+				    //  if (providing_itr_and_pass)
+				    //  {
+				    //   if (providing_itr_and_pass.value().first == cur_pass)
+				    //   {
+				    //    auto &providing_outlet = providing_itr_and_pass.value().second->second;
+
+				    //    cur_pass->InsertSameQueueSyncInfo(
+				    //        cur_pass,
+				    //        later_pass,
+				    //        cur_pass_queue_info.first->GetQueueCap(),
+				    //        providing_outlet.GetRsrcUsage()->GetSynInfo(),
+				    //        inlet.GetRsrcUsage()->GetSynInfo(),
+				    //        inlet.GetUnderlyingRsrcItr());
+
+				    //    cur_pass->InsertSameQueueSyncInfo(
+				    //        cur_pass,
+				    //        later_pass,
+				    //        cur_pass_queue_info.first->GetQueueCap(),
+				    //        providing_outlet.GetRsrcUsage()->GetSynInfo(),
+				    //        inlet.GetRsrcUsage()->GetSynInfo(),
+				    //        inlet.GetUnderlyingRsrcItr());
+				    //   }
+				    //  }
+				    // }
+
+				    // for (auto &[_, later_let] : later_pass->ins_uni_tex)
+				    // {
+				    //  //  Same queue here: || cur_pass  ->  setevent->  waitevent  ->  later_pass ||
+				    //  auto providing_itr_and_pass = later_let.GetProvidingOutletItrAndPass();
+
+				    //  if (providing_itr_and_pass)
+				    //  {
+				    //   if (providing_itr_and_pass.value().first == cur_pass)
+				    //   {
+				    //    auto &providing_outlet = providing_itr_and_pass.value().second->second;
+
+				    //    cur_pass->InsertSameQueueSyncInfo(
+				    //        cur_pass,
+				    //        later_pass,
+				    //        cur_pass_queue_info.first->GetQueueCap(),
+				    //        providing_outlet.GetRsrcUsage()->GetSynInfo(),
+				    //        later_let.GetRsrcUsage()->GetSynInfo(),
+				    //        later_let.GetUnderlyingRsrcItr());
+
+				    //    cur_pass->InsertSameQueueSyncInfo(
+				    //        cur_pass,
+				    //        later_pass,
+				    //        cur_pass_queue_info.first->GetQueueCap(),
+				    //        providing_outlet.GetRsrcUsage()->GetSynInfo(),
+				    //        later_let.GetRsrcUsage()->GetSynInfo(),
+				    //        later_let.GetUnderlyingRsrcItr());
+				    //   }
+				    //  }
+				    // }
+
+				    // for (auto &[_, later_let] : later_pass->outs_buf)
+				    // {
+				    //  //  Same queue here: || cur_pass  ->  setevent->  waitevent  ->  later_pass ||
+				    //  auto providing_itr_and_pass = later_let.GetProvidingOutletItrAndPass();
+				    //  if (providing_itr_and_pass)
+				    //  {
+				    //   if (providing_itr_and_pass.value().first == cur_pass)
+				    //   {
+				    //    auto &providing_outlet = providing_itr_and_pass.value().second->second;
+
+				    //    cur_pass->InsertSameQueueSyncInfo(
+				    //        cur_pass,
+				    //        later_pass,
+				    //        cur_pass_queue_info.first->GetQueueCap(),
+				    //        providing_outlet.GetRsrcUsage()->GetSynInfo(),
+				    //        later_let.GetRsrcUsage()->GetSynInfo(),
+				    //        later_let.GetUnderlyingRsrcItr());
+
+				    //    cur_pass->InsertSameQueueSyncInfo(
+				    //        cur_pass,
+				    //        later_pass,
+				    //        cur_pass_queue_info.first->GetQueueCap(),
+				    //        providing_outlet.GetRsrcUsage()->GetSynInfo(),
+				    //        later_let.GetRsrcUsage()->GetSynInfo(),
+				    //        later_let.GetUnderlyingRsrcItr());
+				    //   }
+				    //  }
+				    // }
+
+				    // for (auto &[_, later_let] : later_pass->outs_uni_tex)
+				    // {
+				    //  //  Same queue here: || cur_pass  ->  setevent->  waitevent  ->  later_pass ||
+				    //  auto providing_itr_and_pass = later_let.GetProvidingOutletItrAndPass();
+
+				    //  if (providing_itr_and_pass)
+				    //  {
+				    //   if (providing_itr_and_pass.value().first == cur_pass)
+				    //   {
+				    //    auto &providing_outlet = providing_itr_and_pass.value().second->second;
+
+				    //    cur_pass->InsertSameQueueSyncInfo(
+				    //        cur_pass,
+				    //        later_pass,
+				    //        cur_pass_queue_info.first->GetQueueCap(),
+				    //        providing_outlet.GetRsrcUsage()->GetSynInfo(),
+				    //        later_let.GetRsrcUsage()->GetSynInfo(),
+				    //        later_let.GetUnderlyingRsrcItr());
+
+				    //    cur_pass->InsertSameQueueSyncInfo(
+				    //        cur_pass,
+				    //        later_pass,
+				    //        cur_pass_queue_info.first->GetQueueCap(),
+				    //        providing_outlet.GetRsrcUsage()->GetSynInfo(),
+				    //        later_let.GetRsrcUsage()->GetSynInfo(),
+				    //        later_let.GetUnderlyingRsrcItr());
+				    //   }
+				    //  }
+				    // }
+				    // //*********************************
+				    // //CASE 2: NOT in a same queue situation (need queue ownership transfer!)
+				    //}
+			    }
+		    }
+
+		);
+	}
+
+	//处理多个pass 同时 读 的同步问题
+
+	//生成SSIS
+	//auto ssis_size = queue_with_all_passes_on_it.size();
+
+	//std::for_each(topologically_sorted_nodes.begin(), topologically_sorted_nodes.end(), [&sufficient_synchronization_index_set, ssis_size](PassNode *ptr_pass) {
+	//	sufficient_synchronization_index_set.emplace(ptr_pass, std::array<std::vector<size_t>, 2>{std::vector<size_t>(ssis_size, 0), std::vector<size_t>(ssis_size, 0)});
+	//});
+
+	////填写queue_with_depen_passes_on_it
+	//std::for_each(topologically_sorted_nodes.begin(), topologically_sorted_nodes.end(),
+	//              [&pass_on_queue_info, &queue_with_all_passes_on_it](PassNode *ptr_pass) {
+	//	              std::unordered_map<VkDeviceManager::VkExecutionQueue *, std::vector<PassNode *>> queue_with_depen_passes_on_it;        //每一个pass的depen pass都需要一个queue_with_depen_passes_on_it
+
+	//	              //loop 所有 之前需要先执行的depen pass，从而填充 queue_with_depen_passes_on_it
+	//	              std::for_each(ptr_pass->passes_depen_set.begin(), ptr_pass->passes_depen_set.end(),
+	//	                            [&pass_on_queue_info, &queue_with_all_passes_on_it, &queue_with_depen_passes_on_it](PassNode *pas) {
+	//		                            //找到先执行pass的queue，如果在，就加入，不在就创建新的加入
+	//		                            auto ptr_to_queue = pass_on_queue_info.at(pas).first;
+	//		                            if (!queue_with_depen_passes_on_it.contains(ptr_to_queue))
+	//		                            {
+	//			                            queue_with_depen_passes_on_it.emplace(ptr_to_queue, std::vector<PassNode *>{pas});
+	//		                            }
+	//		                            else
+	//		                            {
+	//			                            queue_with_depen_passes_on_it.at(ptr_to_queue).push_back(pas);
+	//		                            }
+	//	                            });
+
+	//	              //按照在某一个queue内，按照assigned index排序所有需要先执行的depen pass
+	//	              std::for_each(queue_with_depen_passes_on_it.begin(), queue_with_depen_passes_on_it.end(),
+	//	                            [&pass_on_queue_info](std::pair<VkDeviceManager::VkExecutionQueue *, std::vector<PassNode *>> &queue_passlist_pair) {
+	//		                            std::sort(queue_passlist_pair.second.begin(), queue_passlist_pair.second.end(),
+	//		                                      [&pass_on_queue_info](PassNode *lhs, PassNode *rhs) {
+	//			                                      pass_on_queue_info.at(lhs).second < pass_on_queue_info.at(rhs).second;
+	//		                                      });
+	//	                            });
+	//	              //对于每一个depen pass：
+	//	              std::for_each(ptr_pass->passes_depen_set.begin(), ptr_pass->passes_depen_set.end(),
+
+	//	              )
+	//              })
+
+	//
+	//std::unordered_map<VkDeviceManager::VkExecutionQueue *, std::list<PassNode *>>         queue_with_passes_on_it;
+	//std::unordered_map<PassNode *, std::pair<VkDeviceManager::VkExecutionQueue *, size_t>> pass_on_queue_info;
+	//std::unordered_map<VkDeviceManager::VkExecutionQueue *, std::vector<PassNode *>>       queue_with_depen_passes_on_it;
+	//std::unordered_map<PassNode *, std::vector<size_t>>                                    sufficient_synchronization_index_set;
+
+	/// <summary>
+	/// 生成subgraph
+	/// </summary>
+	/// <returns></returns>
+	//for (const auto &gfx_node : gfx_pass_nodes)
+	//{
+	//	if (gfx_node->IsRootPass())
+	//	{
+	//		//Root pass marking
+	//		RootPassMarking(gfx_node.get());
+	//		//sub graph overlap testing
+	//		SubGraphMerge();
+	//	}
+	//}
+
+	//for (const auto &gfx_node : gfx_pass_nodes)
+	//{
+	//	if (gfx_node->IsRootPass())
+	//	{
+	//		gfx_node->AccumulateQueueRequirement();
+	//	}
+	//}
+
+	std::cout << "Render graph compilation finished." << std::endl;
 	return true;
 }
 
@@ -485,7 +774,7 @@ void RenderGraphV0::DependencyGraph::RootPassMarking(PassNode *root_pass)
 
 				if (buf_usage.GetAccessType() == Vk::AccessType::Read)
 				{
-					const auto rsrc_itr = inlet.second.GetItrInRsrcMap();
+					const auto rsrc_itr = inlet.second.GetUnderlyingRsrcItr();
 					//根据确定的顺序（至少用户使用In和Out函数 所声明的资源使用顺序是有保证的）进行排序
 					std::sort(rsrc_itr->second.passes_access_this_rsrc.begin(), rsrc_itr->second.passes_access_this_rsrc.end(),
 					          [&](const std::pair<RenderGraphV0::PassNode *, Vk::AccessType> &a, const std::pair<RenderGraphV0::PassNode *, Vk::AccessType> &b) {
@@ -514,7 +803,7 @@ void RenderGraphV0::DependencyGraph::RootPassMarking(PassNode *root_pass)
 
 				if (tex_usage.GetAccessType() == Vk::AccessType::Read)
 				{
-					const auto rsrc_itr = inlet.second.GetItrInRsrcMap();
+					const auto rsrc_itr = inlet.second.GetUnderlyingRsrcItr();
 					//根据确定的顺序（至少用户使用In和Out函数 所声明的资源使用顺序是有保证的）进行排序
 					std::sort(rsrc_itr->second.passes_access_this_rsrc.begin(), rsrc_itr->second.passes_access_this_rsrc.end(),
 					          [&](const std::pair<RenderGraphV0::PassNode *, Vk::AccessType> &a, const std::pair<RenderGraphV0::PassNode *, Vk::AccessType> &b) {
@@ -1469,6 +1758,109 @@ bool RenderGraphV0::DependencyGraph::ParallelExecuteRenderGraphV0(const VkDevice
 	return true;
 }
 
+bool RenderGraphV0::DependencyGraph::ParallelExecuteRenderGraphV0V0(const VkDeviceManager &device_man, VkSemaphore general_rendering_finished_semaphore, VkSemaphore image_available_semaphore)
+{
+	//device_man.QueuesNumDisbatchedPassesToZero();
+
+	//Pre Execute
+	//for (auto &pass : gfx_pass_nodes)
+	//{
+	//	OnQueueOrder multi_queues_order = 0;
+	//	if (pass->is_rootpass)
+	//	{
+	//		multi_queues_order++;
+	//		VkRenderpassBaseRG::Type         acc_type = pass->GetAccumulatedType();
+	//		VkDeviceManager::QueueCapability queue_cap;
+	//		if (acc_type & VkRenderpassBaseRG::Type::Graphics)
+	//		{
+	//			queue_cap.graphics = true;
+	//		}
+
+	//		if (acc_type & VkRenderpassBaseRG::Type::Compute)
+	//		{
+	//			queue_cap.compute = true;
+	//		}
+
+	//		if (acc_type & VkRenderpassBaseRG::Type::Transfor)
+	//		{
+	//			queue_cap.transfer = true;
+	//		}
+
+	//		if (acc_type & VkRenderpassBaseRG::Type::Present)
+	//		{
+	//			queue_cap.present = true;
+	//		}
+
+	//		auto &target_queue = device_man.GetSuitableQueue(queue_cap);
+	//		target_queue.SetNumDisbatchedPasses(target_queue.GetNumDisbatchedPasses() + pass->subgraph_pass.size() + 1);
+
+	//		auto insersion_result_0 = subgraph_execute_on_queue_info.try_emplace(pass.get(), target_queue.GetQueueCap());
+	//		auto insersion_result_1 = subgraph_execute_on_queue_order.try_emplace(pass.get(), multi_queues_order);
+
+	//		if (!insersion_result_0.second || !insersion_result_1.second)
+	//		{
+	//			throw std::runtime_error("One subgraph can't be executed twice!");
+	//		}
+
+	//		//TODO: parallel recording cmd buf
+	//		//VkCommandBuffer cmd_buf = target_queue.GetOneNewBufFromCurQueue();
+	//		//pass->Execute(cmd_buf);
+	//		//for (auto subgraph_pass : pass->subgraph_pass)
+	//		//{
+	//		//	subgraph_pass->Execute(cmd_buf);
+	//		//}
+	//		//parallel recording done
+
+	//		//if ((acc_type & VkRenderpassBaseRG::Type::Graphics) && first_gfx_subgraph_processed)
+	//		//{
+	//		//	target_queue.SubmitCmdBufThenSignalTimeLineSem(cmd_buf, image_available_semaphore);
+	//		//	first_gfx_subgraph_queue_pair.first  = pass.get();
+	//		//	first_gfx_subgraph_queue_pair.second = &target_queue;
+	//		//	first_gfx_subgraph_processed         = true;
+	//		//}
+	//		//else if ((acc_type & VkRenderpassBaseRG::Type::Graphics) && !first_gfx_subgraph_processed)
+	//		//{
+	//		//	auto timeline_sem = first_gfx_subgraph_queue_pair.second->GetTimeLineSem();
+	//		//	target_queue.SubmitCmdBufThenSignalTimeLineSemThenWaitGfxTimeLineSem(cmd_buf, timeline_sem);
+
+	//		//	subgraph_queue_pairs.emplace_back(pass.get(), &target_queue);
+	//		//}
+	//		//else
+	//		//{
+	//		//	target_queue.SubmitCmdBufThenSignalTimeLineSem(cmd_buf);
+	//		//	subgraph_queue_pairs.emplace_back(pass.get(), &target_queue);
+	//		//}
+	//	}
+	//}
+
+	//TODO: PARALLEL RECORDING MULTI CMD BUF. Should be done in a per-queue basis? You can't fill command buffers created by the same pool from multi threads
+	//在同一level中所有的pass的录制顺序并不重要
+	for (auto level = 0; level <= max_level; ++level)
+	{
+		for (auto &ptr_pass : topologically_sorted_nodes)
+		{
+			if (ptr_pass->maximum_recursion_depth == level)
+			{
+				auto            ptr_queue = pass_on_queue_info.at(ptr_pass).first;
+				VkCommandBuffer cmd_buf   = ptr_queue->GetOneNewBufFromCurQueue();
+				ptr_pass->PreExecute();
+				ptr_pass->Execute(cmd_buf);
+			}
+		}
+	}
+
+	//harvests all Timeline Semaphores across all queues
+	std::vector<VkSemaphore> all_waiting_queue_sems;
+	for (auto &[queue_ptr, _] : queue_with_all_passes_on_it)
+	{
+		all_waiting_queue_sems.push_back(queue_ptr->GetTimeLineSem());
+	}
+
+	//first_gfx_subgraph_queue_pair.second->Finalize(all_waiting_queue_sems);
+
+	return true;
+}
+
 bool RenderGraphV0::DependencyGraph::Execute(VkCommandBuffer cmb)
 {
 	//using namespace std;
@@ -1902,9 +2294,7 @@ bool RenderGraphV0::DependencyGraph::Execute(VkCommandBuffer cmb)
 
 void RenderGraphV0::DependencyGraph::GeneratePassNodeDepen()
 {
-	/// <summary>
-	/// dependency generation
-	/// </summary>
+	/// DEPENDENCY GENERATION
 
 	for (const auto &gfx_node : gfx_pass_nodes)
 	{
@@ -1915,45 +2305,44 @@ void RenderGraphV0::DependencyGraph::GeneratePassNodeDepen()
 		//TODO: 测试subresource ranges overlap
 		//TODO: 多线程优化
 
-		heads.emplace_back(gfx_node.get());
-
-		//std::vector<std::vector<PassNode *>> array_of_candidate_pass_for_marking;
-		//根节点mark，上浮mark
-
-		for (auto &inlet : gfx_node->ins_buf)
+		for (auto &[_, inlet] : gfx_node->ins_buf)
 		{
-			const auto usage     = inlet.second.GetRsrcUsage();
+			//在当前pass中的使用方式usage
+			const auto usage     = inlet.GetRsrcUsage();
 			auto &     buf_usage = *usage;
 
-			edges.emplace_back(inlet.second.GetProvidingPass(), gfx_node.get());
-			heads.back().AddEdge(edges.back());
-
+			//如果使用了读的方式，则
 			if (buf_usage.GetAccessType() == Vk::AccessType::Read)
 			{
-				PassNode *previous_pass = gfx_node.get();
-				auto      threeway      = inlet.second.GetProvidingOutletItr();
+				PassNode *                                                                            previous_pass = gfx_node.get();
+				std::unordered_map<std::string, RsrcOutlet<VkBufferBase, VkBufUsageInfoRG>>::iterator previous_out_itr;
+				auto                                                                                  providing_pass_and_source_outlet_itr = inlet.GetProvidingOutletItrAndPass();
 
 				while (true)
 				{
 					//providing_outlet_itor一定是outlet
-					const auto providing_outlet_itor = std::get_if<std::unordered_map<std::string, RsrcOutlet<VkBufferBase, VkBufUsageInfoRG>>::iterator>(&threeway);
-					if (std::holds_alternative<std::unordered_map<std::string, RsrcOutlet<VkBufferBase, VkBufUsageInfoRG>>::iterator>(threeway))
+					if (providing_pass_and_source_outlet_itr)
 					{
-						const auto providing_pass_access_type = (*providing_outlet_itor)->second.GetRsrcUsage()->GetAccessType();
-						previous_pass                         = (*providing_outlet_itor)->second.GetPassAttachedTo();
+						auto providing_itr  = providing_pass_and_source_outlet_itr->second;
+						auto providing_pass = providing_pass_and_source_outlet_itr->first;
+
+						previous_pass    = providing_pass;
+						previous_out_itr = providing_itr;
+
+						const auto providing_pass_access_type = providing_itr->second.GetRsrcUsage()->GetAccessType();
 						if (providing_pass_access_type == Vk::AccessType::Write)
 						{
-							gfx_node->passes_depen_set.push_back((*providing_outlet_itor)->second.GetPassAttachedTo());
+							gfx_node->passes_depen_set.insert(providing_pass);
 							break;
 						}
 						if (providing_pass_access_type == Vk::AccessType::Read)
 						{
-							threeway = (*providing_outlet_itor)->second.GetProvidingOutletItr();
+							providing_pass_and_source_outlet_itr = providing_itr->second.GetProvidingOutletItrAndPass();
 						}
 					}
 					else        //如果出现提供资源的pass不存在的情况，那么说明资源一开始是来自rendergraph之外的（如何处理来自上一帧甚至上上一帧的资源？比如TAA的情况） 或者 资源是在当前pass创建的（）。
 					{
-						//established资源在创建pass中一定会写入而不是读取，所以在上一个loop就已经加入进了passes_depen_set
+						//established资源在对应的创建pass中一定会被写入而不是被读取，所以在上一个loop就已经加入进了passes_depen_set
 						//if (inlet.second.GetItrInRsrcMap()->second.rsrc_type == VirtualResource<VkBufferBase>::RsrcType::Established)
 						//{
 						//	gfx_node->passes_depen_set.insert(previous_pass);
@@ -1965,33 +2354,40 @@ void RenderGraphV0::DependencyGraph::GeneratePassNodeDepen()
 			}
 			else if (buf_usage.GetAccessType() == Vk::AccessType::Write)
 			{
-				PassNode *previous_pass = gfx_node.get();
-				auto      threeway      = inlet.second.GetProvidingOutletItr();
+				PassNode *                                                                            previous_pass = gfx_node.get();
+				std::unordered_map<std::string, RsrcOutlet<VkBufferBase, VkBufUsageInfoRG>>::iterator previous_out_itr;
+				auto                                                                                  providing_pass_and_source_outlet_itr = inlet.GetProvidingOutletItrAndPass();
+
 				while (true)
 				{
-					const auto providing_outlet_itor = std::get_if<std::unordered_map<std::string, RsrcOutlet<VkBufferBase, VkBufUsageInfoRG>>::iterator>(&threeway);
-					if (std::holds_alternative<std::unordered_map<std::string, RsrcOutlet<VkBufferBase, VkBufUsageInfoRG>>::iterator>(threeway))
+					if (providing_pass_and_source_outlet_itr)
 					{
-						const auto providing_pass_access_type = (*providing_outlet_itor)->second.GetRsrcUsage()->GetAccessType();
-						previous_pass                         = (*providing_outlet_itor)->second.GetPassAttachedTo();
+						auto providing_itr  = providing_pass_and_source_outlet_itr->second;
+						auto providing_pass = providing_pass_and_source_outlet_itr->first;
+
+						previous_pass    = providing_pass;
+						previous_out_itr = providing_itr;
+
+						const auto providing_pass_access_type = providing_itr->second.GetRsrcUsage()->GetAccessType();
+
 						if (providing_pass_access_type == Vk::AccessType::Read)
 						{
-							gfx_node->passes_depen_set.push_back((*providing_outlet_itor)->second.GetPassAttachedTo());
+							gfx_node->passes_depen_set.insert(providing_pass);
 							break;
 						}
 						if (providing_pass_access_type == Vk::AccessType::Write)
 						{
-							threeway = (*providing_outlet_itor)->second.GetProvidingOutletItr();
+							providing_pass_and_source_outlet_itr = providing_itr->second.GetProvidingOutletItrAndPass();
 						}
 					}
 					else        //如果出现提供资源的pass不存在的情况，那么说明资源一开始是来自rendergraph之外的 或者 资源是在当前pass创建的。
 					{
-						if (inlet.second.GetItrInRsrcMap()->second.rsrc_type == VirtualResource<VkBufferBase>::RsrcType::Established)
+						if (inlet.GetUnderlyingRsrcItr()->second.rsrc_type == VirtualResource<VkBufferBase>::RsrcType::Established)
 						{
 							//在资源非导入的情况下，如果所有pass链上的pass都是写入，则至少需要等第一个pass创建好资源！
 							if (previous_pass != gfx_node.get())
 							{
-								gfx_node->passes_depen_set.push_back(previous_pass);
+								gfx_node->passes_depen_set.insert(previous_pass);
 							}
 						}
 						break;
@@ -2000,40 +2396,45 @@ void RenderGraphV0::DependencyGraph::GeneratePassNodeDepen()
 			}
 		}
 
-		for (auto &inlet : gfx_node->ins_uni_tex)
+		for (auto &[_, outlet] : gfx_node->outs_buf)
 		{
-			const auto usage     = inlet.second.GetRsrcUsage();
-			auto &     tex_usage = *usage;
+			//在当前pass中的使用方式usage
+			const auto usage     = outlet.GetRsrcUsage();
+			auto &     buf_usage = *usage;
 
-			edges.emplace_back(inlet.second.GetProvidingPass(), gfx_node.get());
-			heads.back().AddEdge(edges.back());
-
-			if (tex_usage.GetAccessType() == Vk::AccessType::Read)
+			//如果使用了读的方式，则
+			if (buf_usage.GetAccessType() == Vk::AccessType::Read)
 			{
-				PassNode *previous_pass = gfx_node.get();
-				auto      threeway      = inlet.second.GetProvidingOutletItr();
+				PassNode *                                                                            previous_pass = gfx_node.get();
+				std::unordered_map<std::string, RsrcOutlet<VkBufferBase, VkBufUsageInfoRG>>::iterator previous_out_itr;
+				auto                                                                                  providing_pass_and_source_outlet_itr = outlet.GetProvidingOutletItrAndPass();
+
 				while (true)
 				{
-					const auto providing_outlet_itor_tex = std::get_if<std::unordered_map<std::string, RsrcOutlet<VkTexture, VkUniversalTexUsageInfoRG>>::iterator>(&threeway);
-
-					if (std::holds_alternative<std::unordered_map<std::string, RsrcOutlet<VkTexture, VkUniversalTexUsageInfoRG>>::iterator>(threeway))        //如果出现提供资源的pass不存在的情况，那么说明资源一开始是来自rendergraph之外的 或者 资源是在当前pass创建的。
+					//providing_outlet_itor一定是outlet
+					if (providing_pass_and_source_outlet_itr)
 					{
-						const auto providing_pass_access_type = (*providing_outlet_itor_tex)->second.GetRsrcUsage()->GetAccessType();
-						previous_pass                         = (*providing_outlet_itor_tex)->second.GetPassAttachedTo();
+						auto providing_itr  = providing_pass_and_source_outlet_itr->second;
+						auto providing_pass = providing_pass_and_source_outlet_itr->first;
+
+						previous_pass    = providing_pass;
+						previous_out_itr = providing_itr;
+
+						const auto providing_pass_access_type = providing_itr->second.GetRsrcUsage()->GetAccessType();
 						if (providing_pass_access_type == Vk::AccessType::Write)
 						{
-							gfx_node->passes_depen_set.push_back((*providing_outlet_itor_tex)->second.GetPassAttachedTo());
+							gfx_node->passes_depen_set.insert(providing_pass);
 							break;
 						}
 						if (providing_pass_access_type == Vk::AccessType::Read)
 						{
-							threeway = (*providing_outlet_itor_tex)->second.GetProvidingOutletItr();
+							providing_pass_and_source_outlet_itr = providing_itr->second.GetProvidingOutletItrAndPass();
 						}
 					}
 					else        //如果出现提供资源的pass不存在的情况，那么说明资源一开始是来自rendergraph之外的（如何处理来自上一帧甚至上上一帧的资源？比如TAA的情况） 或者 资源是在当前pass创建的（）。
 					{
-						//established资源在创建pass中一定会写入而不是读取，所以在上一个loop就已经加入进了passes_depen_set
-						//if (inlet.second.GetItrInRsrcMap()->second.rsrc_type == VirtualResource<VkTexture>::RsrcType::Established)
+						//established资源在对应的创建pass中一定会被写入而不是被读取，所以在上一个loop就已经加入进了passes_depen_set
+						//if (inlet.second.GetItrInRsrcMap()->second.rsrc_type == VirtualResource<VkBufferBase>::RsrcType::Established)
 						//{
 						//	gfx_node->passes_depen_set.insert(previous_pass);
 						//}
@@ -2042,39 +2443,224 @@ void RenderGraphV0::DependencyGraph::GeneratePassNodeDepen()
 					}
 				}
 			}
-			else if (tex_usage.GetAccessType() == Vk::AccessType::Write)
+			else if (buf_usage.GetAccessType() == Vk::AccessType::Write)
 			{
-				PassNode *previous_pass = gfx_node.get();
-				auto      threeway      = inlet.second.GetProvidingOutletItr();
+				PassNode *                                                                            previous_pass = gfx_node.get();
+				std::unordered_map<std::string, RsrcOutlet<VkBufferBase, VkBufUsageInfoRG>>::iterator previous_out_itr;
+				auto                                                                                  providing_pass_and_source_outlet_itr = outlet.GetProvidingOutletItrAndPass();
+
 				while (true)
 				{
-					const auto providing_outlet_itor_tex = std::get_if<std::unordered_map<std::string, RsrcOutlet<VkTexture, VkUniversalTexUsageInfoRG>>::iterator>(&threeway);
-
-					if (std::holds_alternative<std::unordered_map<std::string, RsrcOutlet<VkTexture, VkUniversalTexUsageInfoRG>>::iterator>(threeway))        //如果出现提供资源的pass不存在的情况，那么说明资源一开始是来自rendergraph之外的 或者 资源是在当前pass创建的。
+					if (providing_pass_and_source_outlet_itr)
 					{
-						const auto providing_pass_access_type = (*providing_outlet_itor_tex)->second.GetRsrcUsage()->GetAccessType();
-						previous_pass                         = (*providing_outlet_itor_tex)->second.GetPassAttachedTo();
+						auto providing_itr  = providing_pass_and_source_outlet_itr->second;
+						auto providing_pass = providing_pass_and_source_outlet_itr->first;
+
+						previous_pass    = providing_pass;
+						previous_out_itr = providing_itr;
+
+						const auto providing_pass_access_type = providing_itr->second.GetRsrcUsage()->GetAccessType();
+
 						if (providing_pass_access_type == Vk::AccessType::Read)
 						{
-							gfx_node->passes_depen_set.push_back((*providing_outlet_itor_tex)->second.GetPassAttachedTo());
+							gfx_node->passes_depen_set.insert(providing_pass);
 							break;
 						}
 						if (providing_pass_access_type == Vk::AccessType::Write)
 						{
-							threeway = (*providing_outlet_itor_tex)->second.GetProvidingOutletItr();
+							providing_pass_and_source_outlet_itr = providing_itr->second.GetProvidingOutletItrAndPass();
 						}
 					}
-					else
+					else        //如果出现提供资源的pass不存在的情况，那么说明资源一开始是来自rendergraph之外的 或者 资源是在当前pass创建的。
 					{
-						if (inlet.second.GetItrInRsrcMap()->second.rsrc_type == VirtualResource<VkTexture>::RsrcType::Established)
+						if (outlet.GetUnderlyingRsrcItr()->second.rsrc_type == VirtualResource<VkBufferBase>::RsrcType::Established)
 						{
 							//在资源非导入的情况下，如果所有pass链上的pass都是写入，则至少需要等第一个pass创建好资源！
 							if (previous_pass != gfx_node.get())
 							{
-								gfx_node->passes_depen_set.push_back(previous_pass);
+								gfx_node->passes_depen_set.insert(previous_pass);
 							}
 						}
+						break;
+					}
+				}
+			}
+		}
 
+		for (auto &[_, inlet] : gfx_node->ins_uni_tex)
+		{
+			const auto usage     = inlet.GetRsrcUsage();
+			auto &     tex_usage = *usage;
+
+			if (tex_usage.GetAccessType() == Vk::AccessType::Read)
+			{
+				PassNode *                                                                                  previous_pass = gfx_node.get();
+				std::unordered_map<std::string, RsrcOutlet<VkTexture, VkUniversalTexUsageInfoRG>>::iterator previous_out_itr;
+				auto                                                                                        providing_pass_and_source_outlet_itr = inlet.GetProvidingOutletItrAndPass();
+
+				while (true)
+				{
+					//providing_outlet_itor一定是outlet
+					if (providing_pass_and_source_outlet_itr)
+					{
+						auto providing_itr  = providing_pass_and_source_outlet_itr->second;
+						auto providing_pass = providing_pass_and_source_outlet_itr->first;
+
+						previous_pass    = providing_pass;
+						previous_out_itr = providing_itr;
+
+						const auto providing_pass_access_type = providing_itr->second.GetRsrcUsage()->GetAccessType();
+						if (providing_pass_access_type == Vk::AccessType::Write)
+						{
+							gfx_node->passes_depen_set.insert(providing_pass);
+							break;
+						}
+						if (providing_pass_access_type == Vk::AccessType::Read)
+						{
+							providing_pass_and_source_outlet_itr = providing_itr->second.GetProvidingOutletItrAndPass();
+						}
+					}
+					else        //如果出现提供资源的pass不存在的情况，那么说明资源一开始是来自rendergraph之外的（如何处理来自上一帧甚至上上一帧的资源？比如TAA的情况） 或者 资源是在当前pass创建的（）。
+					{
+						//established资源在对应的创建pass中一定会被写入而不是被读取，所以在上一个loop就已经加入进了passes_depen_set
+						//if (inlet.second.GetItrInRsrcMap()->second.rsrc_type == VirtualResource<VkBufferBase>::RsrcType::Established)
+						//{
+						//	gfx_node->passes_depen_set.insert(previous_pass);
+						//}
+
+						break;
+					}
+				}
+			}
+
+			else if (tex_usage.GetAccessType() == Vk::AccessType::Write)
+			{
+				PassNode *                                                                                  previous_pass = gfx_node.get();
+				std::unordered_map<std::string, RsrcOutlet<VkTexture, VkUniversalTexUsageInfoRG>>::iterator previous_out_itr;
+				auto                                                                                        providing_pass_and_source_outlet_itr = inlet.GetProvidingOutletItrAndPass();
+
+				while (true)
+				{
+					if (providing_pass_and_source_outlet_itr)
+					{
+						auto providing_itr  = providing_pass_and_source_outlet_itr->second;
+						auto providing_pass = providing_pass_and_source_outlet_itr->first;
+
+						previous_pass    = providing_pass;
+						previous_out_itr = providing_itr;
+
+						const auto providing_pass_access_type = providing_itr->second.GetRsrcUsage()->GetAccessType();
+
+						if (providing_pass_access_type == Vk::AccessType::Read)
+						{
+							gfx_node->passes_depen_set.insert(providing_pass);
+							break;
+						}
+						if (providing_pass_access_type == Vk::AccessType::Write)
+						{
+							providing_pass_and_source_outlet_itr = providing_itr->second.GetProvidingOutletItrAndPass();
+						}
+					}
+					else        //如果出现提供资源的pass不存在的情况，那么说明资源一开始是来自rendergraph之外的 或者 资源是在当前pass创建的。
+					{
+						if (inlet.GetUnderlyingRsrcItr()->second.rsrc_type == VirtualResource<VkTexture>::RsrcType::Established)
+						{
+							//在资源非导入的情况下，如果所有pass链上的pass都是写入，则至少需要等第一个pass创建好资源！
+							if (previous_pass != gfx_node.get())
+							{
+								gfx_node->passes_depen_set.insert(previous_pass);
+							}
+						}
+						break;
+					}
+				}
+			}
+		}
+
+		for (auto &[_, outlet] : gfx_node->outs_uni_tex)
+		{
+			const auto usage     = outlet.GetRsrcUsage();
+			auto &     tex_usage = *usage;
+
+			if (tex_usage.GetAccessType() == Vk::AccessType::Read)
+			{
+				PassNode *                                                                                  previous_pass = gfx_node.get();
+				std::unordered_map<std::string, RsrcOutlet<VkTexture, VkUniversalTexUsageInfoRG>>::iterator previous_out_itr;
+				auto                                                                                        providing_pass_and_source_outlet_itr = outlet.GetProvidingOutletItrAndPass();
+
+				while (true)
+				{
+					//providing_outlet_itor一定是outlet
+					if (providing_pass_and_source_outlet_itr)
+					{
+						auto providing_itr  = providing_pass_and_source_outlet_itr->second;
+						auto providing_pass = providing_pass_and_source_outlet_itr->first;
+
+						previous_pass    = providing_pass;
+						previous_out_itr = providing_itr;
+
+						const auto providing_pass_access_type = providing_itr->second.GetRsrcUsage()->GetAccessType();
+						if (providing_pass_access_type == Vk::AccessType::Write)
+						{
+							gfx_node->passes_depen_set.insert(providing_pass);
+							break;
+						}
+						if (providing_pass_access_type == Vk::AccessType::Read)
+						{
+							providing_pass_and_source_outlet_itr = providing_itr->second.GetProvidingOutletItrAndPass();
+						}
+					}
+					else        //如果出现提供资源的pass不存在的情况，那么说明资源一开始是来自rendergraph之外的（如何处理来自上一帧甚至上上一帧的资源？比如TAA的情况） 或者 资源是在当前pass创建的（）。
+					{
+						//established资源在对应的创建pass中一定会被写入而不是被读取，所以在上一个loop就已经加入进了passes_depen_set
+						//if (inlet.second.GetItrInRsrcMap()->second.rsrc_type == VirtualResource<VkBufferBase>::RsrcType::Established)
+						//{
+						//	gfx_node->passes_depen_set.insert(previous_pass);
+						//}
+
+						break;
+					}
+				}
+			}
+
+			else if (tex_usage.GetAccessType() == Vk::AccessType::Write)
+			{
+				PassNode *                                                                                  previous_pass = gfx_node.get();
+				std::unordered_map<std::string, RsrcOutlet<VkTexture, VkUniversalTexUsageInfoRG>>::iterator previous_out_itr;
+				auto                                                                                        providing_pass_and_source_outlet_itr = outlet.GetProvidingOutletItrAndPass();
+
+				while (true)
+				{
+					if (providing_pass_and_source_outlet_itr)
+					{
+						auto providing_itr  = providing_pass_and_source_outlet_itr->second;
+						auto providing_pass = providing_pass_and_source_outlet_itr->first;
+
+						previous_pass    = providing_pass;
+						previous_out_itr = providing_itr;
+
+						const auto providing_pass_access_type = providing_itr->second.GetRsrcUsage()->GetAccessType();
+
+						if (providing_pass_access_type == Vk::AccessType::Read)
+						{
+							gfx_node->passes_depen_set.insert(providing_pass);
+							break;
+						}
+						if (providing_pass_access_type == Vk::AccessType::Write)
+						{
+							providing_pass_and_source_outlet_itr = providing_itr->second.GetProvidingOutletItrAndPass();
+						}
+					}
+					else        //如果出现提供资源的pass不存在的情况，那么说明资源一开始是来自rendergraph之外的 或者 资源是在当前pass创建的。
+					{
+						if (outlet.GetUnderlyingRsrcItr()->second.rsrc_type == VirtualResource<VkTexture>::RsrcType::Established)
+						{
+							//在资源非导入的情况下，如果所有pass链上的pass都是写入，则至少需要等第一个pass创建好资源！
+							if (previous_pass != gfx_node.get())
+							{
+								gfx_node->passes_depen_set.insert(previous_pass);
+							}
+						}
 						break;
 					}
 				}
@@ -2086,9 +2672,9 @@ void RenderGraphV0::DependencyGraph::GeneratePassNodeDepen()
 
 	for (const auto &gfx_node : gfx_pass_nodes)
 	{
-		for (const auto &ptr_before_pass : (*gfx_node).passes_depen_set)
+		for (const auto &ptr_before_pass : gfx_node->passes_depen_set)
 		{
-			ptr_before_pass->passes_depen_on_cur_pass_set.push_back(gfx_node.get());
+			ptr_before_pass->passes_depen_on_cur_pass_set.insert(gfx_node.get());
 		}
 	}
 }

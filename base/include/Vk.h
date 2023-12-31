@@ -6,9 +6,6 @@
 
 namespace Vk
 {
-
-
-
 constexpr VkImageCreateFlags ImgCINillFlag{0};
 constexpr int                MAX_FRAMES_IN_FLIGHT{2};
 constexpr uint32_t           SWAP_IMG_COUNT{3};
@@ -16,8 +13,6 @@ constexpr VkFlags            NoneFlag{0};
 
 constexpr VkFormat             required_depth_formats[]{VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT};
 constexpr VkFormatFeatureFlags required_depth_format_feature{VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT};
-
-
 
 using AttachmentIndix = uint32_t;
 
@@ -60,8 +55,6 @@ struct SyncInfo
 	VkImageLayout        layout_inpass{};
 };
 
-
-
 enum class RsrcInfoType
 {
 	Unknown,
@@ -71,7 +64,6 @@ enum class RsrcInfoType
 	Reference,
 	Model
 };
-
 
 enum struct AttachmentType
 {
@@ -85,8 +77,6 @@ enum struct AttachmentType
 
 };
 
-
-
 enum class AccessType
 {
 	Unknown,
@@ -95,30 +85,12 @@ enum class AccessType
 	ReadWrite,
 };
 
-
 struct DescSetInfo
 {
 	uint32_t set{0};
 	uint32_t binding{0};
 	uint32_t array_elemnt{0};
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 struct EnumClassHash
 {
@@ -128,7 +100,6 @@ struct EnumClassHash
 		return static_cast<std::size_t>(t);
 	}
 };
-
 
 struct ResourceDimensions
 {
@@ -159,8 +130,6 @@ struct ResourceDimensions
 		// queues is deliberately not part of this test.
 	}
 };
-
-
 
 enum ModelLoadingOption
 {

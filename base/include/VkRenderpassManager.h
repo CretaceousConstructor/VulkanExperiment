@@ -69,12 +69,18 @@ class VkRenderpassManager
   private:
 	VkManagerBundle managers;
 	VkFactoryBundle factories;
+	//VkObjectPoolBundle object_pools;
+
+
 
   private:
 	//VkRenderpassWrapper &                             GetRenderpass(uint32_t pass);
 	//std::unordered_map<uint32_t, VkRenderpassWrapper> render_passes;
 	//std::unordered_map<uint32_t, std::string>         render_passes_names;
 };
+
+
+
 
 template <typename First, typename... Rest>
 std::shared_ptr<First> VkRenderpassManager::ProduceRenderpass(Rest &&...rest)

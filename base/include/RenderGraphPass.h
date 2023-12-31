@@ -9,9 +9,9 @@ namespace RenderGraphV0
 class PassNode
 {
   public:
-	PassNode(const std::string name_);
+	PassNode(const std::string name_, VkGraphicsComponent &gfx_);
 
-	virtual ~PassNode() = default;
+	virtual ~PassNode();
 
 	PassNode(const PassNode &) = delete;
 	PassNode &operator=(const PassNode &) = delete;
@@ -108,6 +108,105 @@ class PassNode
 	//	std::vector<PassNode *>                                                accessing_passes;
 	//};
 
+	////VkBufferBase, VkBufUsageInfoRG
+	//template <typename Rsrc, typename Usage>
+	//class EdgeToCurPass
+	//{
+	//  public:
+	//	EdgeToCurPass(
+	//	    PassNode *                                                         from_,
+	//	    std::unordered_map<std::string, RsrcOutlet<Rsrc, Usage>>::iterator providing_outlet_,
+	//	    std::variant<
+	//	        std::unordered_map<std::string, RsrcOutlet<Rsrc, Usage>>::iterator,
+	//	        std::unordered_map<std::string, RsrcInlet<Rsrc, Usage>>::iterator>
+	//	        usage_in_cur_pass_) :
+	//	    from(from_),
+	//	    providing_outlet(providing_outlet_),
+	//	    usage_in_cur_pass(usage_in_cur_pass_)
+
+	//	{
+	//	}
+
+	//	PassNode *                                                         from;
+	//	std::unordered_map<std::string, RsrcOutlet<Rsrc, Usage>>::iterator providing_outlet;
+	//	std::variant<
+	//	    std::unordered_map<std::string, RsrcOutlet<Rsrc, Usage>>::iterator,
+	//	    std::unordered_map<std::string, RsrcInlet<Rsrc, Usage>>::iterator>
+	//	    usage_in_cur_pass;
+	//};
+
+	////VkBufferBase, VkBufUsageInfoRG
+	//template <typename Rsrc, typename Usage>
+	//class EdgeFromCurPass
+	//{
+	//  public:
+	//	EdgeFromCurPass(
+	//	    PassNode *                                                         to_,
+	//	    std::unordered_map<std::string, RsrcOutlet<Rsrc, Usage>>::iterator providing_outlet_,
+	//	    std::variant<
+	//	        std::unordered_map<std::string, RsrcOutlet<Rsrc, Usage>>::iterator,
+	//	        std::unordered_map<std::string, RsrcInlet<Rsrc, Usage>>::iterator>
+	//	        usage_in_cur_pass_) :
+	//	    from(to_),
+	//	    providing_outlet(providing_outlet_),
+	//	    usage_in_cur_pass(usage_in_cur_pass_)
+
+	//	{
+	//	}
+
+	//	PassNode *                                                         to;
+	//	std::unordered_map<std::string, RsrcOutlet<Rsrc, Usage>>::iterator providing_outlet;
+	//	std::variant<
+	//	    std::unordered_map<std::string, RsrcOutlet<Rsrc, Usage>>::iterator,
+	//	    std::unordered_map<std::string, RsrcInlet<Rsrc, Usage>>::iterator>
+	//	    usage_in_cur_pass;
+	//};
+
+  public:
+	class SyncInfoSameQueue
+	{
+	  public:
+		SyncInfoSameQueue(
+		    VkEvent                                                                  sync_event_,
+		    Vk::SyncInfo                                                             source_sync_info_,
+		    Vk::SyncInfo                                                             target_sync_info_,
+		    std::unordered_map<std::string, VirtualResource<VkBufferBase>>::iterator underlying_rsrc_) :
+		    sync_event(sync_event_),
+		    source_sync_info(source_sync_info_),
+		    target_sync_info(target_sync_info_),
+		    underlying_rsrc(underlying_rsrc_)
+		{
+		}
+
+	  private:
+		VkEvent                                                                  sync_event;
+		Vk::SyncInfo                                                             source_sync_info;
+		Vk::SyncInfo                                                             target_sync_info;
+		std::unordered_map<std::string, VirtualResource<VkBufferBase>>::iterator underlying_rsrc;
+	};
+
+	class SyncInfoDiffQueue
+	{
+	  public:
+		SyncInfoDiffQueue(
+		    VkSemaphore                                                              sync_sema_,
+		    Vk::SyncInfo                                                             source_sync_info_,
+		    Vk::SyncInfo                                                             target_sync_info_,
+		    std::unordered_map<std::string, VirtualResource<VkBufferBase>>::iterator underlying_rsrc_) :
+		    sync_sema(sync_sema_),
+		    source_sync_info(source_sync_info_),
+		    target_sync_info(target_sync_info_),
+		    underlying_rsrc(underlying_rsrc_)
+		{
+		}
+
+	  private:
+		VkSemaphore                                                              sync_sema;
+		Vk::SyncInfo                                                             source_sync_info;
+		Vk::SyncInfo                                                             target_sync_info;
+		std::unordered_map<std::string, VirtualResource<VkBufferBase>>::iterator underlying_rsrc;
+	};
+
   public:
 	bool                           is_rootpass;
 	PassNode *                     root_pass_tag;
@@ -117,8 +216,17 @@ class PassNode
 	std::unordered_set<PassNode *> subgraph_pass;
 
   public:
-	std::vector<PassNode *> passes_depen_set;
-	std::vector<PassNode *> passes_depen_on_cur_pass_set;
+	std::unordered_set<PassNode *> passes_depen_set;
+	std::unordered_set<PassNode *> passes_depen_on_cur_pass_set;
+
+	//边的信息
+	// public:
+	//std::vector<EdgeFromCurPass<VkBufferBase, VkBufUsageInfoRG>> buf_edges_from_cur_pass;
+	//std::vector<EdgeToCurPass<VkBufferBase, VkBufUsageInfoRG>>   buf_edges_to_cur_pass;
+
+	// public:
+	//std::vector<EdgeFromCurPass<VkTexture, VkUniversalTexUsageInfoRG>> tex_edges_from_cur_pass;
+	//std::vector<EdgeToCurPass<VkTexture, VkUniversalTexUsageInfoRG>>   tex_edges_to_cur_pass;
 
   public:
 	//资源使用方式
@@ -135,6 +243,7 @@ class PassNode
 	std::vector<std::unordered_map<std::string, VirtualResource<VkBufferBase>>::iterator> buf_recycle_list;
 	std::vector<std::unordered_map<std::string, VirtualResource<VkTexture>>::iterator>    uni_tex_recycle_list;
 
+	//输入输出接口
   public:
 	std::unordered_map<std::string, RsrcOutlet<VkBufferBase, VkBufUsageInfoRG>>       outs_buf;
 	std::unordered_map<std::string, RsrcOutlet<VkTexture, VkUniversalTexUsageInfoRG>> outs_uni_tex;
@@ -142,12 +251,125 @@ class PassNode
 	std::unordered_map<std::string, RsrcInlet<VkBufferBase, VkBufUsageInfoRG>>       ins_buf;
 	std::unordered_map<std::string, RsrcInlet<VkTexture, VkUniversalTexUsageInfoRG>> ins_uni_tex;
 
-	//===================================================
-	//多使用方式的改进？用在模板类的in out函数中
 
+
+	//same queue 同步primitive
   public:
-	std::vector<std::tuple<Vk::SyncInfo, Vk::SyncInfo, std::unordered_map<std::string, VirtualResource<VkBufferBase>>::iterator>> buf_syn_infos;
-	std::vector<std::tuple<Vk::SyncInfo, Vk::SyncInfo, std::unordered_map<std::string, VirtualResource<VkTexture>>::iterator>>    uni_tex_syn_infos;
+	//cur_pass -> set_event -> wait_event -> target_pass
+	std::vector<SyncInfoSameQueue> buf_syn_infos_tail_same_q;
+	std::vector<SyncInfoSameQueue> uni_tex_syn_infos_tail_same_q;
+
+	//source_pass -> set_event -> wait_event -> cur_pass
+	std::vector<SyncInfoSameQueue> buf_syn_infos_head_same_q;
+	std::vector<SyncInfoSameQueue> uni_tex_syn_infos_head_same_q;
+
+	//diff queue 同步primitive
+  public:
+	//cur_pass -> set_event -> wait_event -> target_pass
+	std::vector<SyncInfoDiffQueue> buf_syn_infos_tail_diff_q;
+	std::vector<SyncInfoDiffQueue> uni_tex_syn_infos_tail_diff_q;
+
+	//source_pass -> set_event -> wait_event -> cur_pass
+	std::vector<SyncInfoDiffQueue> buf_syn_infos_head_diff_q;
+	std::vector<SyncInfoDiffQueue> uni_tex_syn_infos_head_diff_q;
+
+	void InsertSameQueueSyncInfo(
+	    PassNode *                                                               source_pass,
+	    PassNode *                                                               target_pass,
+	    VkEvent                                                                  event_sync,
+	    VkDeviceManager::QueueCapability                                         queue_info,
+	    Vk::SyncInfo                                                             source_syn_info,
+	    Vk::SyncInfo                                                             target_syn_info,
+	    std::unordered_map<std::string, VirtualResource<VkBufferBase>>::iterator underlying_rsrc)
+	{
+		if (this == source_pass)
+		{
+			buf_syn_infos_tail_same_q.emplace_back(event_sync, source_syn_info, target_syn_info, underlying_rsrc);
+		}
+		else if (this == target_pass)
+		{
+			buf_syn_infos_head_same_q.emplace_back(event_sync, source_syn_info, target_syn_info, underlying_rsrc);
+		}
+		else
+		{
+			throw std::runtime_error("source or target pass specified in a wrong way.");
+		}
+	}
+
+	void InsertSameQueueSyncInfo(
+	    PassNode *                                                            source_pass,
+	    PassNode *                                                            target_pass,
+	    VkEvent                                                               event_sync,
+	    VkDeviceManager::QueueCapability                                      queue_info,
+	    Vk::SyncInfo                                                          source_syn_info,
+	    Vk::SyncInfo                                                          target_syn_info,
+	    std::unordered_map<std::string, VirtualResource<VkTexture>>::iterator underlying_rsrc)
+	{
+		if (this == source_pass)
+		{
+			uni_tex_syn_infos_tail_same_q.emplace_back(event_sync, source_syn_info, target_syn_info, underlying_rsrc);
+		}
+		else if (this == target_pass)
+		{
+			uni_tex_syn_infos_head_same_q.emplace_back(event_sync, source_syn_info, target_syn_info, underlying_rsrc);
+		}
+		else
+		{
+			throw std::runtime_error("source or target pass specified in a wrong way.");
+		}
+	}
+
+	//Watch out for queue ownership transfer!
+	void InsertDiffQueueSyncInfo(
+	    PassNode *                                                            source_pass,
+	    PassNode *                                                            target_pass,
+	    VkSemaphore                                                           sema_sync,
+	    VkDeviceManager::QueueCapability                                      source_queue_info,
+	    VkDeviceManager::QueueCapability                                      target_queue_info,
+	    Vk::SyncInfo                                                          source_syn_info,
+	    Vk::SyncInfo                                                          target_syn_info,
+	    std::unordered_map<std::string, VirtualResource<VkTexture>>::iterator underlying_rsrc)
+	{
+		if (this == source_pass)
+		{
+			uni_tex_syn_infos_tail_diff_q.emplace_back(sema_sync, source_syn_info, target_syn_info, underlying_rsrc);
+		}
+		else if (this == target_pass)
+		{
+			uni_tex_syn_infos_head_diff_q.emplace_back(sema_sync, source_syn_info, target_syn_info, underlying_rsrc);
+		}
+		else
+		{
+			throw std::runtime_error("source or target pass specified in a wrong way.");
+		}
+	}
+
+	void InsertDiffQueueSyncInfo(
+	    PassNode *                                                               source_pass,
+	    PassNode *                                                               target_pass,
+	    VkSemaphore                                                              sema_sync,
+	    VkDeviceManager::QueueCapability                                         source_queue_info,
+	    VkDeviceManager::QueueCapability                                         target_queue_info,
+	    Vk::SyncInfo                                                             source_syn_info,
+	    Vk::SyncInfo                                                             target_syn_info,
+	    std::unordered_map<std::string, VirtualResource<VkBufferBase>>::iterator underlying_rsrc)
+	{
+		if (this == source_pass)
+		{
+			buf_syn_infos_tail_diff_q.emplace_back(sema_sync, source_syn_info, target_syn_info, underlying_rsrc);
+		}
+		else if (this == target_pass)
+		{
+			buf_syn_infos_head_diff_q.emplace_back(sema_sync, source_syn_info, target_syn_info, underlying_rsrc);
+		}
+		else
+		{
+			throw std::runtime_error("source or target pass specified in a wrong way.");
+		}
+	}
+
+  private:
+	VkGraphicsComponent &gfx;
 };
 
 class GraphicsPassNode : public PassNode
@@ -243,25 +465,26 @@ class GraphicsPassNode : public PassNode
 			throw std::runtime_error("resource with the name doesn't exist!");
 		}
 
-		//给source outlet增加使用它的pass
-		source_outlet_itr->second.AddAccessingPass(this);
 		//给ItrInRsrcMap 增加使用它的pass
-		source_outlet_itr->second.GetItrInRsrcMap()->second.passes_access_this_rsrc.emplace_back(this, buf_usage->GetAccessType());
+		source_outlet_itr->second.GetUnderlyingRsrcItr()->second.passes_access_this_rsrc.emplace_back(this, buf_usage->GetAccessType());
 
 		//创建当前pass的资源的导入口
 		const auto rsrc_name_curr_pass_suffix = rsrc_name + std::string("_") + this->name + std::string("_In");
-		const auto cur_in_itr                 = ins_buf.try_emplace(rsrc_name_curr_pass_suffix, source_outlet_itr->second.GetItrInRsrcMap(), this, buf_usage.get());
+		const auto cur_in_itr                 = ins_buf.try_emplace(rsrc_name_curr_pass_suffix, source_outlet_itr->second.GetUnderlyingRsrcItr(), this, buf_usage.get());
 
 		if (!cur_in_itr.second)
 		{
 			throw std::runtime_error("resource with the same name already exist!");
 		}
 
+		//给source outlet增加使用它的pass，以及使用它的pass对应的使用方式
+		source_outlet_itr->second.AddAccessingPassAndItr(this, cur_in_itr.first);
+
 		//给inlet赋值提供它的pass
-		cur_in_itr.first->second.AssignProvidingPassAndOutItr(&source_pass, source_outlet_itr);
+		cur_in_itr.first->second.AssignProvidingPassAndProvidingOutItr(&source_pass, source_outlet_itr);
 
 		//资源使用方式存储
-		this->buf_usages.emplace_back(std::move(buf_usage), source_outlet_itr->second.GetItrInRsrcMap());
+		this->buf_usages.emplace_back(std::move(buf_usage), source_outlet_itr->second.GetUnderlyingRsrcItr());
 
 		//[此资源不需要在当前pass实体化]
 		return *this;
@@ -354,23 +577,23 @@ class GraphicsPassNode : public PassNode
 			throw std::runtime_error("resource with the name doesn't exist!");        //检查不通过，直接报错，抛出异常
 		}
 
-		//source pass中的outlet添加accessing pass
-		source_outlet_itr->second.AddAccessingPass(this);
-
 		//给ItrInRsrcMap增加使用它的pass
-		source_outlet_itr->second.GetItrInRsrcMap()->second.passes_access_this_rsrc.emplace_back(this, buf_usage->GetAccessType());
+		source_outlet_itr->second.GetUnderlyingRsrcItr()->second.passes_access_this_rsrc.emplace_back(this, buf_usage->GetAccessType());
 
 		//创建当前pass的资源的导出口
 		const auto rsrc_name_curr_pass_suffix = rsrc_name + std::string("_") + this->name + std::string("_Out");
-		const auto cur_out_itr                = outs_buf.try_emplace(rsrc_name_curr_pass_suffix, source_outlet_itr->second.GetItrInRsrcMap(), this, buf_usage.get());
+		const auto cur_out_itr                = outs_buf.try_emplace(rsrc_name_curr_pass_suffix, source_outlet_itr->second.GetUnderlyingRsrcItr(), this, buf_usage.get());
 
 		if (!cur_out_itr.second)
 		{
 			throw std::runtime_error("resource with the same name already exist!");
 		}
 
+		//source pass中的outlet添加accessing pass
+		source_outlet_itr->second.AddAccessingPassAndItr(this, cur_out_itr.first);
+
 		//把资源使用方式存储起来
-		this->buf_usages.emplace_back(std::move(buf_usage), source_outlet_itr->second.GetItrInRsrcMap());
+		this->buf_usages.emplace_back(std::move(buf_usage), source_outlet_itr->second.GetUnderlyingRsrcItr());
 
 		//[此资源不需要在当前pass实体化]
 		return *this;
@@ -597,8 +820,7 @@ class GraphicsPassNode : public PassNode
 
 	//所有Texture相关的输入输出函数
 	//************************************************************************************************
-	//--------------------------------------------------------------------------------------
-
+	//资源来自rendergraph之外
 	GraphicsPassNode &In(const std::string rsrc_name, std::shared_ptr<VkTexture> ptr_tex, std::unique_ptr<VkUniversalTexUsageInfoRG> uni_tex_usage)
 	{
 		//the usage of the resource passed into this function doesn't associate with any other passes, so the resource is imported from outside the rendergraph
@@ -645,9 +867,7 @@ class GraphicsPassNode : public PassNode
 
 		std::unordered_map<std::string, VirtualResource<VkTexture>>::iterator vrsrc_itr;
 
-		//给source outlet增加使用它的pass
-		source_outlet_itr_tex->second.AddAccessingPass(this);
-		vrsrc_itr = source_outlet_itr_tex->second.GetItrInRsrcMap();
+		vrsrc_itr = source_outlet_itr_tex->second.GetUnderlyingRsrcItr();
 
 		//给ItrInRsrcMap增加使用它的pass
 		vrsrc_itr->second.passes_access_this_rsrc.emplace_back(this, uni_tex_usage->GetAccessType());
@@ -661,8 +881,11 @@ class GraphicsPassNode : public PassNode
 			throw std::runtime_error("resource with the same name already exist!");
 		}
 
+		//给source outlet增加使用它的pass
+		source_outlet_itr_tex->second.AddAccessingPassAndItr(this, cur_in_itr.first);
+
 		//给inlet赋值提供它的pass
-		cur_in_itr.first->second.AssignProvidingPassAndOutItr(&source_pass, source_outlet_itr_tex);
+		cur_in_itr.first->second.AssignProvidingPassAndProvidingOutItr(&source_pass, source_outlet_itr_tex);
 
 		//资源使用方式存储
 		this->uni_tex_usages.emplace_back(std::move(uni_tex_usage), vrsrc_itr);
@@ -760,9 +983,7 @@ class GraphicsPassNode : public PassNode
 
 		std::unordered_map<std::string, VirtualResource<VkTexture>>::iterator vrsrc_itr;
 
-		//给source outlet增加使用它的pass
-		source_outlet_itr_tex->second.AddAccessingPass(this);
-		vrsrc_itr = source_outlet_itr_tex->second.GetItrInRsrcMap();
+		vrsrc_itr = source_outlet_itr_tex->second.GetUnderlyingRsrcItr();
 
 		//给ItrInRsrcMap增加使用它的pass
 		vrsrc_itr->second.passes_access_this_rsrc.emplace_back(this, tex_usage->GetAccessType());
@@ -775,6 +996,9 @@ class GraphicsPassNode : public PassNode
 		{
 			throw std::runtime_error("resource with the same name already exist!");
 		}
+
+		//给source outlet增加使用它的pass
+		source_outlet_itr_tex->second.AddAccessingPassAndItr(this, cur_out_itr.first);
 
 		//资源使用方式存储
 		this->uni_tex_usages.emplace_back(std::move(tex_usage), vrsrc_itr);

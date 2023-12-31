@@ -424,12 +424,16 @@ VkDeviceManager::VkExecutionQueue& VkDeviceManager::GetSuitableQueue2(QueueCapab
 	}
 
 
-	std::sort(suitable_queue.begin(), suitable_queue.end(), 
-		[](const std::vector<VkDeviceManager::VkExecutionQueue>::iterator& rhs,const std::vector<VkDeviceManager::VkExecutionQueue>::iterator& lhs)
-		{
-			rhs->GetNumDisbatchedPasses() < lhs->GetNumDisbatchedPasses();
-		}
-	);
+	//std::sort(suitable_queue.begin(), suitable_queue.end(), 
+	//	[](const std::vector<VkDeviceManager::VkExecutionQueue>::iterator& rhs,const std::vector<VkDeviceManager::VkExecutionQueue>::iterator& lhs)
+	//	{
+	//		rhs->GetNumDisbatchedPasses() < lhs->GetNumDisbatchedPasses();
+	//	}
+	//);
+
+	std::ranges::sort(suitable_queue, [](const auto& rhs, const auto& lhs) {
+        return rhs->GetNumDisbatchedPasses() < lhs->GetNumDisbatchedPasses();
+    });
 
 	std::vector<VkExecutionQueue>::iterator result = *suitable_queue.begin();
 	return *result;

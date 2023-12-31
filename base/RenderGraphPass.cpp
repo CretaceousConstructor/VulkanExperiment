@@ -1,8 +1,13 @@
 #include "RenderGraphPass.h"
 
-RenderGraphV0::PassNode::PassNode(const std::string name_) :
-    name(name_), root_pass_tag(nullptr), is_rootpass(false)
-{}
+RenderGraphV0::PassNode::PassNode(const std::string name_, VkGraphicsComponent &gfx_) :
+    name(name_), root_pass_tag(nullptr), is_rootpass(false), gfx(gfx_)
+{
+}
+
+RenderGraphV0::PassNode::~PassNode()
+{
+}
 
 void RenderGraphV0::PassNode::SetAsRootPass()
 {
